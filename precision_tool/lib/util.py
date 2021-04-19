@@ -339,8 +339,8 @@ class Util(object):
         result = []
         for dir_path, dir_names, file_names in os.walk(root_dir, followlinks=True):
             for name in file_names:
-                if name == file_name:
-                    result.append(dir_path)
+                if re.match(file_name, name):
+                    result.append(os.path.join(dir_path, name))
         return result
 
     def _detect_file_if_not_exist(self, target_file):
@@ -350,17 +350,17 @@ class Util(object):
         if len(res) == 0:
             raise PrecisionToolException("Cannot find any file named %s in dir %s" % (target_file, cfg.CMD_ROOT_PATH))
         LOG.info("Detect [%s] success. %s", target_file, res)
-        return res[0], str(os.path.join(res[0], target_file))
+        return res[0]
 
     def _get_atc(self):
         if self.atc is None:
-            atc_path, self.atc = self._detect_file_if_not_exist('atc')
-            os.environ['PATH'] = os.environ['PATH'] + ':' + atc_path
+            self.atc = self._detect_file_if_not_exist('^atc$')
+            # os.environ['PATH'] = os.environ['PATH'] + ':' + atc_path
         return self.atc
 
     def _get_ms_accu_cmp(self):
         if self.ms_accu_cmp is None:
-            _, self.ms_accu_cmp = self._detect_file_if_not_exist(cfg.MS_ACCU_CMP)
+            self.ms_accu_cmp = self._detect_file_if_not_exist(cfg.MS_ACCU_CMP)
         return self.ms_accu_cmp
 
     @staticmethod

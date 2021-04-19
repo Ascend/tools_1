@@ -133,7 +133,7 @@ class Dump(ToolObject):
         if '/' in file_name:
             # maybe node name, replace to '_' and detect
             self.log.warning("Invalid file name[%s]. you may mean the files below.", file_name)
-            file_names = self._detect_file_name(file_name)
+            file_names = self._detect_cpu_file_name(file_name)
         for parent_dir in [cfg.DUMP_FILES_DECODE, cfg.DUMP_FILES_CPU, cfg.DUMP_FILES_OVERFLOW_DECODE,
                            cfg.DUMP_FILES_CONVERT]:
             for file_name in file_names:
@@ -172,6 +172,11 @@ class Dump(ToolObject):
 
     def convert_npu_dump(self, name, data_format):
         """Convert npu dump to npy of data_format"""
+        '''
+        if not os.path.exists(name):
+            # try to find in npu dump dir
+            self._detect_npu_file_name()
+        '''
         if name in self.npu_files:
             file_info = self.npu_files[name]
         else:
@@ -180,10 +185,10 @@ class Dump(ToolObject):
         if file_info is None:
             self.log.warning("Can not find any op/dump file named %s", name)
             return
-        util.convert_dump_to_npy(file_info['path'], cfg.DUMP_FILES_CONVERT, data_format)
+        util.convert_dump_to_npy(name, cfg.DUMP_FILES_CONVERT, data_format)
         dump_convert_files = util.list_npu_dump_convert_files(cfg.DUMP_FILES_CONVERT, name)
         # print result info
-        summary_txt = 'SrcFile: %s' % file_info['file_name']
+        summary_txt = 'SrcFile: %s' % name
         for convert_file in dump_convert_files.values():
             summary_txt += '\n - %s' % convert_file['file_name']
         util.print_panel(summary_txt)
@@ -236,7 +241,7 @@ class Dump(ToolObject):
             util.convert_dump_to_npy(dump_file['path'], cfg.DUMP_FILES_DECODE)
 
     @staticmethod
-    def _detect_file_name(file_name):
+    def _detect_cpu_file_name(file_name):
         match_name = file_name.replace('/', '_').replace('.', '_') + '\\.'
         cpu_files = util.list_cpu_dump_decode_files(cfg.DUMP_FILES_CPU, match_name)
         summary = 'CPU_DUMP:'

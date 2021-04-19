@@ -42,6 +42,7 @@ class Overflow(ToolObject):
         super(Overflow, self).__init__()
         self.log = util.get_log()
 
+    @catch_tool_exception
     def prepare(self):
         """Prepare"""
         self.overflow_dump_files, self.overflow_dump_parent_dirs = util.list_dump_files(cfg.DUMP_FILES_OVERFLOW)
@@ -72,7 +73,7 @@ class Overflow(ToolObject):
             dump_file_list = [item for item in dirs.values() if item['op_type'] != 'Opdebug']
             debug_file_list = [item for item in dirs.values() if item['op_type'] == 'Opdebug']
             if len(dump_file_list) != len(debug_file_list):
-                self.log.error("Dump files num not equal to Debug files info")
+                raise PrecisionToolException("Dump files num not equal to Debug files info")
             dump_file_list = sorted(dump_file_list, key=lambda x: x['timestamp'])
             debug_file_list = sorted(debug_file_list, key=lambda x: x['timestamp'])
             for i in range(len(dump_file_list)):

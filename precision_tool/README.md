@@ -238,6 +238,24 @@ with tf.Session() as sess:
    summary_writer = tf.summary.FileWriter(logdir=log_dir, graph=sess.graph)
 
 ```
+
+### F&Q
+1. 安装gnureadline报错找不到lncurses
+   ```shell
+   /usr/bin/ld: cannot find -lncurses
+   collect2: error: ld returned 1 exit status
+   error: command 'gcc' failed with exit status 1
+   ```
+   ```shell
+   # 先尝试在本地查找libncurses.so*
+   find / -name libncurses.so*
+   # 如果能找到以下文件，直接创建一个libncurses.so指向libncurses.so.5即可，否则需要用包管理工具安装ncurses
+   /usr/lib64/libncurses.so.5
+   /usr/lib64/libncurses.so.5.9
+   /usr/lib64/libncursesw.so.5
+   # 创建软连接
+   ln -s /usr/lib64/libncurses.so.5.9 /usr/lib64/libncurses.so
+   ```
 #### 参与贡献
 
 1.  Fork 本仓库

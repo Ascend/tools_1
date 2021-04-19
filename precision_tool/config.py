@@ -52,6 +52,6 @@ DUMP_GRAPH_LEVEL_VALUE = 2
 TF_DEBUG_TIMEOUT = 360
 
 # MSACCUCMP
-MS_ACCU_CMP = 'msaccucmp.py'
+MS_ACCU_CMP = r'msaccucmp.py[c]?'
 PYTHON = 'python3'
 BUILD_JSON_GRAPH_NAME = 'PreRunAfterBuild'
