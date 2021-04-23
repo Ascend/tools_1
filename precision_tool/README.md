@@ -103,7 +103,7 @@ sudo yum install graphviz
    python3.7.5 precision_tool/cli.py tf_dump "sh cpu_train.sh param1 param2"
    # 注意：一般进入tf_debug命令行后，需要执行两次run才能能完成一个step，lt指令才能获得所有tensor的列表。
    #      如果实际使用中在嵌入tf_debug代码后需要执行run的次数不是两次，则可以使用如下方式控制run次数
-   python3.7.5 precision_tool/cli.py tf_dump "sh cpu_train.sh param1 param2" 2
+   python3.7.5 precision_tool/cli.py tf_dump "sh cpu_train.sh param1 param2" -r 2
    ```
 ## 使用说明
 1.  配置文件precision_tool/config.py（正常默认即可）
@@ -135,12 +135,12 @@ sudo yum install graphviz
     python3 ./precision_tool/cli.py 
     ```
 ### 非交互模式命令
-1. tf_dump [start tf cpu script command]
+1. tf_dump [start tf cpu script command] (-r) [send run time]
     ```shell
     # 启动tf训练脚本，Dump CPU标杆数据
     # 需要配合上述tf_debug修改使用，能够Dump出第一个step的所有Tensor数据
     # 也可以在GPU/CPU环境上单独部署脚本执行该命令，将数据目录precision_data/dump/cpu 拷贝到NPU环境分析
-    python3.7.5 precision_tool/cli.py tf_dump 'python3 LeNet_cpu.py'
+    python3.7.5 precision_tool/cli.py tf_dump 'python3 LeNet_cpu.py' -r 2
     ```
 2. npu_dump [start npu script command]
     ```shell

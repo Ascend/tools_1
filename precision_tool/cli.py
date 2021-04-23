@@ -44,6 +44,7 @@ def _do_run_tf_dbg_dump(cmd_line, run_times=2):
                   import_err)
         raise PrecisionToolException("Import module error.")
     log.info("======< Auto run tf train process to dump data >======")
+    log.info("Send run times: %d", run_times)
     tf_dbg = pexpect.spawn(cmd_line)
     # tf_dbg.logfile = open(cfg.DUMP_FILES_CPU_LOG, 'wb')
     tf_dbg.logfile = sys.stdout.buffer
@@ -121,6 +122,9 @@ def main():
         elif sys.argv[1] == 'npu_overflow':
             _run_npu_overflow(cmd_line)
         else:
+            # TODO run precision_tool directly
+            # precision_tool = PrecisionTool()
+            # precision_tool.single_cmd(sys.argv)
             log.warning("Unknown command:", sys.argv[1])
             print(INTRODUCE_DOC)
         exit(0)

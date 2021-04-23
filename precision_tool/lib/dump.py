@@ -128,6 +128,7 @@ class Dump(ToolObject):
 
     def print_data(self, file_name, is_convert):
         """Print numpy data file"""
+        # TODO 支持直接解读绝对路径的文件
         parent_dirs = []
         file_names = [file_name]
         if '/' in file_name:
