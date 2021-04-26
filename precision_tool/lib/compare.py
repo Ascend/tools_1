@@ -44,6 +44,7 @@ class Compare(ToolObject):
 
     @catch_tool_exception
     def prepare(self):
+        util.create_dir(cfg.VECTOR_COMPARE_PATH)
         self._parse_result_files()
 
     def vector_compare(self, lh_path, rh_path, graph_json=None):
@@ -61,7 +62,7 @@ class Compare(ToolObject):
     @catch_tool_exception
     def vector_summary(self, file_name=None):
         """Print not NaN result in vector compare result"""
-        if len(self.vector_compare_result) == 0:
+        if self.vector_compare_result is None or len(self.vector_compare_result) == 0:
             raise PrecisionToolException("Can not find any vector compare result in dir:%s" % cfg.VECTOR_COMPARE_PATH)
         if file_name is None:
             # find the latest result
@@ -95,8 +96,11 @@ class Compare(ToolObject):
         util.save_npy_to_txt(right)
         # compare data
         total_cnt, all_close, cos_sim, err_percent = self._do_compare_data(left, right, rl, al, diff_count)
-        content = 'SrcFile: %s \nDstFile: %s\nSrcFile: %s.txt\nDstFile: %s.txt' % (left, right, left, right)
-        content += '\nNumCnt:  %s\nAllClose: %s\nCosSim:   %s\nErrorPer: %s (rl= %s, al= %s)' % (
+
+        content = 'SrcFile:    %s\nSrcFileTxt: %s.txt \nSrcFileInfo:%s\n' % (left, left, util.gen_npy_info_txt(left))
+        content += 'DstFile:    %s\nDstFileTxt: %s.txt \nDstFileInfo:%s\n' % (right, right,
+                                                                              util.gen_npy_info_txt(right))
+        content += 'NumCnt:  %s\nAllClose: %s\nCosSim:   %s\nErrorPer: %s (rl= %s, al= %s)' % (
             total_cnt, all_close, cos_sim, err_percent, rl, al)
         util.print_panel(content)
 

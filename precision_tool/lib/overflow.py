@@ -133,7 +133,8 @@ class Overflow(ToolObject):
             res += '\n - [L2 Atomic Add][Status:%s][TaskId:%s] Overflow' % (detail['status'], detail['task_id'])
         res += '\n - First overflow file timestamp [%s] -' % file_info['timestamp']
         for dump_decode_file in file_info['dump_decode_files'].values():
-            res += '\n -- %s' % dump_decode_file['file_name']
+            res += '\n |- %s' % dump_decode_file['file_name']
+            res += '\n  |- [yellow]%s[/yellow]' % util.gen_npy_info_txt(dump_decode_file['path'])
         return res
 
     def _decode_ai_core_status(self, status):

@@ -18,6 +18,8 @@ from lib.precision_tool_exception import PrecisionToolException
 DANGEROUS_CAST = {
     'DT_FLOAT': ['DT_INT32']
 }
+
+NO_DIG_OPS = ['AtomicAddrClean', 'NetOutput']
 CKPT_META_SHUFFIX='.meta'
 
 OP_CAST = 'Cast'
@@ -78,14 +80,84 @@ class Graph(ToolObject):
     def check_similarity(self):
         """Check graph similarity."""
 
+    @catch_tool_exception
     def print_op(self, op_name):
-        """ print op detail info"""
-        if op_name not in self.ops_list:
-            self.log.warning("can not find op [%s]" % op_name)
-            return
-        op = self.ops_list[op_name]
+        """Print op detail info"""
+        op = self.get_op(op_name)
+        if op is None:
+            raise PrecisionToolException("Can not find op [%s]" % op_name)
         title = '[green][%s][/green]%s' % (op.type(), op.name())
         util.print_panel(op.summary(), title=title, fit=True)
+
+    def save_sub_graph(self, op, deep=0):
+        if op is None:
+            raise PrecisionToolException("Save sub graph failed as root operator is None.")
+        try:
+            from graphviz import Digraph
+            file_name = op.type() + '.' + op.name().replace('/', '_').replace('.', '_') + '.' + str(deep) + '.gv'
+            path = os.path.join(cfg.OP_GRAPH_DIR, file_name)
+            dot = Digraph(file_name, filename=path, node_attr={'shape': 'Mrecord'}, format='svg')
+            dot_list = []
+            edge_list = []
+            self._gen_sub_graph(dot, op, deep, dot_list, edge_list, 'red', direction='all')
+            dot.format = 'svg'
+            dot.save(path)
+            self.log.info("Sub graph saved to %s" % os.path.abspath(cfg.OP_GRAPH_DIR))
+            try:
+                dot.view(path)
+            except Exception as err:
+                raise PrecisionToolException(
+                    "graphviz not install, use [yum/apt-get] install graphviz xdg-utils. %s" % err)
+        except ImportError as err:
+            raise PrecisionToolException("Save sub graph failed as import graphviz module failed. %s" % err)
+
+    def _gen_sub_graph(self, dot, op, deep, dot_list, edge_list, color='black', direction='all'):
+        """Gen sub graph"""
+        if deep == 0 or op.type() in NO_DIG_OPS:
+            return
+        if op.name() not in dot_list:
+            dot.node(op.name(), self._gen_sub_graph_label(op), color=color, tooltip=op.summary(True))
+            dot_list.append(op.name())
+        # add input and output
+        for desc in op.inputs():
+            sub_op = self.get_op(desc.name())
+            if sub_op is not None:
+                if direction in ['all', 'input']:
+                    self._gen_sub_graph(dot, sub_op, deep - 1, dot_list, edge_list, direction='input')
+                if sub_op.name() in dot_list:
+                    src_edge = '%s:o%d' % (sub_op.name(), desc.peer_idx())
+                else:
+                    dot.node(sub_op.name(), self._gen_sub_graph_label(sub_op), color=color, tooltip=op.summary(True))
+                    src_edge = '%s:o%d' % (sub_op.name(), desc.peer_idx())
+                dst_edge = '%s:i%d' % (op.name(), desc.idx())
+                if src_edge + dst_edge not in edge_list:
+                    dot.edge(src_edge, dst_edge)
+                    edge_list.append(src_edge + dst_edge)
+
+        for desc in op.outputs():
+            for out_node_name in desc.names():
+                sub_op = self.get_op(out_node_name)
+                if sub_op is not None and direction in ['all', 'output']:
+                    self._gen_sub_graph(dot, sub_op, deep - 1, dot_list, edge_list, direction='output')
+
+    def _gen_sub_graph_label(self, op):
+        input_labels = []
+        for desc in op.inputs():
+            input_labels.append(self._gen_sub_graph_desc(desc, 'i'))
+        output_labels = []
+        for desc in op.outputs():
+            output_labels.append(self._gen_sub_graph_desc(desc, 'o'))
+            # output_labels.append(r'<o%d> [%d] [%s]\n%s' % (desc.idx(), desc.idx(), desc.dtype(), desc.shape()))
+        str_cell = '|'
+        return '{{ %s } | [%s] %s | { %s }}' % (str_cell.join(input_labels), op.type(), op.name(),
+                                                str_cell.join(output_labels))
+
+    @staticmethod
+    def _gen_sub_graph_desc(desc, id_prefix):
+        desc_str = r'<%s%d> [%d]' % (id_prefix, desc.idx(), desc.idx())
+        desc_str = r'%s [%s]' % (desc_str, desc.dtype()) if desc.dtype() != '' else desc_str
+        desc_str = r'%s\n%s' % (desc_str, desc.shape()) if len(desc.shape()) != 0 else desc_str
+        return desc_str
 
     def list_ops(self):
         """list ops in graph"""
@@ -96,10 +168,22 @@ class Graph(ToolObject):
 
     def get_op(self, name):
         """get op by name"""
-        return self.ops_list[name] if name in self.ops_list else None
+        if name in self.ops_list:
+            return self.ops_list[name]
+        self.log.info("Can not find Operator named %s. You may mean the operator bellow.", name)
+        guess_op_list = []
+        for op_detail in self.ops_list.values():
+            if name in op_detail.name():
+                guess_op_list.append(op_detail)
+                self._print_single_op(op_detail)
+        if len(guess_op_list) == 0:
+            self.log.warning("Can not find any Operator like %s", name)
+            return None
+        util.print_panel()
+        return guess_op_list[0]
 
     def print_op_list(self, op_type='', op_name='', pass_name=''):
-        """"""
+        """Print op list"""
         if op_type == '' and op_name == '' and pass_name == '':
             for op in self.ops_list.values():
                 util.print('[green][%s][/green] %s' % (op.type(), op.name()))
@@ -109,8 +193,13 @@ class Graph(ToolObject):
             return
         for op in self.ops_list.values():
             if op_type in op.type() and op_name in op.name() and pass_name in op.pass_name():
-                op_pass_name = '' if op.pass_name() == '' else '[yellow][%s][/yellow]' % op.pass_name()
-                util.print('[green][%s][/green]%s %s' % (op.type(), op_pass_name, op.name()))
+                self._print_single_op(op)
+
+    @staticmethod
+    def _print_single_op(op):
+        """Print Single op"""
+        op_pass_name = '' if op.pass_name() == '' else '[yellow][%s][/yellow]' % op.pass_name()
+        util.print('[green][%s][/green]%s %s' % (op.type(), op_pass_name, op.name()))
 
     def _parse_cpu_ops(self):
         self._convert_ckpt_to_graph(cfg.GRAPH_CPU)

@@ -24,7 +24,6 @@ def estimator_dump_config():
                             dump_mode="all", op_debug_level=cfg.OP_DEBUG_LEVEL,
                             fusion_switch_file=cfg.FUSION_SWITCH_FILE)
     elif _is_dump():
-        _set_dump_graph_flags()
         config = DumpConfig(enable_dump=True, dump_path=cfg.DUMP_FILES_NPU, dump_step=cfg.TF_DUMP_STEP,
                             dump_mode="all", op_debug_level=cfg.OP_DEBUG_LEVEL,
                             fusion_switch_file=cfg.FUSION_SWITCH_FILE)
@@ -59,7 +58,6 @@ def session_dump_config(session_config=None):
         custom_op.parameter_map['fusion_switch_file'].s = tf.compat.as_bytes(cfg.FUSION_SWITCH_FILE)
         custom_op.parameter_map['dump_step'].s = tf.compat.as_bytes(cfg.TF_DUMP_STEP)
     elif _is_dump():
-        _set_dump_graph_flags()
         custom_op.parameter_map['enable_dump'].b = True
         custom_op.parameter_map['dump_mode'].s = tf.compat.as_bytes("all")
         custom_op.parameter_map['dump_path'].s = tf.compat.as_bytes(cfg.DUMP_FILES_NPU)
@@ -75,6 +73,7 @@ def _init():
         _create_dir(cfg.DUMP_FILES_OVERFLOW)
     if not os.path.exists(cfg.DUMP_FILES_NPU):
         _create_dir(cfg.DUMP_FILES_NPU)
+    _set_dump_graph_flags()
 
 
 def _create_dir(path):

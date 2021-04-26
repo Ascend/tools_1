@@ -231,10 +231,17 @@ class Util(object):
         :return: (shape, dtype)
         """
         if not str(path).endswith(NUMPY_SHUFFIX):
-            LOG.error("Npy file [%s] is invalid", path)
-            return
+            raise PrecisionToolException("Npy file [%s] is invalid" % path)
         data = np.load(path, allow_pickle=True)
         return data.shape, data.dtype, data.max(), data.min(), data.mean()
+
+    def gen_npy_info_txt(self, file_name):
+        """ Generate numpy info txt.
+        :param file_name:
+        :return: txt
+        """
+        shape, dtype, max_data, min_data, mean = self.npy_info(file_name)
+        return '[Shape: %s] [Dtype: %s] [Max: %s] [Min: %s] [Mean: %s]' % (shape, dtype, max_data, min_data, mean)
 
     def print_npy_summary(self, path, file_name, is_convert=False, extern_content=''):
         """Print summary of npy data
@@ -246,11 +253,10 @@ class Util(object):
         """
         target_file = os.path.join(path, file_name)
         if not os.path.exists(target_file):
-            LOG.warning("File [%s] not exist", target_file)
-        data = np.load(target_file)
-        # content = 'Array: %s\n========' % np.array2string(data)
+            raise PrecisionToolException("File [%s] not exist" % target_file)
+        shape, dtype, max_data, min_data, mean = self.npy_info(target_file)
         content = "Shape: %s\nDtype: %s\nMax: %s\nMin: %s\nMean: %s\nPath: %s" % (
-            data.shape, data.dtype, np.max(data), np.min(data), np.mean(data), target_file)
+            shape, dtype, max_data, min_data, mean, target_file)
         if is_convert:
             content += '\nTxtFile: %s.txt' % target_file
         if extern_content != '':
@@ -383,6 +389,8 @@ class Util(object):
 
     @staticmethod
     def _list_file_with_pattern(path, pattern, extern_pattern, gen_info_func):
+        if path is None or not os.path.exists(path):
+            raise PrecisionToolException("Path %s not exist." % path)
         file_list = {}
         re_pattern = re.compile(pattern)
         for dir_path, dir_names, file_names in os.walk(path, followlinks=True):

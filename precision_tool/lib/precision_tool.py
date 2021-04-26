@@ -124,11 +124,22 @@ class PrecisionTool(object):
 
     @catch_tool_exception
     def do_node_info(self, argv):
-        """print op node info"""
+        """Print op node info"""
         parser = argparse.ArgumentParser()
         parser.add_argument('-n', '--name', dest='name', default='', help='op name')
+        parser.add_argument('-d', '--dump', dest='dump', help='show dump files info', action='store_true')
+        parser.add_argument('-s', '--save', dest='save', type=int, default=0,
+                            help='save subgraph, param gives the deep of subgraph')
         args = parser.parse_args(argv)
+        # print graph op info
         self.graph.print_op(args.name)
+        op = self.graph.get_op(args.name)
+        # save subgraph
+        if args.save > 0:
+            self.graph.save_sub_graph(op, args.save)
+        # print dump info
+        if args.dump:
+            self.dump.print_op(op)
 
     @catch_tool_exception
     def do_convert_npu_dump(self, argv):
@@ -159,3 +170,11 @@ class PrecisionTool(object):
     @catch_tool_exception
     def check_graph_similarity(self):
         """ Check graph similarity """
+
+    def single_cmd(self, argv):
+        cmd_func_map = {'compare': self.do_compare_data,
+                        'vector_compare': self.do_vector_compare}
+        if argv[1] in cmd_func_map:
+            func = cmd_func_map[argv[1]]
+            return func(argv[1:])
+        raise PrecisionToolException("cmd %s is not supported or cmd should be run in interactive mode.", argv[1])

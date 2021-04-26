@@ -123,10 +123,10 @@ def main():
             _run_npu_overflow(cmd_line)
         else:
             # TODO run precision_tool directly
-            # precision_tool = PrecisionTool()
-            # precision_tool.single_cmd(sys.argv)
-            log.warning("Unknown command:", sys.argv[1])
-            print(INTRODUCE_DOC)
+            precision_tool = PrecisionTool()
+            precision_tool.single_cmd(sys.argv)
+            #log.warning("Unknown command:", sys.argv[1])
+            #print(INTRODUCE_DOC)
         exit(0)
     log.info("Interactive command mode.")
     cli = InteractiveCli()

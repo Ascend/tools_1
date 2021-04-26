@@ -126,6 +126,33 @@ class Dump(ToolObject):
     def list_dump(self, dir_path, file_name):
         """"""
 
+    def print_op(self, op):
+        """ print op dump info"""
+        if op is None:
+            raise PrecisionToolException("Get None operator")
+        title = '[yellow]NPU/CPU-DumpFiles[/yellow][green][%s][/green]%s' % (op.type(), op.name())
+        # search npu dump file by op name
+        npu_dump_files = self.get_npu_dump_decode_files_by_op(op)
+        npu_dump_files = sorted(npu_dump_files.values(), key=lambda x: x['idx'])
+        npu_dump_input_txt = ''
+        npu_dump_output_txt = ''
+        for npu_dump_file in npu_dump_files:
+            if npu_dump_file['type'] == 'input':
+                npu_dump_input_txt += '\n -[green][%s][/green][yellow][%s][/yellow] %s' % (
+                    npu_dump_file['idx'], npu_dump_file['shape'], npu_dump_file['file_name'])
+            else:
+                npu_dump_output_txt += '\n -[green][%s][/green][yellow][%s][/yellow] %s' % (
+                    npu_dump_file['idx'], npu_dump_file['shape'], npu_dump_file['file_name'])
+        npu_dump_info = 'NpuDumpInput:%s\nNpuDumpOutput:%s' % (npu_dump_input_txt, npu_dump_output_txt)
+        # cpu dump info
+        cpu_dump_txt = ''
+        cpu_dump_files = self.get_cpu_dump_files_by_op(op)
+        for cpu_dump_file in cpu_dump_files.values():
+            cpu_dump_txt += '\n -[green][%s][/green][yellow][%s][/yellow] %s' % (
+                cpu_dump_file['idx'], cpu_dump_file['shape'], cpu_dump_file['file_name'])
+        res_str = "%s\nCpuDumpOutput:%s" % (npu_dump_info, cpu_dump_txt)
+        util.print_panel(res_str, title, fit=True)
+
     def print_data(self, file_name, is_convert):
         """Print numpy data file"""
         # TODO 支持直接解读绝对路径的文件

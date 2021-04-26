@@ -1,4 +1,5 @@
 # coding=utf-8
+import json
 import re
 from typing import List
 from lib.desc import InputDesc
@@ -16,7 +17,7 @@ JSON_KEY = 'key'
 JSON_VALUE = 'value'
 JSON_KEY_STR = 's'
 JSON_KEY_PASS_NAME = 'pass_name'
-dump_manager = Dump()
+#dump_manager = Dump()
 
 
 class Op(object):
@@ -32,14 +33,17 @@ class Op(object):
         self.op_list = op_list
         self.input_list = None
         self.output_list = None
-        self.npu_input_files = None
-        self.npu_output_files = None
-        self.cpu_output_files = None
+        #self.npu_input_files = None
+        #self.npu_output_files = None
+        #self.cpu_output_files = None
         self.log = util.get_log()
 
     def name(self):
         """Get op name"""
         return self.op_json[JSON_KEY_NAME]
+
+    def json(self):
+        return json.dumps(self.op_json, indent=2)
 
     def type(self):
         """Get op type"""
@@ -63,7 +67,7 @@ class Op(object):
                 if JSON_KEY_PASS_NAME == attr[JSON_KEY]:
                     return attr[JSON_VALUE][JSON_KEY_STR]
         return ''
-
+    '''
     def npu_dump_input_files(self):
         """Get op input dump decode file info dict"""
         if self.npu_input_files is None:
@@ -75,7 +79,8 @@ class Op(object):
         if self.npu_output_files is None:
             self._parse_decode_file()
         return self.npu_output_files
-
+    
+    
     def cpu_dump_output_files(self):
         """Get cpu dump decode file info dict"""
         if self.cpu_output_files is None:
@@ -86,15 +91,21 @@ class Op(object):
                 cpu_file['shape'], cpu_file['dtype'], cpu_file['max'], cpu_file['min'], _ = \
                     util.npy_info(cpu_file['path'])
         return self.cpu_output_files
+    '''
 
-    def summary(self):
+    def summary(self, origin_txt=False):
         """Summary of current op"""
         input_txt = ''
         output_txt = ''
         for i in self.inputs():
-            input_txt += '\n -' + i.summary()
+            input_txt += '\n -' + i.summary(origin_txt)
         for i in self.outputs():
-            output_txt += '\n -' + i.summary()
+            output_txt += '\n -' + i.summary(origin_txt)
+        res_str = "[%s] %s\nInput:%s\nOutput:%s" % (
+            self.type(), self.name(), input_txt, output_txt)
+        return res_str
+
+        '''
         res_str = "[%s] %s\nInput:%s\nOutput:%s\nNpuDump:\n -%s\nCpuDump:\n -%s" % (
             self.type(), self.name(), input_txt, output_txt,
             str(dump_manager.get_npu_dump_files_by_op(self).keys()),
@@ -115,7 +126,8 @@ class Op(object):
                 cpu_dump_file['idx'], cpu_dump_file['shape'], cpu_dump_file['file_name'])
         res_str += "\n%s\nCpuDumpOutput:%s" % (npu_dump_info, cpu_dump_txt)
         return res_str
-
+        '''
+    '''
     def _parse_decode_file(self):
         dump_decode_files = dump_manager.get_npu_dump_decode_files_by_op(self)
         self.npu_input_files = {}
@@ -127,6 +139,7 @@ class Op(object):
                 self.npu_input_files[dump_file['idx']] = dump_file
             else:
                 self.npu_output_files[dump_file['idx']] = dump_file
+    '''
 
     def _parse_inputs(self):
         """ parse input desc in graph """
@@ -149,6 +162,7 @@ class Op(object):
             else:
                 self.input_list.append(InputDesc(name, self.op_json['input_desc'][desc_index], i))
                 desc_index += 1
+        self.input_list.sort(key=lambda x: x.index)
         return self.input_list
 
     def _parse_outputs(self):
@@ -163,7 +177,9 @@ class Op(object):
             dst_name = self.op_json['dst_name'][i]
             if self.op_json['dst_index'][i] == -1:
                 # control edge
-                self.output_list.append(OutputDesc(dst_name, [], i))
+                self.output_list.append(OutputDesc(dst_name, [], -1))
             else:
-                self.output_list.append(OutputDesc(dst_name, self.op_json['output_desc'][desc_index], i))
+                self.output_list.append(OutputDesc(dst_name, self.op_json['output_desc'][desc_index], desc_index))
                 desc_index += 1
+        self.output_list.sort(key=lambda x: x.index)
+        return self.output_list

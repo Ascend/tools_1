@@ -38,7 +38,7 @@ sudo yum install graphviz
 * 该工具基于**NPU的计算图**，**NPU的DUMP数据**，**NPU的溢出检测数据**，**TF的计算图meta文件**，**TF的DUMP数据**进行数据解析和分析。
 这几类依赖数据可以通过以下方式获取：
 #### 1. NPU的计算图获取
-```注意：NPU的Dump数据和计算图存在一定的对应关系，最好同时获取（不修改代码和环境版本的情况下分开获取也可以）```
+```注意：NPU的Dump数据和计算图存在一定的对应关系，需要同时获取```
 1. 参考迁移指导中的修改配置，执行NPU脚本，并将获取到的图转存至precision_data图目录
    ```shell
    export DUMP_GE_GRAPH=2
@@ -154,7 +154,16 @@ sudo yum install graphviz
     # 启动npu训练脚本，进行溢出检测
     # 需要配合上述precision_tool/tf_config.py 使用
     python3.7.5 precision_tool/cli.py npu_overflow 'python3 LeNet_npu.py'
-    ```
+   ╭──────────────────────────────────────────────────────────────────────────────────────────────────╮
+   │ [TransData][327] trans_TransData_1170                                                            │
+   │  - [AI Core][Status:32][TaskId:327] ['浮点计算有溢出']                                           │
+   │  - First overflow file timestamp [1619347786532995] -                                            │
+   │  |- TransData.trans_TransData_1170.327.1619347786532995.input.0.npy                              │
+   │   |- [Shape: (32, 8, 8, 320)] [Dtype: bool] [Max: True] [Min: False] [Mean: 0.11950836181640626] │
+   │  |- TransData.trans_TransData_1170.327.1619347786532995.output.0.npy                             │
+   │   |- [Shape: (32, 20, 8, 8, 16)] [Dtype: bool] [Max: True] [Min: False] [Mean: 0.07781982421875] │
+   ╰──────────────────────────────────────────────────────────────────────────────────────────────────╯
+   ```
    
 ### 交互模式命令
 1. ac (-c)
@@ -177,10 +186,12 @@ sudo yum install graphviz
     [MatMulV2] LeNet/conv1/Matmul
     ```
 
-4. ni (-n) [op_name]
+4. ni (-n) [op_name] -d -s [save sub graph deep]
     ```shell
     # 通过[算子名]查询算子节点信息
-    PrecisionTool > ni LeNet/conv1/Matmul
+    # -d 显示相应的dump数据信息
+    # -s 保存一个以当前算子节点为根，深度为参数值的子图
+    PrecisionTool > ni LeNet/conv1/Matmul 
     ```
    
 5. pt (-n) [*.npy]
