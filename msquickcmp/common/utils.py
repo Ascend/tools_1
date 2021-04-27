@@ -25,6 +25,7 @@ ACCURACY_COMPARISON_INVALID_KEY_ERROR = 11
 ACCURACY_COMPARISON_PYTHON_COMMAND_ERROR = 12
 ACCURACY_COMPARISON_TENSOR_TYPE_ERROR = 13
 ACCURACY_COMPARISON_NO_DUMP_FILE_ERROR = 14
+ACCURACY_COMPARISON_NOT_SUPPORT_ERROR = 15
 MODEL_TYPE = ['.onnx', '.pb', '.om']
 
 
@@ -206,3 +207,10 @@ def check_input_bin_file_path(input_path):
     input_bin_files = input_path.split(',')
     for input_item in input_bin_files:
         check_file_or_directory_path(input_item)
+
+
+def check_dynamic_shape(shape):
+    for item in shape:
+        if type(item) == str:
+            break
+    return False
