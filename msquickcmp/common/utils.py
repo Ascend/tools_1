@@ -210,7 +210,16 @@ def check_input_bin_file_path(input_path):
 
 
 def check_dynamic_shape(shape):
+    """
+    Function Description:
+        check dynamic shpae
+    Parameter:
+        shape:shape
+    Return Value:
+        False or True
+    """
     for item in shape:
         if type(item) == str:
             break
-    return False
+        return False
+    return True
