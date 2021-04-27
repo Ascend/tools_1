@@ -97,7 +97,7 @@ class Util(object):
         src_file = os.path.join(cfg.GRAPH_DIR_ALL, proto_file)
         json_file = proto_file + '.json'
         dst_file = os.path.join(cfg.GRAPH_DIR_BUILD, json_file)
-        if os.path.exists(dst_file):
+        if os.path.exists(dst_file) and os.path.getmtime(dst_file) > os.path.getmtime(src_file):
             self.log.debug("GE graph build json already exist.")
             return json_file
         cmd = '%s --mode=5 --om=%s --json=%s' % (self._get_atc(), src_file, dst_file)
@@ -131,11 +131,11 @@ class Util(object):
         """
         self.create_dir(result_path)
         if graph_json is None:
-            cmd = '%s %s compare -m %s -f %s -out %s >> %s/log.txt' % (
-                cfg.PYTHON, self._get_ms_accu_cmp(), npu_dump_dir, cpu_dump_dir, result_path, result_path)
+            cmd = '%s %s compare -m %s -f %s -out %s' % (
+                cfg.PYTHON, self._get_ms_accu_cmp(), npu_dump_dir, cpu_dump_dir, result_path)
         else:
-            cmd = '%s %s compare -m %s -g %s -f %s -out %s >> %s/log.txt' % (
-                cfg.PYTHON, self._get_ms_accu_cmp(), npu_dump_dir, cpu_dump_dir, graph_json, result_path, result_path)
+            cmd = '%s %s compare -m %s -g %s -f %s -out %s' % (
+                cfg.PYTHON, self._get_ms_accu_cmp(), npu_dump_dir, cpu_dump_dir, graph_json, result_path)
         return self.execute_command(cmd)
 
     def list_dump_files(self, path, sub_path=''):

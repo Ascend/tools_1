@@ -42,7 +42,7 @@ class PrecisionTool(object):
     def do_auto_check(self, argv):
         """auto check"""
         parser = argparse.ArgumentParser()
-        parser.add_argument('-c', '--name', dest='vector_compare', help='auto check', action='store_true')
+        parser.add_argument('-c', '--vector_compare', dest='vector_compare', help='auto check', action='store_true')
         args = parser.parse_args(argv)
         # vector compare
         if args.vector_compare:
@@ -132,14 +132,7 @@ class PrecisionTool(object):
                             help='save subgraph, param gives the deep of subgraph')
         args = parser.parse_args(argv)
         # print graph op info
-        self.graph.print_op(args.name)
-        op = self.graph.get_op(args.name)
-        # save subgraph
-        if args.save > 0:
-            self.graph.save_sub_graph(op, args.save)
-        # print dump info
-        if args.dump:
-            self.dump.print_op(op)
+        self.graph.print_op(args.name, args.dump, args.save, dump_manager=self.dump, compare_manager=self.compare)
 
     @catch_tool_exception
     def do_convert_npu_dump(self, argv):
@@ -159,13 +152,14 @@ class PrecisionTool(object):
         parser = argparse.ArgumentParser()
         parser.add_argument('-n', '--name', dest='names', type=str, default=[], help='op name', nargs='+')
         parser.add_argument('-p', '--print', dest='count', default=20, type=int, help='print err data num')
+        parser.add_argument('-s', '--save', dest='save', action='store_true', help='print err data num')
         parser.add_argument('-al', '--atol', dest='atol', default=0.001, type=float, help='set rtol')
         parser.add_argument('-rl', '--rtol', dest='rtol', default=0.001, type=float, help='set atol')
         args = parser.parse_args(argv)
         if len(args.names) != 2:
             self.log.error("compare files should be 2.")
         else:
-            self.compare.compare_data(args.names[0], args.names[1], args.rtol, args.atol, args.count)
+            self.compare.compare_data(args.names[0], args.names[1], args.save, args.rtol, args.atol, args.count)
 
     @catch_tool_exception
     def check_graph_similarity(self):

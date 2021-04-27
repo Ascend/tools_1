@@ -18,9 +18,16 @@ INTRODUCE_DOC = \
     "Usage:\n" \
     "  Single mode:\n" \
     "    Exp:\n" \
-    "      python3.7.5 precision_tool/cli.py tf_dump \"sh cpu_train.sh param1 param2\"" \
+    "      Dump TF data:\n" \
+    "       > python3.7.5 precision_tool/cli.py tf_dump \"sh cpu_train.sh param1 param2\" -r [send run times]\n" \
+    "      Dump NPU data:\n" \
+    "       > python3.7.5 precision_tool/cli.py npu_dump \"sh npu_train.sh param1 param2\" \n" \
+    "      Check NPU overflow:\n" \
+    "       > python3.7.5 precision_tool/cli.py npu_overflow \"sh npu_train.sh param1 param2\" \n" \
     "  Interactive mode:\n" \
-    "    Exp:\n"
+    "    Exp:\n" \
+    "      Start command line:\n" \
+    "       > python3.7.5 precision_tool/cli.py\n"
 
 
 def _run_tf_dbg_dump(argv):
@@ -122,11 +129,8 @@ def main():
         elif sys.argv[1] == 'npu_overflow':
             _run_npu_overflow(cmd_line)
         else:
-            # TODO run precision_tool directly
             precision_tool = PrecisionTool()
             precision_tool.single_cmd(sys.argv)
-            #log.warning("Unknown command:", sys.argv[1])
-            #print(INTRODUCE_DOC)
         exit(0)
     log.info("Interactive command mode.")
     cli = InteractiveCli()

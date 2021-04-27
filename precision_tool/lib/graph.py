@@ -7,6 +7,7 @@ import os
 import re
 import shutil
 import collections
+import time
 
 import config as cfg
 from lib.tool_object import ToolObject
@@ -81,15 +82,25 @@ class Graph(ToolObject):
         """Check graph similarity."""
 
     @catch_tool_exception
-    def print_op(self, op_name):
+    def print_op(self, op_name, is_dump=False, save_graph_level=0, dump_manager=None, compare_manager=None):
         """Print op detail info"""
         op = self.get_op(op_name)
         if op is None:
             raise PrecisionToolException("Can not find op [%s]" % op_name)
         title = '[green][%s][/green]%s' % (op.type(), op.name())
-        util.print_panel(op.summary(), title=title, fit=True)
+        summary = op.summary()
+        # print dump info
+        if is_dump:
+            dump_summary = dump_manager.op_dump_summary(op)
+            summary = '\n'.join([summary, dump_summary]) if dump_summary is not None else summary
+        util.print_panel(summary, title=title, fit=True)
+        # save subgraph
+        if save_graph_level > 0:
+            self.save_sub_graph(op, save_graph_level, dump_manager, compare_manager)
+        return op
 
-    def save_sub_graph(self, op, deep=0):
+    def save_sub_graph(self, op, deep=0, dump_manager=None, compare_manager=None):
+        """Save sub graph"""
         if op is None:
             raise PrecisionToolException("Save sub graph failed as root operator is None.")
         try:
@@ -99,19 +110,22 @@ class Graph(ToolObject):
             dot = Digraph(file_name, filename=path, node_attr={'shape': 'Mrecord'}, format='svg')
             dot_list = []
             edge_list = []
-            self._gen_sub_graph(dot, op, deep, dot_list, edge_list, 'red', direction='all')
+            self._gen_sub_graph(dot, op, deep, dot_list, edge_list, 'red', direction='all',
+                                dump_manager=dump_manager, compare_manager=compare_manager)
             dot.format = 'svg'
             dot.save(path)
             self.log.info("Sub graph saved to %s" % os.path.abspath(cfg.OP_GRAPH_DIR))
             try:
                 dot.view(path)
+                time.sleep(1)
             except Exception as err:
                 raise PrecisionToolException(
                     "graphviz not install, use [yum/apt-get] install graphviz xdg-utils. %s" % err)
         except ImportError as err:
             raise PrecisionToolException("Save sub graph failed as import graphviz module failed. %s" % err)
 
-    def _gen_sub_graph(self, dot, op, deep, dot_list, edge_list, color='black', direction='all'):
+    def _gen_sub_graph(self, dot, op, deep, dot_list, edge_list, color='black', direction='all',
+                       dump_manager=None, compare_manager=None):
         """Gen sub graph"""
         if deep == 0 or op.type() in NO_DIG_OPS:
             return
@@ -133,7 +147,7 @@ class Graph(ToolObject):
                 if src_edge + dst_edge not in edge_list:
                     dot.edge(src_edge, dst_edge)
                     edge_list.append(src_edge + dst_edge)
-
+        # add output
         for desc in op.outputs():
             for out_node_name in desc.names():
                 sub_op = self.get_op(out_node_name)
@@ -147,7 +161,6 @@ class Graph(ToolObject):
         output_labels = []
         for desc in op.outputs():
             output_labels.append(self._gen_sub_graph_desc(desc, 'o'))
-            # output_labels.append(r'<o%d> [%d] [%s]\n%s' % (desc.idx(), desc.idx(), desc.dtype(), desc.shape()))
         str_cell = '|'
         return '{{ %s } | [%s] %s | { %s }}' % (str_cell.join(input_labels), op.type(), op.name(),
                                                 str_cell.join(output_labels))
@@ -170,26 +183,27 @@ class Graph(ToolObject):
         """get op by name"""
         if name in self.ops_list:
             return self.ops_list[name]
-        self.log.info("Can not find Operator named %s. You may mean the operator bellow.", name)
         guess_op_list = []
         for op_detail in self.ops_list.values():
             if name in op_detail.name():
                 guess_op_list.append(op_detail)
-                self._print_single_op(op_detail)
         if len(guess_op_list) == 0:
             self.log.warning("Can not find any Operator like %s", name)
             return None
-        util.print_panel()
+        self.log.info("Can not find Operator named %s. You may mean the operator bellow.", name)
+        guess_op_name_list = ['[green][%s][/green] %s' % (x.type(), x.name()) for x in guess_op_list]
+        util.print_panel('\n'.join(guess_op_name_list), title='Possible Operators')
         return guess_op_list[0]
 
     def print_op_list(self, op_type='', op_name='', pass_name=''):
         """Print op list"""
         if op_type == '' and op_name == '' and pass_name == '':
-            for op in self.ops_list.values():
-                util.print('[green][%s][/green] %s' % (op.type(), op.name()))
+            # for op in self.ops_list.values():
+            #    util.print('[green][%s][/green] %s' % (op.type(), op.name()))
             table = util.create_table("Operation Summary", ["OpType", "Count"])
             for op_type in self.ops_type_list.keys():
                 table.add_row(op_type, str(len(self.ops_type_list[op_type])))
+            util.print(table)
             return
         for op in self.ops_list.values():
             if op_type in op.type() and op_name in op.name() and pass_name in op.pass_name():

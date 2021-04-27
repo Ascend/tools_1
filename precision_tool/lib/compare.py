@@ -14,6 +14,7 @@ from lib.precision_tool_exception import catch_tool_exception
 
 graph = Graph()
 dump = Dump()
+NEW_LINE = '\n'
 
 ROW_MAP = {
     'Index': 0,
@@ -85,24 +86,39 @@ class Compare(ToolObject):
         util.print(ROW_MAP_DESC)
         util.print(table)
 
-    def compare_data(self, left, right, rl=0.001, al=0.001, diff_count=20):
+    def compare_data(self, left, right, save_txt=False, rl=0.001, al=0.001, diff_count=20):
         """Compare data"""
         left = self._detect_file(left)
         right = self._detect_file(right)
         if left is None or right is None:
             raise PrecisionToolException("invalid input or output")
         # save to txt
-        util.save_npy_to_txt(left)
-        util.save_npy_to_txt(right)
+        if save_txt:
+            util.save_npy_to_txt(left)
+            util.save_npy_to_txt(right)
         # compare data
         total_cnt, all_close, cos_sim, err_percent = self._do_compare_data(left, right, rl, al, diff_count)
-
-        content = 'SrcFile:    %s\nSrcFileTxt: %s.txt \nSrcFileInfo:%s\n' % (left, left, util.gen_npy_info_txt(left))
-        content += 'DstFile:    %s\nDstFileTxt: %s.txt \nDstFileInfo:%s\n' % (right, right,
-                                                                              util.gen_npy_info_txt(right))
-        content += 'NumCnt:  %s\nAllClose: %s\nCosSim:   %s\nErrorPer: %s (rl= %s, al= %s)' % (
-            total_cnt, all_close, cos_sim, err_percent, rl, al)
-        util.print_panel(content)
+        content = ['Left:']
+        content.append(' |- NpyFile: %s' % left)
+        if save_txt:
+            content.append(' |- TxtFile: [green]%s.txt[/green]' % left)
+        content.append(' |- NpySpec: [yellow]%s[/yellow]' % util.gen_npy_info_txt(left))
+        # content = 'SrcFile:    %s\nSrcFileTxt: %s.txt \nSrcFileInfo:[yellow]%s\n' % (
+        #    left, left, util.gen_npy_info_txt(left))
+        content.append('DstFile:')
+        content.append(' |- NpyFile: %s' % right)
+        if save_txt:
+            content.append(' |- TxtFile: [green]%s.txt[/green]' % right)
+        content.append(' |- NpySpec: [yellow]%s[/yellow]' % util.gen_npy_info_txt(right))
+        #content += 'DstFile:    %s\nDstFileTxt: %s.txt \nDstFileInfo:%s\n' % (right, right,
+        #                                                                      util.gen_npy_info_txt(right))
+        content.append('NumCnt:   %s' % total_cnt)
+        content.append('AllClose: %s' % all_close)
+        content.append('CosSim:   %s' % cos_sim)
+        content.append('ErrorPer: %s  (rl= %s, al= %s)' % (err_percent, rl, al))
+        #content += 'NumCnt:  %s\nAllClose: %s\nCosSim:   %s\nErrorPer: %s (rl= %s, al= %s)' % (
+        #    total_cnt, all_close, cos_sim, err_percent, rl, al)
+        util.print_panel(NEW_LINE.join(content))
 
     def _do_compare_data(self, left, right, rl=0.001, al=0.001, diff_count=20):
         data_left = np.load(left).astype(np.float32)
@@ -126,9 +142,9 @@ class Compare(ToolObject):
         top_table = util.create_table("Top Item Table", diff_table_columns)
         for i in range(total_cnt):
             abs_diff = abs(data_left[i] - data_right[i])
+            if i < diff_count:
+                top_table.add_row(str(i), str(data_left[i]), str(data_right[i]), str(abs_diff))
             if abs_diff > (al + rl * abs(data_right[i])):
-                if i < diff_count:
-                    top_table.add_row(str(i), str(data_left[i]), str(data_right[i]), str(abs_diff))
                 if err_cnt < diff_count:
                     err_table.add_row(str(i), str(data_left[i]), str(data_right[i]), str(abs_diff))
                 err_cnt += 1
