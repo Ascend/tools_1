@@ -135,10 +135,12 @@ class OnnxDumpData(DumpData):
         return session.run(outputs_name, inputs_map)
 
     def _save_dump_data(self, dump_bins, onnx_dump_data_dir, old_onnx_model):
-        for i, node in enumerate(old_onnx_model.graph.node):
+        res_idx = 0
+        for node in enumerate(old_onnx_model.graph.node):
             for j, output in enumerate(node.output):
                 file_name = node.name + "." + str(j) + "." + str(round(time.time() * 1000000)) + ".npy"
-                np.save(os.path.join(onnx_dump_data_dir, file_name), dump_bins[i])
+                np.save(os.path.join(onnx_dump_data_dir, file_name), dump_bins[res_idx])
+                res_idx += 1
         utils.print_info_log("dump data success")
 
     def generate_dump_data(self):
