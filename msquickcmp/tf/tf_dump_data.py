@@ -156,7 +156,7 @@ class TfDumpData(DumpData):
     def _save_dump_data(self, dump_bins, tf_dump_data_dir, outputs_tensor):
         tensor_index = {}
         res_idx = 0
-        for i, tensor in enumerate(outputs_tensor):
+        for tensor in outputs_tensor:
             tensor_name = tensor.name
             tensor_name = tensor_name.replace("/", "_")
             tensor_name = tensor_name[0:tensor_name.find(":")]
