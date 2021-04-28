@@ -155,6 +155,7 @@ class TfDumpData(DumpData):
 
     def _save_dump_data(self, dump_bins, tf_dump_data_dir, outputs_tensor):
         tensor_index = {}
+        res_idx = 0
         for i, tensor in enumerate(outputs_tensor):
             tensor_name = tensor.name
             tensor_name = tensor_name.replace("/", "_")
@@ -167,7 +168,8 @@ class TfDumpData(DumpData):
 
             file_name = tensor_name + "." + str(tensor_index[tensor_name]) + "." + str(round(
                 time.time() * 1000000)) + ".npy"
-            np.save(os.path.join(tf_dump_data_dir, file_name), dump_bins[i])
+            np.save(os.path.join(tf_dump_data_dir, file_name), dump_bins[res_idx])
+            res_idx += 1
 
         utils.print_info_log("dump data success")
 
