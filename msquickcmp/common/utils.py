@@ -220,6 +220,5 @@ def check_dynamic_shape(shape):
     """
     for item in shape:
         if type(item) == str:
-            break
-        return False
+            return False
     return True
