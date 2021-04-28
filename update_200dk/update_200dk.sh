@@ -119,7 +119,7 @@ function UpgradeAicpu()
         echo "[INFO] start the installation"
         tar zxvf ${AICPU_KERNELS_PACKAGE}
         ./aicpu_kernels_device/scripts/install.sh --run
-	rm -rf ./aicpu_kernels_device
+	    rm -rf ./aicpu_kernels_device
         return 0
     else
         echo "[ERROR] Not eligible for acllib upgrade"
@@ -147,6 +147,7 @@ function UpgradeAicpu_run()
         return 1
     fi
 
+    echo \"export ASCEND_AICPU_PATH=/home/HwHiAiUser/Ascend\" >> /home/HwHiAiUser/.bashrc   
     export ASCEND_AICPU_PATH=/home/HwHiAiUser/Ascend
     sh /home/HwHiAiUser/Ascend/run_aicpu_toolkit.sh
     if [ $? -ne 0 ];then
@@ -240,6 +241,6 @@ function main()
         fi
     fi
     rm -rf ./nnrt
-    echo "update success"
+    echo "The upgrade is successful, please restart the device"
 }
 main
