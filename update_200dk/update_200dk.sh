@@ -119,7 +119,7 @@ function UpgradeAicpu()
         echo "[INFO] start the installation"
         tar zxvf ${AICPU_KERNELS_PACKAGE}
         ./aicpu_kernels_device/scripts/install.sh --run
-	    rm -rf ./aicpu_kernels_device
+        rm -rf ./aicpu_kernels_device
         return 0
     else
         echo "[ERROR] Not eligible for acllib upgrade"
