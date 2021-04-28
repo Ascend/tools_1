@@ -61,30 +61,35 @@ class Compare(ToolObject):
         self.vector_summary()
 
     @catch_tool_exception
-    def vector_summary(self, file_name=None):
+    def vector_summary(self, file_name=None, cos_sim_threshold=0.98):
         """Print not NaN result in vector compare result"""
+        self._parse_result_files()
         if self.vector_compare_result is None or len(self.vector_compare_result) == 0:
             raise PrecisionToolException("Can not find any vector compare result in dir:%s" % cfg.VECTOR_COMPARE_PATH)
         if file_name is None:
             # find the latest result
             file_list = sorted(self.vector_compare_result.values(), key=lambda x: x['timestamp'])
-            file_name = file_list[-1]['file_name']
-            self.log.debug("Find %s result files. Choose [%s]", file_list, file_name)
+            file_names = [x['file_name'] for x in file_list]
+            file_name = file_names[-1]
+            self.log.debug("Find %s result files. Choose [%s]", file_names, file_name)
         if file_name not in self.vector_compare_result:
             raise PrecisionToolException("Can not find file:%s in dir:%s" % (file_name, cfg.VECTOR_COMPARE_PATH))
         file_info = self.vector_compare_result[file_name]
         items = util.read_csv(file_info['path'])
-        table = util.create_table(file_name, list(ROW_MAP.keys())[3:])
+        # table = util.create_table(file_name, list(ROW_MAP.keys())[3:])
+        table = util.create_table(file_name, ['Index', 'TensorIndex', 'CosineSimilarity'])
         for item in items:
             if len(item) == 0 or item[ROW_MAP['TensorIdx']] == 'TensorIndex' or item[ROW_MAP['MaxAbs']] == 'NaN':
                 continue
             # valid data
-            table.add_row(item[ROW_MAP['TensorIdx']], item[ROW_MAP['CosSim']], item[ROW_MAP['MaxAbs']],
-                          item[ROW_MAP['ARE']], item[ROW_MAP['RED']], item[ROW_MAP['KLD']],
-                          item[ROW_MAP['StandardDeviation']])
+            if float(item[ROW_MAP['CosSim']]) < cos_sim_threshold:
+                table.add_row(item[ROW_MAP['TensorIdx']], item[ROW_MAP['CosSim']], item[ROW_MAP['MaxAbs']],
+                              item[ROW_MAP['ARE']], item[ROW_MAP['RED']], item[ROW_MAP['KLD']],
+                              item[ROW_MAP['StandardDeviation']])
+                break
 
-        util.print(ROW_MAP_DESC)
         util.print(table)
+        util.print(ROW_MAP_DESC)
 
     def compare_data(self, left, right, save_txt=False, rl=0.001, al=0.001, diff_count=20):
         """Compare data"""
@@ -98,26 +103,19 @@ class Compare(ToolObject):
             util.save_npy_to_txt(right)
         # compare data
         total_cnt, all_close, cos_sim, err_percent = self._do_compare_data(left, right, rl, al, diff_count)
-        content = ['Left:']
-        content.append(' |- NpyFile: %s' % left)
+        content = ['Left:', ' |- NpyFile: %s' % left]
         if save_txt:
             content.append(' |- TxtFile: [green]%s.txt[/green]' % left)
         content.append(' |- NpySpec: [yellow]%s[/yellow]' % util.gen_npy_info_txt(left))
-        # content = 'SrcFile:    %s\nSrcFileTxt: %s.txt \nSrcFileInfo:[yellow]%s\n' % (
-        #    left, left, util.gen_npy_info_txt(left))
         content.append('DstFile:')
         content.append(' |- NpyFile: %s' % right)
         if save_txt:
             content.append(' |- TxtFile: [green]%s.txt[/green]' % right)
         content.append(' |- NpySpec: [yellow]%s[/yellow]' % util.gen_npy_info_txt(right))
-        #content += 'DstFile:    %s\nDstFileTxt: %s.txt \nDstFileInfo:%s\n' % (right, right,
-        #                                                                      util.gen_npy_info_txt(right))
         content.append('NumCnt:   %s' % total_cnt)
         content.append('AllClose: %s' % all_close)
         content.append('CosSim:   %s' % cos_sim)
         content.append('ErrorPer: %s  (rl= %s, al= %s)' % (err_percent, rl, al))
-        #content += 'NumCnt:  %s\nAllClose: %s\nCosSim:   %s\nErrorPer: %s (rl= %s, al= %s)' % (
-        #    total_cnt, all_close, cos_sim, err_percent, rl, al)
         util.print_panel(NEW_LINE.join(content))
 
     def _do_compare_data(self, left, right, rl=0.001, al=0.001, diff_count=20):

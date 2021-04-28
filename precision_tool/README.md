@@ -182,7 +182,7 @@ sudo yum install graphviz
 3. ls -n [op_name] -t [op_type]
     ```shell
     # 通过[算子名]/[算子类型]查询网络里的算子，模糊匹配
-    PrecisionTool > ls -t Mul -n mul_3 -fTbeMulti
+    PrecisionTool > ls -t Mul -n mul_3 -f TbeMulti
    [Mul][TbeMultiOutputFusionPass] InceptionV3/InceptionV3/Mixed_5b/Branch_1/mul_3
    [Mul][TbeMultiOutputFusionPass] InceptionV3/InceptionV3/Mixed_5c/Branch_1/mul_3
    [Mul][TbeMultiOutputFusionPass] InceptionV3/InceptionV3/Mixed_5d/Branch_1/mul_3

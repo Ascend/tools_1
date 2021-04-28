@@ -11,6 +11,7 @@ import time
 
 import config as cfg
 from lib.tool_object import ToolObject
+from lib.tf_graph import TensorflowGraph
 from lib.op import Op
 from lib.util import util
 from lib.precision_tool_exception import catch_tool_exception
@@ -34,6 +35,7 @@ class Graph(ToolObject):
         self.sub_graph = None
         self.ops_list = collections.OrderedDict()
         self.cpu_ops_list = collections.OrderedDict()
+        self.tf_graph = TensorflowGraph()
         self.ops_type_list = {}
         self.log = util.get_log()
 
@@ -42,7 +44,7 @@ class Graph(ToolObject):
         """prepare"""
         self._prepare_npu_graphs()
         self._parse_ops()
-        # self._parse_cpu_ops()
+        self.cpu_ops_list = self.tf_graph.get_op_list(cfg.GRAPH_CPU)
 
     def check_cast(self):
         """Check cast op type"""
@@ -198,8 +200,6 @@ class Graph(ToolObject):
     def print_op_list(self, op_type='', op_name='', pass_name=''):
         """Print op list"""
         if op_type == '' and op_name == '' and pass_name == '':
-            # for op in self.ops_list.values():
-            #    util.print('[green][%s][/green] %s' % (op.type(), op.name()))
             table = util.create_table("Operation Summary", ["OpType", "Count"])
             for op_type in self.ops_type_list.keys():
                 table.add_row(op_type, str(len(self.ops_type_list[op_type])))
@@ -215,9 +215,9 @@ class Graph(ToolObject):
         op_pass_name = '' if op.pass_name() == '' else '[yellow][%s][/yellow]' % op.pass_name()
         util.print('[green][%s][/green]%s %s' % (op.type(), op_pass_name, op.name()))
 
-    def _parse_cpu_ops(self):
-        self._convert_ckpt_to_graph(cfg.GRAPH_CPU)
-
+    #def _parse_cpu_ops(self):
+        # self._convert_ckpt_to_graph(cfg.GRAPH_CPU)
+    '''
     def _convert_ckpt_to_graph(self, ckpt_path):
         import tensorflow as tf
         if not str(ckpt_path).endswith(CKPT_META_SHUFFIX):
@@ -236,6 +236,7 @@ class Graph(ToolObject):
         graph = tf.get_default_graph()
         for op in graph.get_operations():
             self.cpu_op_list[op.name] = op
+    '''
 
     @staticmethod
     def _is_dangerous_cast(cast_type):
@@ -254,6 +255,7 @@ class Graph(ToolObject):
         util.create_dir(cfg.GRAPH_DIR)
         util.create_dir(cfg.GRAPH_DIR_ALL)
         util.create_dir(cfg.GRAPH_DIR_BUILD)
+        util.create_dir(cfg.GRAPH_CPU)
 
     def _prepare_npu_graphs(self):
         """Copy ge graphs to graph dir. """

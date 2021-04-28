@@ -33,9 +33,6 @@ class Op(object):
         self.op_list = op_list
         self.input_list = None
         self.output_list = None
-        #self.npu_input_files = None
-        #self.npu_output_files = None
-        #self.cpu_output_files = None
         self.log = util.get_log()
 
     def name(self):
@@ -67,31 +64,6 @@ class Op(object):
                 if JSON_KEY_PASS_NAME == attr[JSON_KEY]:
                     return attr[JSON_VALUE][JSON_KEY_STR]
         return ''
-    '''
-    def npu_dump_input_files(self):
-        """Get op input dump decode file info dict"""
-        if self.npu_input_files is None:
-            self._parse_decode_file()
-        return self.npu_input_files
-
-    def npu_dump_output_files(self):
-        """Get op output dump decode file info dict"""
-        if self.npu_output_files is None:
-            self._parse_decode_file()
-        return self.npu_output_files
-    
-    
-    def cpu_dump_output_files(self):
-        """Get cpu dump decode file info dict"""
-        if self.cpu_output_files is None:
-            self.cpu_output_files = {}
-            cpu_files = dump_manager.get_cpu_dump_files_by_op(self)
-            for cpu_file in cpu_files.values():
-                self.cpu_output_files[cpu_file['idx']] = cpu_file
-                cpu_file['shape'], cpu_file['dtype'], cpu_file['max'], cpu_file['min'], _ = \
-                    util.npy_info(cpu_file['path'])
-        return self.cpu_output_files
-    '''
 
     def summary(self, origin_txt=False):
         """Summary of current op"""
@@ -104,42 +76,6 @@ class Op(object):
         res_str = "[%s] %s\nInput:%s\nOutput:%s" % (
             self.type(), self.name(), input_txt, output_txt)
         return res_str
-
-        '''
-        res_str = "[%s] %s\nInput:%s\nOutput:%s\nNpuDump:\n -%s\nCpuDump:\n -%s" % (
-            self.type(), self.name(), input_txt, output_txt,
-            str(dump_manager.get_npu_dump_files_by_op(self).keys()),
-            str(dump_manager.get_cpu_dump_files_by_op(self).keys()))
-        npu_dump_input_txt = ''
-        npu_dump_output_txt = ''
-        for npu_dump_file in self.npu_dump_input_files().values():
-            # [index][shape] file_name
-            npu_dump_input_txt += '\n -[green][%s][/green][yellow][%s][/yellow] %s' % (
-                npu_dump_file['idx'], npu_dump_file['shape'], npu_dump_file['file_name'])
-        for npu_dump_file in self.npu_dump_output_files().values():
-            npu_dump_output_txt += '\n -[green][%s][/green][yellow][%s][/yellow] %s' % (
-                npu_dump_file['idx'], npu_dump_file['shape'], npu_dump_file['file_name'])
-        npu_dump_info = 'NpuDumpInput:%s\nNpuDumpOutput:%s' % (npu_dump_input_txt, npu_dump_output_txt)
-        cpu_dump_txt = ''
-        for cpu_dump_file in self.cpu_dump_output_files().values():
-            cpu_dump_txt += '\n -[green][%s][/green][yellow][%s][/yellow] %s' % (
-                cpu_dump_file['idx'], cpu_dump_file['shape'], cpu_dump_file['file_name'])
-        res_str += "\n%s\nCpuDumpOutput:%s" % (npu_dump_info, cpu_dump_txt)
-        return res_str
-        '''
-    '''
-    def _parse_decode_file(self):
-        dump_decode_files = dump_manager.get_npu_dump_decode_files_by_op(self)
-        self.npu_input_files = {}
-        self.npu_output_files = {}
-        for dump_file in dump_decode_files.values():
-            dump_file['shape'], dump_file['dtype'], dump_file['max'], dump_file['min'], _ = \
-                util.npy_info(dump_file['path'])
-            if dump_file['type'] == 'input':
-                self.npu_input_files[dump_file['idx']] = dump_file
-            else:
-                self.npu_output_files[dump_file['idx']] = dump_file
-    '''
 
     def _parse_inputs(self):
         """ parse input desc in graph """

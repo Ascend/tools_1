@@ -32,10 +32,6 @@ try:
 except ImportError as import_error:
     print("Unable to import module: readline. Run 'pip3 install gnureadline pyreadline' to fix it.")
 
-logging.basicConfig(level=cfg.LOG_LEVEL, format="%(asctime)s (%(process)d) -[%(levelname)s]%(message)s",
-                    datefmt="%Y-%m-%d %H:%M:%S")
-LOG = logging.getLogger()
-
 # patterns
 # GE_PROTO_BUILD_GRAPH_PATTERN = '^ge_proto.*_Build.*txt$'
 GE_PROTO_GRAPH_PATTERN = r'^ge_proto_([0-9]+)_([A-Za-z0-9_-]+)\.txt$'
@@ -55,24 +51,26 @@ VECTOR_COMPARE_RESULT_PATTERN = r"result_([0-9]{1,255})\.csv"
 TIMESTAMP_DIR_PATTERN = '[0-9]{1,255}'
 CSV_SHUFFIX = '.csv'
 NUMPY_SHUFFIX = '.npy'
+CKPT_META_SHUFFIX = r".*.meta$"
 
 
 class Util(object):
     def __init__(self):
         self.atc = None
         self.ms_accu_cmp = None
-        self.log = LOG
+        logging.basicConfig(level=cfg.LOG_LEVEL, format="%(asctime)s (%(process)d) -[%(levelname)s]%(message)s",
+                            datefmt="%Y-%m-%d %H:%M:%S")
+        self.log = logging.getLogger()
 
     def get_log(self):
         return self.log
 
-    @staticmethod
-    def execute_command(cmd: str):
+    def execute_command(self, cmd: str):
         """ Execute shell command
         :param cmd: command
         :return: status code
         """
-        LOG.debug("[Run CMD]: %s", cmd)
+        self.log.debug("[Run CMD]: %s", cmd)
         complete_process = subprocess.run(cmd, shell=True)
         return complete_process.returncode
 
@@ -180,6 +178,10 @@ class Util(object):
         return self._list_file_with_pattern(path, CPU_DUMP_DECODE_PATTERN, extern_pattern,
                                             self._gen_cpu_dump_decode_file_info)
 
+    def list_cpu_graph_files(self, path, extern_pattern=''):
+        return self._list_file_with_pattern(path, CKPT_META_SHUFFIX, extern_pattern,
+                                            self._gen_cpu_graph_files_info)
+
     def list_vector_compare_result_files(self, path, extern_pattern=''):
         return self._list_file_with_pattern(path, VECTOR_COMPARE_RESULT_PATTERN, extern_pattern,
                                             self._gen_vector_compare_result_file_info)
@@ -203,8 +205,7 @@ class Util(object):
             return False
         return True
 
-    @staticmethod
-    def clear_dir(path: str, pattern=''):
+    def clear_dir(self, path: str, pattern=''):
         """Clear dir with pattern (file/path name match pattern will be removed)
         :param path: path
         :param pattern: pattern
@@ -222,7 +223,7 @@ class Util(object):
                 elif os.path.isdir(file_path):
                     shutil.rmtree(file_path)
         except OSError as err:
-            LOG.error("Failed to remove %s. %s", path, str(err))
+            self.log.error("Failed to remove %s. %s", path, str(err))
 
     @staticmethod
     def npy_info(path):
@@ -289,14 +290,13 @@ class Util(object):
             data = np.append(data, pad_array)
         np.savetxt(dst_file, data.reshape((-1, align)), delimiter=' ', fmt='%g')
 
-    @staticmethod
-    def read_csv(path):
+    def read_csv(self, path):
         """Read csv file to list.
         :param path: csv file path
         :return: list
         """
         if not str(path).endswith(CSV_SHUFFIX):
-            LOG.error("csv path [%s] is invalid", path)
+            self.log.error("csv path [%s] is invalid", path)
             return
         rows = []
         with open(path) as f:
@@ -351,11 +351,11 @@ class Util(object):
 
     def _detect_file_if_not_exist(self, target_file):
         """Find specific file in cmd root path"""
-        LOG.info("Try to auto detect file with name: %s.", target_file)
+        self.log.info("Try to auto detect file with name: %s.", target_file)
         res = self._detect_file(target_file, cfg.CMD_ROOT_PATH)
         if len(res) == 0:
             raise PrecisionToolException("Cannot find any file named %s in dir %s" % (target_file, cfg.CMD_ROOT_PATH))
-        LOG.info("Detect [%s] success. %s", target_file, res)
+        self.log.info("Detect [%s] success. %s", target_file, res)
         return res[0]
 
     def _get_atc(self):
@@ -369,11 +369,10 @@ class Util(object):
             self.ms_accu_cmp = self._detect_file_if_not_exist(cfg.MS_ACCU_CMP)
         return self.ms_accu_cmp
 
-    @staticmethod
-    def _get_newest_dir(path: str):
+    def _get_newest_dir(self, path: str):
         """Find the newest subdir in specific path, subdir should named by timestamp."""
         if not os.path.isdir(path):
-            LOG.warning("Path [%s] not exists", path)
+            self.log.warning("Path [%s] not exists", path)
             return ''
         paths = os.listdir(path)
         sub_paths = []
@@ -381,10 +380,10 @@ class Util(object):
             if re.match(TIMESTAMP_DIR_PATTERN, p):
                 sub_paths.append(p)
         if len(sub_paths) == 0:
-            LOG.debug("Path [%s] has no timestamp dirs.", path)
+            self.log.debug("Path [%s] has no timestamp dirs.", path)
             return ''
         newest_sub_path = sorted(sub_paths)[-1]
-        LOG.info("Sub path num:[%d]. Dump dirs[%s], choose[%s]", len(sub_paths), str(sub_paths), newest_sub_path)
+        self.log.info("Sub path num:[%d]. Dump dirs[%s], choose[%s]", len(sub_paths), str(sub_paths), newest_sub_path)
         return newest_sub_path
 
     @staticmethod
@@ -395,6 +394,7 @@ class Util(object):
         re_pattern = re.compile(pattern)
         for dir_path, dir_names, file_names in os.walk(path, followlinks=True):
             for name in file_names:
+                print(name)
                 match = re_pattern.match(name)
                 if match is None:
                     continue
@@ -446,6 +446,15 @@ class Util(object):
             "idx": int(match.group(2)),
             "path": os.path.join(dir_path, name),
             "dir_path": dir_path
+        }
+
+    @staticmethod
+    def _gen_cpu_graph_files_info(name, match, dir_path):
+        return {
+            "file_name": name,
+            "path": os.path.join(dir_path, name),
+            "dir_path": dir_path,
+            "timestamp": os.path.getmtime(os.path.join(dir_path, name))
         }
 
     @staticmethod
