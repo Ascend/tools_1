@@ -93,8 +93,8 @@ function CheckPackage()
         echo "[ERROR] extract Ascend-cann-nnrt_*_linux-aarch64.run failed. please check this package."
         return 1
     fi
-    if [[ $(find ${ScriptPath}/nnrt/run_package/Ascend310-aicpu_kernels-*-minirc.run)"x" != "x" ]];then
-        AICPU_KERNELS_PACKAGE=$(ls ${ScriptPath}/nnrt/run_package/Ascend310-aicpu_kernels-*-minirc.run)
+    if [[ $(find ${ScriptPath}/nnrt/run_package/Ascend310-aicpu_kernels*minirc*.run)"x" != "x" ]];then
+        AICPU_KERNELS_PACKAGE=$(ls ${ScriptPath}/nnrt/run_package/Ascend310-aicpu_kernels*minirc*.run)
 	    AICPU_FLAG=0
     elif [[ $(find ${ScriptPath}/nnrt/run_package/Ascend310-aicpu_kernels-*-minirc.tar.gz)"x" != "x" ]];then
         AICPU_KERNELS_PACKAGE=$(ls ${ScriptPath}/nnrt/run_package/Ascend310-aicpu_kernels-*-minirc.tar.gz)
@@ -147,7 +147,7 @@ function UpgradeAicpu_run()
         return 1
     fi
 
-    echo \"export ASCEND_AICPU_PATH=/home/HwHiAiUser/Ascend\" >> /home/HwHiAiUser/.bashrc   
+    echo "export ASCEND_AICPU_PATH=/home/HwHiAiUser/Ascend" >> /home/HwHiAiUser/.bashrc   
     export ASCEND_AICPU_PATH=/home/HwHiAiUser/Ascend
     sh /home/HwHiAiUser/Ascend/run_aicpu_toolkit.sh
     if [ $? -ne 0 ];then
