@@ -241,6 +241,6 @@ function main()
         fi
     fi
     rm -rf ./nnrt
-    echo "The upgrade is successful, please restart the device"
+    echo "The upgrade is successful, please switch to the normal user to manually execute source ~/.bashrc"
 }
 main
