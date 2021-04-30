@@ -147,8 +147,16 @@ function UpgradeAicpu_run()
         return 1
     fi
 
-    echo "export ASCEND_AICPU_PATH=/home/HwHiAiUser/Ascend" >> /home/HwHiAiUser/.bashrc 
-    echo "export LD_LIBRARY_PATH=/usr/lib64" >> /home/HwHiAiUser/.bashrc
+    grep "export ASCEND_AICPU_PATH=/home/HwHiAiUser/Ascend/" /home/HwHiAiUser/.bashrc > /dev/null
+    if [ $? -ne 0 ];then
+        echo "export ASCEND_AICPU_PATH=/home/HwHiAiUser/Ascend" >> /home/HwHiAiUser/.bashrc 
+    fi
+
+    grep "/usr/lib64" /etc/ld.so.conf > /dev/null
+    if [ $? -ne 0 ];then
+        echo "/usr/lib64" >> /etc/ld.so.conf
+    fi
+
     export ASCEND_AICPU_PATH=/home/HwHiAiUser/Ascend
     sh /home/HwHiAiUser/Ascend/run_aicpu_toolkit.sh
     if [ $? -ne 0 ];then
