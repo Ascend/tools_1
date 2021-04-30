@@ -147,7 +147,8 @@ function UpgradeAicpu_run()
         return 1
     fi
 
-    echo "export ASCEND_AICPU_PATH=/home/HwHiAiUser/Ascend" >> /home/HwHiAiUser/.bashrc   
+    echo "export ASCEND_AICPU_PATH=/home/HwHiAiUser/Ascend" >> /home/HwHiAiUser/.bashrc 
+    echo "export LD_LIBRARY_PATH=/usr/lib64" >> /home/HwHiAiUser/.bashrc
     export ASCEND_AICPU_PATH=/home/HwHiAiUser/Ascend
     sh /home/HwHiAiUser/Ascend/run_aicpu_toolkit.sh
     if [ $? -ne 0 ];then
@@ -241,6 +242,6 @@ function main()
         fi
     fi
     rm -rf ./nnrt
-    echo "The upgrade is successful, please restart the device"
+    echo "If the upgrade is successful, switch to the running user and run the source ~/.bashrc command to make the environment variables take effect."
 }
 main
