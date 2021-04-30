@@ -12,6 +12,22 @@ FLAG_DUMP_GRAPH_LEVEL = 'DUMP_GRAPH_LEVEL'
 FLAG_DUMP_GRAPH_PATH = 'DUMP_GRAPH_PATH'
 
 
+def sess_dump(sess):
+    """In session run mode. Use sess=sess_dump(sess)
+    :param sess:
+    :return:
+    """
+    # sess = tf_debug.LocalCLIDebugWrapperSession(sess, ui_type="readline")
+    return tf_debug.DumpingDebugWrapperSession(sess, cfg.DUMP_FILES_CPU_DEBUG)
+
+
+def estimator_dump():
+    """In estimator mode. estim_spec = tf.estimator.EstimatorSpec(traing_hooks=[estimator_dump()])
+    :return:
+    """
+    return tf_debug.DumpingDebugHook(cfg.DUMP_FILES_CPU_DEBUG)
+
+
 def estimator_dump_config():
     """return DumpConfig.
     In estimator mode. set dump_config in NPURunConfig().

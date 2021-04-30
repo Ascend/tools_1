@@ -129,7 +129,7 @@ class Util(object):
         """
         self.create_dir(result_path)
         if graph_json is None:
-            cmd = '%s %s compare -m %s -f %s -out %s' % (
+            cmd = '%s %s compare -m %s -g %s -out %s' % (
                 cfg.PYTHON, self._get_ms_accu_cmp(), npu_dump_dir, cpu_dump_dir, result_path)
         else:
             cmd = '%s %s compare -m %s -g %s -f %s -out %s' % (
@@ -394,7 +394,6 @@ class Util(object):
         re_pattern = re.compile(pattern)
         for dir_path, dir_names, file_names in os.walk(path, followlinks=True):
             for name in file_names:
-                print(name)
                 match = re_pattern.match(name)
                 if match is None:
                     continue

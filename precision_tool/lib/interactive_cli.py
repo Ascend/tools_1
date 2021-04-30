@@ -59,9 +59,9 @@ class InteractiveCli(cmd.Cmd):
     def do_dc(self, line=''):
         """Convert npu dump by op names:\n usage: dc (-n) [npu dump file] -f [target format]"""
         argv = line.split(' ') if line != '' else []
-        if len(argv) == 0:
-            return self.precision_tool.do_convert_all_npu_dump()
-        if argv[0] != '-n':
+        # if len(argv) == 0:
+        #    return self.precision_tool.do_convert_all_npu_dump()
+        if '-n' not in argv:
             argv.insert(0, '-n')
         self.precision_tool.do_convert_npu_dump(argv)
 

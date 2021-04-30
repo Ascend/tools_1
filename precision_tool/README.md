@@ -64,7 +64,8 @@ sudo yum install graphviz
     npu_config = NPURunConfig(dump_config=npu_tf_config.estimator_dump_config)
     
     # 如果使用的是session.run方式，输入config可选，填入可以在原先的config上新增Dump配置项
-    sess = tf.Session(config=npu_tf_config.session_dump_config(config))
+    config=npu_tf_config.session_dump_config(config)
+    sess = tf.Session(config)
     ```
     ```shell
     python3.7.5 precision_tool/cli.py npu_dump "sh run_train.sh param1 param2"
@@ -91,19 +92,17 @@ sudo yum install graphviz
    获取CPU/GPU的TF数据，并拷贝至【precision/dump/cpu/】目录
 2. 【推荐】在CPU/GPU训练脚本中添加tf_debug代码，并使用precision_tool中提供的辅助命令行工具生成标杆DUMP数据
    ```python
-    from tensorflow.python import debug as tf_debug
+    import precision_tool.tf_config as npu_tf_config
+    # from tensorflow.python import debug as tf_debug
     
     # 如果使用的是Estimator,EstimatorSpec加入training_hooks
-    estim_specs = tf.estimator.EstimatorSpec(training_hooks=[tf_debug.LocalCLIDebugHook()])    
+    estim_specs = tf.estimator.EstimatorSpec(training_hooks=[npu_tf_config.estimator_dump()])    
     
     # 如果使用的session.run，则需要在session初始化后加入tf_debug代码
-    sess = tf_debug.LocalCLIDebugWrapperSession(sess, ui_type="readline")
+    sess = npu_tf_config.sess_dump(sess=sess)
    ```
    ```shell
    python3.7.5 precision_tool/cli.py tf_dump "sh cpu_train.sh param1 param2"
-   # 注意：一般进入tf_debug命令行后，需要执行两次run才能能完成一个step，lt指令才能获得所有tensor的列表。
-   #      如果实际使用中在嵌入tf_debug代码后需要执行run的次数不是两次，则可以使用如下方式控制run次数
-   python3.7.5 precision_tool/cli.py tf_dump "sh cpu_train.sh param1 param2" -r 2
    ```
 ## 使用说明
 1.  配置文件precision_tool/config.py（正常默认即可）

@@ -33,6 +33,7 @@ FUSION_DIR = os.path.join(DATA_ROOT_DIR, 'fusion')
 DUMP_DIR = os.path.join(DATA_ROOT_DIR, 'dump')
 DUMP_FILES_NPU = os.path.join(DUMP_DIR, 'npu')
 DUMP_FILES_OVERFLOW = os.path.join(DUMP_DIR, 'overflow')
+DUMP_FILES_CPU_DEBUG = os.path.join(DUMP_DIR, 'cpu_debug')
 DUMP_FILES_CPU = os.path.join(DUMP_DIR, 'cpu')
 
 # dump temp dir

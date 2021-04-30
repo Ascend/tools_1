@@ -33,11 +33,23 @@ INTRODUCE_DOC = \
 def _run_tf_dbg_dump(argv):
     """Run tf train script to get dump data."""
     parser = argparse.ArgumentParser()
-    parser.add_argument('command', type=str, help="tf train command")
-    parser.add_argument('-r', '--run_times', dest='run_times', help="Dump data after run command after start tf_debug",
-                        type=int, default=2)
+    parser.add_argument('command', type=str, default=None, required=False, help="tf train command")
+    # parser.add_argument('-r', '--run_times', dest='run_times', help="Dump data after run command after start tf_debug",
+    #                    type=int, default=2)
     args = parser.parse_args(argv)
-    _do_run_tf_dbg_dump(args.command, args.run_times)
+    log = util.get_log()
+    if args.command is not None:
+        log.info("Run command: %s" % args.command)
+        util.execute_command(args.command)
+        log.info("Run finish, start parse TF dump.")
+    if not os.path.exists(cfg.DUMP_FILES_CPU_DEBUG):
+        raise PrecisionToolException("Empty tf debug dir. %s" % cfg.DUMP_FILES_CPU_DEBUG)
+    run_dirs = os.listdir(cfg.DUMP_FILES_CPU_DEBUG)
+    if len(run_dirs) == 0:
+        raise PrecisionToolException("Empty tf debug dir. %s" % cfg.DUMP_FILES_CPU_DEBUG)
+    for run_dir in run_dirs:
+        command = "python3 -m tensorflow.python.debug.cli.offline_analyzer --ui_type readline --dump_dir %s" % run_dir
+        _do_run_tf_dbg_dump(command, 0)
 
 
 def _do_run_tf_dbg_dump(cmd_line, run_times=2):
@@ -67,7 +79,7 @@ def _do_run_tf_dbg_dump(cmd_line, run_times=2):
         log.error("Failed to get tensor name in tf_debug.")
         raise PrecisionToolException("Get tensor name in tf_debug failed.")
     log.info("Save tensor name success. Generate tf dump commands from file: %s", cfg.DUMP_FILES_CPU_NAMES)
-    convert_cmd = "timestamp=$[$(date +%s%N)/1000]; cat " + cfg.DUMP_FILES_CPU_NAMES + \
+    convert_cmd = "timestamp=$($(date +%s%N)/1000); cat " + cfg.DUMP_FILES_CPU_NAMES + \
                   " | awk '{print \"pt\",$4,$4}'| awk '{gsub(\"/\", \"_\", $3); gsub(\":\", \".\", $3);" \
                   "print($1,$2,\"-n 0 -w " + cfg.DUMP_FILES_CPU + "/" + \
                   "\"$3\".\"\"'$timestamp'\"\".npy\")}' > " + cfg.DUMP_FILES_CPU_CMDS

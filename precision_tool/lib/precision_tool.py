@@ -83,7 +83,7 @@ class PrecisionTool(object):
         parser = argparse.ArgumentParser()
         parser.add_argument('-lt', '--left', dest='lt', default=None, help='left path(npu dump path)')
         parser.add_argument('-rt', '--right', dest='rt', default=None, help='right path(cpu/npu dump path)')
-        parser.add_argument('-g', '--graph', dest='graph', default=None, help='graph json file')
+        parser.add_argument('-g', '--graph', dest='graph', required=False, default=None, help='graph json file')
         args = parser.parse_args() if argv is None else parser.parse_args(argv)
         if args.lt is None:
             lh_path = self.dump.sub_graph_path
@@ -139,8 +139,9 @@ class PrecisionTool(object):
         parser = argparse.ArgumentParser()
         parser.add_argument('-n', '--name', dest='name', help='op name')
         parser.add_argument('-f', '--format', dest='format', help='target format')
+        parser.add_argument('-o', '--output', dest='output', required=False, default=None, help='output path')
         args = parser.parse_args(argv)
-        self.dump.convert_npu_dump(args.name, args.format)
+        self.dump.convert_npu_dump(args.name, args.format, args.output)
 
     @catch_tool_exception
     def do_convert_all_npu_dump(self):
@@ -170,5 +171,5 @@ class PrecisionTool(object):
                         'vector_compare': self.do_vector_compare}
         if argv[1] in cmd_func_map:
             func = cmd_func_map[argv[1]]
-            return func(argv[1:])
+            return func(argv[2:])
         raise PrecisionToolException("cmd %s is not supported or cmd should be run in interactive mode.", argv[1])
