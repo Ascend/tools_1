@@ -83,9 +83,10 @@ class Compare(ToolObject):
                 continue
             # valid data
             if float(item[ROW_MAP['CosSim']]) < cos_sim_threshold:
-                table.add_row(item[ROW_MAP['TensorIdx']], item[ROW_MAP['CosSim']], item[ROW_MAP['MaxAbs']],
-                              item[ROW_MAP['ARE']], item[ROW_MAP['RED']], item[ROW_MAP['KLD']],
-                              item[ROW_MAP['StandardDeviation']])
+                table.add_row(item[ROW_MAP['Index']], item[ROW_MAP['TensorIdx']], item[ROW_MAP['CosSim']])
+                # table.add_row(item[ROW_MAP['TensorIdx']], item[ROW_MAP['CosSim']], item[ROW_MAP['MaxAbs']],
+                #              item[ROW_MAP['ARE']], item[ROW_MAP['RED']], item[ROW_MAP['KLD']],
+                #              item[ROW_MAP['StandardDeviation']])
                 break
 
         util.print(table)

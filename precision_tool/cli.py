@@ -5,6 +5,8 @@ cli
 import os
 import sys
 import argparse
+import time
+
 from termcolor import colored
 from lib.precision_tool import PrecisionTool
 from lib.interactive_cli import InteractiveCli
@@ -33,23 +35,25 @@ INTRODUCE_DOC = \
 def _run_tf_dbg_dump(argv):
     """Run tf train script to get dump data."""
     parser = argparse.ArgumentParser()
-    parser.add_argument('command', type=str, default=None, required=False, help="tf train command")
-    # parser.add_argument('-r', '--run_times', dest='run_times', help="Dump data after run command after start tf_debug",
-    #                    type=int, default=2)
+    parser.add_argument('command', type=str, default=None, help="tf train command")
     args = parser.parse_args(argv)
     log = util.get_log()
-    if args.command is not None:
+    if os.path.exists(cfg.DUMP_FILES_CPU_DEBUG) and len(os.listdir(cfg.DUMP_FILES_CPU_DEBUG)) != 0:
+        log.info("TF offline debug path [%s] is not empty, will analyze it directly." % cfg.DUMP_FILES_CPU_DEBUG)
+    elif args.command is not None:
         log.info("Run command: %s" % args.command)
         util.execute_command(args.command)
-        log.info("Run finish, start parse TF dump.")
-    if not os.path.exists(cfg.DUMP_FILES_CPU_DEBUG):
+        log.info("Run finish, start analyze TF dump.")
+    if not os.path.exists(cfg.DUMP_FILES_CPU_DEBUG) or len(os.listdir(cfg.DUMP_FILES_CPU_DEBUG)) == 0:
         raise PrecisionToolException("Empty tf debug dir. %s" % cfg.DUMP_FILES_CPU_DEBUG)
     run_dirs = os.listdir(cfg.DUMP_FILES_CPU_DEBUG)
-    if len(run_dirs) == 0:
-        raise PrecisionToolException("Empty tf debug dir. %s" % cfg.DUMP_FILES_CPU_DEBUG)
-    for run_dir in run_dirs:
-        command = "python3 -m tensorflow.python.debug.cli.offline_analyzer --ui_type readline --dump_dir %s" % run_dir
-        _do_run_tf_dbg_dump(command, 0)
+    run_dirs.sort()
+    run_dir = run_dirs[-1]
+    log.info("Find %s run dirs, will chose the last one: %s" % (run_dirs, run_dir))
+    time.sleep(1)
+    command = "python3 -m tensorflow.python.debug.cli.offline_analyzer --ui_type readline --dump_dir %s" % \
+              os.path.join(cfg.DUMP_FILES_CPU_DEBUG, run_dir)
+    _do_run_tf_dbg_dump(command, 0)
 
 
 def _do_run_tf_dbg_dump(cmd_line, run_times=2):

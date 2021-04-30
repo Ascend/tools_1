@@ -282,9 +282,9 @@ class Graph(ToolObject):
                 raise PrecisionToolException("No graph in file: %s" % graph_path)
             if len(graph_json['graph']) != 1:
                 self.log.warning("There are more then one graph in ge build file, find %d" % len(graph_json['graph']))
-            cur_max_
-            for graph in graph_json['graph']:
-                self.log.debug("Graph %s operator count: %d" % (graph['name']))
+            # cur_max_ops = 0
+            # for graph in graph_json['graph']:
+            #     self.log.debug("Graph %s operator count: %d" % len(graph['op']))
             item = graph_json['graph'][0]
             self.log.info("Find graph [%s] in %s", item['name'], graph_name)
             self.sub_graph = item['name']
