@@ -147,7 +147,7 @@ function UpgradeAicpu_run()
         return 1
     fi
 
-    grep "export ASCEND_AICPU_PATH=/home/HwHiAiUser/Ascend/" /home/HwHiAiUser/.bashrc > /dev/null
+    grep "export ASCEND_AICPU_PATH=/home/HwHiAiUser/Ascend" /home/HwHiAiUser/.bashrc > /dev/null
     if [ $? -ne 0 ];then
         echo "export ASCEND_AICPU_PATH=/home/HwHiAiUser/Ascend" >> /home/HwHiAiUser/.bashrc 
     fi
