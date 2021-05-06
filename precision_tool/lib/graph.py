@@ -44,7 +44,8 @@ class Graph(ToolObject):
         """prepare"""
         self._prepare_npu_graphs()
         self._parse_ops()
-        self.cpu_ops_list = self.tf_graph.get_op_list(cfg.GRAPH_CPU)
+        # parse tf ops
+        # self.cpu_ops_list = self.tf_graph.get_op_list(cfg.GRAPH_CPU)
 
     def check_cast(self):
         """Check cast op type"""
@@ -215,29 +216,6 @@ class Graph(ToolObject):
         op_pass_name = '' if op.pass_name() == '' else '[yellow][%s][/yellow]' % op.pass_name()
         util.print('[green][%s][/green]%s %s' % (op.type(), op_pass_name, op.name()))
 
-    #def _parse_cpu_ops(self):
-        # self._convert_ckpt_to_graph(cfg.GRAPH_CPU)
-    '''
-    def _convert_ckpt_to_graph(self, ckpt_path):
-        import tensorflow as tf
-        if not str(ckpt_path).endswith(CKPT_META_SHUFFIX):
-            if os.path.isfile(ckpt_path + CKPT_META_SHUFFIX):
-                ckpt_path = ckpt_path + CKPT_META_SHUFFIX
-            elif os.path.isdir(ckpt_path):
-                # find .meta
-                sub_files = os.listdir(ckpt_path)
-                for file_name in sub_files:
-                    if file_name.endswith(CKPT_META_SHUFFIX):
-                        ckpt_path = file_name
-        if not str(ckpt_path).endswith(CKPT_META_SHUFFIX):
-            self.log.error("Path [%s] is not valid.", ckpt_path)
-            return
-        saver = tf.train.import_meta_graph(ckpt_path, clear_devices=True)
-        graph = tf.get_default_graph()
-        for op in graph.get_operations():
-            self.cpu_op_list[op.name] = op
-    '''
-
     @staticmethod
     def _is_dangerous_cast(cast_type):
         """Check if cast """
@@ -297,4 +275,3 @@ class Graph(ToolObject):
                 self.ops_list[op_name] = op
                 self.ops_type_list[op_type][op_name] = op
         self.log.info("Finish parse npu ops from ge graph, find [%d] ops.", len(self.ops_list))
-

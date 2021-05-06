@@ -21,7 +21,7 @@ INTRODUCE_DOC = \
     "  Single mode:\n" \
     "    Exp:\n" \
     "      Dump TF data:\n" \
-    "       > python3.7.5 precision_tool/cli.py tf_dump \"sh cpu_train.sh param1 param2\" -r [send run times]\n" \
+    "       > python3.7.5 precision_tool/cli.py tf_dump \"sh cpu_train.sh param1 param2\" \n" \
     "      Dump NPU data:\n" \
     "       > python3.7.5 precision_tool/cli.py npu_dump \"sh npu_train.sh param1 param2\" \n" \
     "      Check NPU overflow:\n" \
@@ -48,6 +48,7 @@ def _run_tf_dbg_dump(argv):
         raise PrecisionToolException("Empty tf debug dir. %s" % cfg.DUMP_FILES_CPU_DEBUG)
     run_dirs = os.listdir(cfg.DUMP_FILES_CPU_DEBUG)
     run_dirs.sort()
+    # extra the last run dir
     run_dir = run_dirs[-1]
     log.info("Find %s run dirs, will chose the last one: %s" % (run_dirs, run_dir))
     time.sleep(1)

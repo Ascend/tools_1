@@ -47,8 +47,7 @@ class PrecisionTool(object):
         # vector compare
         if args.vector_compare:
             self.do_vector_compare()
-        else:
-            self.compare.vector_summary()
+        self.do_vector_compare_summary()
         self.do_check_fusion()
         self.do_check_overflow()
         self.do_check_cast()
@@ -94,6 +93,14 @@ class PrecisionTool(object):
             rh_path = args.rt
             graph_json = args.graph
         self.compare.vector_compare(lh_path, rh_path, graph_json)
+
+    @catch_tool_exception
+    def do_vector_compare_summary(self, argv=None):
+        parser = argparse.ArgumentParser(description="show vector compare result summary.")
+        parser.add_argument('-f', '--file', dest='file', default=None, required=False, help='compare_result file')
+        parser.add_argument('-c', '--cos_sim', dest='cos_sim', type=float, help='cos_sim_threshold', default=0.98)
+        args = parser.parse_args() if argv is None else parser.parse_args(argv)
+        error_ops = self.compare.vector_summary(args.file, args.cos_sim)
 
     @catch_tool_exception
     def do_print_data(self, argv=None):

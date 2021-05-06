@@ -15,7 +15,6 @@ try:
     from rich.table import Table
     from rich import print as rich_print
     from rich.columns import Columns
-    # from rich import print as rich_print
     install()
 except ImportError as import_err:
     install = None

@@ -158,13 +158,11 @@ class Dump(ToolObject):
             cpu_dump_txt.append('  |- [yellow]%s[/yellow]' % util.gen_npy_info_txt(cpu_dump_file['path']))
         cpu_dump_info = NEW_LINE.join(cpu_dump_txt)
         return NEW_LINE.join([npu_dump_info, cpu_dump_info])
-        #"%s\nCpuDumpOutput:%s" % (npu_dump_info, cpu_dump_txt)
-        #return res_str
-        # util.print_panel(res_str, title, fit=True)
 
     def print_data(self, file_name, is_convert):
         """Print numpy data file"""
-        # TODO 支持直接解读绝对路径的文件
+        if os.path.isfile(file_name):
+            return util.print_npy_summary(os.path.dirname(file_name), os.path.basename(file_name), is_convert)
         parent_dirs = []
         file_names = [file_name]
         if '/' in file_name:
@@ -209,11 +207,6 @@ class Dump(ToolObject):
 
     def convert_npu_dump(self, name, data_format, dst_path=None):
         """Convert npu dump to npy of data_format"""
-        '''
-        if not os.path.exists(name):
-            # try to find in npu dump dir
-            self._detect_npu_file_name()
-        '''
         if os.path.isfile(name):
             # absolute path to file
             self.log.info("Decode file: %s", name)
@@ -245,26 +238,6 @@ class Dump(ToolObject):
         for convert_file in dump_convert_files.values():
             summary_txt += '\n - %s' % convert_file['file_name']
         util.print_panel(summary_txt)
-
-    '''
-    def decode_all_npu_dump(self, src_path=None):
-        """Decode all npu dump files"""
-        if src_path is None:
-            if len(self.npu_files) == 0:
-                raise PrecisionToolException("No npu dump files")
-            src_path = self.npu_files.values()[0]['dir_path']
-        util.convert_dump_to_npy(src_path, cfg.DUMP_FILES_DECODE)
-        self.npu_decode_files = util.list_npu_dump_decode_files(cfg.DUMP_FILES_DECODE)
-        self.op_npu_decode_files = {}
-        for file_info in self.npu_decode_files.values():
-            if file_info['op_name'] not in self.op_npu_decode_files:
-                self.op_npu_decode_files[file_info['op_name']] = NpuDumpDecodeFile()
-            op_decode_file = self.op_npu_decode_files[file_info['op_name']]
-            op_decode_file.update(file_info)
-        # sorted_list = list
-        for op_decode_file in self.op_npu_decode_files.values():
-            util.print_panel(op_decode_file.summary())
-    '''
 
     def _get_file_by_op_name(self, op_name):
         """Get dump file info by op name"""

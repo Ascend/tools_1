@@ -70,6 +70,11 @@ class InteractiveCli(cmd.Cmd):
         argv = line.split(' ') if line != '' else []
         self.precision_tool.do_vector_compare(argv)
 
+    def do_vcs(self, line=''):
+        """Do vector compare summary"""
+        argv = line.split(' ') if line != '' else []
+        self.precision_tool.do_vector_compare_summary(argv)
+
     def do_pt(self, line=''):
         """Print data info:\n usage: pt (-n) [*.npy] (-c)\n   -c: convert and save to txt file"""
         argv = line.split(' ') if line != '' else []

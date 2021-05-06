@@ -39,7 +39,12 @@ sudo yum install graphviz
 这几类依赖数据可以通过以下方式获取：
 #### 1. NPU的计算图获取
 ```注意：NPU的Dump数据和计算图存在一定的对应关系，需要同时获取```
-1. 【不推荐】参考迁移指导中的修改配置，执行NPU脚本，并将获取到的图转存至precision_data图目录
+* 【推荐】方法一：使用precision_tool中提供的辅助命令行执行训练脚本，将自动配置以上环境变量并执行训练任务
+   ```shell
+   # 注意：避免在自定义的训练脚本中unset上述DUMP GRAPH相关的环境变量
+   python3.7.5 precision_tool/cli.py npu_dump "sh run_train.sh param1 param2"
+   ```
+* 【不推荐】方法二：参考迁移指导中的修改配置，执行NPU脚本，并将获取到的图转存至precision_data图目录
    ```shell
    export DUMP_GE_GRAPH=2
    export DUMP_GRAPH_LEVEL=3
@@ -47,15 +52,8 @@ sudo yum install graphviz
    # 未配置DUMP_GRAPH_PATH时，图文件将保存在脚本执行目录，可以直接转存至precision_data目录
    mkdir -p ./precision_data/graph/all && mv ge_proto_*.txt ./precision_data/graph/all/
    ```
-2. 【推荐】使用precision_tool中提供的辅助命令行执行训练脚本，将自动配置以上环境变量并执行训练任务
-   ```shell
-   # 注意：避免在自定义的训练脚本中unset上述DUMP GRAPH相关的环境变量
-   python3.7.5 precision_tool/cli.py npu_dump "sh run_train.sh param1 param2"
-   ```
 #### 2. NPU的DUMP数据获取
-1. 【不推荐】参考[精度比对工具使用指南](https://support.huaweicloud.com/developmenttg-cann330alphaXtraining/atlasacctrain_16_0004.html) 修改训练脚本。
-   执行训练脚本，并将dump的数据拷贝到【precision_data/dump/npu/】目录
-2. 【推荐】在训练脚本中**import precision_tool.tf_config**，并使用precision_tool中提供的辅助命令行执行训练脚本 
+* 【推荐】方法一：在训练脚本中**import precision_tool.tf_config**，并使用precision_tool中提供的辅助命令行执行训练脚本 
     ``` python
     # 引用 precision_tool/tf_config.py
     import precision_tool.tf_config as npu_tf_config
@@ -71,14 +69,42 @@ sudo yum install graphviz
     ```shell
     python3.7.5 precision_tool/cli.py npu_dump "sh run_train.sh param1 param2"
     ```
-#### 3. NPU的溢出检测数据的获取
-1. 【不推荐】参考[使用溢出检测工具分析算子溢出](https://support.huaweicloud.com/tensorflowdevg-cann330alphaXtraining/atlasmprtg_13_0037.html) 修改训练脚本，
-   并将溢出数据拷贝至【precision_tool/dump/overflow/】目录
-2. 【推荐】在训练脚本中**import precision_tool.tf_config**，并按【2. NPU的DUMP数据获取】中修改训练代码，使用precision_tool中提供的辅助命令行执行训练脚本
+* 【不推荐】方法二：参考[精度比对工具使用指南](https://support.huaweicloud.com/developmenttg-cann330alphaXtraining/atlasacctrain_16_0004.html) 修改训练脚本。
+   执行训练脚本，并将dump的数据拷贝到【precision_data/dump/npu/】目录
+#### 3. NPU的溢出检测数据的获取（缺少该数据将无法展示溢出检测结果）
+* 【推荐】方法一：在训练脚本中**import precision_tool.tf_config**，并按【2. NPU的DUMP数据获取】中修改训练代码，使用precision_tool中提供的辅助命令行执行训练脚本
     ```shell
     python3.7.5 precision_tool/cli.py npu_overflow "sh run_train.sh param1 param2"
     ```
-#### 4. TF计算图Meta文件的获取
+* 【不推荐】方法二：参考[使用溢出检测工具分析算子溢出](https://support.huaweicloud.com/tensorflowdevg-cann330alphaXtraining/atlasmprtg_13_0037.html) 修改训练脚本，
+   并将溢出数据拷贝至【precision_tool/dump/overflow/】目录
+
+#### 4. TF的DUMP数据获取（缺少该数据无法使用数据比对功能）
+* 【推荐】方法一：在CPU/GPU训练脚本中添加tf_debug代码，并使用precision_tool中提供的辅助命令行工具生成标杆DUMP数据
+   ```python
+    import precision_tool.tf_config as npu_tf_config
+    
+    # 如果使用的是Estimator,EstimatorSpec加入training_hooks
+    estim_specs = tf.estimator.EstimatorSpec(training_hooks=[npu_tf_config.estimator_dump()])    
+    
+    # 如果使用的session.run，以下代码在为sess加上了tf_debug的wrapper
+    sess = npu_tf_config.sess_dump(sess=sess)
+   ```
+   ```shell
+   # 注意：TF dump数据的原理是使用tf_debug的print_tensor(pt)命令实现的，由于训练代码提供了非常灵活的run()接口，
+   #      脚本无法感知用户需要dump的tensor在哪个run阶段，因此需要用户修改训练代码，在执行完正确的run后，立即退出。
+   #      例如，修改代码只执行一个step的训练，根据代码中run的次数，会获取到1~N个离线tf_debug的dump目录
+   #      precision_tool脚本会自动提取最后一个run阶段中出现的所有tensor作为标杆数据。
+   python3.7.5 precision_tool/cli.py tf_dump "sh cpu_train.sh param1 param2"
+   
+   # 在precision_data/dump/cpu/ 目录会存放提取的tensor
+   # 如果获取tensor不符合预期，可以检查下precision_data/dump/cpu_debug/目录, 只保留预期run阶段的tf_debug离线数据
+   # 执行以下命令重新生成
+   rm -rf precision_data/dump/cpu/* && python3.7.5 precision_tool/cli.py tf_dump
+   ```
+* 【不推荐】方法二：参考[准备基于GPU/CPU运行生成的npy数据](https://support.huaweicloud.com/developmenttg-cann330alphaXtraining/atlasacctrain_16_0005.html)
+   获取CPU/GPU的TF数据，并拷贝至【precision/dump/cpu/】目录
+#### 5. TF计算图Meta文件的获取（可选）
 * 通过saver保存ckpt获取
     ```python
     # 修改CPU/NPU脚本
@@ -88,22 +114,6 @@ sudo yum install graphviz
        # 保存ckpt
        saver.save(sess, saver_dir)
     ```
-#### 5. TF的DUMP数据获取
-1. 【不推荐】参考[准备基于GPU/CPU运行生成的npy数据](https://support.huaweicloud.com/developmenttg-cann330alphaXtraining/atlasacctrain_16_0005.html) 
-   获取CPU/GPU的TF数据，并拷贝至【precision/dump/cpu/】目录
-2. 【推荐】在CPU/GPU训练脚本中添加tf_debug代码，并使用precision_tool中提供的辅助命令行工具生成标杆DUMP数据
-   ```python
-    import precision_tool.tf_config as npu_tf_config
-    
-    # 如果使用的是Estimator,EstimatorSpec加入training_hooks
-    estim_specs = tf.estimator.EstimatorSpec(training_hooks=[npu_tf_config.estimator_dump()])    
-    
-    # 如果使用的session.run，则需要在session初始化后加入tf_debug代码
-    sess = npu_tf_config.sess_dump(sess=sess)
-   ```
-   ```shell
-   python3.7.5 precision_tool/cli.py tf_dump "sh cpu_train.sh param1 param2"
-   ```
 ## 使用说明
 1.  配置文件precision_tool/config.py（正常默认即可）
     ```python
@@ -134,12 +144,12 @@ sudo yum install graphviz
     python3 ./precision_tool/cli.py 
     ```
 ### 非交互模式命令
-1. tf_dump [start tf cpu script command] (-r) [send run time]
+1. tf_dump [start tf cpu script command]
     ```shell
     # 启动tf训练脚本，Dump CPU标杆数据
-    # 需要配合上述tf_debug修改使用，能够Dump出第一个step的所有Tensor数据
+    # 需要配合上述tf_debug修改使用，能够Dump出所有Tensor数据
     # 也可以在GPU/CPU环境上单独部署脚本执行该命令，将数据目录precision_data/dump/cpu 拷贝到NPU环境分析
-    python3.7.5 precision_tool/cli.py tf_dump 'python3 LeNet_cpu.py' -r 2
+    python3.7.5 precision_tool/cli.py tf_dump 'python3 LeNet_cpu.py'
     ```
 2. npu_dump [start npu script command]
     ```shell
