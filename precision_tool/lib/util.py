@@ -144,7 +144,7 @@ class Util(object):
         """
         parent_dirs = {}
         dump_files = {}
-        newest_sub_path = self._get_newest_dir(path) if sub_path == '' else sub_path
+        newest_sub_path = self.get_newest_dir(path) if sub_path == '' else sub_path
         dump_pattern = re.compile(OFFLINE_DUMP_PATTERN)
         for dir_path, dir_names, file_names in os.walk(os.path.join(path, newest_sub_path), followlinks=True):
             for name in file_names:
@@ -368,11 +368,11 @@ class Util(object):
             self.ms_accu_cmp = self._detect_file_if_not_exist(cfg.MS_ACCU_CMP)
         return self.ms_accu_cmp
 
-    def _get_newest_dir(self, path: str):
+    def get_newest_dir(self, path: str):
         """Find the newest subdir in specific path, subdir should named by timestamp."""
         if not os.path.isdir(path):
             self.log.warning("Path [%s] not exists", path)
-            return ''
+            return path
         paths = os.listdir(path)
         sub_paths = []
         for p in paths:
@@ -380,9 +380,9 @@ class Util(object):
                 sub_paths.append(p)
         if len(sub_paths) == 0:
             self.log.debug("Path [%s] has no timestamp dirs.", path)
-            return ''
+            return path
         newest_sub_path = sorted(sub_paths)[-1]
-        self.log.info("Sub path num:[%d]. Dump dirs[%s], choose[%s]", len(sub_paths), str(sub_paths), newest_sub_path)
+        self.log.info("Sub path num:[%d]. Dirs[%s], choose[%s]", len(sub_paths), str(sub_paths), newest_sub_path)
         return newest_sub_path
 
     @staticmethod

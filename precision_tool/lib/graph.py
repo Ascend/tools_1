@@ -260,13 +260,18 @@ class Graph(ToolObject):
                 raise PrecisionToolException("No graph in file: %s" % graph_path)
             if len(graph_json['graph']) != 1:
                 self.log.warning("There are more then one graph in ge build file, find %d" % len(graph_json['graph']))
-            # cur_max_ops = 0
-            # for graph in graph_json['graph']:
-            #     self.log.debug("Graph %s operator count: %d" % len(graph['op']))
-            item = graph_json['graph'][0]
-            self.log.info("Find graph [%s] in %s", item['name'], graph_name)
-            self.sub_graph = item['name']
-            for op_json in item['op']:
+            cur_max_ops = 0
+            graph = graph_json['graph'][0]
+            # select the sub graph with most operations as the default graph
+            for item in graph_json['graph']:
+                self.log.debug("Graph %s operator count: %d" % (item['name'], len(item['op'])))
+                if len(item['op']) > cur_max_ops:
+                    cur_max_ops = len(item['op'])
+                    graph = item
+            # item = graph_json['graph'][0]
+            self.log.info("Select graph [%s] with [%s] ops in %s", graph['name'], len(graph['op']), graph_name)
+            self.sub_graph = graph['name']
+            for op_json in graph['op']:
                 op_name = op_json['name']
                 op_type = op_json['type']
                 op = Op(op_json, self.ops_list)
