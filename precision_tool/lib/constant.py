@@ -1,3 +1,4 @@
 # coding=utf-8
 
-NEW_LINE = "\n"
+class Constant(object):
+    NEW_LINE = "\n"

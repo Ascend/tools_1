@@ -85,7 +85,6 @@ def _do_run_tf_dbg_dump(cmd_line, run_times=2):
         log.error("Failed to get tensor name in tf_debug.")
         raise PrecisionToolException("Get tensor name in tf_debug failed.")
     log.info("Save tensor name success. Generate tf dump commands from file: %s", cfg.DUMP_FILES_CPU_NAMES)
-    # convert_cmd = "timestamp=$($(date +%s%N)/1000); cat " + cfg.DUMP_FILES_CPU_NAMES + \
     convert_cmd = "timestamp=" + str(int(time.time())) + "; cat " + cfg.DUMP_FILES_CPU_NAMES + \
                   " | awk '{print \"pt\",$4,$4}'| awk '{gsub(\"/\", \"_\", $3); gsub(\":\", \".\", $3);" \
                   "print($1,$2,\"-n 0 -w " + cfg.DUMP_FILES_CPU + "/" + \

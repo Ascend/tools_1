@@ -239,13 +239,13 @@ class Graph(ToolObject):
         """Copy ge graphs to graph dir. """
         # move graphs to precision data dir
         graph_files = util.list_ge_graph_files(cfg.GRAPH_DIR_ALL)
-        build_files = sorted(filter(lambda x: x['graph_name'] == cfg.BUILD_JSON_GRAPH_NAME, graph_files.values()),
-                             key=lambda x: x['graph_id'])
+        build_files = sorted(filter(lambda x: x.graph_name == cfg.BUILD_JSON_GRAPH_NAME, graph_files.values()),
+                             key=lambda x: x.graph_id)
         if len(build_files) == 0:
             self.log.warning("Can not find any build files in dir: %s", cfg.GRAPH_DIR_ALL)
             return
-        self.log.info("Choose [%s] as default GE build file.", build_files[-1]['file_name'])
-        self.build_file = util.convert_proto_to_json(build_files[-1]['file_name'])
+        self.log.info("Choose [%s] as default GE build file.", build_files[-1].file_name)
+        self.build_file = util.convert_proto_to_json(build_files[-1].file_name)
 
     def _parse_ops(self):
         """Parse *_Build.txt.json to op objects."""
