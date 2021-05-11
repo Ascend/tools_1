@@ -89,7 +89,9 @@ class Compare(ToolObject):
         if len(error_ops) == 0:
             self.log.info("Can not find any compare result over threshold: %s" % cos_sim_threshold)
         else:
-            error_ops[0].summary()
+            for i, error_op in enumerate(error_ops):
+                if i < limit:
+                    error_op.summary()
         return error_ops
             # graph.print_op(first_error_op[0].op_name, is_dump=True, save_graph_level=3)
             # analyse the inputs
