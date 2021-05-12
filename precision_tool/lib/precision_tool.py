@@ -147,7 +147,7 @@ class PrecisionTool(object):
     def do_convert_npu_dump(self, argv):
         parser = argparse.ArgumentParser()
         parser.add_argument('-n', '--name', dest='name', help='op name')
-        parser.add_argument('-f', '--format', dest='format', help='target format')
+        parser.add_argument('-f', '--format', dest='format', default=None, required=False, help='target format')
         parser.add_argument('-o', '--output', dest='output', required=False, default=None, help='output path')
         args = parser.parse_args(argv)
         self.dump.convert_npu_dump(args.name, args.format, args.output)

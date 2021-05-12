@@ -40,7 +40,7 @@ OFFLINE_DUMP_DECODE_PATTERN = \
     r"^([A-Za-z0-9_-]+)\.([A-Za-z0-9_-]+)\.([0-9]+)(\.[0-9]+)?\.([0-9]{1,255})\.([a-z]+)\.([0-9]{1,255})\.npy$"
 OFFLINE_DUMP_CONVERT_PATTERN = \
     r"^([A-Za-z0-9_-]+)\.([A-Za-z0-9_-]+)\.([0-9]+)(\.[0-9]+)?\.([0-9]{1,255})" \
-    r"\.([a-z]+)\.([0-9]{1,255})\.([x0-9]+)\.npy$"
+    r"\.([a-z]+)\.([0-9]{1,255})(\.[x0-9]+)?\.npy$"
 OFFLINE_FILE_NAME = 'op_type.op_name.task_id(.stream_id).timestamp'
 OP_DEBUG_NAME = 'OpDebug.Node_OpDebug.taskid.timestamp'
 CPU_DUMP_DECODE_PATTERN = r"^([A-Za-z0-9_-]+)\.([0-9]+)(\.[0-9]+)?\.([0-9]{1,255})\.npy$"
@@ -107,7 +107,7 @@ class Util(object):
         self.log.info('Finish convert [%s] build graph from proto to json format.', proto_file)
         return json_file
 
-    def convert_dump_to_npy(self, src_file, dst_path, data_format=''):
+    def convert_dump_to_npy(self, src_file, dst_path, data_format=None):
         """Convert npu dump files to npy format.
         :param src_file: src file
         :param dst_path: dst path
@@ -115,7 +115,7 @@ class Util(object):
         :return: status code
         """
         self.create_dir(dst_path)
-        format_cmd = '' if data_format == '' else '-f %s' % data_format
+        format_cmd = '' if data_format is None else '-f %s' % data_format
         cmd = '%s %s convert -d %s -out %s %s' % (cfg.PYTHON, self._get_ms_accu_cmp(), src_file, dst_path, format_cmd)
         return self.execute_command(cmd)
 

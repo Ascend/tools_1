@@ -200,7 +200,7 @@ class Dump(object):
                 cpu_files[f] = self.cpu_dump_files()[f]
         return cpu_files
 
-    def convert_npu_dump(self, name, data_format, dst_path=None):
+    def convert_npu_dump(self, name, data_format=None, dst_path=None):
         """Convert npu dump to npy of data_format"""
         if os.path.isfile(name):
             # absolute path to file
