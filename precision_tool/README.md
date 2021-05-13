@@ -79,16 +79,20 @@ sudo yum install graphviz
 #### 2. NPU的DUMP数据获取
 * 【推荐】方法一：在训练脚本中**import precision_tool.tf_config**，并使用precision_tool中提供的辅助命令行执行训练脚本 
     ``` python
+    # NPU的DUMP获取和溢出检测数据的获取，均可按如下方式修改代码
     # 引用 precision_tool/tf_config.py
     import precision_tool.tf_config as npu_tf_config
     
-    # 如果使用的是Estimator
-    dump_config=npu_tf_config.estimator_dump_config()
+    # 如果使用的是Estimator的NPURunConfig配置使能NPU，则可以参考以下修改
+    dump_config=npu_tf_config.estimator_dump_config() # 新增行
     npu_config = NPURunConfig(dump_config=dump_config)
     
-    # 如果使用的是session.run方式，输入config可选，填入可以在原先的config上新增Dump配置项
-    config = npu_tf_config.session_dump_config(config)
-    sess = tf.Session(config)
+    # 如果使用的是custom_op方式，则可以参考以下修改
+    config = tf.ConfigProto()
+    custom_op =  config.graph_options.rewrite_options.custom_optimizers.add()
+    custom_op.name =  "NpuOptimizer"
+    custom_op.parameter_map["use_off_line"].b = True
+    custom_op = npu_tf_config.update_custom_op(custom_op)   # 新增行
     ```
     ```shell
     python3.7.5 precision_tool/cli.py npu_dump "sh run_train.sh param1 param2"
@@ -161,7 +165,8 @@ sudo yum install graphviz
     # 日志级别及数据分析目录设置
     # TOOL CONFIG
     LOG_LEVEL = "NOTSET"
-    DATA_ROOT_DIR = './precision_data'
+    # ModelArts场景下，可以根据情况将数据跟目录修改成自定义目录，并在完成后完整下载该目录
+    ROOT_DIR = './'
     ```
 2. 启动脚本（交互命令行）
     ```shell

@@ -66,6 +66,12 @@ def session_dump_config(session_config=None):
     custom_op = session_config.graph_options.rewrite_options.custom_optimizers.add()
     custom_op.name = 'NpuOptimizer'
     custom_op.parameter_map['use_off_line'].b = True
+    update_custom_op(custom_op)
+    session_config.graph_options.rewrite_options.remapping = RewriterConfig.OFF
+    return session_config
+
+
+def update_custom_op(custom_op):
     if _is_overflow():
         custom_op.parameter_map['enable_dump_debug'].b = True
         custom_op.parameter_map['dump_debug_mode'].s = tf.compat.as_bytes("all")
@@ -80,8 +86,7 @@ def session_dump_config(session_config=None):
         custom_op.parameter_map['op_debug_level'].i = cfg.OP_DEBUG_LEVEL
         custom_op.parameter_map['fusion_switch_file'].s = tf.compat.as_bytes(cfg.FUSION_SWITCH_FILE)
         custom_op.parameter_map['dump_step'].s = tf.compat.as_bytes(cfg.TF_DUMP_STEP)
-    session_config.graph_options.rewrite_options.remapping = RewriterConfig.OFF
-    return session_config
+    return custom_op
 
 
 def _init():

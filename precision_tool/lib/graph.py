@@ -281,7 +281,7 @@ class Graph(ToolObject):
             if len(graph_json['graph']) != 1:
                 self.log.warning("There are more then one graph in ge build file, find %d" % len(graph_json['graph']))
             cur_max_ops = 0
-            graph = graph_json['graph'][0]
+            # graph = graph_json['graph'][0]
             # select the sub graph with most operations as the default graph
             for graph in graph_json['graph']:
                 self.log.debug("Graph %s operator count: %d" % (graph['name'], len(graph['op'])))

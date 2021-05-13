@@ -134,6 +134,10 @@ class Compare(ToolObject):
         data_right = data_right.reshape(-1)
         if data_left.shape[0] != data_right.shape[0]:
             self.log.warning("Data size not equal: %s vs %s", data_left.shape, data_right.shape)
+            if data_left.shape[0] < data_right.shape[0]:
+                data_left = np.pad(data_left, (0, data_right.shape[0] - data_left.shape[0]), 'constant')
+            else:
+                data_right = np.pad(data_right,(0, data_left.shape[0] - data_right.shape[0]), 'constant')
         all_close = np.allclose(data_left, data_right, atol=al, rtol=rl)
         # cos_sim = 1 - spatial.distance.cosine(data_left, data_right)
         cos_sim = np.dot(data_left, data_right) / (
