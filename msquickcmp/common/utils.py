@@ -207,9 +207,9 @@ def check_input_bin_file_path(input_path):
     input_bin_files = input_path.split(',')
     bin_file_path_array = []
     for input_item in input_bin_files:
-        input_path = os.path.realpath(input_item)
-        check_file_or_directory_path(input_path)
-        bin_file_path_array.append(input_path)
+        input_item_path = os.path.realpath(input_item)
+        check_file_or_directory_path(input_item_path)
+        bin_file_path_array.append(input_item_path)
     return bin_file_path_array
 
 
