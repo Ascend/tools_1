@@ -119,8 +119,8 @@ class NpuDumpData(DumpData):
             self.arguments.input_path = ",".join(bin_file_path_array)
         else:
             input_path = os.path.realpath(self.arguments.input_path)
-            utils.check_input_bin_file_path(input_path)
-            self.arguments.input_path = input_path
+            bin_file_path_array = utils.check_input_bin_file_path(input_path)
+            self.arguments.input_path = ",".join(bin_file_path_array)
 
     def _compare_shape_vs_bin_file(self):
         shape_size_array = self._get_shape_size()

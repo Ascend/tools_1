@@ -205,8 +205,12 @@ def check_input_bin_file_path(input_path):
         input_path: input path directory
     """
     input_bin_files = input_path.split(',')
+    bin_file_path_array = []
     for input_item in input_bin_files:
-        check_file_or_directory_path(input_item)
+        input_path = os.path.realpath(input_item)
+        check_file_or_directory_path(input_path)
+        bin_file_path_array.append(input_path)
+    return bin_file_path_array
 
 
 def check_dynamic_shape(shape):
