@@ -223,6 +223,6 @@ def check_dynamic_shape(shape):
         False or True
     """
     for item in shape:
-        if type(item) == str:
-            return False
-    return True
+        if isinstance(item, str):
+            print_error_log("dynamic shape {} are not supported".format(shape))
+            raise AccuracyCompareException(ACCURACY_COMPARISON_NOT_SUPPORT_ERROR)

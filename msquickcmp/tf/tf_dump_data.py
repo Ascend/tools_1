@@ -32,6 +32,7 @@ class TfDumpData(DumpData):
     """
     This class is used to generate GUP dump data of the TensorFlow model.
     """
+
     def __init__(self, arguments):
         self.args = arguments
 
@@ -115,7 +116,7 @@ class TfDumpData(DumpData):
             if len(inputs_tensor) != len(input_path):
                 utils.print_error_log("the number of model inputs tensor is not equal the number of "
                                       "inputs data, inputs tensor is: {}, inputs data is: {}".format(
-                                          len(inputs_tensor), len(input_path)))
+                    len(inputs_tensor), len(input_path)))
                 raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR)
             for index, tensor in enumerate(inputs_tensor):
                 input_data = np.fromfile(input_path[index], self._convert_to_numpy_type(tensor.dtype)).reshape(
@@ -131,14 +132,12 @@ class TfDumpData(DumpData):
             tensor_shape_list = tensor_shape.as_list()
             for i in range(len(tensor_shape_list)):
                 if tensor_shape_list[i] is None:
-                    tensor_shape_list[i] = 1  # if it is a dynamic dimension, set this dimension to 1
+                    utils.print_error_log("dynamic shape {} are not supported".format(tensor_shape))
+                    raise AccuracyCompareException(utils.ACCURACY_COMPARISON_NOT_SUPPORT_ERROR)
         except ValueError:
             utils.print_info_log("can not get model input tensor shape, please make input data by yourself")
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_TENSOR_TYPE_ERROR)
-
-        tensor_shape_tuple = tuple(tensor_shape_list)
-        utils.print_info_log("old tensor shape: {}, new tensor shape: {}".format(tensor_shape, tensor_shape_tuple))
-        return tensor_shape_tuple
+        return tuple(tensor_shape_list)
 
     def _convert_to_numpy_type(self, tensor_type):
         np_type = DTYPE_MAP.get(tensor_type)
