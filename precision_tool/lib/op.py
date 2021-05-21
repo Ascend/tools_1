@@ -4,7 +4,6 @@ import re
 from typing import List
 from lib.desc import InputDesc
 from lib.desc import OutputDesc
-from lib.dump import Dump
 from lib.util import util
 from lib.constant import Constant
 
@@ -16,9 +15,12 @@ JSON_KEY_TYPE = 'type'
 JSON_KEY_ATTR = 'attr'
 JSON_KEY = 'key'
 JSON_VALUE = 'value'
+JSON_KEY_LIST = 'list'
 JSON_KEY_STR = 's'
 JSON_KEY_PASS_NAME = 'pass_name'
-#dump_manager = Dump()
+JSON_KEY_DATA_DUMP_ORIGINAL_OP_NAMES = '_datadump_original_op_names'
+
+KERNEL_NAME_SHUFFIX = '_kernelname'
 
 
 class Op(object):
@@ -63,18 +65,31 @@ class Op(object):
         return self._attr(JSON_KEY_PASS_NAME)
 
     def kernel_name(self):
-        return self._attr(self.name() + "_kernelname")
+        return self._attr(self.name() + KERNEL_NAME_SHUFFIX)
+
+    def data_dump_original_op_names(self):
+        return self._attr(JSON_KEY_DATA_DUMP_ORIGINAL_OP_NAMES)
 
     def _attr(self, key):
         if JSON_KEY_ATTR in self.op_json:
             for attr in self.op_json[JSON_KEY_ATTR]:
                 if key == attr[JSON_KEY]:
-                    return attr[JSON_VALUE][JSON_KEY_STR]
+                    if JSON_KEY_STR in attr[JSON_VALUE]:
+                        return attr[JSON_VALUE][JSON_KEY_STR]
+                    elif JSON_KEY_LIST in attr[JSON_VALUE]:
+                        if JSON_KEY_STR in attr[JSON_VALUE][JSON_KEY_LIST]:
+                            return attr[JSON_VALUE][JSON_KEY_LIST][JSON_KEY_STR]
+                    else:
+                        self.log.warning("Unknown attr format: %s", attr[JSON_VALUE])
         return ''
 
     def summary(self, origin_txt=False):
         """Summary of current op"""
-        res_str = ['[%s] %s' % (self.type(), self.name()), 'KernelName: %s' % self.kernel_name(), 'Input:']
+        res_str = ['[%s] %s' % (self.type(), self.name()), 'KernelName: %s' % self.kernel_name()]
+        origin_op = self.data_dump_original_op_names()
+        if origin_op != '':
+            res_str.append('OriginalOp: %s' % self.data_dump_original_op_names())
+        res_str.append('Input:')
         for i in self.inputs():
             res_str.append(' -' + i.summary(origin_txt))
         res_str.append('Output:')

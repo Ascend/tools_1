@@ -24,7 +24,7 @@
 3. 移动 tools/precision_tool 子目录至训练工作目录
 ### 安装python3三方依赖
 ```shell
-pip3 install rich gnureadline pexpect scipy graphviz
+pip3 install rich gnureadline pexpect graphviz
 # ubuntu/Debian
 sudo apt-get install graphviz
 # fedora/Centos
@@ -311,6 +311,28 @@ sudo yum install graphviz
    │ ErrorPer: 0.023504638671875  (rl= 0.005, al= 0.002)                                                                                      │
    ╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
     ```
+### Precision_data目录结构
+```
+precision_data/
+├── npu
+│   ├── debug_0
+|   |   ├── dump
+|   |       └── 20210510101133
+|   │   └── graph
+|   |       ├── all
+|   |       └── build
+│   └── debug_1
+├── cpu
+|   ├── cpu_debug
+|   └── dump
+├── overflow
+├── fusion
+└── temp
+    ├── op_graph
+    ├── dump_decode
+    ├── overflow_decode
+    └── vector_compare
+```
 ### TF脚本修改参考
 
 ```python

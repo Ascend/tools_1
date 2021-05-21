@@ -67,16 +67,18 @@ class NpuDumpDecodeFile(object):
 
 class Dump(object):
 
-    def __init__(self):
+    def __init__(self, debug_id=Constant.DEFAULT_DEBUG_ID):
         """Init"""
-        super(Dump, self).__init__()
         self.log = util.get_log()
+        self.debug_id = debug_id
+        self.npu_root = os.path.join(cfg.NPU_DIR, debug_id)
+        self.dump_root = os.path.join(self.npu_root, Constant.DUMP)
         self.npu_files = None
         self.cpu_files = None
         self.npu_decode_files = None
         self.op_npu_decode_files = None
-        self.sub_graph = None
-        self.sub_graph_path = None
+        # self.sub_graph = None
+        # self.sub_graph_path = None
         self._init_dirs()
 
     def prepare(self, sub_graph):
@@ -87,11 +89,13 @@ class Dump(object):
 
     @catch_tool_exception
     def _prepare_npu_dump(self):
-        """prepare npu dump, mk soft link of of sub_graph"""
+        """prepare npu dump, support soft link"""
+        sub_dir = util.get_newest_dir(self.dump_root)
+        '''
         if self.sub_graph is None:
             raise PrecisionToolException("Sub graph in build graph is None, please check.")
-        # find right path in DUMP_FILES_NPU_ALL
-        for dir_path, dir_names, file_names in os.walk(cfg.DUMP_FILES_NPU, followlinks=True):
+        # find right path
+        for dir_path, dir_names, file_names in os.walk(self.dump_root, followlinks=True):
             for dir_name in dir_names:
                 if dir_name == self.sub_graph:
                     self.sub_graph_path = os.path.join(dir_path, dir_name)
@@ -99,13 +103,13 @@ class Dump(object):
         if self.sub_graph_path is None:
             raise PrecisionToolException("Can not find any sub graph dir %s in npu dump path [%s]." % (
                 self.sub_graph, cfg.DUMP_FILES_NPU))
+        '''
         self._parse_npu_dump_files()
 
-    @staticmethod
-    def _init_dirs():
+    def _init_dirs(self):
         """Create dump file dirs"""
         # self.log.debug('Init dump dirs.')
-        util.create_dir(cfg.DUMP_FILES_NPU)
+        util.create_dir(self.dump_root)
         util.create_dir(cfg.DUMP_FILES_DECODE)
         util.create_dir(cfg.DUMP_FILES_OVERFLOW)
         util.create_dir(cfg.DUMP_FILES_OVERFLOW_DECODE)

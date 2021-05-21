@@ -13,21 +13,80 @@ ASCEND_LOG_PATH = '/root/ascend/log/plog/'
 
 # TOOL CONFIG
 LOG_LEVEL = "NOTSET"
-ROOT_DIR = './'
+ROOT_DIR = ''
 
+'''
+precision_data/
+├── npu
+│   ├── debug_0
+|   |   ├── dump
+|   |       └── 20210510101133
+|   │   └── graph
+|   |       ├── all
+|   |       └── build
+│   └── debug_1
+├── cpu
+|   ├── cpu_debug
+|   └── dump
+├── overflow
+├── fusion
+└── temp
+    ├── op_graph
+    ├── decode
+    |   ├── dump_decode
+    |   ├── overflow_decode
+    |   └── dump_convert
+    └── vector_compare
+        ├── 20210510101133
+        |   ├── result_123456.csv
+        |   └── result_123455.csv
+        └── 20210510101134
+            └── result_123458.csv
+'''
 
 # Static dirs, do not change
 DATA_ROOT_DIR = os.path.join(ROOT_DIR, 'precision_data')
 # Fusion switch
 FUSION_SWITCH_FILE = os.path.join(DATA_ROOT_DIR, 'fusion_switch.cfg')
 
+# fusion
+FUSION_DIR = os.path.join(DATA_ROOT_DIR, 'fusion')
+
+# npu dump/graph parent dir
+NPU_DIR = os.path.join(DATA_ROOT_DIR, 'npu')
+DEFAULT_NPU_DIR = os.path.join(NPU_DIR, 'debug_0')
+DEFAULT_NPU_DUMP_DIR = os.path.join(DEFAULT_NPU_DIR, 'dump')
+DEFAULT_NPU_GRAPH_DIR = os.path.join(DEFAULT_NPU_DIR, 'graph')
+
+# npu overflow dir
+OVERFLOW_DIR = os.path.join(DATA_ROOT_DIR, 'overflow')
+NPU_OVERFLOW_DUMP_DIR = os.path.join(OVERFLOW_DIR, 'dump')
+
+# tf dirs
+TF_DIR = os.path.join(DATA_ROOT_DIR, 'tf')
+TF_DEBUG_DUMP_DIR = os.path.join(TF_DIR, 'tf_debug')
+TF_DUMP_DIR = os.path.join(TF_DIR, 'dump')
+TF_GRAPH_DIR = os.path.join(TF_DIR, 'graph')
+
+# tmp dirs
+TMP_DIR = os.path.join(DATA_ROOT_DIR, 'temp')
+OP_GRAPH_DIR = os.path.join(TMP_DIR, 'op_graph')
+
+DECODE_DIR = os.path.join(TMP_DIR, 'decode')
+OVERFLOW_DECODE_DIR = os.path.join(DECODE_DIR, 'overflow_decode')
+DUMP_DECODE_DIR = os.path.join(DECODE_DIR, 'dump_decode')
+DUMP_CONVERT_DIR = os.path.join(DECODE_DIR, 'dump_convert')
+
+VECTOR_COMPARE_PATH = os.path.join(TMP_DIR, 'vector_compare')
+TF_TENSOR_NAMES = os.path.join(TMP_DIR, 'tf_tensor_names.txt')
+TF_TENSOR_DUMP_CMD = os.path.join(TMP_DIR, 'tf_tensor_cmd.txt')
+
+'''
 # graph
 GRAPH_DIR = os.path.join(DATA_ROOT_DIR, 'graph')
 GRAPH_DIR_ALL = os.path.join(GRAPH_DIR, 'all')
 GRAPH_DIR_BUILD = os.path.join(GRAPH_DIR, 'json')
 GRAPH_CPU = os.path.join(GRAPH_DIR, 'cpu')
-# fusion
-FUSION_DIR = os.path.join(DATA_ROOT_DIR, 'fusion')
 
 # dump
 DUMP_DIR = os.path.join(DATA_ROOT_DIR, 'dump')
@@ -46,6 +105,7 @@ DUMP_FILES_CPU_CMDS = os.path.join(DUMP_TMP_DIR, 'cpu_tf_tensor_cmd.txt')
 DUMP_FILES_DECODE = os.path.join(DUMP_TMP_DIR, 'decode')
 DUMP_FILES_CONVERT = os.path.join(DUMP_TMP_DIR, 'convert')
 VECTOR_COMPARE_PATH = os.path.join(DUMP_TMP_DIR, 'vector_compare')
+'''
 
 # FLAG
 PRECISION_TOOL_OVERFLOW_FLAG = 'PRECISION_TOOL_OVERFLOW'
