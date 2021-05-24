@@ -110,17 +110,11 @@ function CheckPackage()
 # ************************upgrade Aicpu package********************************
 function UpgradeAicpu()
 {
-    aicpu_old=`cat /var/davinci/aicpu_kernels/version.info |head -n 1|cut -d '.' -f 2`
-    if [[ ${aicpu_old} -eq '' ]] || [[ ${aicpu_old} -eq 75 ]] || [[ ${aicpu_old} -eq 76 ]] || [[ ${aicpu_old} -eq 77 ]];then
-        echo "[INFO] start the installation"
-        tar zxvf ${AICPU_KERNELS_PACKAGE}
-        ./aicpu_kernels_device/scripts/install.sh --run
-        rm -rf ./aicpu_kernels_device
-        return 0
-    else
-        echo "[ERROR] Not eligible for acllib upgrade"
-        return 1
-    fi
+    echo "[INFO] start the installation"
+    tar zxvf ${AICPU_KERNELS_PACKAGE}
+    ./aicpu_kernels_device/scripts/install.sh --run
+    rm -rf ./aicpu_kernels_device
+    return 0
 }
 
 function UpgradeAicpu_run()
@@ -132,15 +126,12 @@ function UpgradeAicpu_run()
         echo "y
         " | su HwHiAiUser -c "${AICPU_KERNELS_PACKAGE} --run"
         rm -f ${AICPU_KERNELS_PACKAGE}
-    elif [[ ${aicpu_old} -eq 75 ]] || [[ ${aicpu_old} -eq 76 ]] || [[ ${aicpu_old} -eq 77 ]];then
+    else
         echo "[INFO] start upgrade Aicpu"
         chown HwHiAiUser:HwHiAiUser ${AICPU_KERNELS_PACKAGE}
         echo "y
         " | su HwHiAiUser -c "${AICPU_KERNELS_PACKAGE} --run"
         rm -f ${AICPU_KERNELS_PACKAGE}
-    else
-        echo "[ERROR] Not eligible for aicpu upgrade"
-        return 1
     fi
 
     grep "export ASCEND_AICPU_PATH=/home/HwHiAiUser/Ascend" /home/HwHiAiUser/.bashrc > /dev/null
@@ -171,16 +162,13 @@ function UpgradeAcllib()
         " | su HwHiAiUser -c "${ACLLIB_PACKAGE} --run"
         rm -f ${ACLLIB_PACKAGE}
         return 0
-    elif [[ ${acllib_old} -eq 75 ]] || [[ ${acllib_old} -eq 76 ]] || [[ ${acllib_old} -eq 77 ]];then
+    else
         echo "[INFO] start upgrade Acllib"
         chown HwHiAiUser:HwHiAiUser ${ACLLIB_PACKAGE}
         echo "y
         " | su HwHiAiUser -c "${ACLLIB_PACKAGE} --upgrade"
         rm -f ${ACLLIB_PACKAGE}
         return 0
-    else
-        echo "[ERROR] Not eligible for acllib upgrade"
-        return 1
     fi
 }
 
@@ -194,15 +182,12 @@ function UpgradePyacl()
         su HwHiAiUser -c "${PYACL_PACKAGE} --run"
         rm -f ${PYACL_PACKAGE}
         return 0
-    elif [[ ${pyacl_old} -eq 1 ]] || [[ ${pyacl_old} -eq 2 ]];then
+    else
         echo "[INFO] start upgrade pyacl"
         chown HwHiAiUser:HwHiAiUser ${PYACL_PACKAGE}
         su HwHiAiUser -c "${PYACL_PACKAGE} --upgrade"
         rm -f ${PYACL_PACKAGE}
         return 0
-    else
-        echo "[ERROR] Not eligible for pyacl upgrade"
-        return 1
     fi
 }
 
