@@ -319,8 +319,7 @@ precision_data/
 |   |   ├── dump
 |   |       └── 20210510101133
 |   │   └── graph
-|   |       ├── all
-|   |       └── build
+|   |       └── all
 │   └── debug_1
 ├── cpu
 |   ├── cpu_debug

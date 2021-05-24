@@ -22,11 +22,10 @@ precision_data/
 |   |   ├── dump
 |   |       └── 20210510101133
 |   │   └── graph
-|   |       ├── all
-|   |       └── build
+|   |       └── ge_proto_00000179_PreRunAfterBuild.txt
 │   └── debug_1
-├── cpu
-|   ├── cpu_debug
+├── tf
+|   ├── tf_debug
 |   └── dump
 ├── overflow
 ├── fusion

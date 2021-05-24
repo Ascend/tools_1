@@ -56,8 +56,8 @@ class DumpManager(object):
     @staticmethod
     def _print_tensors(file_infos, is_convert):
         if file_infos is not None:
-            for file in file_infos.values():
-                util.print_npy_summary(file.dir_path, file.file_name, is_convert)
+            for file_info in file_infos.values():
+                util.print_npy_summary(file_info.dir_path, file_info.file_name, is_convert)
 
     @staticmethod
     def _init_dirs():

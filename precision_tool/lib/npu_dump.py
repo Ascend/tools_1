@@ -120,98 +120,9 @@ class NpuDump(object):
         sub_dir = util.get_newest_dir(self.dump_root)
         sub_dir = os.path.join(self.dump_root, sub_dir) if sub_dir != '' else self.dump_root
         self.dump_files = util.list_npu_dump_files(sub_dir)
-        '''
-        if self.sub_graph is None:
-            raise PrecisionToolException("Sub graph in build graph is None, please check.")
-        # find right path
-        for dir_path, dir_names, file_names in os.walk(self.dump_root, followlinks=True):
-            for dir_name in dir_names:
-                if dir_name == self.sub_graph:
-                    self.sub_graph_path = os.path.join(dir_path, dir_name)
-                    self.log.info("Find sub graph dir: %s", self.sub_graph_path)
-        if self.sub_graph_path is None:
-            raise PrecisionToolException("Can not find any sub graph dir %s in npu dump path [%s]." % (
-                self.sub_graph, cfg.DUMP_FILES_NPU))
-        
-        self._parse_npu_dump_files()
-        # self.npu_files, self.npu_parent_dirs = util.list_dump_files(self.sub_graph_path)
-        parent_dirs = []
-        for file_info in self.npu_files.values():
-            if file_info.dir_path not in parent_dirs:
-                parent_dirs.append(file_info.dir_path)
-        if len(parent_dirs) == 0:
-            raise PrecisionToolException("Can not find any npu files in dir: %s" % self.sub_graph_path)
-        if len(parent_dirs) > 1:
-            self.log.warning("Npu dump files exist in different sub dirs, will select the first one. %s", parent_dirs)
-        self.sub_graph_path = parent_dirs[0]
-        # self.log.info("Update sub graph path to %s", self.sub_graph_path)
-        '''
-    '''
-    def npu_dump_files(self):
-        """Get npu dump files"""
-        if self.npu_files is None:
-            self._parse_dump_files()
-        return self.npu_files
-    
-    def cpu_dump_files(self):
-        """Get cpu dump files"""
-        if self.cpu_files is None:
-            self._parse_cpu_dump_files()
-        return self.cpu_files
-    '''
+
     def list_dump(self, dir_path, file_name):
         """"""
-    '''
-    @catch_tool_exception
-    def op_dump_summary(self, op):
-        """ print op dump info"""
-        if op is None:
-            raise PrecisionToolException("Get None operator")
-        # search npu dump file by op name
-        npu_dump_files = self.get_npu_dump_decode_files_by_op(op)
-        npu_dump_files = sorted(npu_dump_files.values(), key=lambda x: x.idx)
-        input_txt = ['NpuDumpInput:']
-        output_txt = ['NpuDumpOutput:']
-        for npu_dump_file in npu_dump_files:
-            if npu_dump_file.type == 'input':
-                input_txt.append(' -[green][%s][/green] %s' % (npu_dump_file.idx, npu_dump_file.file_name))
-                input_txt.append('  ├─ [yellow]%s[/yellow]' % util.gen_npy_info_txt(npu_dump_file.path))
-            else:
-                output_txt.append(' -[green][%s][/green] %s' % (npu_dump_file.idx, npu_dump_file.file_name))
-                output_txt.append('  ├─ [yellow]%s[/yellow]' % util.gen_npy_info_txt(npu_dump_file.path))
-        input_txt.extend(output_txt)
-        return Constant.NEW_LINE.join(input_txt)
-        
-        npu_dump_info = Constant.NEW_LINE.join(input_txt)
-        # cpu dump info
-        cpu_dump_txt = ['CpuDumpOutput:']
-        cpu_dump_files = self.get_cpu_dump_files_by_op(op)
-        for cpu_dump_file in cpu_dump_files.values():
-            cpu_dump_txt.append(' -[green][%s][/green] %s' % (cpu_dump_file.idx, cpu_dump_file.file_name))
-            cpu_dump_txt.append('  ├─ [yellow]%s[/yellow]' % util.gen_npy_info_txt(cpu_dump_file.path))
-        cpu_dump_info = Constant.NEW_LINE.join(cpu_dump_txt)
-        return Constant.NEW_LINE.join([npu_dump_info, cpu_dump_info])
-    
-
-    def print_data(self, file_name, is_convert):
-        """Print numpy data file"""
-        if os.path.isfile(file_name):
-            return util.print_npy_summary(os.path.dirname(file_name), os.path.basename(file_name), is_convert)
-        parent_dirs = []
-        file_names = [file_name]
-        if '/' in file_name:
-            # maybe node name, replace to '_' and detect
-            self.log.warning("Invalid file name[%s]. you may mean the files below.", file_name)
-            file_names = self._detect_cpu_file_name(file_name)
-        for parent_dir in [cfg.DUMP_DECODE_DIR, cfg.TF_DUMP_DIR, cfg.OVERFLOW_DECODE_DIR,
-                           cfg.DUMP_CONVERT_DIR]:
-            for file_name in file_names:
-                if os.path.isfile(os.path.join(parent_dir, file_name)):
-                    self.log.debug("Print data in %s", parent_dir)
-                    util.print_npy_summary(parent_dir, file_name, is_convert)
-                    parent_dirs.append(parent_dir)
-        self.log.info("Find file [%s] in [%d] dirs. %s", file_name, len(parent_dirs), str(parent_dirs))
-    '''
 
     def get_npu_dump_decode_files_by_op(self, op):
         """Get npu dump decode files by op"""
@@ -221,17 +132,6 @@ class NpuDump(object):
             self._decode_npu_dump_files_by_op(op)
             dump_decode_files = util.list_npu_dump_decode_files(cfg.DUMP_DECODE_DIR, match_name)
         return dump_decode_files
-
-    '''
-    def get_cpu_dump_files_by_op(self, op):
-        """Get cpu dump files by op"""
-        cpu_files = {}
-        match_name = op.name().replace('/', '_').replace('.', '_') + '\\.'
-        for f in self.cpu_dump_files():
-            if re.match(match_name, f):
-                cpu_files[f] = self.cpu_dump_files()[f]
-        return cpu_files
-    '''
 
     def convert_npu_dump(self, name, data_format=None, dst_path=None):
         """Convert npu dump to npy of data_format"""
@@ -273,21 +173,6 @@ class NpuDump(object):
             if file_info.op_name == op_name:
                 return file_info
         return None
-    '''
-    def _parse_npu_dump_files(self):
-        # self.npu_files, self.npu_parent_dirs = util.list_dump_files(self.sub_graph_path)
-        self.npu_files = util.list_npu_dump_files(self.sub_graph_path)
-        parent_dirs = []
-        for file_info in self.npu_files.values():
-            if file_info.dir_path not in parent_dirs:
-                parent_dirs.append(file_info.dir_path)
-        if len(parent_dirs) == 0:
-            raise PrecisionToolException("Can not find any npu files in dir: %s" % self.sub_graph_path)
-        if len(parent_dirs) > 1:
-            self.log.warning("Npu dump files exist in different sub dirs, will select the first one. %s", parent_dirs)
-        self.sub_graph_path = parent_dirs[0]
-        self.log.info("Update sub graph path to %s", self.sub_graph_path)
-    '''
 
     def _parse_cpu_dump_files(self):
         self.cpu_files = util.list_cpu_dump_decode_files(cfg.TF_DUMP_DIR)

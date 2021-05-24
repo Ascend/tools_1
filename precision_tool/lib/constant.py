@@ -6,5 +6,3 @@ class Constant(object):
     NPU_DEBUG_ID_1 = "debug_1"
     GRAPH = "graph"
     DUMP = "dump"
-    GRAPH_ALL = "all"
-    GRAPH_BUILD = "build"
