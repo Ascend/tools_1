@@ -18,14 +18,14 @@ def sess_dump(sess):
     :return:
     """
     # sess = tf_debug.LocalCLIDebugWrapperSession(sess, ui_type="readline")
-    return tf_debug.DumpingDebugWrapperSession(sess, cfg.DUMP_FILES_CPU_DEBUG)
+    return tf_debug.DumpingDebugWrapperSession(sess, cfg.TF_DEBUG_DUMP_DIR)
 
 
 def estimator_dump():
     """In estimator mode. estim_spec = tf.estimator.EstimatorSpec(traing_hooks=[estimator_dump()])
     :return:
     """
-    return tf_debug.DumpingDebugHook(cfg.DUMP_FILES_CPU_DEBUG)
+    return tf_debug.DumpingDebugHook(cfg.TF_DEBUG_DUMP_DIR)
 
 
 def estimator_dump_config():
@@ -36,11 +36,11 @@ def estimator_dump_config():
     """
     _init()
     if _is_overflow():
-        config = DumpConfig(enable_dump_debug=True, dump_path=cfg.DUMP_FILES_OVERFLOW, dump_step=cfg.TF_DUMP_STEP,
+        config = DumpConfig(enable_dump_debug=True, dump_path=cfg.NPU_OVERFLOW_DUMP_DIR, dump_step=cfg.TF_DUMP_STEP,
                             dump_mode="all", op_debug_level=cfg.OP_DEBUG_LEVEL,
                             fusion_switch_file=cfg.FUSION_SWITCH_FILE)
     elif _is_dump():
-        config = DumpConfig(enable_dump=True, dump_path=cfg.DUMP_FILES_NPU, dump_step=cfg.TF_DUMP_STEP,
+        config = DumpConfig(enable_dump=True, dump_path=cfg.DEFAULT_NPU_DUMP_DIR, dump_step=cfg.TF_DUMP_STEP,
                             dump_mode="all", op_debug_level=cfg.OP_DEBUG_LEVEL,
                             fusion_switch_file=cfg.FUSION_SWITCH_FILE)
     else:
@@ -66,29 +66,39 @@ def session_dump_config(session_config=None):
     custom_op = session_config.graph_options.rewrite_options.custom_optimizers.add()
     custom_op.name = 'NpuOptimizer'
     custom_op.parameter_map['use_off_line'].b = True
+    update_custom_op(custom_op)
+    session_config.graph_options.rewrite_options.remapping = RewriterConfig.OFF
+    return session_config
+
+
+def update_custom_op(custom_op):
+    """
+    Update custom_op
+    :param custom_op:
+    :return:
+    """
     if _is_overflow():
         custom_op.parameter_map['enable_dump_debug'].b = True
         custom_op.parameter_map['dump_debug_mode'].s = tf.compat.as_bytes("all")
-        custom_op.parameter_map['dump_path'].s = tf.compat.as_bytes(cfg.DUMP_FILES_OVERFLOW)
+        custom_op.parameter_map['dump_path'].s = tf.compat.as_bytes(cfg.NPU_OVERFLOW_DUMP_DIR)
         custom_op.parameter_map['op_debug_level'].i = cfg.OP_DEBUG_LEVEL
         custom_op.parameter_map['fusion_switch_file'].s = tf.compat.as_bytes(cfg.FUSION_SWITCH_FILE)
         custom_op.parameter_map['dump_step'].s = tf.compat.as_bytes(cfg.TF_DUMP_STEP)
     elif _is_dump():
         custom_op.parameter_map['enable_dump'].b = True
         custom_op.parameter_map['dump_mode'].s = tf.compat.as_bytes("all")
-        custom_op.parameter_map['dump_path'].s = tf.compat.as_bytes(cfg.DUMP_FILES_NPU)
+        custom_op.parameter_map['dump_path'].s = tf.compat.as_bytes(cfg.DEFAULT_NPU_DUMP_DIR)
         custom_op.parameter_map['op_debug_level'].i = cfg.OP_DEBUG_LEVEL
         custom_op.parameter_map['fusion_switch_file'].s = tf.compat.as_bytes(cfg.FUSION_SWITCH_FILE)
         custom_op.parameter_map['dump_step'].s = tf.compat.as_bytes(cfg.TF_DUMP_STEP)
-    session_config.graph_options.rewrite_options.remapping = RewriterConfig.OFF
-    return session_config
+    return custom_op
 
 
 def _init():
-    if not os.path.exists(cfg.DUMP_FILES_OVERFLOW):
-        _create_dir(cfg.DUMP_FILES_OVERFLOW)
-    if not os.path.exists(cfg.DUMP_FILES_NPU):
-        _create_dir(cfg.DUMP_FILES_NPU)
+    if not os.path.exists(cfg.NPU_OVERFLOW_DUMP_DIR):
+        _create_dir(cfg.NPU_OVERFLOW_DUMP_DIR)
+    if not os.path.exists(cfg.DEFAULT_NPU_DUMP_DIR):
+        _create_dir(cfg.DEFAULT_NPU_DUMP_DIR)
     _set_dump_graph_flags()
 
 
@@ -114,7 +124,7 @@ def _unset_dump_graph_flags():
 def _set_dump_graph_flags():
     os.environ[FLAG_DUMP_GE_GRAPH] = str(cfg.DUMP_GE_GRAPH_VALUE)
     os.environ[FLAG_DUMP_GRAPH_LEVEL] = str(cfg.DUMP_GRAPH_LEVEL_VALUE)
-    os.environ[FLAG_DUMP_GRAPH_PATH] = cfg.GRAPH_DIR_ALL
+    os.environ[FLAG_DUMP_GRAPH_PATH] = cfg.DEFAULT_NPU_GRAPH_DIR
 
 
 def _is_dump():

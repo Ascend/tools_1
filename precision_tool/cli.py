@@ -38,15 +38,15 @@ def _run_tf_dbg_dump(argv):
     parser.add_argument('command', type=str, default=None, help="tf train command")
     args = parser.parse_args(argv)
     log = util.get_log()
-    if os.path.exists(cfg.DUMP_FILES_CPU_DEBUG) and len(os.listdir(cfg.DUMP_FILES_CPU_DEBUG)) != 0:
-        log.info("TF offline debug path [%s] is not empty, will analyze it directly." % cfg.DUMP_FILES_CPU_DEBUG)
+    if os.path.exists(cfg.TF_DEBUG_DUMP_DIR) and len(os.listdir(cfg.TF_DEBUG_DUMP_DIR)) != 0:
+        log.info("TF offline debug path [%s] is not empty, will analyze it directly." % cfg.TF_DEBUG_DUMP_DIR)
     elif args.command is not None:
         log.info("Run command: %s" % args.command)
         util.execute_command(args.command)
         log.info("Run finish, start analyze TF dump.")
-    if not os.path.exists(cfg.DUMP_FILES_CPU_DEBUG) or len(os.listdir(cfg.DUMP_FILES_CPU_DEBUG)) == 0:
-        raise PrecisionToolException("Empty tf debug dir. %s" % cfg.DUMP_FILES_CPU_DEBUG)
-    run_dirs = os.listdir(cfg.DUMP_FILES_CPU_DEBUG)
+    if not os.path.exists(cfg.TF_DEBUG_DUMP_DIR) or len(os.listdir(cfg.TF_DEBUG_DUMP_DIR)) == 0:
+        raise PrecisionToolException("Empty tf debug dir. %s" % cfg.TF_DEBUG_DUMP_DIR)
+    run_dirs = os.listdir(cfg.TF_DEBUG_DUMP_DIR)
     run_dirs.sort()
     # extra the last run dir
     # run_dir = run_dirs[-1]
@@ -54,7 +54,7 @@ def _run_tf_dbg_dump(argv):
     for run_dir in run_dirs:
         time.sleep(1)
         command = "%s -m tensorflow.python.debug.cli.offline_analyzer --ui_type readline --dump_dir %s" % (
-            cfg.PYTHON, os.path.join(cfg.DUMP_FILES_CPU_DEBUG, run_dir))
+            cfg.PYTHON, os.path.join(cfg.TF_DEBUG_DUMP_DIR, run_dir))
         _do_run_tf_dbg_dump(command, 0)
 
 
@@ -79,22 +79,22 @@ def _do_run_tf_dbg_dump(cmd_line, run_times=2):
         tf_dbg.sendline('run')
     log.info("Generate tensor name file.")
     tf_dbg.expect('tfdbg>', timeout=cfg.TF_DEBUG_TIMEOUT)
-    tf_dbg.sendline('lt > %s' % cfg.DUMP_FILES_CPU_NAMES)
+    tf_dbg.sendline('lt > %s' % cfg.TF_TENSOR_NAMES)
     tf_dbg.expect('tfdbg>')
-    if not os.path.exists(cfg.DUMP_FILES_CPU_NAMES):
+    if not os.path.exists(cfg.TF_TENSOR_NAMES):
         log.error("Failed to get tensor name in tf_debug.")
         raise PrecisionToolException("Get tensor name in tf_debug failed.")
-    log.info("Save tensor name success. Generate tf dump commands from file: %s", cfg.DUMP_FILES_CPU_NAMES)
-    convert_cmd = "timestamp=" + str(int(time.time())) + "; cat " + cfg.DUMP_FILES_CPU_NAMES + \
+    log.info("Save tensor name success. Generate tf dump commands from file: %s", cfg.TF_TENSOR_NAMES)
+    convert_cmd = "timestamp=" + str(int(time.time())) + "; cat " + cfg.TF_TENSOR_NAMES + \
                   " | awk '{print \"pt\",$4,$4}'| awk '{gsub(\"/\", \"_\", $3); gsub(\":\", \".\", $3);" \
-                  "print($1,$2,\"-n 0 -w " + cfg.DUMP_FILES_CPU + "/" + \
-                  "\"$3\".\"\"'$timestamp'\"\".npy\")}' > " + cfg.DUMP_FILES_CPU_CMDS
+                  "print($1,$2,\"-n 0 -w " + cfg.TF_DUMP_DIR + "/" + \
+                  "\"$3\".\"\"'$timestamp'\"\".npy\")}' > " + cfg.TF_TENSOR_DUMP_CMD
     util.execute_command(convert_cmd)
-    if not os.path.exists(cfg.DUMP_FILES_CPU_CMDS):
+    if not os.path.exists(cfg.TF_TENSOR_DUMP_CMD):
         log.error("Save tf dump cmd failed")
         raise PrecisionToolException("Failed to generate tf dump command.")
-    log.info("Generate tf dump commands. Start run commands in file: %s", cfg.DUMP_FILES_CPU_CMDS)
-    for cmd in open(cfg.DUMP_FILES_CPU_CMDS):
+    log.info("Generate tf dump commands. Start run commands in file: %s", cfg.TF_TENSOR_DUMP_CMD)
+    for cmd in open(cfg.TF_TENSOR_DUMP_CMD):
         log.debug(cmd.strip())
         tf_dbg.sendline(cmd.strip())
         tf_dbg.expect('tfdbg>')
