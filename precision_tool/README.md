@@ -319,18 +319,25 @@ precision_data/
 |   |   ├── dump
 |   |       └── 20210510101133
 |   │   └── graph
-|   |       └── all
+|   |       └── ge_proto_00000179_PreRunAfterBuild.txt
 │   └── debug_1
-├── cpu
-|   ├── cpu_debug
+├── tf
+|   ├── tf_debug
 |   └── dump
 ├── overflow
 ├── fusion
 └── temp
     ├── op_graph
-    ├── dump_decode
-    ├── overflow_decode
+    ├── decode
+    |   ├── dump_decode
+    |   ├── overflow_decode
+    |   └── dump_convert
     └── vector_compare
+        ├── 20210510101133
+        |   ├── result_123456.csv
+        |   └── result_123455.csv
+        └── 20210510101134
+            └── result_123458.csv
 ```
 ### TF脚本修改参考
 

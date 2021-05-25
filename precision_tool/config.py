@@ -80,32 +80,6 @@ VECTOR_COMPARE_PATH = os.path.join(TMP_DIR, 'vector_compare')
 TF_TENSOR_NAMES = os.path.join(TMP_DIR, 'tf_tensor_names.txt')
 TF_TENSOR_DUMP_CMD = os.path.join(TMP_DIR, 'tf_tensor_cmd.txt')
 
-'''
-# graph
-GRAPH_DIR = os.path.join(DATA_ROOT_DIR, 'graph')
-GRAPH_DIR_ALL = os.path.join(GRAPH_DIR, 'all')
-GRAPH_DIR_BUILD = os.path.join(GRAPH_DIR, 'json')
-GRAPH_CPU = os.path.join(GRAPH_DIR, 'cpu')
-
-# dump
-DUMP_DIR = os.path.join(DATA_ROOT_DIR, 'dump')
-DUMP_FILES_NPU = os.path.join(DUMP_DIR, 'npu')
-DUMP_FILES_OVERFLOW = os.path.join(DUMP_DIR, 'overflow')
-DUMP_FILES_CPU_DEBUG = os.path.join(DUMP_DIR, 'cpu_debug')
-DUMP_FILES_CPU = os.path.join(DUMP_DIR, 'cpu')
-
-# dump temp dir
-DUMP_TMP_DIR = os.path.join(DUMP_DIR, 'temp')
-OP_GRAPH_DIR = os.path.join(DUMP_TMP_DIR, 'op_graph')
-DUMP_FILES_OVERFLOW_DECODE = os.path.join(DUMP_TMP_DIR, 'overflow_decode')
-DUMP_FILES_CPU_LOG = os.path.join(DUMP_TMP_DIR, 'cpu_tf_dump_log.txt')
-DUMP_FILES_CPU_NAMES = os.path.join(DUMP_TMP_DIR, 'cpu_tf_tensor_names.txt')
-DUMP_FILES_CPU_CMDS = os.path.join(DUMP_TMP_DIR, 'cpu_tf_tensor_cmd.txt')
-DUMP_FILES_DECODE = os.path.join(DUMP_TMP_DIR, 'decode')
-DUMP_FILES_CONVERT = os.path.join(DUMP_TMP_DIR, 'convert')
-VECTOR_COMPARE_PATH = os.path.join(DUMP_TMP_DIR, 'vector_compare')
-'''
-
 # FLAG
 PRECISION_TOOL_OVERFLOW_FLAG = 'PRECISION_TOOL_OVERFLOW'
 PRECISION_TOOL_DUMP_FLAG = 'PRECISION_TOOL_DUMP'

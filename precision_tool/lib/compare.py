@@ -135,14 +135,14 @@ class Compare(object):
         error_ops = []
         for compare_result in compare_results:
             err_ops = compare_result.get_op_by_cosine_sim_threshold(cos_sim_threshold, limit)
-            self.log.info("Find %d ops less then %d in %s", len(err_ops), cos_sim_threshold, compare_result.file_path)
+            self.log.info("Find %d ops less then %s in %s", len(err_ops), cos_sim_threshold, compare_result.file_path)
             error_ops.extend(err_ops)
         if len(error_ops) == 0:
             self.log.info("Can not find any compare result over threshold: %s" % cos_sim_threshold)
         else:
             for i, error_op in enumerate(error_ops):
                 if i < limit:
-                    error_op.summary()
+                    error_op.summary(cos_sim_threshold)
         return error_ops
 
     def compare_data(self, left, right, save_txt=False, rl=0.001, al=0.001, diff_count=20):
