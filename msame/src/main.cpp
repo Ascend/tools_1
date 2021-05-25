@@ -35,7 +35,8 @@ void InitAndCheckParams(int argc, char* argv[], map<char, string>& params, vecto
     const char* optstring = "m::i::o::f::hd::p::l::y::e::g::";
     string model_file_type = ".om";
     string check = "";
-    int c, deb, index;
+    int c = -1;
+    int index = 0;
     struct option opts[] = { { "model", required_argument, NULL, 'm' },
         { "input", required_argument, NULL, 'i' },
         { "output", required_argument, NULL, 'o' },
