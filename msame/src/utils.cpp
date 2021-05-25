@@ -19,8 +19,6 @@
 #include <sys/time.h>
 using namespace std;
 extern bool g_is_device;
-extern bool is_profi;
-extern bool is_dump;
 
 void* Utils::ReadBinFile(std::string fileName, uint32_t& fileSize)
 {
@@ -188,7 +186,8 @@ void Utils::printHelpLetter()
 
     cout << "arguments explain:" << endl;
     cout << "  --model       Model file path" << endl;
-    cout << "  --input	Input data path(only accept binary data file) 	If there are several file, please seprate by ','" << endl;
+    cout << "  --input	Input data path(only accept binary data file) 	\
+    If there are several file, please seprate by ','" << endl;
     cout << "  --output	Output path(User needs to have permission to create directories)" << endl;
     cout << "  --outfmt	Output file format (TXT or BIN)" << endl;
     cout << "  --loop 	loop time(must in 1 to 100)" << endl;
@@ -250,7 +249,7 @@ void Utils::ProfilerJson(bool isprof, map<char, string>& params)
 
 void Utils::DumpJson(bool isdump, map<char, string>& params)
 {
-    if (is_dump) {
+    if (isdump) {
         std::string modelPath = params['m'].c_str();
         std::string modelName = Utils::modelName(modelPath);
         std::string out_path = params['o'].c_str();

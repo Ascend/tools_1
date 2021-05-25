@@ -23,9 +23,9 @@ bool g_is_txt = false;
 bool g_is_device = false;
 int g_loop = 1;
 int32_t g_device_id = 0;
-bool is_profi = false;
-bool is_dump = false;
-bool is_debug = false;
+bool g_is_profi = false;
+bool g_is_dump = false;
+bool g_is_debug = false;
 bool g_is_dymdims = false;
 size_t g_dymindex = -1;
 size_t g_dym_gear_count = 0;
@@ -131,21 +131,21 @@ int main(int argc, char* argv[])
     }
 
     if (params['d'].compare("true") == 0) {
-        is_dump = true;
+        g_is_dump = true;
     }
     if (params['p'].compare("true") == 0) {
-        is_profi = true;
+        g_is_profi = true;
     }
     if (params['g'].compare("true") == 0) {
-        is_debug = true;
+        g_is_debug = true;
     }
-    if (is_profi && is_dump) {
+    if (g_is_profi && g_is_dump) {
         ERROR_LOG("dump and profiler can not both be true");
         return FAILED;
     }
 
-    Utils::ProfilerJson(is_profi, params);
-    Utils::DumpJson(is_dump, params);
+    Utils::ProfilerJson(g_is_profi, params);
+    Utils::DumpJson(g_is_dump, params);
 
     SampleProcess processSample;
 
@@ -162,7 +162,6 @@ int main(int argc, char* argv[])
     }
 
     INFO_LOG("Execute sample success.");
-
 
     return SUCCESS;
 }

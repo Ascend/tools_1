@@ -23,9 +23,9 @@ extern bool g_is_device;
 extern bool g_is_txt;
 extern int g_loop;
 extern int32_t g_device_id;
-extern bool is_debug;
-extern bool is_profi;
-extern bool is_dump;
+extern bool g_is_debug;
+extern bool g_is_profi;
+extern bool g_is_dump;
 extern size_t g_dymindex;
 extern size_t g_dym_gear_count;
 extern bool g_is_dymdims;
@@ -47,7 +47,7 @@ Result SampleProcess::InitResource()
     aclError ret;
     const char* aclConfigPath = "./acl.json";
     ifstream acl_file(aclConfigPath);
-    if (is_profi || is_dump || acl_file) {
+    if (g_is_profi || g_is_dump || acl_file) {
         ret = aclInit(aclConfigPath);
     } 
     else {
@@ -166,7 +166,7 @@ Result SampleProcess::Process(map<char, string>& params, vector<string>& input_f
         }
     }  
 
-    if (is_debug) {
+    if (g_is_debug) {
         ret = processModel.PrintDesc();
         if (ret != SUCCESS) {
             ERROR_LOG("print model descrtption failed");
@@ -351,7 +351,7 @@ Result SampleProcess::Process(map<char, string>& params, vector<string>& input_f
 		
 	}
 
-    if (is_dump || is_profi) {
+    if (g_is_dump || g_is_profi) {
         if (remove("acl.json") == 0) {
             INFO_LOG("delete acl.json success");
         } else {
