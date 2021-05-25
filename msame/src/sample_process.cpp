@@ -347,9 +347,8 @@ Result SampleProcess::Process(map<char, string>& params, vector<string>& input_f
             printf("Inference average time without first time: %f ms\n", infer_time_ave_without_first);
         }
         processModel.DestroyInput();
-        processModel.DestroyOutput();
-		
-	}
+        processModel.DestroyOutput();	
+    }
 
     if (g_is_dump || g_is_profi) {
         if (remove("acl.json") == 0) {

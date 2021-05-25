@@ -63,7 +63,6 @@ Result ModelProcess::LoadModelFromFile(const string& modelPath)
     return SUCCESS;
 }
 
-
 Result ModelProcess::CreateDesc()
 {
     modelDesc_ = aclmdlCreateDesc();
@@ -590,10 +589,10 @@ void ModelProcess::OutputModelResult(std::string& s, std::string& modelName)
                     if (i != 0 && (i + 1) % amount_onebatch == 0 && i != len / sizeof(float)-1){
                         outstr << "\n\n";
                     } else{
-			            if ((i + 1) % 100 == 0 && i != len / sizeof(float)-1){
+                        if ((i + 1) % 100 == 0 && i != len / sizeof(float)-1){
                             outstr << "\n";
                         }
-   		            }
+                    }
                 }
                 break;
             case 4:
