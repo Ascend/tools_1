@@ -172,7 +172,7 @@ void ModelProcess::GetDimInfo(size_t gearCount, aclmdlIODims *dims)
     {
         if (i == 0)
         {
-           INFO_LOG("model has %zu gear of dims", gearCount); 
+            INFO_LOG("model has %zu gear of dims", gearCount); 
         }
         stringstream ss;
         ss << "dims[" << i << "]:";
@@ -697,7 +697,7 @@ void ModelProcess::OutputModelResult(std::string& s, std::string& modelName)
                         if ((i + 1) % 100 == 0 && i != len / sizeof(float)-1){
                             outstr << "\n";
                         }
-		            }
+                    }
                 }
                 break;
             default:

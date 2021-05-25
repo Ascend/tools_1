@@ -29,12 +29,12 @@ bool g_is_debug = false;
 bool g_is_dymdims = false;
 size_t g_dymindex = -1;
 size_t g_dym_gear_count = 0;
-string model_file_type = ".om";
-string check = "";
 
 void InitAndCheckParams(int argc, char* argv[], map<char, string>& params, vector<string>& inputs)
 {
     const char* optstring = "m::i::o::f::hd::p::l::y::e::g::";
+    string model_file_type = ".om";
+    string check = "";
     int c, deb, index;
     struct option opts[] = { { "model", required_argument, NULL, 'm' },
         { "input", required_argument, NULL, 'i' },
