@@ -28,27 +28,24 @@ def estimator_dump():
     return tf_debug.DumpingDebugHook(cfg.TF_DEBUG_DUMP_DIR)
 
 
-def estimator_dump_config():
+def estimator_dump_config(action=None):
     """return DumpConfig.
     In estimator mode. set dump_config in NPURunConfig().
     exp. config = NPURunConfig(dump_config=estimator_dum_config(), session_config=session_config)
     :return: DumpConfig
     """
     _init()
-    if _is_overflow():
-        config = DumpConfig(enable_dump_debug=True, dump_path=cfg.NPU_OVERFLOW_DUMP_DIR, dump_step=cfg.TF_DUMP_STEP,
-                            dump_mode="all", op_debug_level=cfg.OP_DEBUG_LEVEL,
-                            fusion_switch_file=cfg.FUSION_SWITCH_FILE)
-    elif _is_dump():
+    if _is_overflow(action):
+        config = DumpConfig(enable_dump_debug=True, dump_path=cfg.NPU_OVERFLOW_DUMP_DIR, dump_mode="all")
+    elif _is_dump(action):
         config = DumpConfig(enable_dump=True, dump_path=cfg.DEFAULT_NPU_DUMP_DIR, dump_step=cfg.TF_DUMP_STEP,
-                            dump_mode="all", op_debug_level=cfg.OP_DEBUG_LEVEL,
-                            fusion_switch_file=cfg.FUSION_SWITCH_FILE)
+                            dump_mode="all")
     else:
         config = DumpConfig()
     return config
 
 
-def session_dump_config(session_config=None):
+def session_dump_config(session_config=None, action=None):
     """
     In TF session mode. set dump_config in session_config.
     exp. config = session_dump_config()
@@ -57,34 +54,36 @@ def session_dump_config(session_config=None):
             sess.run(_)
             tf_debug.LocalCLIDebugWrapperSession(sess=sess, ui_type="readline")
     :param session_config: original session config
+    :param action: if set action, no need to start app with cli wrapper
     :return: config_pb2.ConfigProto
     """
-    _init()
     if ((not isinstance(session_config, config_pb2.ConfigProto)) and
             (not issubclass(type(session_config), config_pb2.ConfigProto))):
         session_config = config_pb2.ConfigProto()
     custom_op = session_config.graph_options.rewrite_options.custom_optimizers.add()
     custom_op.name = 'NpuOptimizer'
     custom_op.parameter_map['use_off_line'].b = True
-    update_custom_op(custom_op)
+    update_custom_op(custom_op, action)
     session_config.graph_options.rewrite_options.remapping = RewriterConfig.OFF
     return session_config
 
 
-def update_custom_op(custom_op):
+def update_custom_op(custom_op, action=None):
     """
     Update custom_op
     :param custom_op:
+    :param action
     :return:
     """
-    if _is_overflow():
+    _init()
+    if _is_overflow(action):
         custom_op.parameter_map['enable_dump_debug'].b = True
         custom_op.parameter_map['dump_debug_mode'].s = tf.compat.as_bytes("all")
         custom_op.parameter_map['dump_path'].s = tf.compat.as_bytes(cfg.NPU_OVERFLOW_DUMP_DIR)
         custom_op.parameter_map['op_debug_level'].i = cfg.OP_DEBUG_LEVEL
         custom_op.parameter_map['fusion_switch_file'].s = tf.compat.as_bytes(cfg.FUSION_SWITCH_FILE)
-        custom_op.parameter_map['dump_step'].s = tf.compat.as_bytes(cfg.TF_DUMP_STEP)
-    elif _is_dump():
+        # custom_op.parameter_map['dump_step'].s = tf.compat.as_bytes(cfg.TF_DUMP_STEP)
+    elif _is_dump(action):
         custom_op.parameter_map['enable_dump'].b = True
         custom_op.parameter_map['dump_mode'].s = tf.compat.as_bytes("all")
         custom_op.parameter_map['dump_path'].s = tf.compat.as_bytes(cfg.DEFAULT_NPU_DUMP_DIR)
@@ -99,6 +98,8 @@ def _init():
         _create_dir(cfg.NPU_OVERFLOW_DUMP_DIR)
     if not os.path.exists(cfg.DEFAULT_NPU_DUMP_DIR):
         _create_dir(cfg.DEFAULT_NPU_DUMP_DIR)
+    if not os.path.exists(cfg.DEFAULT_NPU_GRAPH_DIR):
+        _create_dir(cfg.DEFAULT_NPU_GRAPH_DIR)
     _set_dump_graph_flags()
 
 
@@ -127,14 +128,18 @@ def _set_dump_graph_flags():
     os.environ[FLAG_DUMP_GRAPH_PATH] = cfg.DEFAULT_NPU_GRAPH_DIR
 
 
-def _is_dump():
+def _is_dump(action):
+    if action is not None:
+        return action == 'dump'
     if cfg.PRECISION_TOOL_DUMP_FLAG in os.environ and os.environ[cfg.PRECISION_TOOL_DUMP_FLAG] == 'True':
         print("======< PrecisionTool enable npu dump >======")
         return True
     return False
 
 
-def _is_overflow():
+def _is_overflow(action):
+    if action is not None:
+        return action == 'overflow'
     if cfg.PRECISION_TOOL_OVERFLOW_FLAG in os.environ and os.environ[cfg.PRECISION_TOOL_OVERFLOW_FLAG] == 'True':
         print("======< PrecisionTool enable npu overflow >======")
         return True

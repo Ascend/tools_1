@@ -32,17 +32,14 @@ INTRODUCE_DOC = \
     "       > python3.7.5 precision_tool/cli.py\n"
 
 
-def _run_tf_dbg_dump(argv):
+def _run_tf_dbg_dump(cmd_line):
     """Run tf train script to get dump data."""
-    parser = argparse.ArgumentParser()
-    parser.add_argument('command', type=str, default=None, help="tf train command")
-    args = parser.parse_args(argv)
     log = util.get_log()
     if os.path.exists(cfg.TF_DEBUG_DUMP_DIR) and len(os.listdir(cfg.TF_DEBUG_DUMP_DIR)) != 0:
         log.info("TF offline debug path [%s] is not empty, will analyze it directly." % cfg.TF_DEBUG_DUMP_DIR)
-    elif args.command is not None:
-        log.info("Run command: %s" % args.command)
-        util.execute_command(args.command)
+    elif cmd_line is not None:
+        log.info("Run command: %s" % cmd_line)
+        util.execute_command(cmd_line)
         log.info("Run finish, start analyze TF dump.")
     if not os.path.exists(cfg.TF_DEBUG_DUMP_DIR) or len(os.listdir(cfg.TF_DEBUG_DUMP_DIR)) == 0:
         raise PrecisionToolException("Empty tf debug dir. %s" % cfg.TF_DEBUG_DUMP_DIR)
@@ -135,13 +132,10 @@ def _run_npu_overflow(cmd):
 def main():
     log = util.get_log()
     if len(sys.argv) > 1:
-        if len(sys.argv) == 2:
-            print(INTRODUCE_DOC)
-            sys.exit(0)
         log.info("Single command mode.")
-        cmd_line = sys.argv[2]
+        cmd_line = sys.argv[2] if len(sys.argv) > 2 else None
         if sys.argv[1] == 'tf_dump':
-            _run_tf_dbg_dump(sys.argv[2:])
+            _run_tf_dbg_dump(cmd_line)
         elif sys.argv[1] == 'npu_dump':
             _run_npu_dump(cmd_line)
         elif sys.argv[1] == 'npu_overflow':
