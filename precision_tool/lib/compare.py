@@ -113,7 +113,7 @@ class Compare(object):
         if file_name is None:
             sub_dir = util.get_newest_dir(cfg.VECTOR_COMPARE_PATH)
             if sub_dir == '':
-                raise PrecisionToolException("Empty vector compare path:%s", cfg.VECTOR_COMPARE_PATH)
+                raise PrecisionToolException("Empty vector compare path:%s" % cfg.VECTOR_COMPARE_PATH)
             file_name = os.path.join(cfg.VECTOR_COMPARE_PATH, sub_dir)
         if os.path.isfile(file_name):
             results.append(CompareResult(file_name))

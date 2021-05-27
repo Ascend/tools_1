@@ -72,6 +72,9 @@ class Util(object):
         :param cmd: command
         :return: status code
         """
+        if cmd is None:
+            self.log.error("Command is None.")
+            return -1
         self.log.debug("[Run CMD]: %s", cmd)
         complete_process = subprocess.run(cmd, shell=True)
         return complete_process.returncode
@@ -106,8 +109,7 @@ class Util(object):
         cmd = '%s --mode=5 --om=%s --json=%s' % (self._get_atc(), src_file, dst_file)
         self.execute_command(cmd)
         if not os.path.isfile(dst_file):
-            raise PrecisionToolException("Convert GE build graph to json failed. can not find any json file in %s" %
-                                         cfg.GRAPH_DIR_BUILD)
+            raise PrecisionToolException("Convert GE build graph to json failed. can not find any json file.")
         self.log.info('Finish convert [%s] build graph from proto to json format.', src_file)
         return dst_file
 

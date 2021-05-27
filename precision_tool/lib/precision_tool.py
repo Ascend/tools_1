@@ -205,4 +205,4 @@ class PrecisionTool(object):
         if argv[1] in cmd_func_map:
             func = cmd_func_map[argv[1]]
             return func(argv[2:])
-        raise PrecisionToolException("cmd %s is not supported or cmd should be run in interactive mode.", argv[1])
+        raise PrecisionToolException("cmd %s is not supported or cmd should be run in interactive mode." % argv[1])
