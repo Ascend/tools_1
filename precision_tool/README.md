@@ -57,6 +57,10 @@ sudo yum install graphviz
     mage_depth = tf.concat([image, depth_gt], 2)
     image_depth_cropped = tf.random_crop(image_depth, [self.params.height, self.params.width, 4])
     
+    # 4. RunConfig/NPURunConfig中设置tf_random_seed固定网络随机因子
+    run_config = tf.estimator.RunConfig(tf_random_seed=1, ...)
+    run_config = NPURunConfig(tf_random_seed=1, ...)
+  
     # 其他......
     ```
 * 该工具基于**NPU的计算图**，**NPU的DUMP数据**，**NPU的溢出检测数据**，**TF的计算图meta文件**，**TF的DUMP数据**进行数据解析和分析。
@@ -327,7 +331,38 @@ sudo yum install graphviz
    ╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
     ```
 
-7. vcs
+7. vcs -f [file_name] -c [cos_sim_threshold] -l [limit]
+   ```python
+    # 查看精度比对结果的概要信息，可以更加预先相似的阈值过滤出低于阈值的算子/信息
+    # -f (--file) 可选，指定csv文件，不设置则默认遍历precision_data/temp/vector_compare/目录下最近产生的对比目录内的所有csv
+    # -c (--cos_sim) 可选，指定筛选所使用的预先相似度阈值，默认0.98
+    # -l (--limit) 可选，指定输出前多少个结果，默认值3
+    PrecisionTool > vcs -c 0.98 -l 2
+    2021-05-31 14:48:56 (2344298) -[INFO]Sub path num:[1]. Dirs[['20210529145750']], choose[20210529145750]
+    2021-05-31 14:48:56 (2344298) -[DEBUG]Find ['result_20210529145751.csv', 'result_20210529145836.csv', 'result_20210529145837.csv', 'result_20210529145849.csv', 'result_20210529150404.csv', 'result_20210529151102.csv'] result files in dir precision_data/temp/vector_compare/20210529145750
+    2021-05-31 14:48:56 (2344298) -[INFO]Find 0 ops less then 0.98 in precision_data/temp/vector_compare/20210529145750/result_20210529145751.csv
+    2021-05-31 14:48:56 (2344298) -[INFO]Find 0 ops less then 0.98 in precision_data/temp/vector_compare/20210529145750/result_20210529145836.csv
+    2021-05-31 14:48:56 (2344298) -[INFO]Find 1 ops less then 0.98 in precision_data/temp/vector_compare/20210529145750/result_20210529145837.csv
+    2021-05-31 14:48:56 (2344298) -[INFO]Find 2 ops less then 0.98 in precision_data/temp/vector_compare/20210529145750/result_20210529145849.csv
+    2021-05-31 14:48:56 (2344298) -[INFO]Find 2 ops less then 0.98 in precision_data/temp/vector_compare/20210529145750/result_20210529150404.csv
+    2021-05-31 14:48:56 (2344298) -[INFO]Find 0 ops less then 0.98 in precision_data/temp/vector_compare/20210529145750/result_20210529151102.csv
+    ╭── [578] pixel_cls_loss/cond_1/TopKV2 ───╮
+    │ Left:  ['pixel_cls_loss/cond_1/TopKV2'] │
+    │ Right: ['pixel_cls_loss/cond_1/TopKV2'] │
+    │ Input:                                  │
+    │  - [0]1.0        - [1]nan               │
+    │ Output:                                 │
+    │  - [0]0.999999   - [1]0.978459          │
+    ╰─────────────────────────────────────────╯
+    ╭── [490] gradients/AddN_5 ───╮
+    │ Left:  ['gradients/AddN_5'] │
+    │ Right: ['gradients/AddN_5'] │
+    │ Input:                      │
+    │  - [0]nan        - [1]1.0   │
+    │ Output:                     │
+    │  - [0]0.05469               │
+    ╰─────────────────────────────╯
+   ```
 ### Precision_data目录结构
 ```
 precision_data/

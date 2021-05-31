@@ -104,10 +104,10 @@ class NpuDump(object):
         for npu_dump_file in npu_dump_files:
             if npu_dump_file.type == 'input':
                 input_txt.append(' -[green][%s][/green] %s' % (npu_dump_file.idx, npu_dump_file.file_name))
-                input_txt.append('  └─ [yellow]%s[/yellow]' % util.gen_npy_info_txt(npu_dump_file.path))
+                input_txt.append('   └─ [yellow]%s[/yellow]' % util.gen_npy_info_txt(npu_dump_file.path))
             else:
                 output_txt.append(' -[green][%s][/green] %s' % (npu_dump_file.idx, npu_dump_file.file_name))
-                output_txt.append('  └─ [yellow]%s[/yellow]' % util.gen_npy_info_txt(npu_dump_file.path))
+                output_txt.append('   └─ [yellow]%s[/yellow]' % util.gen_npy_info_txt(npu_dump_file.path))
         input_txt.extend(output_txt)
         return Constant.NEW_LINE.join(input_txt)
 

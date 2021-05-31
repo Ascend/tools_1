@@ -37,7 +37,7 @@ class TfDump(object):
         cpu_dump_files = self.get_dump_files_by_op(op)
         for cpu_dump_file in cpu_dump_files.values():
             cpu_dump_txt.append(' -[green][%s][/green] %s' % (cpu_dump_file.idx, cpu_dump_file.file_name))
-            cpu_dump_txt.append('  └─ [yellow]%s[/yellow]' % util.gen_npy_info_txt(cpu_dump_file.path))
+            cpu_dump_txt.append('   └─ [yellow]%s[/yellow]' % util.gen_npy_info_txt(cpu_dump_file.path))
         return Constant.NEW_LINE.join(cpu_dump_txt)
 
     def _parse_dump_files(self):

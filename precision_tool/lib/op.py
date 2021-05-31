@@ -19,6 +19,7 @@ JSON_KEY_LIST = 'list'
 JSON_KEY_STR = 's'
 JSON_KEY_PASS_NAME = 'pass_name'
 JSON_KEY_DATA_DUMP_ORIGINAL_OP_NAMES = '_datadump_original_op_names'
+JSON_KEY_GE_ATTR_OP_KERNEL_LIB_NAME = "_ge_attr_op_kernel_lib_name"
 
 KERNEL_NAME_SHUFFIX = '_kernelname'
 
@@ -67,6 +68,9 @@ class Op(object):
     def kernel_name(self):
         return self._attr(self.name() + KERNEL_NAME_SHUFFIX)
 
+    def ge_attr_op_kernel_lib_name(self):
+        return self._attr(JSON_KEY_GE_ATTR_OP_KERNEL_LIB_NAME)
+
     def data_dump_original_op_names(self):
         return self._attr(JSON_KEY_DATA_DUMP_ORIGINAL_OP_NAMES)
 
@@ -85,7 +89,9 @@ class Op(object):
 
     def summary(self, origin_txt=False):
         """Summary of current op"""
-        res_str = ['[%s] %s' % (self.type(), self.name()), 'KernelName: [yellow]%s[/yellow]' % self.kernel_name()]
+        res_str = ['Op(Type/Name): [green][%s][/green] %s' % (self.type(), self.name()),
+                   'KernelName:    [yellow]%s[/yellow]' % self.kernel_name(),
+                   'KernelLibName: [yellow]%s[/yellow]' % self.ge_attr_op_kernel_lib_name()]
         pass_name = self.pass_name()
         if pass_name != '':
             res_str.append('PassName: [yellow]%s[/yellow]' % pass_name)
