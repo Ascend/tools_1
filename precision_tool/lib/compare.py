@@ -208,13 +208,13 @@ class Compare(object):
         util.print(util.create_columns([err_table, top_table]))
         return total_cnt, all_close, cos_sim, err_percent
 
-    @staticmethod
-    def _detect_file(file_name):
+    def _detect_file(self, file_name):
         """Find files in npu/overflow/cpu dump dir"""
         if os.path.isfile(file_name):
             return file_name
-        for parent_dir in [cfg.DUMP_DECODE_DIR, cfg.TF_DUMP_DIR, cfg.OVERFLOW_DECODE_DIR,
-                           cfg.DUMP_CONVERT_DIR]:
-            if os.path.isfile(os.path.join(parent_dir, file_name)):
-                return os.path.join(parent_dir, file_name)
+        for parent_dir in [cfg.TMP_DIR, cfg.TF_DUMP_DIR]:
+            file_infos = util.list_numpy_files(parent_dir, file_name)
+            if len(file_infos) > 0:
+                self.log.info("Find %s, choose first one.", list(file_infos.keys()))
+                return list(file_infos.values())[0].path
         return None
