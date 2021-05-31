@@ -11,6 +11,11 @@ FLAG_DUMP_GE_GRAPH = 'DUMP_GE_GRAPH'
 FLAG_DUMP_GRAPH_LEVEL = 'DUMP_GRAPH_LEVEL'
 FLAG_DUMP_GRAPH_PATH = 'DUMP_GRAPH_PATH'
 
+# Fusion switch
+FUSION_SWITCH_FILE = os.path.join(os.path.dirname(__file__), 'fusion_switch.cfg')
+FUSION_OFF_FILE = os.path.join(os.path.dirname(__file__), 'fusion_off.cfg')
+OP_DEBUG_DIR = cfg.OP_DEBUG_DIR
+
 
 def sess_dump(sess):
     """In session run mode. Use sess=sess_dump(sess)
@@ -76,20 +81,21 @@ def update_custom_op(custom_op, action=None):
     :return:
     """
     _init()
+    custom_op.parameter_map['debug_dir'].s = tf.compat.as_bytes(cfg.OP_DEBUG_DIR)
     if _is_overflow(action):
         custom_op.parameter_map['enable_dump_debug'].b = True
         custom_op.parameter_map['dump_debug_mode'].s = tf.compat.as_bytes("all")
         custom_op.parameter_map['dump_path'].s = tf.compat.as_bytes(cfg.NPU_OVERFLOW_DUMP_DIR)
         custom_op.parameter_map['op_debug_level'].i = cfg.OP_DEBUG_LEVEL
-        custom_op.parameter_map['fusion_switch_file'].s = tf.compat.as_bytes(cfg.FUSION_SWITCH_FILE)
-        # custom_op.parameter_map['dump_step'].s = tf.compat.as_bytes(cfg.TF_DUMP_STEP)
     elif _is_dump(action):
         custom_op.parameter_map['enable_dump'].b = True
         custom_op.parameter_map['dump_mode'].s = tf.compat.as_bytes("all")
         custom_op.parameter_map['dump_path'].s = tf.compat.as_bytes(cfg.DEFAULT_NPU_DUMP_DIR)
         custom_op.parameter_map['op_debug_level'].i = cfg.OP_DEBUG_LEVEL
-        custom_op.parameter_map['fusion_switch_file'].s = tf.compat.as_bytes(cfg.FUSION_SWITCH_FILE)
         custom_op.parameter_map['dump_step'].s = tf.compat.as_bytes(cfg.TF_DUMP_STEP)
+    if _is_fusion_off(action):
+        custom_op.parameter_map['fusion_switch_file'].s = tf.compat.as_bytes(FUSION_OFF_FILE)
+        print("set fusion switch file: ", FUSION_OFF_FILE)
     return custom_op
 
 
@@ -130,7 +136,7 @@ def _set_dump_graph_flags():
 
 def _is_dump(action):
     if action is not None:
-        return action == 'dump'
+        return 'dump' in action
     if cfg.PRECISION_TOOL_DUMP_FLAG in os.environ and os.environ[cfg.PRECISION_TOOL_DUMP_FLAG] == 'True':
         print("======< PrecisionTool enable npu dump >======")
         return True
@@ -139,12 +145,16 @@ def _is_dump(action):
 
 def _is_overflow(action):
     if action is not None:
-        return action == 'overflow'
+        return 'overflow' in action
     if cfg.PRECISION_TOOL_OVERFLOW_FLAG in os.environ and os.environ[cfg.PRECISION_TOOL_OVERFLOW_FLAG] == 'True':
         print("======< PrecisionTool enable npu overflow >======")
         return True
     return False
 
+def _is_fusion_off(action):
+    if action is not None:
+        return 'fusion_off' in action
+    return False
 
 def _is_fusion_switch():
     if "FUSION_SWITCH" in os.environ:

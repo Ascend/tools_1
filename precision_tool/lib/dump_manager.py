@@ -48,6 +48,7 @@ class DumpManager(object):
         """Print numpy data file"""
         if os.path.isfile(file_name):
             return util.print_npy_summary(os.path.dirname(file_name), os.path.basename(file_name), is_convert)
+        file_name = file_name.replace('/', '_')
         npu_convert_files = util.list_npu_dump_convert_files(cfg.DECODE_DIR, file_name)
         tf_decode_files = util.list_cpu_dump_decode_files(cfg.TF_DUMP_DIR, file_name)
         self._print_tensors(npu_convert_files, is_convert)

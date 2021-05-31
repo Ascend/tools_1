@@ -45,6 +45,9 @@ def _run_tf_dbg_dump(cmd_line):
         raise PrecisionToolException("Empty tf debug dir. %s" % cfg.TF_DEBUG_DUMP_DIR)
     run_dirs = os.listdir(cfg.TF_DEBUG_DUMP_DIR)
     run_dirs.sort()
+    # create dirs
+    util.create_dir(cfg.TF_DUMP_DIR)
+    util.create_dir(cfg.TMP_DIR)
     # extra the last run dir
     # run_dir = run_dirs[-1]
     # log.info("Find %s run dirs, will choose the last one: %s" % (run_dirs, run_dir))
@@ -77,7 +80,7 @@ def _do_run_tf_dbg_dump(cmd_line, run_times=2):
     log.info("Generate tensor name file.")
     tf_dbg.expect('tfdbg>', timeout=cfg.TF_DEBUG_TIMEOUT)
     tf_dbg.sendline('lt > %s' % cfg.TF_TENSOR_NAMES)
-    tf_dbg.expect('tfdbg>')
+    tf_dbg.expect('tfdbg>', timeout=cfg.TF_DEBUG_TIMEOUT)
     if not os.path.exists(cfg.TF_TENSOR_NAMES):
         log.error("Failed to get tensor name in tf_debug.")
         raise PrecisionToolException("Get tensor name in tf_debug failed.")
@@ -94,7 +97,7 @@ def _do_run_tf_dbg_dump(cmd_line, run_times=2):
     for cmd in open(cfg.TF_TENSOR_DUMP_CMD):
         log.debug(cmd.strip())
         tf_dbg.sendline(cmd.strip())
-        tf_dbg.expect('tfdbg>')
+        tf_dbg.expect('tfdbg>', timeout=cfg.TF_DEBUG_TIMEOUT)
     tf_dbg.sendline('exit')
     log.info('Finish dump tf data')
 
