@@ -45,8 +45,7 @@ precision_data/
 
 # Static dirs, do not change
 DATA_ROOT_DIR = os.path.join(ROOT_DIR, 'precision_data')
-# Fusion switch
-FUSION_SWITCH_FILE = os.path.join(DATA_ROOT_DIR, 'fusion_switch.cfg')
+OP_DEBUG_DIR = os.path.join(DATA_ROOT_DIR, 'op_debug')
 
 # fusion
 FUSION_DIR = os.path.join(DATA_ROOT_DIR, 'fusion')

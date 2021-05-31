@@ -85,10 +85,13 @@ class Op(object):
 
     def summary(self, origin_txt=False):
         """Summary of current op"""
-        res_str = ['[%s] %s' % (self.type(), self.name()), 'KernelName: %s' % self.kernel_name()]
+        res_str = ['[%s] %s' % (self.type(), self.name()), 'KernelName: [yellow]%s[/yellow]' % self.kernel_name()]
+        pass_name = self.pass_name()
+        if pass_name != '':
+            res_str.append('PassName: [yellow]%s[/yellow]' % pass_name)
         origin_op = self.data_dump_original_op_names()
         if origin_op != '':
-            res_str.append('OriginalOp: %s' % self.data_dump_original_op_names())
+            res_str.append('OriginalOp: %s' % origin_op)
         res_str.append('Input:')
         for i in self.inputs():
             res_str.append(' -' + i.summary(origin_txt))
