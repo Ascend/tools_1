@@ -40,7 +40,7 @@ import re
 
 NETWORK_CARD_DEFAULT_IP="192.168.0.2"
 USB_CARD_DEFAULT_IP="192.168.1.2"
-CANN_VERSION_LIST = ["20.2", "3.3.0"]
+CANN_VERSION_LIST = ["20.2", "3.3.0", "5.0.2"]
 
 CURRENT_PATH = os.path.dirname(
     os.path.realpath(__file__))
