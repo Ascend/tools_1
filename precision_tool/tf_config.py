@@ -23,6 +23,7 @@ def sess_dump(sess):
     :return:
     """
     # sess = tf_debug.LocalCLIDebugWrapperSession(sess, ui_type="readline")
+    _init('dump')
     return tf_debug.DumpingDebugWrapperSession(sess, cfg.TF_DEBUG_DUMP_DIR)
 
 
@@ -30,6 +31,7 @@ def estimator_dump():
     """In estimator mode. estim_spec = tf.estimator.EstimatorSpec(traing_hooks=[estimator_dump()])
     :return:
     """
+    _init('dump')
     return tf_debug.DumpingDebugHook(cfg.TF_DEBUG_DUMP_DIR)
 
 
@@ -39,7 +41,7 @@ def estimator_dump_config(action=None):
     exp. config = NPURunConfig(dump_config=estimator_dum_config(), session_config=session_config)
     :return: DumpConfig
     """
-    _init()
+    _init(action)
     if _is_overflow(action):
         config = DumpConfig(enable_dump_debug=True, dump_path=cfg.NPU_OVERFLOW_DUMP_DIR, dump_mode="all")
     elif _is_dump(action):
@@ -80,7 +82,7 @@ def update_custom_op(custom_op, action=None):
     :param action
     :return:
     """
-    _init()
+    _init(action)
     custom_op.parameter_map['debug_dir'].s = tf.compat.as_bytes(cfg.OP_DEBUG_DIR)
     if _is_overflow(action):
         custom_op.parameter_map['enable_dump_debug'].b = True
@@ -99,14 +101,20 @@ def update_custom_op(custom_op, action=None):
     return custom_op
 
 
-def _init():
-    if not os.path.exists(cfg.NPU_OVERFLOW_DUMP_DIR):
-        _create_dir(cfg.NPU_OVERFLOW_DUMP_DIR)
-    if not os.path.exists(cfg.DEFAULT_NPU_DUMP_DIR):
-        _create_dir(cfg.DEFAULT_NPU_DUMP_DIR)
-    if not os.path.exists(cfg.DEFAULT_NPU_GRAPH_DIR):
-        _create_dir(cfg.DEFAULT_NPU_GRAPH_DIR)
+def _init(action=None):
+    _create_dir(cfg.OP_DEBUG_DIR)
+    _create_dir(cfg.NPU_OVERFLOW_DUMP_DIR)
+    _create_dir(cfg.DEFAULT_NPU_DUMP_DIR)
+    _create_dir(cfg.DEFAULT_NPU_GRAPH_DIR)
     _set_dump_graph_flags()
+    if action is not None and 'dump' in action:
+        # set random seed
+        tf.random.set_random_seed(cfg.DUMP_SEED)
+        try:
+            import numpy as np
+            np.random.seed(cfg.DUMP_SEED)
+        except ImportError as err:
+            print("No numpy module.", err)
 
 
 def _create_dir(path):
@@ -151,10 +159,12 @@ def _is_overflow(action):
         return True
     return False
 
+
 def _is_fusion_off(action):
     if action is not None:
         return 'fusion_off' in action
     return False
+
 
 def _is_fusion_switch():
     if "FUSION_SWITCH" in os.environ:
