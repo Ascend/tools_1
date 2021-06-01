@@ -40,7 +40,7 @@ import re
 
 NETWORK_CARD_DEFAULT_IP="192.168.0.2"
 USB_CARD_DEFAULT_IP="192.168.1.2"
-CANN_VERSION_LIST = ["20.2", "3.3.0"]
+CANN_VERSION_LIST = ["20.2", "3.3.0", "5.0.2"]
 
 CURRENT_PATH = os.path.dirname(
     os.path.realpath(__file__))
@@ -230,8 +230,8 @@ def process_local_installation(dev_name, sector_num, sector_size):
         if cann_package_list_tmp != []:
             cann_package_list += cann_package_list_tmp
     if not ret or cann_package_list == []:
-        print("[ERROR] Can not find cann nnrt in current path")
-        execute("echo '[ERROR] Can not find cann nnrt in current path' >> %s" % (MAKE_SD_LOG_PATH))
+        print("[ERROR] Can not find cann nnrt in current path or cann version not matchs driver version")
+        execute("echo '[ERROR] Can not find cann nnrt in current path or cann version not matchs driver version' >> %s" % (MAKE_SD_LOG_PATH))
         return False
 
     if ret and len(cann_package_list) > 1:
