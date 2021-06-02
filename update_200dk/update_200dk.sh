@@ -139,15 +139,17 @@ function UpgradeAicpu_run()
         echo "export ASCEND_AICPU_PATH=/home/HwHiAiUser/Ascend" >> /home/HwHiAiUser/.bashrc 
     fi
 
-    grep "export LD_LIBRARY_PATH=/usr/lib64:\$LD_LIBRARY_PATH" /home/HwHiAiUser/.bashrc > /dev/null
+    grep "export LD_LIBRARY_PATH=/usr/lib64/aicpu_kernels/0/aicpu_kernels_device:\$LD_LIBRARY_PATH" /home/HwHiAiUser/.bashrc > /dev/null
     if [ $? -ne 0 ];then
-        echo "export LD_LIBRARY_PATH=/usr/lib64:\$LD_LIBRARY_PATH" >> /home/HwHiAiUser/.bashrc
+        echo "export LD_LIBRARY_PATH=/usr/lib64/aicpu_kernels/0/aicpu_kernels_device:\$LD_LIBRARY_PATH" >> /home/HwHiAiUser/.bashrc
     fi
 
     export ASCEND_AICPU_PATH=/home/HwHiAiUser/Ascend
-    sh /home/HwHiAiUser/Ascend/run_aicpu_toolkit.sh
-    if [ $? -ne 0 ];then
+    if [ -f "/home/HwHiAiUser/Ascend/run_aicpu_toolkit.sh" ];then
+        sh /home/HwHiAiUser/Ascend/run_aicpu_toolkit.sh
+        if [ $? -ne 0 ];then
         return 1
+        fi
     fi
 }
 
@@ -155,6 +157,12 @@ function UpgradeAicpu_run()
 function UpgradeAcllib()
 {
     acllib_old=`cat /home/HwHiAiUser/Ascend/acllib/version.info |head -n 1|cut -d '.' -f 2`
+
+    grep "export LD_LIBRARY_PATH=/home/HwHiAiUser/Ascend/acllib/lib64:\$LD_LIBRARY_PATH" /home/HwHiAiUser/.bashrc > /dev/null
+    if [ $? -ne 0 ];then
+        echo "export LD_LIBRARY_PATH=/home/HwHiAiUser/Ascend/acllib/lib64:\$LD_LIBRARY_PATH" >> /home/HwHiAiUser/.bashrc
+    fi
+
     if [[ ${acllib_old} -eq '' ]];then
         echo "[INFO] Acllib is not installed, start the installation"
         chown HwHiAiUser:HwHiAiUser ${ACLLIB_PACKAGE}
@@ -176,6 +184,12 @@ function UpgradeAcllib()
 function UpgradePyacl()
 {
     pyacl_old=`cat /home/HwHiAiUser/Ascend/pyACL/ascend-pyACL_install.info |head -n 1|cut -d '.' -f 2`
+
+    grep "export PYTHONPATH=/home/HwHiAiUser/Ascend/pyACL/python/site-packages/acl:\$PYTHONPATH" /home/HwHiAiUser/.bashrc > /dev/null
+    if [ $? -ne 0 ];then
+        echo "export PYTHONPATH=/home/HwHiAiUser/Ascend/pyACL/python/site-packages/acl:\$PYTHONPATH" >> /home/HwHiAiUser/.bashrc
+    fi
+    
     if [[ ${pyacl_old} -eq '' ]];then
         echo "[INFO] pyacl is not installed, start the installation"
         chown HwHiAiUser:HwHiAiUser ${PYACL_PACKAGE}
