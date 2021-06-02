@@ -500,7 +500,7 @@ echo \"SystemMaxUse=50M\" >> /etc/systemd/journald.conf
 echo \"config journald ok\"" >> ${LogPath}squashfs-root/chroot_install.sh
     if [[ ${CANN_PACKAGE}"X" != "none""X" ]];then
         echo "    
-echo \"export LD_LIBRARY_PATH=/home/HwHiAiUser/Ascend/acllib/lib64:\${LD_LIBRARY_PATH}\" >> /home/HwHiAiUser/.bashrc
+echo \"export LD_LIBRARY_PATH=/home/HwHiAiUser/Ascend/acllib/lib64:\\\${LD_LIBRARY_PATH}\" >> /home/HwHiAiUser/.bashrc
 echo \"export PYTHONPATH=/home/HwHiAiUser/Ascend/pyACL/python/site-packages/acl\" >> /home/HwHiAiUser/.bashrc
 echo \"export ASCEND_AICPU_PATH=/home/HwHiAiUser/Ascend\" >> /home/HwHiAiUser/.bashrc
 echo \"config bashrc ok\"" >> ${LogPath}squashfs-root/chroot_install.sh
