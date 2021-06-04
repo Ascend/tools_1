@@ -14,7 +14,7 @@ FLAG_DUMP_GRAPH_PATH = 'DUMP_GRAPH_PATH'
 # Fusion switch
 FUSION_SWITCH_FILE = os.path.join(os.path.dirname(__file__), 'fusion_switch.cfg')
 FUSION_OFF_FILE = os.path.join(os.path.dirname(__file__), 'fusion_off.cfg')
-OP_DEBUG_DIR = cfg.OP_DEBUG_DIR
+DEFAULT_OP_DEBUG_DIR = cfg.DEFAULT_OP_DEBUG_DIR
 
 
 def sess_dump(sess):
@@ -83,7 +83,7 @@ def update_custom_op(custom_op, action=None):
     :return:
     """
     _init(action)
-    custom_op.parameter_map['debug_dir'].s = tf.compat.as_bytes(cfg.OP_DEBUG_DIR)
+    custom_op.parameter_map['debug_dir'].s = tf.compat.as_bytes(cfg.DEFAULT_OP_DEBUG_DIR)
     if _is_overflow(action):
         custom_op.parameter_map['enable_dump_debug'].b = True
         custom_op.parameter_map['dump_debug_mode'].s = tf.compat.as_bytes("all")
@@ -102,7 +102,7 @@ def update_custom_op(custom_op, action=None):
 
 
 def _init(action=None):
-    _create_dir(cfg.OP_DEBUG_DIR)
+    _create_dir(cfg.DEFAULT_OP_DEBUG_DIR)
     _create_dir(cfg.NPU_OVERFLOW_DUMP_DIR)
     _create_dir(cfg.DEFAULT_NPU_DUMP_DIR)
     _create_dir(cfg.DEFAULT_NPU_GRAPH_DIR)
