@@ -81,26 +81,6 @@ class NpuGraph(object):
     def check_similarity(self):
         """Check graph similarity."""
 
-    '''
-    @catch_tool_exception
-    def print_op(self, op_name, is_dump=False, save_graph_level=0, dump_manager=None, compare_manager=None):
-        """Print op detail info"""
-        op = self.get_op(op_name)
-        if op is None:
-            raise PrecisionToolException("Can not find op [%s]" % op_name)
-        title = '[green][%s][/green]%s' % (op.type(), op.name())
-        summary = op.summary()
-        # print dump info
-        if is_dump:
-            dump_summary = dump_manager.op_dump_summary(op)
-            summary = '\n'.join([summary, dump_summary]) if dump_summary is not None else summary
-        util.print_panel(summary, title=title, fit=True)
-        # save subgraph
-        if save_graph_level > 0:
-            self.save_sub_graph(op, save_graph_level, dump_manager, compare_manager)
-        return op
-    '''
-
     def save_sub_graph(self, op, deep=0, dump_manager=None, compare_manager=None):
         """Save sub graph"""
         if op is None:
@@ -196,28 +176,6 @@ class NpuGraph(object):
         guess_op_name_list = ['[green][%s][/green] %s' % (x.type(), x.name()) for x in guess_op_list]
         util.print_panel('\n'.join(guess_op_name_list), title='Possible Operators')
         return guess_op_list[0]
-
-    '''
-    def print_op_list(self, op_type='', op_name='', pass_name='', kernel_name=''):
-        """Print op list"""
-        if op_type == '' and op_name == '' and pass_name == '' and kernel_name == '':
-            table = util.create_table("Operation Summary", ["OpType", "Count"])
-            for op_type in self.ops_type_list.keys():
-                table.add_row(op_type, str(len(self.ops_type_list[op_type])))
-            util.print(table)
-            return
-        for op in self.ops_list.values():
-            if op_type in op.type() and op_name in op.name() and pass_name in op.pass_name() \
-                    and kernel_name in op.kernel_name():
-                self._print_single_op(op)
-    
-
-    @staticmethod
-    def _print_single_op(op):
-        """Print Single op"""
-        op_pass_name = '' if op.pass_name() == '' else '[yellow][%s][/yellow]' % op.pass_name()
-        util.print('[green][%s][/green]%s %s' % (op.type(), op_pass_name, op.name()))
-    '''
 
     @staticmethod
     def _is_dangerous_cast(cast_type):

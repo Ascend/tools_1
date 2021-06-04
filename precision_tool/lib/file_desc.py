@@ -3,7 +3,7 @@ import os
 
 
 class FileDesc(object):
-    def __init__(self, file_name, dir_path, timestamp):
+    def __init__(self, file_name, dir_path, timestamp=-1):
         self.file_name = file_name
         self.dir_path = dir_path
         self.path = os.path.join(dir_path, file_name)
