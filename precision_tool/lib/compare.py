@@ -91,12 +91,21 @@ class Compare(object):
                 sub_graphs.append(graph['name'])
         return sub_graphs
 
+    '''
+    @staticmethod
+    def _get_ge_default_dirs(self, root_dir):
+        for dir_path, dir_names, file_names in os.walk(root_dir, followlinks=True):
+            for dir_name in dir_names:
+    '''
+
     def npu_vector_compare(self, debug_0_root_dir, debug_1_root_dir):
         """Compare two npu dump data
         :param debug_0_root_dir:
         :param debug_1_root_dir:
         :return:
         """
+        debug_0_sub_dirs = self._get_ge_default_dirs(debug_0_root_dir)
+        debug_1_sub_dirs = self._get_ge_default_dirs(debug_1_root_dir)
 
     def vector_compare(self, lh_path, rh_path, result_dir, graph_json=None):
         """Compare all ops"""

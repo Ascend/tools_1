@@ -81,7 +81,6 @@ class NpuDump(object):
         """Prepare npu/cpu dump files"""
         # self.sub_graph = sub_graph
         self._parse_dump_files()
-        # self._parse_cpu_dump_files()
 
     def get_dump_files_by_op(self, op):
         """Get npu dump files by Op"""
@@ -178,9 +177,6 @@ class NpuDump(object):
             if file_info.op_name == op_name:
                 return file_info
         return None
-
-    def _parse_cpu_dump_files(self):
-        self.cpu_files = util.list_cpu_dump_decode_files(cfg.TF_DUMP_DIR)
 
     @staticmethod
     def _detect_cpu_file_name(file_name):
