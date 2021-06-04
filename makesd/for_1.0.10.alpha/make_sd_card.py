@@ -50,7 +50,7 @@ MAKE_SD_LOG_PATH = os.path.join(LOG_PATH, "make_ubuntu_sd.log")
 MIN_DISK_SIZE = 7 * 1024 * 1024 * 1024
 
 MAKING_SD_CARD_COMMAND = "bash {path}/make_ubuntu_sd.sh " + " {dev_name}" + \
-    " {pkg_path} {ubuntu_file_name}" + \
+    " {pkg_path} {ubuntu_file_name} {driver_package} {cann_package}" + \
     " " + NETWORK_CARD_DEFAULT_IP + " " + USB_CARD_DEFAULT_IP + " {sector_num}" + " {sector_size}" \
     " >> {log_path}/make_ubuntu_sd.log "
 
@@ -217,6 +217,88 @@ def process_local_installation(dev_name, sector_num, sector_size):
         "Please input Y: continue, other to install them:"
     confirm = input(confirm_tips)
     confirm = confirm.strip()
+
+    if confirm != "Y" and confirm != "y":
+        return False
+        
+    driver_package_list = []
+    driver_pkg_file = ""
+    
+    ret, driver_package_list = execute(
+        "find {path} -maxdepth 1 -name 'A200dk-npu-driver-*-ubuntu18.04-aarch64-minirc.tar.gz'".format(path=CURRENT_PATH,)) 
+    if not ret or driver_package_list == []:
+        print("[ERROR] Can not find driver package in current path")
+        execute("echo '[ERROR] Can not find driver package in current path' >> %s" % (MAKE_SD_LOG_PATH))
+        return False  
+    driver_package_list = list(filter(None, driver_package_list))  
+    if len(driver_package_list) > 1:
+        package_index=[]
+        confirm_tips = "There are multiple driver packages:" + \
+            "\n\t Current driver packages list:"
+        for index, driver_package in enumerate(driver_package_list):
+            confirm_tips += "\n\t {index} : {driver_package}".format(index=index+1, driver_package=driver_package)
+            package_index.append(str(index+1))
+        confirm_tips += "\n Please input your cann package in this list(eg:1):"
+        confirm = input(confirm_tips)
+        confirm = confirm.strip()
+        choice_time=1
+        while (confirm not in package_index):
+            print ("[ERROR] Input DRIVER_CHOICE Error, Please check your input.")
+            execute("[ERROR] Input DRIVER_CHOICE Error, Please check your input.' >> %s" % (MAKE_SD_LOG_PATH))
+            if (choice_time >= 3):
+                break
+            else:
+                choice_time += 1
+            confirm = input("Please input your driver package in this list(eg:1):")
+            confirm = confirm.strip()
+        if (choice_time >= 3):
+            return False 
+        else:
+            confirm = int(confirm)
+            driver_pkg_file = driver_package_list[confirm-1]
+    elif len(driver_package_list) == 1:
+        driver_pkg_file = driver_package_list[0]   
+        
+    cann_package_list = []
+    cann_pkg_file = "none"
+    
+    ret, cann_package_list = execute(
+        "find {path} -maxdepth 1 -name 'Ascend-cann-nnrt_*.run'".format(path=CURRENT_PATH,))
+    if not ret:
+        print("[ERROR] find nnrt command execute failed")
+        execute("echo '[ERROR] find nnrt command execute failed' >> %s" % (MAKE_SD_LOG_PATH))
+        return False  
+    cann_package_list = list(filter(None, cann_package_list))        
+    if cann_package_list == []:
+        print("make sd card only with driver package")
+        execute("echo 'make sd card only with driver package' >> %s" % (MAKE_SD_LOG_PATH))
+    elif len(cann_package_list) > 1:
+        package_index=[]
+        confirm_tips = "There are multiple cann packages:" + \
+            "\n\t Current cann packages list:"
+        for index, cann_package in enumerate(cann_package_list):
+            confirm_tips += "\n\t {index} : {cann_package}".format(index=index+1, cann_package=cann_package)
+            package_index.append(str(index+1))
+        confirm_tips += "\n Please input your cann package in this list(eg:1):"
+        confirm = input(confirm_tips)
+        confirm = confirm.strip()
+        choice_time=1
+        while (confirm not in package_index):
+            print ("[ERROR] Input CANN_CHOICE Error, Please check your input.")
+            execute("[ERROR] Input CANN_CHOICE Error, Please check your input.' >> %s" % (MAKE_SD_LOG_PATH))
+            if (choice_time >= 3):
+                break
+            else:
+                choice_time += 1
+            confirm = input("Please input your cann package in this list(eg:1):")
+            confirm = confirm.strip()
+        if (choice_time >= 3):
+            return False 
+        else:
+            confirm = int(confirm)
+            cann_pkg_file = cann_package_list[confirm-1]
+    elif len(cann_package_list) == 1:
+        cann_pkg_file = cann_package_list[0]
         
     ret, paths = execute(
         "find {path} -name \"make_ubuntu_sd.sh\"".format(path=CURRENT_PATH))
@@ -245,14 +327,14 @@ def process_local_installation(dev_name, sector_num, sector_size):
     execute("echo 'Command:' >> %s" % (MAKE_SD_LOG_PATH))
 
     making_sd_card_command_str = MAKING_SD_CARD_COMMAND.format(path=CURRENT_PATH, dev_name=dev_name, \
-    pkg_path=CURRENT_PATH, ubuntu_file_name=ubuntu_file_name, log_path=LOG_PATH, sector_num=sector_num,\
+    pkg_path=CURRENT_PATH, ubuntu_file_name=ubuntu_file_name, driver_package=driver_pkg_file, cann_package=cann_pkg_file, log_path=LOG_PATH, sector_num=sector_num,\
     sector_size=sector_size)
 
     print(making_sd_card_command_str)
     execute("echo '%s' >> %s" % (making_sd_card_command_str, MAKE_SD_LOG_PATH))
 
     execute(MAKING_SD_CARD_COMMAND.format(path=CURRENT_PATH, dev_name=dev_name, pkg_path=CURRENT_PATH,\
-        ubuntu_file_name=ubuntu_file_name, log_path=LOG_PATH, sector_num=sector_num, \
+        ubuntu_file_name=ubuntu_file_name, driver_package=driver_pkg_file,  cann_package=cann_pkg_file, log_path=LOG_PATH, sector_num=sector_num, \
         sector_size=sector_size))
 
     ret = execute("grep Success {log_path}/make_ubuntu_sd.result".format(log_path=LOG_PATH))

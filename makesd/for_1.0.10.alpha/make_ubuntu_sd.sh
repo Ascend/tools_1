@@ -55,11 +55,21 @@ fi
 
 ISO_FILE_DIR=$2
 ISO_FILE=$3
+DRIVER_PACKAGE_tmp=$4
+DRIVER_PACKAGE=${DRIVER_PACKAGE_tmp##*/}
+CANN_PACKAGE=$5
+echo $DRIVER_PACKAGE
+echo $CANN_PACKAGE
+NETWORK_CARD_DEFAULT_IP=$6
+USB_CARD_DEFAULT_IP=$7
+sectorEnd=$8
+sectorSize=$9
 
-NETWORK_CARD_DEFAULT_IP=$4
-USB_CARD_DEFAULT_IP=$5
-sectorEnd=$6
-sectorSize=$7
+if [[ ${CANN_PACKAGE}"X" != "none""X" ]];then
+    tmp_package_version=${CANN_PACKAGE##*Ascend-cann-nnrt_}
+    PACKAGE_VERSION=${tmp_package_version%*_linux-aarch64.run}    
+fi
+
 
 
 LogPath=${ScriptPath}"sd_card_making_log/"
@@ -135,6 +145,10 @@ function filesClean()
     fi
     rm -rf ${TMPDIR_SD3_MOUNT}
     rm -rf ${LogPath}driver
+
+    if [[ ${CANN_PACKAGE}"X" != "none""X" ]];then
+        rm -rf ${ISO_FILE_DIR}/nnrt
+    fi
 }
 #end
 # ************************check ip****************************************
@@ -166,18 +180,37 @@ function checkIpAddr()
 function checkAscendPackage()
 {
 
-    DRIVER_PACKAGE=$(ls A200dk-npu-driver-21.0.1-ubuntu18.04-aarch64-minirc.tar.gz)
     if [ ! -n "$DRIVER_PACKAGE" ]; then
-        echo "find A200dk-npu-driver-21.0.1-ubuntu18.04-aarch64-minirc.tar.gz failed. please put this package in this folder."
+        echo "find A200dk-npu-driver-*-ubuntu18.04-aarch64-minirc.tar.gz failed. please put driver package in this folder."
         return 1
-    fi
+    fi    
+    
+    if [[ ${CANN_PACKAGE}"X" != "none""X" ]];then
+        chmod 750 ${CANN_PACKAGE##*/}
 
-    #echo "73a5c4d8b33fe8d588c8815298cca839  A200dk-npu-driver-20.2.0-ubuntu18.04-aarch64-minirc.tar.gz" | md5sum --status -c
-    #if [[ $? -ne 0 ]];then
-    #    echo "A200dk-npu-driver-20.2.0-ubuntu18.04-aarch64-minirc.tar.gz is incomplete. please re-download this package."
-    #    return 1
-    #fi
-	
+        ./${CANN_PACKAGE##*/} --extract=${ScriptPath}/nnrt --noexec
+        if [[ $? -ne 0 ]] || [[ $(find ${ScriptPath}/nnrt/run_package/Ascend-acllib-*-linux.aarch64.run)"x" = "x" ]] || [[ $(find ${ScriptPath}/nnrt/run_package/Ascend-pyACL-*-linux.aarch64.run)"x" = "x" ]];then
+            echo "extract Ascend-cann-nnrt_"${PACKAGE_VERSION}"_linux-aarch64.run failed. please check this package."
+            return 1
+        fi
+        if [[ $(find ${ScriptPath}/nnrt/run_package/Ascend310-aicpu_kernels-*-minirc.run)"x" != "x" ]];then
+            AICPU_KERNELS_PACKAGE=$(ls nnrt/run_package/Ascend310-aicpu_kernels-*-minirc.run)
+            AICPU_FLAG=0
+        elif [[ $(find ${ScriptPath}/nnrt/run_package/Ascend310-aicpu_kernels_minirc-*.run)"x" != "x" ]];then
+            AICPU_KERNELS_PACKAGE=$(ls nnrt/run_package/Ascend310-aicpu_kernels_minirc-*.run)
+	    AICPU_FLAG=0
+        elif [[ $(find ${ScriptPath}/nnrt/run_package/Ascend310-aicpu_kernels-*-minirc.tar.gz)"x" != "x" ]];then
+            AICPU_KERNELS_PACKAGE=$(ls nnrt/run_package/Ascend310-aicpu_kernels-*-minirc.tar.gz)
+            AICPU_FLAG=1
+        else
+            echo "[ERROR] extract Ascend-cann-nnrt_"${PACKAGE_VERSION}"_linux-aarch64.run failed. please check this package."
+            return 1
+        fi
+
+        ACLLIB_PACKAGE=$(ls nnrt/run_package/Ascend-acllib-*-linux.aarch64.run)
+        PYACL_PACKAGE=$(ls nnrt/run_package/Ascend-pyACL-*-linux.aarch64.run)
+    fi
+    
     return 0
 }
 
@@ -412,14 +445,23 @@ network:
       nameservers:
             addresses: [114.114.114.114]	  
 \" > /etc/netplan/01-netcfg.yaml
-echo \"config network ok\"
-
+echo \"config network ok\"" > ${LogPath}squashfs-root/chroot_install.sh
+ 
+    if [[ ${DRIVER_PACKAGE}"X" != "A200dk-npu-driver-20.2.0-ubuntu18.04-aarch64-minirc.tar.gz""X" ]];then
+        echo "
 mkdir -p /usr/lib64/aicpu_kernels
 chown HwHiAiUser:HwHiAiuser /usr/lib64/aicpu_kernels
 touch /usr/lib64/aicpu_kernels/aicpu_package_install.info
 chown HwHiAiUser:HwHiAiUser /usr/lib64/aicpu_kernels/aicpu_package_install.info
 echo \"0\" > /usr/lib64/aicpu_kernels/aicpu_package_install.info
-
+echo \"export LD_LIBRARY_PATH=/usr/lib64/aicpu_kernels/0/aicpu_kernels_device\" >> /home/HwHiAiUser/.bashrc
+echo \"export LD_LIBRARY_PATH=/usr/lib64/aicpu_kernels/0/aicpu_kernels_device\" >> /root/.bashrc" >> ${LogPath}squashfs-root/chroot_install.sh
+    else
+        echo "
+echo \"export LD_LIBRARY_PATH=/usr/lib64\" >> /home/HwHiAiUser/.bashrc" >> ${LogPath}squashfs-root/chroot_install.sh    
+    fi
+    
+    echo "
 # 5. auto-run minirc_cp.sh and minirc_sys_init.sh when start ubuntu
 echo \"#!/bin/sh -e
 #
@@ -436,8 +478,17 @@ echo \"#!/bin/sh -e
 cd /var/
 
 
-/bin/bash /var/minirc_boot.sh /opt/mini/${DRIVER_PACKAGE}
+/bin/bash /var/minirc_boot.sh /opt/mini/${DRIVER_PACKAGE}" >> ${LogPath}squashfs-root/chroot_install.sh
 
+    if [[ ${CANN_PACKAGE}"X" != "none""X" ]];then
+        echo "
+/bin/bash /var/acllib_install.sh >/var/1.log
+
+/bin/bash /var/aicpu_kernels_install.sh >>/var/1.log
+
+/bin/bash /var/pyacl_install.sh >>/var/1.log" >> ${LogPath}squashfs-root/chroot_install.sh
+    fi
+    echo "
 exit 0
 \" > /etc/rc.local
 
@@ -446,12 +497,17 @@ echo \"config rc.local ok\"
 chmod 755 /etc/rc.local
 echo \"RuntimeMaxUse=50M\" >> /etc/systemd/journald.conf
 echo \"SystemMaxUse=50M\" >> /etc/systemd/journald.conf
-echo \"config journald ok\"
-echo \"export LD_LIBRARY_PATH=/usr/lib64/aicpu_kernels/0/aicpu_kernels_device\" >> /home/HwHiAiUser/.bashrc
-echo \"export LD_LIBRARY_PATH=/usr/lib64/aicpu_kernels/0/aicpu_kernels_device\" >> /root/.bashrc
-echo \"config bashrc ok\"
+echo \"config journald ok\"" >> ${LogPath}squashfs-root/chroot_install.sh
+    if [[ ${CANN_PACKAGE}"X" != "none""X" ]];then
+        echo "    
+echo \"export LD_LIBRARY_PATH=/home/HwHiAiUser/Ascend/acllib/lib64:\\\${LD_LIBRARY_PATH}\" >> /home/HwHiAiUser/.bashrc
+echo \"export PYTHONPATH=/home/HwHiAiUser/Ascend/pyACL/python/site-packages/acl\" >> /home/HwHiAiUser/.bashrc
+echo \"export ASCEND_AICPU_PATH=/home/HwHiAiUser/Ascend\" >> /home/HwHiAiUser/.bashrc
+echo \"config bashrc ok\"" >> ${LogPath}squashfs-root/chroot_install.sh
+    fi
+    echo "
 exit
-# end" > ${LogPath}squashfs-root/chroot_install.sh
+# end" >> ${LogPath}squashfs-root/chroot_install.sh
 
     chmod 750 ${LogPath}squashfs-root/chroot_install.sh
     # 2. add user and install software
@@ -566,7 +622,6 @@ function preInstallDriver()
     echo "start pre install driver"
 	mkdir -p ${LogPath}squashfs-root/opt/mini
     chmod 755 ${LogPath}squashfs-root/opt/mini
-	
     # 1. copy third party file
     tar zxf ${ISO_FILE_DIR}/${DRIVER_PACKAGE} -C ${LogPath} driver/scripts/minirc_install_phase1.sh 
     cp ${LogPath}driver/scripts/minirc_install_phase1.sh ${LogPath}squashfs-root/opt/mini/
@@ -613,6 +668,127 @@ function preInstallDriver()
     
 }
 
+
+function generateAclLibInstallShell()
+{
+echo "
+#!/bin/bash
+
+chown HwHiAiUser:HwHiAiUser /home/HwHiAiUser/${ACLLIB_PACKAGE##*/}
+echo \"y
+\" | su HwHiAiUser -c \"/home/HwHiAiUser/${ACLLIB_PACKAGE##*/} --run\"
+rm -f /home/HwHiAiUser/${ACLLIB_PACKAGE##*/}
+exit 0
+" >${LogPath}squashfs-root/var/acllib_install.sh
+
+chmod 750 ${LogPath}squashfs-root/var/acllib_install.sh
+}
+
+function generatePyAclInstallShell()
+{
+echo "
+#!/bin/bash
+
+chown HwHiAiUser:HwHiAiUser /home/HwHiAiUser/${PYACL_PACKAGE##*/}
+su HwHiAiUser -c \"/home/HwHiAiUser/${PYACL_PACKAGE##*/} --run\"
+rm -f /home/HwHiAiUser/${PYACL_PACKAGE##*/}
+exit 0
+" >${LogPath}squashfs-root/var/pyacl_install.sh
+
+chmod 750 ${LogPath}squashfs-root/var/pyacl_install.sh
+}
+
+function installPyAcl()
+{
+    echo "start install pyacl"
+	
+    cp -f ${ISO_FILE_DIR}/$PYACL_PACKAGE ${LogPath}squashfs-root/home/HwHiAiUser/
+    if [[ $? -ne 0 ]];then
+        echo "Failed: Copy ${ISO_FILE_DIR}/$PYACL_PACKAGE to filesystem failed!"
+        return 1
+    fi
+    chmod 750 ${LogPath}squashfs-root/home/HwHiAiUser/${PYACL_PACKAGE##*/}
+	
+	generatePyAclInstallShell
+	
+	echo "install pyacl end"	
+}
+
+function installAclLib()
+{
+    echo "start install acl lib"    
+    cp -f ${ISO_FILE_DIR}/$ACLLIB_PACKAGE ${LogPath}squashfs-root/home/HwHiAiUser/
+    if [[ $? -ne 0 ]];then
+        echo "Failed: Copy ${ISO_FILE_DIR}/$ACLLIB_PACKAGE to filesystem failed!"
+        return 1
+    fi
+    chmod 750 ${LogPath}squashfs-root/home/HwHiAiUser/${ACLLIB_PACKAGE##*/}
+	
+	generateAclLibInstallShell
+	
+	echo "install acl lib end"	
+}
+
+function genAicpuKernInstShell_run()
+{
+        echo "
+#!/bin/bash
+
+chown HwHiAiUser:HwHiAiUser /home/HwHiAiUser/${AICPU_KERNELS_PACKAGE##*/}
+su HwHiAiUser -c \"/home/HwHiAiUser/${AICPU_KERNELS_PACKAGE##*/} --run\"
+rm -f /home/HwHiAiUser/${AICPU_KERNELS_PACKAGE##*/}
+
+export ASCEND_AICPU_PATH=/home/HwHiAiUser/Ascend
+sh /home/HwHiAiUser/Ascend/run_aicpu_toolkit.sh
+
+exit 0
+" >${LogPath}squashfs-root/var/aicpu_kernels_install.sh
+
+    chmod 750 ${LogPath}squashfs-root/var/aicpu_kernels_install.sh
+}
+
+function installAicpuKernels_run()
+{
+    cp -f ${ISO_FILE_DIR}/${AICPU_KERNELS_PACKAGE} ${LogPath}squashfs-root/home/HwHiAiUser/
+    if [[ $? -ne 0 ]];then
+        echo "Failed: copy ${ISO_FILE_DIR}/${AICPU_KERNELS_PACKAGE} to filesystem failed!"
+        return 1
+    fi
+    chmod 750 ${LogPath}squashfs-root/home/HwHiAiUser/${AICPU_KERNELS_PACKAGE##*/}
+
+    genAicpuKernInstShell_run
+
+    echo "install Aicpu_run end"
+}
+
+function genAicpuKernInstShell()
+{
+	echo "
+#!/bin/bash
+
+cd /home/HwHiAiUser/aicpu_kernels_device/
+chmod 750 *.sh
+chmod 750 scripts/*.sh
+scripts/install.sh --run
+
+rm -rf /home/HwHiAiUser/aicpu_kernels_device
+
+exit 0
+" >${LogPath}squashfs-root/var/aicpu_kernels_install.sh
+
+    chmod 750 ${LogPath}squashfs-root/var/aicpu_kernels_install.sh
+}
+
+function installAicpuKernels()
+{
+    tar zxf ${ISO_FILE_DIR}/${AICPU_KERNELS_PACKAGE} -C ${LogPath}squashfs-root/home/HwHiAiUser/
+    if [[ $? -ne 0 ]];then
+        echo "Failed: tar zxf ${ISO_FILE_DIR}/${AICPU_KERNELS_PACKAGE} to filesystem failed!"
+        return 1
+    fi
+    genAicpuKernInstShell
+}
+
 function copyFilesToSDcard()
 {
     cp -a ${LogPath}squashfs-root/* ${TMPDIR_SD_MOUNT}
@@ -638,6 +814,36 @@ function preInstallMinircPackage()
         return 1
     fi
     echo "pre install driver end"
+    if [[ ${CANN_PACKAGE}"X" != "none""X" ]];then
+        installAclLib
+        if [ $? -ne 0 ];then
+            echo "Pre install acllib package failed"
+            return 1
+        fi
+        echo "pre install acl lib end"
+
+        if [ ${AICPU_FLAG} -eq 1 ];then    
+            installAicpuKernels
+            if [ $? -ne 0 ];then
+                echo "Pre install aicpu_kernels package failed"
+                return 1
+            fi
+        else
+            installAicpuKernels_run
+            if [ $? -ne 0 ];then
+                echo "Pre install aicpu_kernels package failed"
+                return 1
+            fi
+        fi
+        echo "pre install aicpu end"
+
+        installPyAcl
+        if [ $? -ne 0 ];then
+            echo "Pre install pyacl package failed"
+            return 1
+        fi
+        echo "pre install pyacl end" 
+    fi
 	
     rm -rf ${LogPath}mini_pkg_install/opt
     cp -rf ${LogPath}mini_pkg_install/* ${LogPath}squashfs-root/
