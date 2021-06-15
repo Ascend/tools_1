@@ -87,7 +87,8 @@ class NpuDump(object):
         npu_files = {}
         match_name = op.type() + '.' + op.name().replace('/', '_').replace('.', '_') + '\\.'
         for f in self.dump_files:
-            if re.match(match_name, f):
+            # match op name and graph name
+            if re.match(match_name, f) and op.graph_name in self.dump_files[f].path:
                 npu_files[f] = self.dump_files[f]
         return npu_files
 
