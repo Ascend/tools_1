@@ -39,20 +39,21 @@ class PrecisionTool(object):
         """auto check"""
         parser = argparse.ArgumentParser()
         parser.add_argument('-c', '--vector_compare', dest='vector_compare', help='auto check', action='store_true')
+        parser.add_argument('-l', '--limit', dest='limit', type=int, help='limit', default=3)
         args = parser.parse_args(argv)
         # vector compare
         if args.vector_compare:
             self.do_vector_compare()
         self.do_vector_compare_summary()
         self.do_check_fusion()
-        self.do_check_overflow()
+        self.do_check_overflow(args.limit)
         self.do_check_cast()
         self.do_check_graph_similarity()
 
     @catch_tool_exception
-    def do_check_overflow(self):
+    def do_check_overflow(self, limit=3):
         """check overflow"""
-        self.overflow.check()
+        self.overflow.check(limit)
 
     @catch_tool_exception
     def do_check_cast(self):

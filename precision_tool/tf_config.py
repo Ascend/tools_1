@@ -90,7 +90,7 @@ def session_dump_config(session_config=None, action=None):
 def update_custom_op(custom_op, action=None):
     """Update custom_op
     :param custom_op: origin custom op
-    :param action: dump | overflow | fusion_off
+    :param action: dump | overflow | fusion_off | fusion_switch
     :return:
     """
     _init()
@@ -109,6 +109,9 @@ def update_custom_op(custom_op, action=None):
     if _is_fusion_off(action):
         custom_op.parameter_map['fusion_switch_file'].s = tf.compat.as_bytes(FUSION_OFF_FILE)
         print("[PrecisionTool] Set fusion switch file: ", FUSION_OFF_FILE)
+    elif _is_fusion_switch(action):
+        custom_op.parameter_map['fusion_switch_file'].s = tf.compat.as_bytes(FUSION_SWITCH_FILE)
+        print("[PrecisionTool] Set fusion switch file: ", FUSION_SWITCH_FILE)
     return custom_op
 
 
@@ -171,5 +174,5 @@ def _is_fusion_off(action):
 
 def _is_fusion_switch(action):
     if action is not None:
-        return 'fusion_off' in action
+        return 'fusion_switch' in action
     return False

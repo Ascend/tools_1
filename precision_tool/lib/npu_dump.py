@@ -74,12 +74,10 @@ class NpuDump(object):
         self.dump_root = os.path.join(npu_root, Constant.DUMP)
         self.decode_dir = os.path.join(cfg.DUMP_DECODE_DIR, debug_id)
         self.dump_files = None
-        # self.cpu_files = None
         self._init_dirs()
 
     def prepare(self):
         """Prepare npu/cpu dump files"""
-        # self.sub_graph = sub_graph
         self._parse_dump_files()
 
     def get_dump_files_by_op(self, op):

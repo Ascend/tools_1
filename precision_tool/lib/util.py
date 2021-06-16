@@ -37,7 +37,7 @@ except ImportError as import_error:
 # patterns
 # GE_PROTO_BUILD_GRAPH_PATTERN = '^ge_proto.*_Build.*txt$'
 GE_PROTO_GRAPH_PATTERN = r'^ge_proto_([0-9]+)_([A-Za-z0-9_-]+)\.txt$'
-OFFLINE_DUMP_PATTERN = r"^([A-Za-z0-9_-]+)\.([A-Za-z0-9_-]+)\.([0-9]+)(\.[0-9]+)?\.([0-9]{1,255})"
+OFFLINE_DUMP_PATTERN = r"^([A-Za-z0-9_-]+)\.([A-Za-z0-9_-]+)\.([0-9]+)\.?([0-9]+)?\.([0-9]{1,255})"
 OFFLINE_DUMP_DECODE_PATTERN = \
     r"^([A-Za-z0-9_-]+)\.([A-Za-z0-9_-]+)\.([0-9]+)(\.[0-9]+)?\.([0-9]{1,255})\.([a-z]+)\.([0-9]{1,255})\.npy$"
 OFFLINE_DUMP_CONVERT_PATTERN = \
@@ -55,6 +55,7 @@ NUMPY_PATTERN = r".*\.npy$"
 CSV_SHUFFIX = '.csv'
 NUMPY_SHUFFIX = '.npy'
 CKPT_META_SHUFFIX = r".*.meta$"
+MAPPING_CSV = "mapping.csv"
 
 
 class Util(object):
@@ -165,9 +166,40 @@ class Util(object):
                 parent_dirs[dir_path][name] = dump_files[name]
         return dump_files, parent_dirs
 
+    def parse_mapping_csv(self, path, pattern, extern_pattern=''):
+        """parse mapping csv in dump path"""
+        dump_files = {}
+        re_pattern = re.compile(pattern)
+        for dir_path, dir_names, file_names in os.walk(path, followlinks=True):
+            if MAPPING_CSV not in file_names:
+                continue
+            mapping = self.read_csv(os.path.join(dir_path, MAPPING_CSV))
+            for item in mapping:
+                src_file = os.path.abspath(os.path.join(dir_path, item[0]))
+                if not os.path.isfile(src_file):
+                    self.log.warning("Can not find file %s in mapping.csv, dir: %s.", item[0], dir_path)
+                    continue
+                match = re_pattern.match(item[1])
+                if match is None:
+                    self.log.warning("file name [%s] in mapping.csv is invalid.", item[1])
+                    continue
+                file_desc = self._gen_dump_file_info(item[0], match, dir_path)
+                dst_file_name = '.'.join([file_desc.op_type, file_desc.file_name, str(file_desc.task_id),
+                                          str(file_desc.stream_id), str(file_desc.timestamp)])
+                dst_file = os.path.abspath(os.path.join(dir_path, dst_file_name))
+                if not os.path.islink(src_file):
+                    os.rename(src_file, dst_file)
+                    os.symlink(dst_file, src_file)
+                file_desc.path = dst_file
+                file_desc.file_name = dst_file_name
+                dump_files[item[1]] = file_desc
+        return dump_files
+
     def list_npu_dump_files(self, path, extern_pattern=''):
-        return self._list_file_with_pattern(path, OFFLINE_DUMP_PATTERN, extern_pattern,
-                                            self._gen_dump_file_info)
+        npu_dump_files = self._list_file_with_pattern(path, OFFLINE_DUMP_PATTERN, extern_pattern,
+                                                      self._gen_dump_file_info)
+        npu_dump_files.update(self.parse_mapping_csv(path, OFFLINE_DUMP_PATTERN, extern_pattern))
+        return npu_dump_files
 
     def list_ge_graph_files(self, path, extern_pattern=''):
         return self._list_file_with_pattern(path, GE_PROTO_GRAPH_PATTERN, extern_pattern,
@@ -437,7 +469,7 @@ class Util(object):
     @staticmethod
     def _gen_dump_file_info(name, match, dir_path):
         return NpuDumpFileDesc(name, dir_path, int(match.groups()[-1]), op_name=match.group(2), op_type=match.group(1),
-                               task_id=int(match.group(3)))
+                               task_id=int(match.group(3)), stream_id=match.group(4))
 
     @staticmethod
     def _gen_npu_dump_decode_file_info(name, match, dir_path):
