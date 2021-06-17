@@ -20,11 +20,13 @@ class BuildGraphFileDesc(FileDesc):
 
 
 class NpuDumpFileDesc(FileDesc):
-    def __init__(self, file_name, dir_path, timestamp, op_name, op_type, task_id):
+    def __init__(self, file_name, dir_path, timestamp, op_name, op_type, task_id, stream_id=0):
         super(NpuDumpFileDesc, self).__init__(file_name, dir_path, timestamp)
         self.op_name = op_name
         self.op_type = op_type
         self.task_id = task_id
+        stream_id = 0 if stream_id is None else int(stream_id)
+        self.stream_id = stream_id
 
 
 class DumpDecodeFileDesc(NpuDumpFileDesc):

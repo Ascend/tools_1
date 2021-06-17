@@ -171,10 +171,13 @@ sudo yum install graphviz
     
     # 如果使用的是Estimator的NPURunConfig配置使能NPU，则可以参考以下修改
     npu_config = NPURunConfig(fusion_switch_file=npu_tf_config.FUSION_OFF_FILE) # 修改行
+    # 如果需要关闭指定的融合规则，则可以修改precision_tool/fusion_switch.cfg, 并参考如下修改
+    npu_config = NPURunConfig(fusion_switch_file=npu_tf_config.FUSION_SWITCH_FILE) # 关闭特定融合修改行
   
     # 如果使用的是session.run或者使用tf.ConfigProto创建session_config传入tf.estimator.RunConfig的方式使能npu
     # 可以参考如下修改(数据Dump和关闭融合同时使能)
     session_config = npu_tf_config.session_dump_config(session_config, action='dump|fusion_off') # 新增行
+    session_config = npu_tf_config.session_dump_config(session_config, action='dump|fusion_switch') # 关闭特定融合新增行
     # tf.estimator
     run_config = tf.estimator.RunConfig(session_config=session_config,...)
     # tf.keras

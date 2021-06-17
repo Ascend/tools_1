@@ -94,7 +94,14 @@ class TfDumpData(DumpData):
         return inputs_tensor
 
     def _verify_and_adapt_dynamic_shape(self, op_name, tensor):
-        model_shape = list(tensor.shape)
+        try:
+            model_shape = list(tensor.shape)
+        except ValueError:
+            if op_name not in self.input_shapes:
+                utils.print_error_log("can not get model input tensor shape, and not set input shape in arguments.")
+                raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR)
+            tensor.set_shape(self.input_shapes[op_name])
+            return tensor
         if op_name in self.input_shapes:
             fixed_tensor_shape = self.input_shapes[op_name]
             if len(fixed_tensor_shape) != len(model_shape):
