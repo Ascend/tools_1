@@ -68,6 +68,7 @@ class Fusion(ToolObject):
         """Check fusion rules
         :return: None
         """
+        '''
         self.log.info("Check effect fusion rule list.")
         for fusion in self.fusion_result:
             graph_fusion_table = self._build_table('Graph Fusion [GraphID: %s]' % fusion.graph_id(),
@@ -76,6 +77,7 @@ class Fusion(ToolObject):
                                                 fusion.get_effect_ub_fusion())
             util.print_panel(util.create_columns([graph_fusion_table, ub_fusion_table]),
                              title='GraphID:' + fusion.graph_id(), fit=True)
+        '''
 
     @staticmethod
     def _get_result_jsons(file_name):

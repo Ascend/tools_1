@@ -1,5 +1,6 @@
 # coding=utf-8
 import os
+import random
 from npu_bridge.npu_init import DumpConfig
 from tensorflow.core.protobuf import config_pb2
 from tensorflow.core.protobuf.rewriter_config_pb2 import RewriterConfig
@@ -18,6 +19,7 @@ FUSION_OFF_FILE = os.path.join(os.path.dirname(__file__), 'fusion_off.cfg')
 DEFAULT_OP_DEBUG_DIR = cfg.DEFAULT_OP_DEBUG_DIR
 
 # set random seed
+random.seed(cfg.DUMP_SEED)
 tf.random.set_random_seed(cfg.DUMP_SEED)
 print("[PrecisionTool] Set Tensorflow random seed to %d success." % cfg.DUMP_SEED)
 try:

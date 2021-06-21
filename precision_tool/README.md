@@ -216,26 +216,13 @@ sudo yum install graphviz
     ```shell
     python3 ./precision_tool/cli.py 
     ```
-### 非交互模式命令
-1. tf_dump [start tf cpu script command]
-    ```shell
-    # 启动tf训练脚本，Dump CPU标杆数据
-    # 需要配合上述tf_debug修改使用，能够Dump出所有Tensor数据
-    # 也可以在GPU/CPU环境上单独部署脚本执行该命令，将数据目录precision_data/dump/cpu 拷贝到NPU环境分析
-    python3.7.5 precision_tool/cli.py tf_dump 'python3 LeNet_cpu.py'
-    ```
-2. npu_dump [start npu script command]
-    ```shell
-    # 启动npu训练脚本，图dump及数据dump
-    # 需要配合上述precision_tool/tf_config.py 使用
-    python3.7.5 precision_tool/cli.py npu_dump 'python3 LeNet_npu.py'
-    ```
    
-3. npu_overflow [start npu script command]
+### 交互模式命令
+1. ac (-c)
     ```shell
-    # 启动npu训练脚本，进行溢出检测
-    # 需要配合上述precision_tool/tf_config.py 使用
-    python3.7.5 precision_tool/cli.py npu_overflow 'python3 LeNet_npu.py'
+    # auto check. 自动化检测命令
+    # 列出Fusion信息;解析算子溢出信息;(-c)进行全网比对
+    PrecisionTool > ac -c
    ╭──────────────────────────────────────────────────────────────────────────────────────────────────╮
    │ [TransData][327] trans_TransData_1170                                                            │
    │  - [AI Core][Status:32][TaskId:327] ['浮点计算有溢出']                                           │
@@ -245,14 +232,6 @@ sudo yum install graphviz
    │  |- TransData.trans_TransData_1170.327.1619347786532995.output.0.npy                             │
    │   |- [Shape: (32, 20, 8, 8, 16)] [Dtype: bool] [Max: True] [Min: False] [Mean: 0.07781982421875] │
    ╰──────────────────────────────────────────────────────────────────────────────────────────────────╯
-   ```
-   
-### 交互模式命令
-1. ac (-c)
-    ```shell
-    # auto check. 自动化检测命令
-    # 列出Fusion信息;解析算子溢出信息;(-c)进行全网比对
-    PrecisionTool > ac -c
     ```
 2. run [command]
     ```shell

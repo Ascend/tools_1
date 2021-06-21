@@ -104,8 +104,8 @@ class Compare(object):
         :param debug_1_root_dir:
         :return:
         """
-        debug_0_sub_dirs = self._get_ge_default_dirs(debug_0_root_dir)
-        debug_1_sub_dirs = self._get_ge_default_dirs(debug_1_root_dir)
+        # debug_0_sub_dirs = self._get_ge_default_dirs(debug_0_root_dir)
+        # debug_1_sub_dirs = self._get_ge_default_dirs(debug_1_root_dir)
 
     def vector_compare(self, lh_path, rh_path, result_dir, graph_json=None):
         """Compare all ops"""
