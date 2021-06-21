@@ -30,8 +30,9 @@ path=${2%.tar.gz*}
 if [ ${path:0:1} != "/" ];then
     path=`pwd`/$path
 fi
-path=$path"_dir_for_npucollect"
 
+current=`date "+%Y%m%d%H%M%S%N"`
+path=$path$current
 
 if ! grep -q -E '\.tar\.gz$' <<< "$2";then
     error_msg="argument2 invalid, suffix must use .tar.gz"
