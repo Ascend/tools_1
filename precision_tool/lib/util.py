@@ -280,16 +280,22 @@ class Util(object):
         elif isinstance(source_data, np.ndarray):
             data = source_data
         else:
-            raise PrecisionToolException("invalid source data:%s" % source_data)
+            raise PrecisionToolException("Invalid source data:%s" % source_data)
+        if np.size(data) == 0:
+            raise PrecisionToolException("Empty source data:%s" % source_data)
         return data.shape, data.dtype, data.max(), data.min(), data.mean()
 
+    @catch_tool_exception
     def gen_npy_info_txt(self, source_data):
         """ Generate numpy info txt.
         :param source_data: source path or np.ndarray
         :return: txt
         """
-        shape, dtype, max_data, min_data, mean = self.npy_info(source_data)
-        return '[Shape: %s] [Dtype: %s] [Max: %s] [Min: %s] [Mean: %s]' % (shape, dtype, max_data, min_data, mean)
+        try:
+            shape, dtype, max_data, min_data, mean = self.npy_info(source_data)
+            return '[Shape: %s] [Dtype: %s] [Max: %s] [Min: %s] [Mean: %s]' % (shape, dtype, max_data, min_data, mean)
+        except PrecisionToolException:
+            return ''
 
     def print_npy_summary(self, path, file_name, is_convert=False, extern_content=''):
         """Print summary of npy data

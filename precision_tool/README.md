@@ -34,30 +34,41 @@ sudo yum install graphviz
 * 一般直接在NPU训练环境上部署该脚本，环境上能够正常执行CPU和NPU训练脚本
 * 如果需要进行数据Dump比对，则需要先检查并去除训练脚本内部使用到的随机处理，避免由于输入数据不一致导致数据比对结果不可用
     ```python
+    # 对于使用tf.random / np.random / (python) random的可以通过固定随机种子的方式固定输入
+    # import tf_config.py 默认会设置上述三种random的seed，但由于import位置关系，可能不一定能作用到所有的关联代码，建议在代码确认合适位置手动嵌入
+    random.seed(cfg.DUMP_SEED)
+    tf.random.set_random_seed(cfg.DUMP_SEED)
+    np.random.seed(cfg.DUMP_SEED)
+    
     # 此处给出一些典型示例，需要根据自己的脚本进行排查
-    # 1. 对输入数据做shuffle操作
+
+    # 1. 参数初始化中的随机操作
+    #    加载checkpoint的方式能够固定大多数初始参数
+    saver.restore(sess, saver_dir)
+    
+    # 2. 输入数据的随机操作（例如对输入数据做shuffle操作）
     dataset = tf.data.TFRecordDataset(tf_data)
     dataset = dataset.shuffle(batch_size*10)    # 直接注释掉该行
     
-    # 2. 使用dropout
+    # 3. 模型中的随机操作（例如使用dropout）
     net = slim.dropout(net, keep_prob=dropout_keep_prob, scope='Dropout_1b') # 建议注释该行
     
-    # 3. 图像预处理使用随机的操作(根据实际情况注释，或者替换成其他固定的预处理操作)
-    # Random rotate
+    # 4. 图像预处理使用的随机操作(根据实际情况固定随机种子，或者替换成其他固定的预处理操作)
+    # 4.1 Random rotate
     random_angle = tf.random_uniform([], - self.degree * 3.141592 / 180, self.degree * 3.141592 / 180)
     image = tf.contrib.image.rotate(image, random_angle, interpolation='BILINEAR')
     depth_gt = tf.contrib.image.rotate(depth_gt, random_angle, interpolation='NEAREST')
   
-    # Random flipping
+    # 4.2 Random flipping
     do_flip = tf.random_uniform([], 0, 1)
     image = tf.cond(do_flip > 0.5, lambda: tf.image.flip_left_right(image), lambda: image)
     depth_gt = tf.cond(do_flip > 0.5, lambda: tf.image.flip_left_right(depth_gt), lambda: depth_gt)
     
-    # Random crop
+    # 4.3 Random crop
     mage_depth = tf.concat([image, depth_gt], 2)
     image_depth_cropped = tf.random_crop(image_depth, [self.params.height, self.params.width, 4])
     
-    # 4. RunConfig/NPURunConfig中设置tf_random_seed固定网络随机因子
+    # 5. RunConfig/NPURunConfig中设置tf_random_seed固定网络随机因子
     run_config = tf.estimator.RunConfig(tf_random_seed=1, ...)
     run_config = NPURunConfig(tf_random_seed=1, ...)
   
@@ -216,26 +227,13 @@ sudo yum install graphviz
     ```shell
     python3 ./precision_tool/cli.py 
     ```
-### 非交互模式命令
-1. tf_dump [start tf cpu script command]
-    ```shell
-    # 启动tf训练脚本，Dump CPU标杆数据
-    # 需要配合上述tf_debug修改使用，能够Dump出所有Tensor数据
-    # 也可以在GPU/CPU环境上单独部署脚本执行该命令，将数据目录precision_data/dump/cpu 拷贝到NPU环境分析
-    python3.7.5 precision_tool/cli.py tf_dump 'python3 LeNet_cpu.py'
-    ```
-2. npu_dump [start npu script command]
-    ```shell
-    # 启动npu训练脚本，图dump及数据dump
-    # 需要配合上述precision_tool/tf_config.py 使用
-    python3.7.5 precision_tool/cli.py npu_dump 'python3 LeNet_npu.py'
-    ```
    
-3. npu_overflow [start npu script command]
+### 交互模式命令
+1. ac (-c)
     ```shell
-    # 启动npu训练脚本，进行溢出检测
-    # 需要配合上述precision_tool/tf_config.py 使用
-    python3.7.5 precision_tool/cli.py npu_overflow 'python3 LeNet_npu.py'
+    # auto check. 自动化检测命令
+    # 列出Fusion信息;解析算子溢出信息;(-c)进行全网比对
+    PrecisionTool > ac -c
    ╭──────────────────────────────────────────────────────────────────────────────────────────────────╮
    │ [TransData][327] trans_TransData_1170                                                            │
    │  - [AI Core][Status:32][TaskId:327] ['浮点计算有溢出']                                           │
@@ -245,14 +243,6 @@ sudo yum install graphviz
    │  |- TransData.trans_TransData_1170.327.1619347786532995.output.0.npy                             │
    │   |- [Shape: (32, 20, 8, 8, 16)] [Dtype: bool] [Max: True] [Min: False] [Mean: 0.07781982421875] │
    ╰──────────────────────────────────────────────────────────────────────────────────────────────────╯
-   ```
-   
-### 交互模式命令
-1. ac (-c)
-    ```shell
-    # auto check. 自动化检测命令
-    # 列出Fusion信息;解析算子溢出信息;(-c)进行全网比对
-    PrecisionTool > ac -c
     ```
 2. run [command]
     ```shell
