@@ -35,9 +35,9 @@
 
 ## 工具使用<a name="section171791224131610"></a>
 
-请从码云tools仓（[https://gitee.com/ascend/tools/tree/master/npucollector](https://gitee.com/ascend/tools/tree/master/npucollector)）获取脚本工具，然后将脚本工具存放到发生故障的环境上，例如存放到/home/npucollector目录下，在该目录下执行命令，命令行格式如下：
+请从码云tools仓（[https://gitee.com/ascend/tools/tree/master/npucollector](https://gitee.com/ascend/tools/tree/master/npucollector)）获取脚本工具，然后将脚本工具存放到发生故障的环境上，例如存放到/home/npucollector目录下，接着在**原用例执行目录下**执行命令，命令行格式如下：
 
-**bash ../npucollect.sh** _"sh app\_run.sh" /home/npucollector/target.tar.gz_
+**bash /home/npucollector/npucollect.sh** _"sh app\_run.sh" /home/npucollector/target.tar.gz_
 
 >**说明：** 
 >命令行中，第一个参数字段为发生故障时执行的任务，填写完整的命令；第二个参数字段为收集的目标压缩文件名称，目前必须以.tar.gz结尾。
