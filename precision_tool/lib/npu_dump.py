@@ -83,7 +83,8 @@ class NpuDump(object):
     def get_dump_files_by_op(self, op):
         """Get npu dump files by Op"""
         npu_files = {}
-        match_name = op.type() + '.' + op.name().replace('/', '_').replace('.', '_') + '\\.'
+        op_name = op.name().replace('/', '_').replace('.', '_')
+        match_name = op.type() + '.' + op_name + '\\.'
         for f in self.dump_files:
             # match op name and graph name
             if re.match(match_name, f) and op.graph_name in self.dump_files[f].path:

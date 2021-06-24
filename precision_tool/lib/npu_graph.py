@@ -54,10 +54,6 @@ class NpuSubGraph(object):
         for op_detail in self.ops_list.values():
             if name in op_detail.name():
                 guess_op_list.append(op_detail)
-        if len(guess_op_list) != 0:
-            self.log.info("Can not find Operator named %s. You may mean the operator bellow.", name)
-            guess_op_name_list = ['[green][%s][/green] %s' % (x.type(), x.name()) for x in guess_op_list]
-            util.print_panel(Constant.NEW_LINE.join(guess_op_name_list), title='Possible Operators')
         return guess_op_list
 
     def check_cast(self):
@@ -224,10 +220,18 @@ class NpuGraph(object):
         ops = []
         for sub_graph in self.sub_graphs.values():
             ops.extend(sub_graph.get_op(name))
+        # check if there is an exact match operation
+        match_ops = list(filter(lambda x: x.name() == name, ops))
+        if len(match_ops) != 0:
+            return match_ops
+        # return guess operations by name
+        self.log.info("Can not find Operator named %s. You may mean the operator bellow.", name)
+        guess_op_name_list = ['[green][%s][/green] %s' % (x.type(), x.name()) for x in ops]
+        util.print_panel(Constant.NEW_LINE.join(guess_op_name_list), title='Possible Operators')
         return ops
 
     def _prepare_npu_graphs(self):
-        """Copy ge graphs to graph dir. """
+        """prepare ge graphs  """
         # move graphs to precision data dir
         graph_files = util.list_ge_graph_files(self.graph_root)
         self.build_files = sorted(filter(lambda x: x.graph_name == cfg.BUILD_JSON_GRAPH_NAME, graph_files.values()),
