@@ -266,8 +266,8 @@ int extractShapeFromGraph(Graph *graph, const std::string &result_file) {
   auto node_shape_inference_lambda = [&fs](tensorflow::Node *node) {
 
   if (node->attrs().Find("output_tensor_desc") == nullptr) {
-  	std::cout << "[INFO] node:" << node->name() << " type:" << node->type_string() <<
-  	  " has no output_tensor_desc" << std::endl;
+      std::cout << "[INFO] node:" << node->name() << " type:" << node->type_string() <<
+        " has no output_tensor_desc" << std::endl;
     return;
   }
 
