@@ -16,9 +16,9 @@
 #include "tensorflow/core/framework/op.h"
 #include "tensorflow/core/framework/common_shape_fns.h"
 
-using namespace shape_inference;
 using namespace tensorflow;
 using namespace std;
+using namespace shape_inference;
 
 using TensorShapes = tensorflow::gtl::InlinedVector<tensorflow::TensorShape, 4>;
 

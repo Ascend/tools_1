@@ -11,23 +11,23 @@ do
     npu_shape=${npu_array[2]}
 
     # search name, no match then skip
-    cpu_line = `grep -r "$npu_node" $cpu_file`
-    if [[ "$cpu_line" == "" ]]; then
+    cpu_line=`grep -r "$npu_node" $cpu_file`
+    if [ "$cpu_line" == "" ]; then
         echo "[INFO] cpu result has no $npu_node"
         continue
     fi
 
     # search name and index, no match then judge ERROR
-    cpu_line = `grep -r "$npu_node $npu_index" $cpu_file`
-    if [[ "$cpu_line" == "" ]]; then
-        echo "[ERROR] cpu result has no same $npu_index for $npu_node"
+    cpu_line=`grep -r "$npu_node $npu_index" $cpu_file`
+    if [ "$cpu_line" == "" ]; then
+        echo -e "\033[31m[ERROR] cpu result has no same $npu_index for $npu_node \033[0m"
         exit
     fi
 
     # shape match judge, match then continue
     cpu_array=(${cpu_line/ / })
     cpu_shape=${cpu_array[2]}
-    if [[ $cpu_shape == $npu_shape ]]; then
+    if [ $cpu_shape == $npu_shape ]; then
         continue
     fi
 
@@ -45,7 +45,7 @@ do
     for cpu_dim in ${cpu_shape_array[@]}
     do
         if [ $cpu_dim != ${npu_shape_array[$i]} ] && [ $cpu_dim != "?"]; then
-            echo "[FOUND] $npu_node is the first one which out $npu_index's $npu_shape different from cpu $cpu_shape"
+            echo -e "\033[31m[FOUND] $npu_node is the first one which out $npu_index's $npu_shape different from cpu $cpu_shape \033[0m"
             exit
         fi
         i=$i+1
