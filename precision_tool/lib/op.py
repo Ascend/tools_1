@@ -31,11 +31,12 @@ class Op(object):
         inputs: list of input descs
         outputs: list of output descs
     """
-    def __init__(self, op_json, op_list, graph_name):
+    def __init__(self, op_json, op_list, graph_name, parent_graph_name):
         """Init"""
         self.op_json = op_json
         self.op_list = op_list
         self.graph_name = graph_name
+        self.parent_graph_name = parent_graph_name
         self.input_list = None
         self.output_list = None
         self.log = util.get_log()

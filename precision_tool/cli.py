@@ -12,6 +12,8 @@ from lib.precision_tool import PrecisionTool
 from lib.interactive_cli import InteractiveCli
 from lib.precision_tool_exception import PrecisionToolException
 from lib.util import util
+from lib.tf_dump import TfDump
+from lib.msquickcmp_adapter import MsQuickCmpAdapter
 import config as cfg
 
 
@@ -31,7 +33,7 @@ INTRODUCE_DOC = \
     "      Start command line:\n" \
     "       > python3.7.5 precision_tool/cli.py\n"
 
-
+'''
 def _run_tf_dbg_dump(cmd_line):
     """Run tf train script to get dump data."""
     log = util.get_log()
@@ -49,8 +51,6 @@ def _run_tf_dbg_dump(cmd_line):
     util.create_dir(cfg.TF_DUMP_DIR)
     util.create_dir(cfg.TMP_DIR)
     # extra the last run dir
-    # run_dir = run_dirs[-1]
-    # log.info("Find %s run dirs, will choose the last one: %s" % (run_dirs, run_dir))
     for run_dir in run_dirs:
         time.sleep(1)
         command = "%s -m tensorflow.python.debug.cli.offline_analyzer --ui_type readline --dump_dir %s" % (
@@ -100,6 +100,12 @@ def _do_run_tf_dbg_dump(cmd_line, run_times=2):
         tf_dbg.expect('tfdbg>', timeout=cfg.TF_DEBUG_TIMEOUT)
     tf_dbg.sendline('exit')
     log.info('Finish dump tf data')
+'''
+
+
+def _run_tf_dbg_dump(cmdline):
+    tf_dump = TfDump()
+    tf_dump.run_tf_dbg_dump(cmdline)
 
 
 def _unset_flags():
@@ -132,28 +138,52 @@ def _run_npu_overflow(cmd):
     _unset_flags()
 
 
+def _run_infer_adapter(output_path):
+    """ Run precision_tool with msquickcmp output data
+    :param output_path: msquickcmp output path
+    :return: None
+    """
+    adapter = MsQuickCmpAdapter(output_path)
+    adapter.run()
+    _run_interactive_cli()
+
+
+def _run_interactive_cli(cli=None):
+    util.get_log().info("Interactive command mode.")
+    if cli is None:
+        cli = InteractiveCli()
+    try:
+        cli.cmdloop(intro="Enjoy!")
+    except KeyboardInterrupt:
+        util.get_log().info("Bye.......")
+
+
+function_list = {
+    'tf_dump': _run_tf_dbg_dump,
+    'npu_dump': _run_npu_dump,
+    'npu_overflow': _run_npu_overflow,
+    'infer': _run_infer_adapter
+}
+
+
 def main():
-    log = util.get_log()
-    if len(sys.argv) > 1:
-        log.info("Single command mode.")
+    while len(sys.argv) > 1:
+        util.get_log().info("Single command mode.")
+        function_key = sys.argv[1]
         cmd_line = sys.argv[2] if len(sys.argv) > 2 else None
+        if function_key in function_list:
+            return function_list[function_key](cmd_line)
+        '''
         if sys.argv[1] == 'tf_dump':
             _run_tf_dbg_dump(cmd_line)
         elif sys.argv[1] == 'npu_dump':
             _run_npu_dump(cmd_line)
         elif sys.argv[1] == 'npu_overflow':
             _run_npu_overflow(cmd_line)
-        else:
-            precision_tool = PrecisionTool()
-            precision_tool.single_cmd(sys.argv)
-        exit(0)
-    log.info("Interactive command mode.")
-    cli = InteractiveCli()
-    try:
-        cli.cmdloop(intro="Enjoy!")
-    except KeyboardInterrupt:
-        log.info("Bye.......")
-    sys.exit(0)
+        '''
+        precision_tool = PrecisionTool()
+        return precision_tool.single_cmd(sys.argv)
+    _run_interactive_cli()
 
 
 if __name__ == '__main__':
