@@ -15,6 +15,9 @@ ASCEND_LOG_PATH = '/root/ascend/log/plog/'
 LOG_LEVEL = "NOTSET"
 ROOT_DIR = ''
 
+# [train/infer] if adapt from msquickcmp result, set net type to infer
+NET_TYPE = 'train'
+
 '''
 precision_data/
 ├── npu

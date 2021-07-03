@@ -1,7 +1,6 @@
 # coding=utf-8
 import os
 import random
-from npu_bridge.npu_init import DumpConfig
 from tensorflow.core.protobuf import config_pb2
 from tensorflow.core.protobuf.rewriter_config_pb2 import RewriterConfig
 from tensorflow.python import debug as tf_debug
@@ -55,6 +54,7 @@ def estimator_dump_config(action=None):
     exp. config = NPURunConfig(dump_config=estimator_dum_config(), session_config=session_config)
     :return: DumpConfig
     """
+    from npu_bridge.npu_init import DumpConfig
     _init()
     if _is_overflow(action):
         config = DumpConfig(enable_dump_debug=True, dump_path=cfg.NPU_OVERFLOW_DUMP_DIR, dump_mode="all")

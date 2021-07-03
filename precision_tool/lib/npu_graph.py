@@ -25,10 +25,9 @@ OP_CAST = 'Cast'
 
 
 class NpuSubGraph(object):
-    def __init__(self, graph_json, build_file, parent_graph_name):
+    def __init__(self, graph_json, build_file):
         self.log = util.get_log()
         self.graph_name = graph_json['name']
-        self.parent_graph_name = parent_graph_name
         self.graph = graph_json
         self.build_file = build_file
         self.ops_list = collections.OrderedDict()
@@ -42,7 +41,7 @@ class NpuSubGraph(object):
             op_type = op_json['type']
             if op_name not in self.ops_list:
                 self.ops_list[op_name] = []
-            op = Op(op_json, self.ops_list, self.graph['name'], self.parent_graph_name)
+            op = Op(op_json, self.ops_list, self.graph['name'])
             if op_type not in self.ops_type_list:
                 self.ops_type_list[op_type] = {}
             self.ops_list[op_name] = op
@@ -252,11 +251,10 @@ class NpuGraph(object):
             graph_json = json.load(f)
             if 'graph' not in graph_json:
                 raise PrecisionToolException("No graph in file: %s" % build_file.file_name)
-            parent_graph_name = graph_json['name'] if 'name' in graph_json else ''
             if len(graph_json['graph']) != 1:
                 self.log.warning("There are more then one graph in ge build file, find %d" % len(graph_json['graph']))
             # sub_graphs = []
             for graph in graph_json['graph']:
-                npu_sub_graph = NpuSubGraph(graph, build_file, parent_graph_name)
+                npu_sub_graph = NpuSubGraph(graph, build_file)
                 self.sub_graphs[graph['name']] = npu_sub_graph
                 self.ops_list.extend(npu_sub_graph.ops_list.values())

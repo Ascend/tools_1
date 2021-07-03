@@ -86,9 +86,8 @@ class NpuDump(object):
         op_name = op.name().replace('/', '_').replace('.', '_')
         match_name = op.type() + '.' + op_name + '\\.'
         for f in self.dump_files:
-            # match op name and graph name, infer dump directory uses parent_graph_name
-            if re.match(match_name, f) and \
-                    (op.graph_name in self.dump_files[f].path or op.parent_graph_name in self.dump_files[f].path):
+            # match op name and graph name, infer dump directory may not has graph
+            if re.match(match_name, f) and (op.graph_name in self.dump_files[f].path or cfg.NET_TYPE == 'infer'):
                 npu_files[f] = self.dump_files[f]
         return npu_files
 
