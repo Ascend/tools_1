@@ -1,5 +1,6 @@
 # coding=utf-8
 import os
+import time
 import pathlib
 import shutil
 from lib.util import util
@@ -43,6 +44,7 @@ class MsQuickCmpAdapter(object):
                 dst_path = os.path.join(cfg.DEFAULT_NPU_GRAPH_DIR, graph_json_file_name)
                 self.log.info("Copy graph file: %s->%s", src_path, dst_path)
                 shutil.copy(src_path, dst_path)
+                time.sleep(3)
                 pathlib.Path(dst_path).touch()
         if not util.empty_dir(cfg.DEFAULT_NPU_GRAPH_DIR):
             self.log.info("Adapt model success.")
@@ -51,6 +53,8 @@ class MsQuickCmpAdapter(object):
         dir_names = os.listdir(path)
         if 'tf' in dir_names:
             self._adapt_tf_dump(os.path.join(path, 'tf'))
+        if 'onnx' in dir_names:
+            self._adapt_tf_dump(os.path.join(path, 'onnx'))
         if 'npu' in dir_names:
             self._adapt_npu_dump(os.path.join(path, 'npu'))
 
