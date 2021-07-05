@@ -6,7 +6,7 @@ TF_DUMP_STEP = '0'
 
 # path to run package operator cmp compare
 # default may be /usr/local/Ascend/
-CMD_ROOT_PATH = '/usr/local/'
+CMD_ROOT_PATH = '/usr/local/Ascend/'
 
 # ASCEND Log Path
 ASCEND_LOG_PATH = '/root/ascend/log/plog/'
@@ -14,6 +14,9 @@ ASCEND_LOG_PATH = '/root/ascend/log/plog/'
 # TOOL CONFIG
 LOG_LEVEL = "NOTSET"
 ROOT_DIR = ''
+
+# [train/infer] if adapt from msquickcmp result, set net type to infer
+NET_TYPE = 'train'
 
 '''
 precision_data/

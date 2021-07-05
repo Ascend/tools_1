@@ -20,11 +20,15 @@ class FusionResult(object):
 
     def get_effect_graph_fusion(self):
         """Get effect graph fusion rule"""
-        return self._get_effect_fusion(self.fusion_json[GRAPH_FUSION_KEY])
+        if GRAPH_FUSION_KEY in self.fusion_json:
+            return self._get_effect_fusion(self.fusion_json[GRAPH_FUSION_KEY])
+        return {}
 
     def get_effect_ub_fusion(self):
         """Get effect UB fusion rule"""
-        return self._get_effect_fusion(self.fusion_json[UB_FUSION_KEY])
+        if UB_FUSION_KEY in self.fusion_json:
+            return self._get_effect_fusion(self.fusion_json[UB_FUSION_KEY])
+        return {}
 
     def graph_id(self):
         """Get graph id"""

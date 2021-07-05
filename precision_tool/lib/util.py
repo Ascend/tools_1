@@ -312,7 +312,8 @@ class Util(object):
         table = self.create_table('', ['Index', 'Data'])
         flatten_data = data.flatten()
         for i in range(min(16, int(np.ceil(flatten_data.size / 8)))):
-            table.add_row(str(i * 8), ' '.join(flatten_data[i: i+8].astype('str').tolist()))
+            last_idx = min(flatten_data.size, i*8+8)
+            table.add_row(str(i * 8), ' '.join(flatten_data[i*8: last_idx].astype('str').tolist()))
         summary = ['[yellow]%s[/yellow]' % self.gen_npy_info_txt(data), 'Path: %s' % target_file]
         if is_convert:
             summary.append('TxtFile: %s.txt' % target_file)

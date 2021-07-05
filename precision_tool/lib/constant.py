@@ -1,5 +1,6 @@
 # coding=utf-8
 
+
 class Constant(object):
     NEW_LINE = "\n"
     TAB_LINE = "\t"
@@ -7,3 +8,8 @@ class Constant(object):
     NPU_DEBUG_ID_1 = "debug_1"
     GRAPH = "graph"
     DUMP = "dump"
+
+    class Suffix(object):
+        JSON = '.json'
+        CSV = '.csv'
+

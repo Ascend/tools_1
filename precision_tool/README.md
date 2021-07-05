@@ -229,10 +229,12 @@ sudo yum install graphviz
     ```
    
 ### 交互模式命令
-1. ac (-c)
+1. ac -l [limit_num] -c
     ```shell
     # auto check. 自动化检测命令
-    # 列出Fusion信息;解析算子溢出信息;(-c)进行全网比对
+    # 列出Fusion信息;解析算子溢出信息;
+    # -c 可选，进行全网比对
+    # -l 可选，限制输出结果的条数（overflow解析的条数等）
     PrecisionTool > ac -c
    ╭──────────────────────────────────────────────────────────────────────────────────────────────────╮
    │ [TransData][327] trans_TransData_1170                                                            │
@@ -346,7 +348,14 @@ sudo yum install graphviz
    ╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
     ```
 
-7. vcs -f [file_name] -c [cos_sim_threshold] -l [limit]
+7. vc -lt [left_path] -rt [right_path] -g [graph]
+   ```python
+    # 用于手动指定两个目录进行整网对比
+    # -lt 必选，其中一个文件目录
+    # -rt 必选，另一个目录，一般是标杆目录 
+    # -g 可选，指定-g将尝试解析graph内的映射关系比对（一般用于NPU和TF之间的数据比对， NPU与NPU之间比对不需要，直接按照算子name对比）
+   ```
+8. vcs -f [file_name] -c [cos_sim_threshold] -l [limit]
    ```python
     # 查看精度比对结果的概要信息，可以更加预先相似的阈值过滤出低于阈值的算子/信息
     # -f (--file) 可选，指定csv文件，不设置则默认遍历precision_data/temp/vector_compare/目录下最近产生的对比目录内的所有csv
