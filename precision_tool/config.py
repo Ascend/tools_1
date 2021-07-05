@@ -6,7 +6,7 @@ TF_DUMP_STEP = '0'
 
 # path to run package operator cmp compare
 # default may be /usr/local/Ascend/
-CMD_ROOT_PATH = '/usr/local/'
+CMD_ROOT_PATH = '/usr/local/Ascend/'
 
 # ASCEND Log Path
 ASCEND_LOG_PATH = '/root/ascend/log/plog/'

@@ -177,15 +177,3 @@ class NpuDump(object):
             if file_info.op_name == op_name:
                 return file_info
         return None
-
-    '''
-    @staticmethod
-    def _detect_cpu_file_name(file_name):
-        match_name = file_name.replace('/', '_').replace('.', '_') + '\\.'
-        cpu_files = util.list_cpu_dump_decode_files(cfg.TF_DUMP_DIR, match_name)
-        summary = ['CPU_DUMP:']
-        for file_name in cpu_files.keys():
-            summary.append(' - %s' % file_name)
-        util.print_panel(Constant.NEW_LINE.join(summary))
-        return cpu_files
-    '''
