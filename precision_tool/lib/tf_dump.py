@@ -64,7 +64,7 @@ class TfDump(object):
         for run_dir in run_dirs:
             time.sleep(1)
             command = "%s -m tensorflow.python.debug.cli.offline_analyzer --ui_type readline --dump_dir %s" % (
-                cfg.PYTHON, os.path.join(cfg.TF_DEBUG_DUMP_DIR, run_dir))
+                util.python, os.path.join(cfg.TF_DEBUG_DUMP_DIR, run_dir))
             self._do_run_tf_dbg_dump(command, 0)
 
     def _do_run_tf_dbg_dump(self, cmd_line, run_times=2):

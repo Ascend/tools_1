@@ -42,6 +42,17 @@ class Desc(object):
             if attr['key'] == 'origin_format':
                 return attr['value']['s']
 
+    def summary(self):
+        return NotImplemented
+
+    def compare(self, right_desc):
+        if self.dtype() == right_desc.dtype() and self.format() == right_desc.format():
+            return "[green][%d] [%s][%s] %s[/green]" % (self.idx(), self.dtype(), self.format(), self.shape()), True
+        else:
+            return "[yellow][%d] [%s][%s] %s | [%s][%s] %s[/yellow]" % (
+                self.idx(), self.dtype(), self.format(), self.shape(),
+                right_desc.dtype(), right_desc.format(), right_desc.shape()), False
+
 
 class InputDesc(Desc):
     def __init__(self, name, desc_json, index):
