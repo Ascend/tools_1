@@ -8,5 +8,5 @@ g++ pb_infershape.cpp -std=c++14 -o main_infershape ${TF_CFLAGS[@]} ${TF_LFLAGS[
 TF_LD_LIBRARY_PATH=( $(python3 -c 'import tensorflow as tf; print(tf.sysconfig.get_lib())') )
 export LD_LIBRARY_PATH=$TF_LD_LIBRARY_PATH
 
-#./main_infershape $1 $2
-./main_infershape gat.pb "ftr_in:1,2708,1433;bias_in:1,2708,2708;lbl_in:1,2708,7;msk_in:1,2708"
+./main_infershape $1 $2
+#./main_infershape gat.pb "ftr_in:1,2708,1433;bias_in:1,2708,2708;lbl_in:1,2708,7;msk_in:1,2708"
