@@ -61,16 +61,27 @@ class NpuSubGraph(object):
         if not isinstance(sub_graph, NpuSubGraph):
             raise PrecisionToolException("Should compare with another subgraph.")
         right_ops_list = sub_graph.ops_list
+        ignore_ops = ["TransData", "Cast", "Recv", "Send", "Variable", "NetOutput", "NoOp", "Assign", "Constant",
+                      "StreamActive"]
+        similar_count = 0
         for op_name in self.ops_list:
+            if self.ops_list[op_name].type() in ignore_ops:
+                continue
             if op_name not in right_ops_list:
-                self.log.warning("Can not Find %s in right subgraph.", op_name)
+                self.log.warning("Can not Find [%s] %s in right subgraph.", self.ops_list[op_name].type(), op_name)
                 continue
             result, similar = self.ops_list[op_name].compare(right_ops_list[op_name])
             if not similar:
                 util.print_panel(result, title=op_name)
+            else:
+                similar_count += 1
         for op_name in right_ops_list:
+            if right_ops_list[op_name].type() in ignore_ops:
+                continue
             if op_name not in self.ops_list:
-                self.log.warning("Can not Find %s in left subgraph.", op_name)
+                self.log.warning("Can not Find [%s] %s in left subgraph.", right_ops_list[op_name].type(), op_name)
+        self.log.info("Compare [%s] [%s], similarity is [%s / %s]",
+                      self.graph_name, sub_graph.graph_name, similar_count, len(self.ops_list))
 
     def get_op(self, name):
         if name in self.ops_list:

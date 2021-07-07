@@ -151,8 +151,8 @@ class Op(object):
         for i in range(len(self.op_json['input'])):
             name = self.op_json['input'][i]
             if name == '':
-                if self.type() not in NO_INPUT_NODES:
-                    self.log.warning('invalid input name.')
+                # if self.type() not in NO_INPUT_NODES:
+                # self.log.warning('invalid input name.')
                 continue
             name_info = name.split(':')
             if len(name_info) == 2 and int(name_info[1]) == -1:

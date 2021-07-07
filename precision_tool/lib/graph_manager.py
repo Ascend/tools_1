@@ -62,7 +62,6 @@ class GraphManager(object):
                     continue
                 left_graph.compare(right_graph)
 
-
     def get_graphs(self, debug_id):
         if debug_id not in self.npu_graphs:
             raise PrecisionToolException("Get graphs failed with no debug_id:%s" % debug_id)
