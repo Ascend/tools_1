@@ -1,11 +1,3 @@
-<!--
- * @Author: your name
- * @Date: 2021-07-05 20:26:55
- * @LastEditTime: 2021-07-07 16:44:14
- * @LastEditors: Please set LastEditors
- * @Description: In User Settings Edit
- * @FilePath: \tools\README.md
--->
 中文|[英文](README_EN.md)
 
 # tools

@@ -1,12 +1,3 @@
-<!--
- * @Author: your name
- * @Date: 2021-07-07 09:50:44
- * @LastEditTime: 2021-07-07 16:43:27
- * @LastEditors: Please set LastEditors
- * @Description: In User Settings Edit
- * @FilePath: \tools\cann-benchmark_infer_scripts\README.md
--->
-
 # cann-benchmark infer scripts
 
 #### 介绍
