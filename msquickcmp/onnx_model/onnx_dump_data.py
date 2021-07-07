@@ -65,6 +65,9 @@ class OnnxDumpData(DumpData):
     def _modify_model_add_outputs_nodes(self, model_dir):
         old_onnx_model = onnx.load(self.args.model_path)
         utils.print_info_log("load model success")
+        for index, node in enumerate(old_onnx_model.graph.node):
+            if not node.name:
+                node.name = node.op_type + "_" + str(index)
         outputs_name = [name for name in enumerate_model_node_outputs(old_onnx_model)]
         new_onnx_model = select_model_inputs_outputs(old_onnx_model, outputs_name)
         new_onnx_model_path = os.path.join(model_dir, "new_" + os.path.basename(self.args.model_path))
