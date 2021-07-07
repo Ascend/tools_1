@@ -16,9 +16,9 @@
 #include "tensorflow/core/framework/op.h"
 #include "tensorflow/core/framework/common_shape_fns.h"
 
-using namespace shape_inference;
 using namespace tensorflow;
 using namespace std;
+using namespace shape_inference;
 
 using TensorShapes = tensorflow::gtl::InlinedVector<tensorflow::TensorShape, 4>;
 
@@ -266,8 +266,8 @@ int extractShapeFromGraph(Graph *graph, const std::string &result_file) {
   auto node_shape_inference_lambda = [&fs](tensorflow::Node *node) {
 
   if (node->attrs().Find("output_tensor_desc") == nullptr) {
-  	std::cout << "[INFO] node:" << node->name() << " type:" << node->type_string() <<
-  	  " has no output_tensor_desc" << std::endl;
+      std::cout << "[INFO] node:" << node->name() << " type:" << node->type_string() <<
+        " has no output_tensor_desc" << std::endl;
     return;
   }
 
