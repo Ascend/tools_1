@@ -135,7 +135,8 @@ class OnnxDumpData(DumpData):
         res_idx = 0
         for node in old_onnx_model.graph.node:
             for j, output in enumerate(node.output):
-                file_name = node.name + "." + str(j) + "." + str(round(time.time() * 1000000)) + ".npy"
+                file_name = node.name.replace('/', '_') + "." + str(j) + "." \
+                            + str(round(time.time() * 1000000)) + ".npy"
                 np.save(os.path.join(onnx_dump_data_dir, file_name), dump_bins[res_idx])
                 res_idx += 1
         utils.print_info_log("dump data success")
