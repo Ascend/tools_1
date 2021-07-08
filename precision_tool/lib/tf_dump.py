@@ -24,7 +24,16 @@ class TfDump(object):
     def get_dump_files_by_op(self, op):
         """Get cpu dump files by op"""
         tf_files = {}
-        match_name = op.name().replace('/', '_').replace('.', '_') + '\\.'
+        for output in op.outputs():
+            if output.data_dump_origin_name() != '':
+                tf_files.update(self._get_dump_files_by_name(output.data_dump_origin_name()))
+        if len(tf_files) == 0:
+            tf_files.update(self._get_dump_files_by_name(op.name()))
+        return tf_files
+
+    def _get_dump_files_by_name(self, name):
+        match_name = name.replace('/', '_').replace('.', '_') + '\\.'
+        tf_files = {}
         for f in self.dump_files:
             if re.match(match_name, f):
                 tf_files[f] = self.dump_files[f]
@@ -64,7 +73,7 @@ class TfDump(object):
         for run_dir in run_dirs:
             time.sleep(1)
             command = "%s -m tensorflow.python.debug.cli.offline_analyzer --ui_type readline --dump_dir %s" % (
-                cfg.PYTHON, os.path.join(cfg.TF_DEBUG_DUMP_DIR, run_dir))
+                util.python, os.path.join(cfg.TF_DEBUG_DUMP_DIR, run_dir))
             self._do_run_tf_dbg_dump(command, 0)
 
     def _do_run_tf_dbg_dump(self, cmd_line, run_times=2):

@@ -33,6 +33,7 @@ class NpuSubGraph(object):
         self.ops_list = collections.OrderedDict()
         self.ops_type_list = {}
         self._prepare()
+        self.graph_id = self._get_graph_id()
 
     def _prepare(self):
         self.log.debug("Graph %s operator count: %d" % (self.graph_name, len(self.graph['op'])))
@@ -46,6 +47,41 @@ class NpuSubGraph(object):
                 self.ops_type_list[op_type] = {}
             self.ops_list[op_name] = op
             self.ops_type_list[op_type][op_name] = op
+
+    def _get_graph_id(self):
+        if 'attr' in self.graph:
+            for item in self.graph['attr']:
+                if item['key'] == '_session_graph_id':
+                    return item['value']['s']
+        self.log.warning("Unknown sub graph id.")
+        return "UNKNOWN"
+
+    def compare(self, sub_graph):
+        """compare with another sub graph"""
+        if not isinstance(sub_graph, NpuSubGraph):
+            raise PrecisionToolException("Should compare with another subgraph.")
+        right_ops_list = sub_graph.ops_list
+        ignore_ops = ["TransData", "Cast", "Recv", "Send", "Variable", "NetOutput", "NoOp", "Assign", "Constant",
+                      "StreamActive"]
+        similar_count = 0
+        for op_name in self.ops_list:
+            if self.ops_list[op_name].type() in ignore_ops:
+                continue
+            if op_name not in right_ops_list:
+                self.log.warning("Can not Find [%s] %s in right subgraph.", self.ops_list[op_name].type(), op_name)
+                continue
+            result, similar = self.ops_list[op_name].compare(right_ops_list[op_name])
+            if not similar:
+                util.print_panel(result, title=op_name)
+            else:
+                similar_count += 1
+        for op_name in right_ops_list:
+            if right_ops_list[op_name].type() in ignore_ops:
+                continue
+            if op_name not in self.ops_list:
+                self.log.warning("Can not Find [%s] %s in left subgraph.", right_ops_list[op_name].type(), op_name)
+        self.log.info("Compare [%s] [%s], similarity is [%s / %s]",
+                      self.graph_name, sub_graph.graph_name, similar_count, len(self.ops_list))
 
     def get_op(self, name):
         if name in self.ops_list:
