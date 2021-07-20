@@ -8,7 +8,6 @@ Huawei Technologies Co., Ltd. All Rights Reserved © 2021
 """
 import argparse
 import sys
-import time
 import os
 import numpy as np
 import tensorflow as tf
@@ -91,8 +90,6 @@ def _make_dump_data_parser(parser):
     parser.add_argument("-i", "--input", dest="input", default="",
                         help="<Optional> Input data path of the model. Separate multiple inputs with semicolons(;)."
                              " E.g: 'input_name1:0=input_0.bin;input_name1:1=input_0.bin'", required=True)
-    parser.add_argument("-o", "--out-path", dest="out_path", default="", help="<Optional> output result path",
-                        required=True)
     parser.add_argument("-s", "--input-shape", dest="input_shape", default="",
                         help="<Optional> Shape of input shape. Separate multiple nodes with semicolons(;)."
                              " E.g: input_name1:1,224,224,3;input_name2:3,300")

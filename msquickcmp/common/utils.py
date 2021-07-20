@@ -10,11 +10,8 @@ import os
 import subprocess
 import sys
 import time
-
-import np as np
 import numpy as np
 import tensorflow as tf
-import tf as tf
 
 ACCURACY_COMPARISON_INVALID_PARAM_ERROR = 1
 ACCURACY_COMPARISON_INVALID_DATA_ERROR = 2

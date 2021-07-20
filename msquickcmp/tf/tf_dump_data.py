@@ -6,6 +6,8 @@ This class is used to generate GUP dump data of the TensorFlow model.
 Copyright Information:
 Huawei Technologies Co., Ltd. All Rights Reserved © 2021
 """
+import sys
+
 import pexpect
 import time
 import os
@@ -75,8 +77,8 @@ class TfDumpData(DumpData):
                 raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR)
 
     def _run_model(self, outputs_tensor):
-        cmd = 'tf_dbg_dump_data.py -m %s -i %s -o %s --output-nodes %s' \
-              % (self.args.model_path, self.input_path, self.tf_dump_data_dir, ";".join(outputs_tensor))
+        cmd = '%s tf_dbg_dump_data.py -m %s -i %s --output-nodes %s' \
+              % (sys.executable, self.args.model_path, self.input_path, ";".join(outputs_tensor))
         if self.args.input_shape:
             cmd += " -s " + self.args.input_shape
         self._run_tf_dbg_dump(cmd)
@@ -100,7 +102,7 @@ class TfDumpData(DumpData):
                       " | awk '{print \"pt\",$4,$4}'| awk '{gsub(\"/\", \"_\", $3); gsub(\":\", \".\", $3);" \
                       "print($1,$2,\"-n 0 -w " + self.tf_dump_data_dir + "/" + \
                       "\"$3\".\"\"'$timestamp'\"\".npy\")}' > " + tensor_dump_cmd_path
-        util.execute_command(convert_cmd)
+        utils.execute_command(convert_cmd)
         if not os.path.exists(tensor_dump_cmd_path):
             utils.print_error_log("Save tf dump cmd failed")
             raise AccuracyCompareException("Failed to generate tf dump command.")
@@ -123,11 +125,16 @@ class TfDumpData(DumpData):
                     input_nodes.append(input_name)
         outputs_tensor = []
         if self.args.output_nodes:
-            outputs_tensor = self.args.output_nodes.split(';')
+            outputs_tensor = self.args.output_nodes.strip().split(';')
             for tensor in outputs_tensor:
-                output_name = tensor.split(':')[0]
+                tensor_info = tensor.strip().split(':')
+                if len(tensor_info) != 2:
+                    utils.print_error_log(
+                        'Invalid output nodes (%s). Only support "name1:0;name2:1". Please check the output node.' % tensor)
+                    raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR)
+                output_name = tensor_info[0].strip()
                 if output_name not in node_list:
-                    utils.print_error_log("The output node (%d) not in the graph. Please check the output node." % output_name)
+                    utils.print_error_log("The output node (%s) not in the graph. Please check the output node." % output_name)
                     raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR)
         else:
             output_nodes = list(set(node_list).difference(set(input_nodes)))
