@@ -243,11 +243,10 @@ def parse_input_shape(input_shape):
                           "tensor_name1:dim1,dim2;tensor_name2:dim1,dim2".format(input_shape)
     if input_shape == '':
         return input_shapes
-    if ":" not in input_shape:
-        print_error_log(param_error_message)
-        raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
+    _check_colon_exist(input_shape, param_error_message)
     tensor_list = input_shape.split(';')
     for tensor in tensor_list:
+        _check_colon_exist(input_shape, param_error_message)
         tensor_shape_list = tensor.split(':')
         if len(tensor_shape_list) == 2:
             input_shapes[tensor_shape_list[0]] = tensor_shape_list[1].split(',')
@@ -255,3 +254,9 @@ def parse_input_shape(input_shape):
             print_error_log(param_error_message)
             raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
     return input_shapes
+
+
+def _check_colon_exist(input_shape, error_message):
+    if ":" not in input_shape:
+        print_error_log(error_message)
+        raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
