@@ -22,7 +22,7 @@ class TfDumpData(DumpData):
     """
     This class is used to generate GUP dump data of the TensorFlow model.
     """
-
+    TENSOR_NAME_COUNT = 4
     def __init__(self, arguments):
         self.args = arguments
         output_path = os.path.realpath(self.args.out_path)
@@ -85,6 +85,24 @@ class TfDumpData(DumpData):
             cmd += " -s " + self.args.input_shape
         self._run_tf_dbg_dump(cmd)
 
+    def _make_pt_command(self, tensor_name_path):
+        pt_command_list = []
+        with open(tensor_name_path) as tensor_name_file:
+            # skip 3 line
+            next(tensor_name_file)
+            next(tensor_name_file)
+            next(tensor_name_file)
+            # start to convert tensor to pt command
+            for line in tensor_name_file:
+                content = line.strip().split(" ")
+                if len(content) != self.TENSOR_NAME_COUNT:
+                    continue
+                npy_file_name = "%s.%s.npy" % (content[3].replace("/", "_").replace(":", "."),
+                                               str(round(time.time() * 1000000)))
+                pt_command_list.append("pt %s -n 0 -w %s" % (content[3],
+                                                             os.path.join(self.tf_dump_data_dir, npy_file_name)))
+        return pt_command_list
+
     def _run_tf_dbg_dump(self, cmd_line):
         """Run tf debug with pexpect, should set tf debug ui_type='readline'"""
         tf_dbg = pexpect.spawn(cmd_line)
@@ -103,18 +121,9 @@ class TfDumpData(DumpData):
             utils.print_error_log("Failed to save tensor name to file.")
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_PYTHON_COMMAND_ERROR)
         utils.print_info_log("Save tensor name to %s successfully." % tensor_name_path)
-        tensor_dump_cmd_path = os.path.join(self.tmp_dir, 'tf_tensor_cmd.txt')
-        convert_cmd = "timestamp=" + str(int(time.time())) + "; cat " + tensor_name_path + \
-                      " | awk '{print \"pt\",$4,$4}'| awk '{gsub(\"/\", \"_\", $3); gsub(\":\", \".\", $3);" \
-                      "print($1,$2,\"-n 0 -w " + self.tf_dump_data_dir + "/" + \
-                      "\"$3\".\"\"'$timestamp'\"\".npy\")}' > " + tensor_dump_cmd_path
-        utils.execute_command(convert_cmd)
-        if not os.path.exists(tensor_dump_cmd_path):
-            utils.print_error_log("Failed to generate dump data command.")
-            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_PYTHON_COMMAND_ERROR)
-        utils.print_info_log("Generate dump data command in %s successfully." % tensor_dump_cmd_path)
+        pt_command_list = self._make_pt_command(tensor_name_path)
         utils.print_info_log("Start run pt command. Please wait...")
-        for cmd in open(tensor_dump_cmd_path):
+        for cmd in pt_command_list:
             tf_dbg.sendline(cmd.strip())
             tf_dbg.expect('tfdbg>', utils=self.TF_DEBUG_TIMEOUT)
         tf_dbg.sendline('exit')
