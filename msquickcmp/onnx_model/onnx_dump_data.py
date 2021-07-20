@@ -87,7 +87,11 @@ class OnnxDumpData(DumpData):
             if self.input_shapes:
                 shape = self.input_shapes.get(tensor_name)
                 if shape:
-                    number_shape = [int(x) for x in shape]
+                    try:
+                        number_shape = [int(x) for x in shape]
+                    except ValueError:
+                        utils.print_error_log("the entered {} value is incorrect.".format(shape))
+                        raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
                     tensor_info = {"name": tensor_name, "shape": tuple(number_shape), "type": tensor_type}
                 else:
                     utils.print_error_log(
