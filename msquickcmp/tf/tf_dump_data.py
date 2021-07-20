@@ -22,7 +22,7 @@ class TfDumpData(DumpData):
     """
     This class is used to generate GUP dump data of the TensorFlow model.
     """
-    TENSOR_NAME_COUNT = 4
+
     def __init__(self, arguments):
         self.args = arguments
         output_path = os.path.realpath(self.args.out_path)
@@ -94,13 +94,12 @@ class TfDumpData(DumpData):
             next(tensor_name_file)
             # start to convert tensor to pt command
             for line in tensor_name_file:
-                content = line.strip().split(" ")
-                if len(content) != self.TENSOR_NAME_COUNT:
-                    continue
-                npy_file_name = "%s.%s.npy" % (content[3].replace("/", "_").replace(":", "."),
+                new_line = line.strip()
+                tensor_name = new_line[new_line.rfind(' ') + 1:]
+                npy_file_name = "%s.%s.npy" % (tensor_name.replace("/", "_").replace(":", "."),
                                                str(round(time.time() * 1000000)))
-                pt_command_list.append("pt %s -n 0 -w %s" % (content[3],
-                                                             os.path.join(self.tf_dump_data_dir, npy_file_name)))
+                pt_command_list.append("pt %s -n 0 -w %s" %
+                                       (tensor_name, os.path.join(self.tf_dump_data_dir, npy_file_name)))
         return pt_command_list
 
     def _run_tf_dbg_dump(self, cmd_line):
@@ -122,8 +121,9 @@ class TfDumpData(DumpData):
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_PYTHON_COMMAND_ERROR)
         utils.print_info_log("Save tensor name to %s successfully." % tensor_name_path)
         pt_command_list = self._make_pt_command(tensor_name_path)
-        utils.print_info_log("Start run pt command. Please wait...")
+        utils.print_info_log("Start to run %d pt commands. Please wait..." % len(pt_command_list))
         for cmd in pt_command_list:
+            utils.print_info_log(cmd)
             tf_dbg.sendline(cmd.strip())
             tf_dbg.expect('tfdbg>', utils=self.TF_DEBUG_TIMEOUT)
         tf_dbg.sendline('exit')
