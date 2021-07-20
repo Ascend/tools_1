@@ -42,6 +42,8 @@ DTYPE_MAP = {
     tf.complex64: np.complex64
 }
 
+TF_DEBUG_TIMEOUT = 3600
+
 
 class AccuracyCompareException(Exception):
     """

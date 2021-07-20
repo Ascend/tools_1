@@ -17,7 +17,7 @@ from common import utils
 from common.utils import AccuracyCompareException
 
 
-class TfDumpData(DumpData):
+class TfDebugRunner(DumpData):
     """
     This class is used to generate GUP dump data of the TensorFlow model.
     """
@@ -68,14 +68,10 @@ class TfDumpData(DumpData):
             sess = tf_debug.LocalCLIDebugWrapperSession(sess, ui_type="readline")
             return sess.run(outputs_tensor, feed_dict=inputs_map)
 
-    def generate_dump_data(self):
+    def run(self):
         """
         Function description:
-            generate TensorFlow model dump data
-        Parameter:
-            none
-        Exception Description:
-            none
+            run TensorFlow model
         """
         self._load_graph()
         inputs_tensor = utils.get_inputs_tensor(self.global_graph, self.args.input_shape)
@@ -87,7 +83,7 @@ class TfDumpData(DumpData):
 def _make_dump_data_parser(parser):
     parser.add_argument("-m", "--model-path", dest="model_path", default="",
                         help="<Required> model_path,original model file path,for example,.pb", required=True)
-    parser.add_argument("-i", "--input", dest="input", default="",
+    parser.add_argument("-i", "--input-path", dest="input_path", default="",
                         help="<Optional> Input data path of the model. Separate multiple inputs with semicolons(;)."
                              " E.g: 'input_name1:0=input_0.bin;input_name1:1=input_0.bin'", required=True)
     parser.add_argument("-s", "--input-shape", dest="input_shape", default="",
@@ -108,7 +104,7 @@ def main():
     parser = argparse.ArgumentParser()
     _make_dump_data_parser(parser)
     args = parser.parse_args(sys.argv[1:])
-    TfDumpData(args).generate_dump_data()
+    TfDebugRunner(args).run()
 
 
 if __name__ == '__main__':
