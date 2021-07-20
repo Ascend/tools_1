@@ -224,7 +224,8 @@ def check_dynamic_shape(shape):
     """
     for item in shape:
         if isinstance(item, str):
-            print_error_log("the shape is {},please specify a value for the dynamic shape by -s".format(shape))
+            print_error_log("the shape is {},please specify a value for the dynamic shape by -s."
+                            "for example,tensor_name1:dim1,dim2:tensor_name2:dim1,dim2".format(shape))
             raise AccuracyCompareException(ACCURACY_COMPARISON_NOT_SUPPORT_ERROR)
 
 

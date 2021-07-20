@@ -82,11 +82,20 @@ class OnnxDumpData(DumpData):
         # 'session' is a class of 'onnxruntime.InferenceSession'
         # 'input' is a class of 'onnxruntime.NodeArg'
         for input_item in session.get_inputs():
-            if self.input_shapes.get(input_item.name):
-                tensor_info = {"name": input_item.name, "shape": tuple(input_item.shape), "type": input_item.type}
+            tensor_name = input_item.name
+            tensor_type = input_item.type
+            if self.input_shapes:
+                shape = self.input_shapes.get(tensor_name)
+                if shape:
+                    number_shape = [int(x) for x in shape]
+                    tensor_info = {"name": tensor_name, "shape": tuple(number_shape), "type": tensor_type}
+                else:
+                    utils.print_error_log(
+                        "The operator input name of this model is {},please use this name".format(tensor_name))
+                    raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
             else:
                 utils.check_dynamic_shape(tuple(input_item.shape))
-                tensor_info = {"name": input_item.name, "shape": tuple(input_item.shape), "type": input_item.type}
+                tensor_info = {"name": tensor_name, "shape": tuple(input_item.shape), "type": tensor_type}
             inputs_tensor_info.append(tensor_info)
         utils.print_info_log("model inputs tensor info:\n{}\n".format(inputs_tensor_info))
 
