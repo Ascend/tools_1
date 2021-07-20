@@ -46,6 +46,7 @@ class OnnxDumpData(DumpData):
 
     def __init__(self, arguments):
         self.args = arguments
+        self.input_shapes = utils.parse_input_shape(self.args.input_shape)
 
     def _create_dir(self):
         # create input directory
@@ -81,7 +82,11 @@ class OnnxDumpData(DumpData):
         # 'session' is a class of 'onnxruntime.InferenceSession'
         # 'input' is a class of 'onnxruntime.NodeArg'
         for input_item in session.get_inputs():
-            tensor_info = {"name": input_item.name, "shape": tuple(input_item.shape), "type": input_item.type}
+            if self.input_shapes.get(input_item.name):
+                tensor_info = {"name": input_item.name, "shape": tuple(input_item.shape), "type": input_item.type}
+            else:
+                utils.check_dynamic_shape(tuple(input_item.shape))
+                tensor_info = {"name": input_item.name, "shape": tuple(input_item.shape), "type": input_item.type}
             inputs_tensor_info.append(tensor_info)
         utils.print_info_log("model inputs tensor info:\n{}\n".format(inputs_tensor_info))
 
@@ -91,7 +96,6 @@ class OnnxDumpData(DumpData):
         inputs_map = {}
         if "" == self.args.input_path:
             for i, tensor_info in enumerate(inputs_tensor_info):
-                utils.check_dynamic_shape(tensor_info["shape"])
                 input_data = np.random.random(tensor_info["shape"]).astype(
                     self._convert_to_numpy_type(tensor_info["type"]))
                 inputs_map[tensor_info["name"]] = input_data
@@ -107,7 +111,6 @@ class OnnxDumpData(DumpData):
                     len(inputs_tensor_info), len(input_path)))
                 raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR)
             for i, tensor_info in enumerate(inputs_tensor_info):
-                utils.check_dynamic_shape(tensor_info["shape"])
                 input_data = np.fromfile(input_path[i], self._convert_to_numpy_type(tensor_info["type"])).reshape(
                     tensor_info["shape"])
                 inputs_map[tensor_info["name"]] = input_data

@@ -224,5 +224,25 @@ def check_dynamic_shape(shape):
     """
     for item in shape:
         if isinstance(item, str):
-            print_error_log("dynamic shape {} are not supported".format(shape))
+            print_error_log("the shape is {},please specify a value for the dynamic shape".format(shape))
             raise AccuracyCompareException(ACCURACY_COMPARISON_NOT_SUPPORT_ERROR)
+
+
+def parse_input_shape(input_shape):
+    """
+    Function Description:
+        parse input shape
+    Parameter:
+        input_shape:the input shape,this format like:tensor_name1:dim1,dim2;tensor_name2:dim1,dim2
+    Return Value:
+        the map type of input_shapes
+    """
+    input_shapes = {}
+    if input_shape == '':
+        return input_shapes
+    tensor_list = input_shape.split(';')
+    for tensor in tensor_list:
+        tensor_shape_list = tensor.split(':')
+        if len(tensor_shape_list) == 2:
+            input_shapes[tensor_shape_list[0]] = tensor_shape_list[1].split(',')
+    return input_shapes
