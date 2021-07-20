@@ -111,6 +111,31 @@ class TfDumpData(DumpData):
         tf_dbg.sendline('exit')
         utils.print_info_log('Finish dump tf data.')
 
+    def _get_outputs_tensor(self):
+        input_nodes = []
+        node_list = []
+        operations = self.global_graph.get_operations()
+        for op in operations:
+            node_list.append(op.name)
+            for tensor in op.inputs:
+                input_name = tensor.name.split(':')[0]
+                if input_name not in input_nodes:
+                    input_nodes.append(input_name)
+        outputs_tensor = []
+        if self.args.output_nodes:
+            outputs_tensor = self.args.output_nodes.split(';')
+            for tensor in outputs_tensor:
+                output_name = tensor.split(':')[0]
+                if output_name not in node_list:
+                    utils.print_error_log("The output node (%d) not in the graph. Please check the output node." % output_name)
+                    raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR)
+        else:
+            output_nodes = list(set(node_list).difference(set(input_nodes)))
+            for name in output_nodes:
+                outputs_tensor.append(name + ":0")
+        utils.print_info_log("The outputs tensor:\n{}\n".format(outputs_tensor))
+        return outputs_tensor
+
     def generate_dump_data(self):
         """
         Function description:
