@@ -90,6 +90,7 @@ class TfDumpData(DumpData):
         tf_dbg = pexpect.spawn(cmd_line)
         try:
             tf_dbg.expect('tfdbg>', timeout=utils.TF_DEBUG_TIMEOUT)
+            utils.print_info_log("Start to run. Please wait....")
             tf_dbg.sendline('run')
             tf_dbg.expect('tfdbg>', timeout=utils.TF_DEBUG_TIMEOUT)
         except Exception as ex:
@@ -97,12 +98,11 @@ class TfDumpData(DumpData):
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_PYTHON_COMMAND_ERROR)
         tensor_name_path = os.path.join(self.tmp_dir, 'tf_tensor_names.txt')
         tf_dbg.sendline('lt > %s' % tensor_name_path)
-        utils.print_info_log("Generate tensor name file.")
         tf_dbg.expect('tfdbg>', timeout=utils.TF_DEBUG_TIMEOUT)
         if not os.path.exists(tensor_name_path):
-            utils.print_error_log("Failed to get tensor name in tf_debug.")
+            utils.print_error_log("Failed to save tensor name to file.")
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_PYTHON_COMMAND_ERROR)
-        utils.print_info_log("Save tensor name success. Generate tf dump commands from file: %s", tensor_name_path)
+        utils.print_info_log("Save tensor name to %s successfully." % tensor_name_path)
         tensor_dump_cmd_path = os.path.join(self.tmp_dir, 'tf_tensor_cmd.txt')
         convert_cmd = "timestamp=" + str(int(time.time())) + "; cat " + tensor_name_path + \
                       " | awk '{print \"pt\",$4,$4}'| awk '{gsub(\"/\", \"_\", $3); gsub(\":\", \".\", $3);" \
@@ -110,9 +110,10 @@ class TfDumpData(DumpData):
                       "\"$3\".\"\"'$timestamp'\"\".npy\")}' > " + tensor_dump_cmd_path
         utils.execute_command(convert_cmd)
         if not os.path.exists(tensor_dump_cmd_path):
-            utils.print_error_log("Save tf dump cmd failed")
+            utils.print_error_log("Failed to generate dump data command.")
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_PYTHON_COMMAND_ERROR)
-        utils.print_info_log("Generate tf dump commands. Start run commands in file: %s", tensor_dump_cmd_path)
+        utils.print_info_log("Generate dump data command in %s successfully." % tensor_dump_cmd_path)
+        utils.print_info_log("Start run pt command. Please wait...")
         for cmd in open(tensor_dump_cmd_path):
             tf_dbg.sendline(cmd.strip())
             tf_dbg.expect('tfdbg>', utils=self.TF_DEBUG_TIMEOUT)
