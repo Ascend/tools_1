@@ -125,7 +125,7 @@ class TfDumpData(DumpData):
         for cmd in pt_command_list:
             utils.print_info_log(cmd)
             tf_dbg.sendline(cmd.strip())
-            tf_dbg.expect('tfdbg>', utils=self.TF_DEBUG_TIMEOUT)
+            tf_dbg.expect('tfdbg>', timeout=utils.TF_DEBUG_TIMEOUT)
         tf_dbg.sendline('exit')
         utils.print_info_log('Finish dump tf data.')
 
