@@ -253,15 +253,12 @@ def convert_to_numpy_type(tensor_type):
 
 
 def convert_tensor_shape(tensor_shape):
-    try:
-        tensor_shape_list = tensor_shape.as_list()
-        for i in range(len(tensor_shape_list)):
-            if tensor_shape_list[i] is None:
-                print_error_log("dynamic shape {} are not supported".format(tensor_shape))
-                raise AccuracyCompareException(ACCURACY_COMPARISON_NOT_SUPPORT_ERROR)
-    except Exception:
-        print_error_log("can not get model input tensor shape, please make input data by yourself")
-        raise AccuracyCompareException(ACCURACY_COMPARISON_TENSOR_TYPE_ERROR)
+    tensor_shape_list = tensor_shape.as_list()
+    for i in range(len(tensor_shape_list)):
+        if tensor_shape_list[i] is None:
+            print_error_log("The dynamic shape %s are not supported. "
+                            "Please set '-s' or '--input-shape' to fix the dynamic shape." % tensor_shape)
+            raise AccuracyCompareException(ACCURACY_COMPARISON_NOT_SUPPORT_ERROR)
     return tuple(tensor_shape_list)
 
 
@@ -303,14 +300,14 @@ def verify_and_adapt_dynamic_shape(input_shapes, op_name, tensor):
     if op_name in input_shapes:
         fixed_tensor_shape = input_shapes[op_name]
         if len(fixed_tensor_shape) != len(model_shape):
-            print_error_log("fixed input tensor shape not equal to model input shape."
+            print_error_log("The fixed input tensor shape not equal to model input shape."
                             " tensor_name:%s, %s vs %s" % (op_name, str(fixed_tensor_shape),
                                                            str(model_shape)))
             raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_DATA_ERROR)
         for index, dim in enumerate(model_shape):
             fixed_tensor_dim = fixed_tensor_shape[index]
             if dim is not None and fixed_tensor_dim != dim:
-                print_error_log("fixed input tensor dim not equal to model input dim."
+                print_error_log("The fixed input tensor dim not equal to model input dim."
                                 " tensor_name:%s, %s vs %s" % (op_name, str(fixed_tensor_shape),
                                                                str(model_shape)))
                 raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_DATA_ERROR)

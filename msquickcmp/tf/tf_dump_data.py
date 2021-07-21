@@ -58,7 +58,8 @@ class TfDumpData(DumpData):
         if "" == self.args.input_path:
             input_path_list = []
             for index, tensor in enumerate(inputs_tensor):
-                input_data = np.random.random(tensor.shape).astype(utils.convert_to_numpy_type(tensor.dtype))
+                input_data = np.random.random(utils.convert_tensor_shape(tensor.shape))\
+                    .astype(utils.convert_to_numpy_type(tensor.dtype))
                 input_path = os.path.join(self.data_dir, "input_" + str(index) + ".bin")
                 input_path_list.append(input_path)
                 try:
@@ -123,7 +124,6 @@ class TfDumpData(DumpData):
         pt_command_list = self._make_pt_command(tensor_name_path)
         utils.print_info_log("Start to run %d pt commands. Please wait..." % len(pt_command_list))
         for cmd in pt_command_list:
-            utils.print_info_log(cmd)
             tf_dbg.sendline(cmd.strip())
             tf_dbg.expect('tfdbg>', timeout=utils.TF_DEBUG_TIMEOUT)
         tf_dbg.sendline('exit')
