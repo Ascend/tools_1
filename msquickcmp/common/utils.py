@@ -224,8 +224,7 @@ def check_dynamic_shape(shape):
     """
     for item in shape:
         if isinstance(item, str):
-            print_error_log("the shape is {},please specify a value for the dynamic shape by -s."
-                            "for example,tensor_name1:dim1,dim2:tensor_name2:dim1,dim2".format(shape))
+            print_error_log(get_shape_not_match_message(shape))
             raise AccuracyCompareException(ACCURACY_COMPARISON_NOT_SUPPORT_ERROR)
 
 
@@ -239,24 +238,35 @@ def parse_input_shape(input_shape):
         the map type of input_shapes
     """
     input_shapes = {}
-    param_error_message = "\"{}\" not match format,the format like:" \
-                          "tensor_name1:dim1,dim2;tensor_name2:dim1,dim2".format(input_shape)
     if input_shape == '':
         return input_shapes
-    _check_colon_exist(input_shape, param_error_message)
+    _check_colon_exist(input_shape)
     tensor_list = input_shape.split(';')
     for tensor in tensor_list:
-        _check_colon_exist(input_shape, param_error_message)
+        _check_colon_exist(input_shape)
         tensor_shape_list = tensor.split(':')
         if len(tensor_shape_list) == 2:
             input_shapes[tensor_shape_list[0]] = tensor_shape_list[1].split(',')
         else:
-            print_error_log(param_error_message)
+            print_error_log(get_shape_not_match_message(input_shape))
             raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
     return input_shapes
 
 
-def _check_colon_exist(input_shape, error_message):
+def _check_colon_exist(input_shape):
     if ":" not in input_shape:
-        print_error_log(error_message)
+        print_error_log(get_shape_not_match_message(input_shape))
         raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
+
+
+def get_shape_not_match_message(input_shape):
+    """
+    Function Description:
+        get shape not match message
+    Parameter:
+        input:the input shape
+    Return Value:
+        not match message
+    """
+    return "Input shape \"{}\" format mismatch,the format like: " \
+           "input_name1:1,224,224,3;input_name2:3,300".format(input_shape)

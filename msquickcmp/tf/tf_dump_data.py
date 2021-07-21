@@ -35,7 +35,19 @@ class TfDumpData(DumpData):
 
     def __init__(self, arguments):
         self.args = arguments
-        self.input_shapes = utils.parse_input_shape(self.args.input_shape)
+        self.input_shapes = self._parse_input_shape()
+
+    def _parse_input_shape(self):
+        """self.args.input_shape should be format like: tensor_name1:dim1,dim2;tensor_name2:dim1,dim2"""
+        input_shapes = {}
+        if self.args.input_shape == '':
+            return input_shapes
+        tensor_list = self.args.input_shape.split(';')
+        for tensor in tensor_list:
+            tensor_shape_list = tensor.split(':')
+            if len(tensor_shape_list) == 2:
+                input_shapes[tensor_shape_list[0]] = tensor_shape_list[1].split(',')
+        return input_shapes
 
     def _create_dir(self):
         # create input directory

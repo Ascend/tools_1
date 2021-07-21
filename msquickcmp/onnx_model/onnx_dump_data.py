@@ -84,22 +84,24 @@ class OnnxDumpData(DumpData):
         for input_item in session.get_inputs():
             tensor_name = input_item.name
             tensor_type = input_item.type
+            tensor_shape = tuple(input_item.shape)
             if self.input_shapes:
-                shape = self.input_shapes.get(tensor_name)
-                if shape:
+                input_shape = self.input_shapes.get(tensor_name)
+                if input_shape:
                     try:
-                        number_shape = [int(x) for x in shape]
+                        number_shape = [int(x) for x in input_shape]
                     except ValueError:
-                        utils.print_error_log("the entered {} value is incorrect.".format(shape))
+                        utils.print_error_log(utils.get_shape_not_match_message(input_shape))
                         raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
+                    self._check_input_shape_fix_value(tensor_name, tensor_shape, input_shape)
                     tensor_info = {"name": tensor_name, "shape": tuple(number_shape), "type": tensor_type}
                 else:
                     utils.print_error_log(
-                        "The operator input name of this model is {},please use this name".format(tensor_name))
+                        "{} is not in the model".format(tensor_name))
                     raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
             else:
-                utils.check_dynamic_shape(tuple(input_item.shape))
-                tensor_info = {"name": tensor_name, "shape": tuple(input_item.shape), "type": tensor_type}
+                utils.check_dynamic_shape(tensor_shape)
+                tensor_info = {"name": tensor_name, "shape": tensor_shape, "type": tensor_type}
             inputs_tensor_info.append(tensor_info)
         utils.print_info_log("model inputs tensor info:\n{}\n".format(inputs_tensor_info))
 
@@ -156,6 +158,22 @@ class OnnxDumpData(DumpData):
                 np.save(os.path.join(onnx_dump_data_dir, file_name), dump_bins[res_idx])
                 res_idx += 1
         utils.print_info_log("dump data success")
+
+    @staticmethod
+    def _check_input_shape_fix_value(op_name, model_shape, input_shape):
+        if len(model_shape) != len(input_shape):
+            utils.print_error_log("fixed input tensor shape not equal to model input shape."
+                                  " tensor_name:%s, %s vs %s" % (op_name, str(model_shape),
+                                                                 str(input_shape)))
+            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR)
+        for value, index in enumerate(model_shape):
+            if isinstance(value, str):
+                continue
+            if input_shape[index] != value:
+                utils.print_error_log("fixed input tensor dim not equal to model input dim."
+                                      " tensor_name:%s, %s vs %s" % (op_name, str(input_shape),
+                                                                     str(model_shape)))
+                raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR)
 
     def generate_dump_data(self):
         """

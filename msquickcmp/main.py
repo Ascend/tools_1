@@ -33,8 +33,9 @@ def _accuracy_compare_parser(parser):
     parser.add_argument("-c", "--cann-path", dest="cann_path", default="/usr/local/Ascend/ascend-toolkit/latest/",
                         help="<Optional> CANN installation path")
     parser.add_argument("-o", "--out-path", dest="out_path", default="", help="<Optional> output result path")
-    parser.add_argument("-s", "--input-shape", dest="input_shape", default="", help="<Optional> input shape for dynamic"
-                              "shape format,for example,tensor_name1:dim1,dim2;tensor_name2:dim1,dim2.")
+    parser.add_argument("-s", "--input-shape", dest="input_shape", default="",
+                        help="<Optional> Shape of input shape.Separate multiple nodes with semicolons(;)."
+                             "E.g: input_name1:1,224,224,3;input_name2:3,300")
 
 
 def _generate_cpu_data_model(args):
