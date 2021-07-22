@@ -58,7 +58,7 @@ class TfDumpData(DumpData):
         if "" == self.args.input_path:
             input_path_list = []
             for index, tensor in enumerate(inputs_tensor):
-                input_data = np.random.random(utils.convert_tensor_shape(tensor.shape))\
+                input_data = np.random.random(utils.convert_tensor_shape(tensor.shape)) \
                     .astype(utils.convert_to_numpy_type(tensor.dtype))
                 input_path = os.path.join(self.data_dir, "input_" + str(index) + ".bin")
                 input_path_list.append(input_path)
@@ -132,9 +132,6 @@ class TfDumpData(DumpData):
             tf_dbg.expect('tfdbg>', timeout=utils.TF_DEBUG_TIMEOUT)
         tf_dbg.sendline('exit')
         utils.print_info_log('Finish dump tf data.')
-        tf_dbg_path = os.path.join(self.tmp_dir, "tf_dbg")
-        if os.path.exists(tf_dbg_path):
-            os.remove(tf_dbg_path)
 
     def _get_outputs_tensor(self):
         input_nodes = []

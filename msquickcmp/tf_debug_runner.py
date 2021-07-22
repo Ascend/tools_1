@@ -88,7 +88,7 @@ def _make_dump_data_parser(parser):
                         help="<Required> The input data path of the model. Separate multiple inputs with commas(,)."
                              " E.g: input_0.bin,input_1.bin", required=True)
     parser.add_argument("-o", "--out-path", dest="out_path", default="", help="<Required> The output path")
-    parser.add_argument("-s", "--input-shape", dest="input_shape", default="", required=True,
+    parser.add_argument("-s", "--input-shape", dest="input_shape", default="",
                         help="<Required> Shape of input shape. Separate multiple nodes with semicolons(;)."
                              " E.g: input_name1:1,224,224,3;input_name2:3,300")
     parser.add_argument("--output-nodes", dest="output_nodes", default="", required=True,
