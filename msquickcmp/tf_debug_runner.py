@@ -27,6 +27,7 @@ class TfDebugRunner(DumpData):
         self.global_graph = None
         self.input_shapes = utils.parse_input_shape(self.args.input_shape)
         self.input_path = self.args.input_path
+        self.dump_root = os.path.realpath(self.args.out_path)
 
     def _load_graph(self):
         try:
@@ -65,7 +66,7 @@ class TfDebugRunner(DumpData):
     def _run_model(self, inputs_map, outputs_tensor):
         config = tf.compat.v1.ConfigProto(log_device_placement=False, allow_soft_placement=True)
         with tf.compat.v1.Session(graph=self.global_graph, config=config) as sess:
-            sess = tf_debug.LocalCLIDebugWrapperSession(sess, ui_type="readline")
+            sess = tf_debug.LocalCLIDebugWrapperSession(sess, ui_type="readline", dump_root=self.dump_root)
             return sess.run(outputs_tensor, feed_dict=inputs_map)
 
     def run(self):
@@ -82,16 +83,17 @@ class TfDebugRunner(DumpData):
 
 def _make_dump_data_parser(parser):
     parser.add_argument("-m", "--model-path", dest="model_path", default="",
-                        help="<Required> model_path,original model file path,for example,.pb", required=True)
+                        help="<Required> The original model (.pb) file path", required=True)
     parser.add_argument("-i", "--input-path", dest="input_path", default="",
-                        help="<Optional> Input data path of the model. Separate multiple inputs with semicolons(;)."
-                             " E.g: 'input_name1:0=input_0.bin;input_name1:1=input_0.bin'", required=True)
+                        help="<Required> The input data path of the model. Separate multiple inputs with commas(,)."
+                             " E.g: input_0.bin,input_1.bin", required=True)
+    parser.add_argument("-o", "--out-path", dest="out_path", default="", help="<Required> The output path")
     parser.add_argument("-s", "--input-shape", dest="input_shape", default="",
-                        help="<Optional> Shape of input shape. Separate multiple nodes with semicolons(;)."
+                        help="<Required> Shape of input shape. Separate multiple nodes with semicolons(;)."
                              " E.g: input_name1:1,224,224,3;input_name2:3,300")
-    parser.add_argument("--output-nodes", dest="output_nodes", default="",
-                        help="<Optional> Output nodes designated by user. Separate multiple nodes with semicolons(;)."
-                             " E.g: node_name1:0;node_name2:1;node_name3:0", required=True)
+    parser.add_argument("--output-nodes", dest="output_nodes", default="", required=True,
+                        help="<Required> Output nodes designated by user. Separate multiple nodes with semicolons(;)."
+                             " E.g: node_name1:0;node_name2:1;node_name3:0")
 
 
 def main():
