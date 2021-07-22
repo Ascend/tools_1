@@ -80,8 +80,9 @@ class TfDumpData(DumpData):
 
     def _run_model(self, outputs_tensor):
         tf_debug_runner_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../", "tf_debug_runner.py")
-        cmd = '%s %s -m %s -i %s --output-nodes %s' \
-              % (sys.executable, tf_debug_runner_path, self.args.model_path, self.input_path, ";".join(outputs_tensor))
+        cmd = '%s %s -m %s -i %s --output-nodes %s -o %s' \
+              % (sys.executable, tf_debug_runner_path, self.args.model_path, self.input_path,
+                 ";".join(outputs_tensor), os.path.join(self.tmp_dir, "tf_dbg"))
         if self.args.input_shape:
             cmd += " -s " + self.args.input_shape
         self._run_tf_dbg_dump(cmd)
@@ -106,18 +107,21 @@ class TfDumpData(DumpData):
     def _run_tf_dbg_dump(self, cmd_line):
         """Run tf debug with pexpect, should set tf debug ui_type='readline'"""
         tf_dbg = pexpect.spawn(cmd_line)
+        tf_dbg.logfile = sys.stdout.buffer
         try:
             tf_dbg.expect('tfdbg>', timeout=utils.TF_DEBUG_TIMEOUT)
             utils.print_info_log("Start to run. Please wait....")
             tf_dbg.sendline('run')
             tf_dbg.expect('tfdbg>', timeout=utils.TF_DEBUG_TIMEOUT)
         except Exception as ex:
+            tf_dbg.sendline('exit')
             utils.print_error_log("Failed to run command: %s. %s" % (cmd_line, ex))
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_PYTHON_COMMAND_ERROR)
         tensor_name_path = os.path.join(self.tmp_dir, 'tf_tensor_names.txt')
         tf_dbg.sendline('lt > %s' % tensor_name_path)
         tf_dbg.expect('tfdbg>', timeout=utils.TF_DEBUG_TIMEOUT)
         if not os.path.exists(tensor_name_path):
+            tf_dbg.sendline('exit')
             utils.print_error_log("Failed to save tensor name to file.")
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_PYTHON_COMMAND_ERROR)
         utils.print_info_log("Save tensor name to %s successfully." % tensor_name_path)
