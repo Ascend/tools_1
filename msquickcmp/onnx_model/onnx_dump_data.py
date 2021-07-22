@@ -161,18 +161,16 @@ class OnnxDumpData(DumpData):
 
     @staticmethod
     def _check_input_shape_fix_value(op_name, model_shape, input_shape):
+        message = "fixed input tensor dim not equal to model input dim."
+        " tensor_name:%s, %s vs %s" % (op_name, str(input_shape), str(model_shape))
         if len(model_shape) != len(input_shape):
-            utils.print_error_log("fixed input tensor shape not equal to model input shape."
-                                  " tensor_name:%s, %s vs %s" % (op_name, str(model_shape),
-                                                                 str(input_shape)))
+            utils.print_error_log(message)
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR)
         for value, index in enumerate(model_shape):
             if isinstance(value, str):
                 continue
             if input_shape[index] != value:
-                utils.print_error_log("fixed input tensor dim not equal to model input dim."
-                                      " tensor_name:%s, %s vs %s" % (op_name, str(input_shape),
-                                                                     str(model_shape)))
+                utils.print_error_log(message)
                 raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR)
 
     def generate_dump_data(self):
