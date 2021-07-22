@@ -7,7 +7,7 @@ Copyright Information:
 Huawei Technologies Co., Ltd. All Rights Reserved © 2021
 """
 import sys
-
+import readline
 import pexpect
 import time
 import os
@@ -132,6 +132,9 @@ class TfDumpData(DumpData):
             tf_dbg.expect('tfdbg>', timeout=utils.TF_DEBUG_TIMEOUT)
         tf_dbg.sendline('exit')
         utils.print_info_log('Finish dump tf data.')
+        tf_dbg_path = os.path.join(self.tmp_dir, "tf_dbg")
+        if os.path.exists(tf_dbg_path):
+            os.remove(tf_dbg_path)
 
     def _get_outputs_tensor(self):
         input_nodes = []

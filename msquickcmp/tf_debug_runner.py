@@ -27,7 +27,7 @@ class TfDebugRunner(DumpData):
         self.global_graph = None
         self.input_shapes = utils.parse_input_shape(self.args.input_shape)
         self.input_path = self.args.input_path
-        self.dump_root = os.path.realpath(self.args.output_path)
+        self.dump_root = os.path.realpath(self.args.out_path)
 
     def _load_graph(self):
         try:
