@@ -197,7 +197,7 @@ void Utils::printHelpLetter()
     cout << "  --debug       Debug switch,print model information (true or false)" << endl;
     cout << "  --dymBatch    dynamic batch size param，such as --dymBatch 2" << endl;
     cout << "  --dymHW    dynamic image size param, such as --dymHW 300,500" << endl;
-    cout << "  --dymDims 	dynamic dims param, such as --dymDims "data:1,600;img_info:1,600"" << endl << endl << endl;
+    cout << "  --dymDims 	dynamic dims param, such as --dymDims \"data:1,600;img_info:1,600\"" << endl << endl << endl;
 }
 
 double Utils::printDiffTime(time_t begin, time_t end)
