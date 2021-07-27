@@ -375,8 +375,8 @@ def verify_and_adapt_dynamic_shape(input_shapes, op_name, tensor):
         return tensor
     if op_name in input_shapes:
         fixed_tensor_shape = input_shapes.get(op_name)
-        message = "The fixed input tensor dim not equal to model input dim."
-        " tensor_name:%s, %s vs %s" % (op_name, str(fixed_tensor_shape), str(model_shape))
+        message = "The fixed input tensor dim not equal to model input dim." \
+                  "tensor_name:%s, %s vs %s" % (op_name, str(fixed_tensor_shape), str(model_shape))
         if len(fixed_tensor_shape) != len(model_shape):
             print_error_log(message)
             raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_DATA_ERROR)
