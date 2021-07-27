@@ -20,6 +20,8 @@ from skl2onnx.helpers.onnx_helper import save_onnx_model
 from common import utils
 from common.utils import AccuracyCompareException
 
+from common.utils import InputShapeError
+
 NODE_TYPE_TO_DTYPE_MAP = {
     "tensor(int)": np.int32,
     "tensor(int8)": np.int8,
@@ -93,12 +95,14 @@ class OnnxDumpData(DumpData):
                     utils.print_error_log(
                         "The dynamic shape %s are not supported. Please "
                         "set '-s' or '--input-shape' to fix the dynamic shape." % tensor_shape)
+                    raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
             if self.input_shapes:
                 input_shape = self.input_shapes.get(tensor_name)
                 try:
                     number_shape = [int(dim) for dim in input_shape]
                 except (ValueError, TypeError):
-                    utils.print_error_log(utils.get_shape_not_match_message(input_shape))
+                    utils.print_error_log(utils.get_shape_not_match_message(
+                        InputShapeError.FORMAT_NOT_MATCH, self.args.input_shape))
                     raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
                 self._check_input_shape_fix_value(tensor_name, tensor_shape, input_shape)
                 tensor_info = {"name": tensor_name, "shape": tuple(number_shape), "type": tensor_type}
