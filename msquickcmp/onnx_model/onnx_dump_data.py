@@ -104,7 +104,7 @@ class OnnxDumpData(DumpData):
                     utils.print_error_log(utils.get_shape_not_match_message(
                         InputShapeError.FORMAT_NOT_MATCH, self.args.input_shape))
                     raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
-                self._check_input_shape_fix_value(tensor_name, tensor_shape, input_shape)
+                self._check_input_shape_fix_value(tensor_name, tensor_shape, number_shape)
                 tensor_info = {"name": tensor_name, "shape": tuple(number_shape), "type": tensor_type}
                 utils.print_info_log("Fix dynamic input shape of %s to %s" % (tensor_name, number_shape))
             else:
