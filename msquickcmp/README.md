@@ -11,7 +11,7 @@
 
 2. 安装python3.7.5环境
 
-3. 通过pip3.7.5安装环境依赖onnxruntime、onnx、numpy、skl2onnx
+3. 通过pip3.7.5安装环境依赖onnxruntime、onnx、numpy、skl2onnx、pexpect、gnureadline
 
    pip安装依赖命令示例：
 
