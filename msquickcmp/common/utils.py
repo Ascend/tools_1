@@ -321,6 +321,16 @@ def get_shape_not_match_message(shape_error_type, value):
 
 
 def convert_to_numpy_type(tensor_type):
+    """
+    Function Description:
+        convert to numpy type
+    Parameter:
+        tensor_type:the tensor type
+    Return Value:
+        numpy type
+    Exception Description:
+        When tensor type not in DTYPE_MAP throw exception
+    """
     np_type = DTYPE_MAP.get(tensor_type)
     if np_type is not None:
         return np_type
