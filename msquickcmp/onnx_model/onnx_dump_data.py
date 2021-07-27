@@ -81,30 +81,32 @@ class OnnxDumpData(DumpData):
         inputs_tensor_info = []
         # 'session' is a class of 'onnxruntime.InferenceSession'
         # 'input' is a class of 'onnxruntime.NodeArg'
+        input_tensor_names = [item.name for item in session.get_inputs()]
+        for _, tensor_name in enumerate(self.input_shapes):
+            utils.check_input_name_in_model(input_tensor_names, tensor_name)
         for input_item in session.get_inputs():
             tensor_name = input_item.name
             tensor_type = input_item.type
             tensor_shape = tuple(input_item.shape)
+            if utils.check_dynamic_shape(tensor_shape):
+                if not self.input_shapes:
+                    utils.print_error_log(
+                        "The dynamic shape %s are not supported. Please "
+                        "set '-s' or '--input-shape' to fix the dynamic shape." % tensor_shape)
             if self.input_shapes:
                 input_shape = self.input_shapes.get(tensor_name)
-                if input_shape:
-                    try:
-                        number_shape = [int(x) for x in input_shape]
-                    except ValueError:
-                        utils.print_error_log(utils.get_shape_not_match_message(input_shape))
-                        raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
-                    self._check_input_shape_fix_value(tensor_name, tensor_shape, input_shape)
-                    tensor_info = {"name": tensor_name, "shape": tuple(number_shape), "type": tensor_type}
-                else:
-                    utils.print_error_log(
-                        "{} is not in the model".format(tensor_name))
+                try:
+                    number_shape = [int(dim) for dim in input_shape]
+                except (ValueError, TypeError):
+                    utils.print_error_log(utils.get_shape_not_match_message(input_shape))
                     raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
+                self._check_input_shape_fix_value(tensor_name, tensor_shape, input_shape)
+                tensor_info = {"name": tensor_name, "shape": tuple(number_shape), "type": tensor_type}
+                utils.print_info_log("Fix dynamic input shape of %s to %s" % (tensor_name, number_shape))
             else:
-                utils.check_dynamic_shape(tensor_shape)
                 tensor_info = {"name": tensor_name, "shape": tensor_shape, "type": tensor_type}
             inputs_tensor_info.append(tensor_info)
         utils.print_info_log("model inputs tensor info:\n{}\n".format(inputs_tensor_info))
-
         return inputs_tensor_info
 
     def _get_inputs_data(self, data_dir, inputs_tensor_info):
@@ -166,7 +168,7 @@ class OnnxDumpData(DumpData):
         if len(model_shape) != len(input_shape):
             utils.print_error_log(message)
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR)
-        for value, index in enumerate(model_shape):
+        for index, value in enumerate(model_shape):
             if isinstance(value, str):
                 continue
             if input_shape[index] != value:
