@@ -11,7 +11,7 @@ import re
 import subprocess
 import sys
 import time
-from enum import Enum
+import enum
 
 import numpy as np
 import tensorflow as tf
@@ -58,7 +58,7 @@ class AccuracyCompareException(Exception):
         self.error_info = error_info
 
 
-class InputShapeError(Enum):
+class InputShapeError(enum.Enum):
     """
      Class for Input Shape Error
     """
