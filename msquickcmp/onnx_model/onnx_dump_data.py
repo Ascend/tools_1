@@ -93,8 +93,8 @@ class OnnxDumpData(DumpData):
             if utils.check_dynamic_shape(tensor_shape):
                 if not self.input_shapes:
                     utils.print_error_log(
-                        "The dynamic shape %s are not supported. Please "
-                        "set '-s' or '--input-shape' to fix the dynamic shape." % tensor_shape)
+                        "The dynamic shape {} are not supported. Please "
+                        "set '-s' or '--input-shape' to fix the dynamic shape.".format(tensor_shape))
                     raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
             if self.input_shapes:
                 input_shape = self.input_shapes.get(tensor_name)
@@ -167,8 +167,8 @@ class OnnxDumpData(DumpData):
 
     @staticmethod
     def _check_input_shape_fix_value(op_name, model_shape, input_shape):
-        message = "fixed input tensor dim not equal to model input dim."
-        " tensor_name:%s, %s vs %s" % (op_name, str(input_shape), str(model_shape))
+        message = "fixed input tensor dim not equal to model input dim." \
+                  "tensor_name:%s, %s vs %s" % (op_name, str(input_shape), str(model_shape))
         if len(model_shape) != len(input_shape):
             utils.print_error_log(message)
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR)

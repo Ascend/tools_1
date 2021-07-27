@@ -62,13 +62,13 @@ def main():
     parser = argparse.ArgumentParser()
     _accuracy_compare_parser(parser)
     args = parser.parse_args(sys.argv[1:])
-    time_dir = time.strftime("%Y%m%d%H%M%S", time.localtime())
-    args.out_path = os.path.realpath(os.path.join(args.out_path, time_dir))
     args.model_path = os.path.realpath(args.model_path)
     args.offline_model_path = os.path.realpath(args.offline_model_path)
     args.cann_path = os.path.realpath(args.cann_path)
     try:
         utils.check_file_or_directory_path(os.path.realpath(args.out_path), True)
+        time_dir = time.strftime("%Y%m%d%H%M%S", time.localtime())
+        args.out_path = os.path.realpath(os.path.join(args.out_path, time_dir))
         utils.check_file_or_directory_path(args.model_path)
         utils.check_file_or_directory_path(args.offline_model_path)
         # generate dump data by the original model

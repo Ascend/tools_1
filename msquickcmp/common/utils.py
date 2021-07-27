@@ -287,7 +287,7 @@ def parse_input_shape(input_shape):
 
 def _check_colon_exist(input_shape):
     if ":" not in input_shape:
-        print_error_log(get_shape_not_match_message(input_shape))
+        print_error_log(get_shape_not_match_message(InputShapeError.FORMAT_NOT_MATCH, input_shape))
         raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
 
 
@@ -401,6 +401,6 @@ def check_input_name_in_model(tensor_name_list, input_name):
     Exception Description:
         When input name not in tensor name list throw exception
     """
-    if input_name in tensor_name_list:
+    if input_name not in tensor_name_list:
         print_error_log(get_shape_not_match_message(InputShapeError.NAME_NOT_MATCH, input_name))
         raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
