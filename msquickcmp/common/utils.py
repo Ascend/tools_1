@@ -12,7 +12,6 @@ import subprocess
 import sys
 import time
 import enum
-
 import numpy as np
 import tensorflow as tf
 
