@@ -3,17 +3,15 @@
 ### Overview
 
 This readme describes the **main.py** tool, or One-Click Accuracy Analyzer, for inference scenarios. This tool enables one-click network-wide accuracy analysis of TensorFlow and ONNX models. You only need to prepare the original model, offline model equivalent, and model input file. Beware that the offline model must be an .om model converted using the Ascend Tensor Compiler (ATC) tool, and the .bin input file must meet the input requirements of the model (multi-input models are supported).  
-The tool uses a constraint scenario description,and the reference link is https://support.huaweicloud.com/tg-cannApplicationDev330/atlasaccuracy_16_0011.html
+For details about the usage restrictions of the tool, visit https://support.huaweicloud.com/intl/en-us/tg-cannApplicationDev330/atlasaccuracy_16_0011.html.
 
 ### Environment Setup
 
-1. Set up the development and operating environments on the Ascend AI inference device.
-
-   For details, visit: https://support.huaweicloud.com/intl/en-us/instg-cli-cann202/atlasrun_03_0002.html
+1. Set up an operating and development environment powered by Ascend AI Processors.
 
 2. Install Python 3.7.5.
 
-3. Install environment dependencies including ONNX Runtime, ONNX, NumPy, and skl2onnx using **pip3.7.5**.
+3. Install environment dependencies, including **onnxruntime**, **onnx**, **numpy**, **skl2onnx**, **pexpect**, and **gnureadline** using **pip3.7.5**.
 
    Command example:
 
@@ -46,7 +44,7 @@ cd $HOME/AscendProjects/tools/msquickcmp/
 ```
 
 2. Set environment variables.
-  The following is an example only. Replace **/home/HwHiAiUser/Ascend/ascend-toolkit/latest** with the actual ACLlib installation path.
+   The following is an example only. Replace **/home/HwHiAiUser/Ascend/ascend-toolkit/latest** with the actual ACLlib installation path.
 
 ```
 export DDK_PATH=/home/HwHiAiUser/Ascend/ascend-toolkit/latest
@@ -121,10 +119,12 @@ output-path/timestamp
 | Option&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; | Description                              | Required |
 | ---------------------------------------- | ---------------------------------------- | -------- |
 | -m, --model-path                         | Path of the original model (.pb or .onnx). Currently, only .pb and .onnx models are supported. | Yes      |
-| -om, --offline-model-path                | .om model adapted to Ascend AI Processor | Yes      |
+| -om, --offline-model-path                | Path of the offline model (.om) adapted to the Ascend AI Processor. | Yes      |
 | -i, --input-path                         | Path of model input data, which is generated based on model inputs by default. Separate model inputs with commas (,), for example, **/home/input\_0.bin, /home/input\_1.bin**. | No       |
 | -c, --cann-path                          | CANN installation path, defaulted to **/usr/local/Ascend/ascend-toolkit/latest** | No       |
 | -o, --output-path                        | Output path, defaulted to the current directory | No       |
+| -s，--input_shape                        | Shape information of model inputs. Separate multiple nodes with semicolons, for example, **input_name1:1,224,224,3;input_name2:3,300**. By default, this option is left blank. **input_name** must be the node name in the network model before model conversion. | No       |
+| --output-nodes                           | Output node specified by the user. Separate multiple nodes with semicolons, for example, **node_name1:0;node_name2:1;node_name3:0**. | No       |
 
 ### Sample Execution
 
