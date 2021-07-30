@@ -2,7 +2,9 @@
 
 #### 适用版本
 Driver：21.0.1
+
 CANN：5.0.2_alpha005
+
 MindStudio： 3.0.2
 
 #### 使用方式
