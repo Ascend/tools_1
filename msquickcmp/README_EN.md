@@ -90,28 +90,29 @@ export NPU_HOST_LIB=/home/HwHiAiUser/Ascend/ascend-toolkit/latest/acllib/lib64/s
 ### Analysis Result Description
 
 ```
-output-path/timestamp
-├── input
-│	└── input_0.bin # Randomly generated. If you have specified the input data, this file is not generated.
-│	└── input_1.bin # Randomly generated. If you have specified the input data, this file is not generated.
-├── model
-│ └── new_model_name.onnx # Modified .onnx model with all operators specified as output nodes.
-│	└── model_name.json # model_name indicates the .om file name.
 ├── dump_data
-│   ├── npu # Dump directory on the NPU.
-		│   ├── timestamp
-				└── resnet50_output_0.bin
-			│   ├── 20210206030403 
-				│   ├── 0
-                    │   ├── resnet50
-                        │   ├── 1
-							│   ├── 0
-								└── Cast.trans_Cast_169.62.1596191801355614				
-│   ├── onnx # ONNX dump directory if the -m option specifies an .onnx model.
-	└── conv1_relu.0.1596191800668285.npy
-│   ├── tf # TensorFlow dump directory if the -m option specifies a .pb model.
-	└── conv1_relu.0.1596191800668285.npy	
+│   ├── npu # Dump directory on the NPU.
+│   │   ├── timestamp
+│   │   │   └── resnet50_output_0.bin
+│   │   └── 20210206030403
+│   │       └── 0
+│   │           └── resnet50
+│   │               └── 1
+│   │                   └── 0
+│   │                       ├── Data.inputx.1.3.1596191801455614
+│   │                       └── Cast.trans_Cast_169.62.5.1596191801355614
+│   ├── onnx # ONNX dump directory if the -m option specifies an .onnx model.
+│   │     └── conv1_relu.0.1596191800668285.npy
+│   └── tf # TensorFlow dump directory if the -m option specifies a .pb model.
+│       └── conv1_relu.0.1596191800668285.npy
+├── input
+│   ├── input_0.bin # Randomly generated. If you have specified the input data, this file is not generated.
+│   └── input_1.bin # Randomly generated. If you have specified the input data, this file is not generated.
+├── model
+│   ├── new_model_name.onnx # Modified .onnx model with all operators specified as output nodes.
+│   └── model_name.json # model_name indicates the .om file name.
 ├── result_2021211214657.csv
+└── tmp # tfdbg dump data directory if the -m option specifies a .pb model.
 ```
 
 ### Command-line Options

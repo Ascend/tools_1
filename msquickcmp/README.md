@@ -93,27 +93,29 @@ export NPU_HOST_LIB=/home/HwHiAiUser/Ascend/ascend-toolkit/latest/acllib/lib64/s
 
 ```
 output-path/timestamp
-├── input
-│	└── input_0.bin(随机生成的，若用户指定了数据，该文件不存在)
-│	└── input_1.bin(随机生成的，若用户指定了数据，该文件不存在)
-├── model
-│   └── new_model_name.onnx(把每个算子作为输出节点后新生成的onnx模型)
-│	└── model_name.json(model_name为om的文件名)
 ├── dump_data
-│   ├── npu(npu的dump数据目录)
-		│   ├── timestamp
-				└── resnet50_output_0.bin
-			│   ├── 20210206030403 
-				│   ├── 0
-                    │   ├── resnet50
-                        │   ├── 1
-							│   ├── 0
-								└── Cast.trans_Cast_169.62.1596191801355614				
-│   ├── onnx(如果-m模型为.onnx，onnx的dump数据目录)
-	└── conv1_relu.0.1596191800668285.npy
-│   ├── tf(如果-m模型为.pb，tf的dump数据目录)
-	└── conv1_relu.0.1596191800668285.npy	
+│   ├── npu(npu的dump数据目录)
+│   │   ├── timestamp
+│   │   │   └── resnet50_output_0.bin
+│   │   └── 20210206030403
+│   │       └── 0
+│   │           └── resnet50
+│   │               └── 1
+│   │                   └── 0
+│   │                       ├── Data.inputx.1.3.1596191801455614
+│   │                       └── Cast.trans_Cast_169.62.5.1596191801355614
+│   ├── onnx(如果-m模型为.onnx，onnx的dump数据目录)
+│   │     └── conv1_relu.0.1596191800668285.npy
+│   └── tf(如果-m模型为.pb，tf的dump数据目录)
+│       └── conv1_relu.0.1596191800668285.npy
+├── input
+│   ├── input_0.bin(随机生成的，若用户指定了数据，该文件不存在)
+│   └── input_1.bin(随机生成的，若用户指定了数据，该文件不存在)
+├── model
+│   ├── new_model_name.onnx(把每个算子作为输出节点后新生成的onnx模型)
+│   └── model_name.json(model_name为om的文件名)
 ├── result_2021211214657.csv
+└── tmp (如果-m模型为.pb, tfdbg相关的临时目录)
 ```
 
 ### 参数说明
