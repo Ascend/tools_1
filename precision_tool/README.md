@@ -415,6 +415,9 @@ precision_data/
         └── 20210510101134
             └── result_123458.csv
 ```
+### 配合msquickcmp一键式推理精度比对工具使用
+
+
 ### TF脚本修改参考
 
 ```python
