@@ -232,7 +232,7 @@ Result SampleProcess::Process(map<char, string>& params, vector<string>& input_f
         struct stat s;
         for (size_t i = 0; i < input_files.size(); ++i){
             input_path = input_files[i].c_str();
-            if (stat(input_path, &s)==0){
+            if (stat(input_path, &s) == 0){
                 if(s.st_mode & S_IFREG){
                     ERROR_LOG("input parameter must be folder or file ending in '.bin'");
                     exit(0);            
