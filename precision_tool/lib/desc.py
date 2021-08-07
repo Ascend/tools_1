@@ -10,6 +10,7 @@ DATA_DUMP_ORIGIN_NAME = '_datadump_origin_name'
 ORIGIN_FORMAT = 'origin_format'
 ORIGIN_SHAPE = 'origin_shape'
 VALUE_RANGE = 'value_range'
+SHAPE_RANGE = 'shape_range'
 DT_STRING = 's'
 DT_INT = 'i'
 DT_LIST_LIST_INT = 'list_list_int'
@@ -57,6 +58,9 @@ class Desc(object):
     def value_range(self):
         return self._get_attr_list_list(VALUE_RANGE, DT_LIST_INT)
 
+    def shape_range(self):
+        return self._get_attr_list_list(SHAPE_RANGE, DT_LIST_INT)
+
     def _get_attr_list_list(self, key, data_type):
         val = self._get_attr_base(key, DT_LIST_LIST_INT)
         if val is None or DT_LIST_LIST_I not in val:
@@ -68,22 +72,10 @@ class Desc(object):
         return res
 
     def _get_attr_list(self, key, data_type):
-        '''
-        if ATTR in self.desc_json:
-            for attr in self.desc_json[ATTR]:
-                if attr[ATTR_KEY] == key:
-                    return attr[ATTR_VALUE]['list'][data_type]
-        '''
         val = self._get_attr_base(key, DT_LIST)
         return val[data_type] if val is not None else []
 
     def _get_attr(self, key, data_type):
-        '''
-        if ATTR in self.desc_json:
-            for attr in self.desc_json[ATTR]:
-                if attr[ATTR_KEY] == key:
-                    return attr[ATTR_VALUE][data_type]
-        '''
         val = self._get_attr_base(key, data_type)
         return val if val is not None else DATA_TYPE_DEFAULT_VALUE[data_type]
 
@@ -91,7 +83,8 @@ class Desc(object):
         if ATTR in self.desc_json:
             for attr in self.desc_json[ATTR]:
                 if attr[ATTR_KEY] == key:
-                    return attr[ATTR_VALUE][data_type]
+                    if data_type in attr[ATTR_KEY]:
+                        return attr[ATTR_VALUE][data_type]
         return None
 
     def compare(self, right_desc):
@@ -125,11 +118,13 @@ class InputDesc(Desc):
         return self.peer_index == -1
 
     def summary(self, origin_txt=False):
+        """idx | dtype | format | shape | [blue]value_range | shape_range [/blue]| op_name | peer_idx"""
         if origin_txt:
             return "[%d][%s][%s]%s %s:%d" % (self.idx(), self.dtype(), self.format(),
                                              self.shape(), self.name(), self.peer_idx())
-        return "[green][%d][/green][yellow][%s][%s]%s%s[/yellow] %s:%d" % (
-            self.idx(), self.dtype(), self.format(), self.shape(), self.value_range(), self.name(), self.peer_idx())
+        return "[green][%d][/green][yellow][%s][%s]%s[/yellow][blue] %s %s [/blue] %s:%d" % (
+            self.idx(), self.dtype(), self.format(), self.shape(),
+            self.value_range(), self.shape_range(), self.name(), self.peer_idx())
 
 
 class OutputDesc(Desc):

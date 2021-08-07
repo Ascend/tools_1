@@ -81,7 +81,12 @@ def session_dump_config(session_config=None, action=None):
     if ((not isinstance(session_config, config_pb2.ConfigProto)) and
             (not issubclass(type(session_config), config_pb2.ConfigProto))):
         session_config = config_pb2.ConfigProto()
-    custom_op = session_config.graph_options.rewrite_options.custom_optimizers.add()
+    custom_op = None
+    for existed_custom_op in session_config.graph_options.rewrite_options.custom_optimizers:
+        if existed_custom_op.name == 'NpuOptimizer':
+            custom_op = existed_custom_op
+    if custom_op is None:
+        custom_op = session_config.graph_options.rewrite_options.custom_optimizers.add()
     custom_op.name = 'NpuOptimizer'
     custom_op.parameter_map['use_off_line'].b = True
     update_custom_op(custom_op, action)

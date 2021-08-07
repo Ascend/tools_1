@@ -132,7 +132,9 @@ class Op(object):
         origin_op = self.data_dump_original_op_names()
         if origin_op != '':
             res_str.append('OriginalOp: %s' % origin_op)
-        res_str.append('Input:')
+        # self.idx(), self.dtype(), self.format(), self.shape(),
+        #             self.value_range(), self.shape_range(), self.name(), self.peer_idx())
+        res_str.append('Input:[%s]' % InputDesc.summary.__doc__)
         for i in self.inputs():
             res_str.append(' -' + i.summary(origin_txt))
         res_str.append('Output:')
