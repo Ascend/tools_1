@@ -118,7 +118,7 @@ class InputDesc(Desc):
         return self.peer_index == -1
 
     def summary(self, origin_txt=False):
-        """idx | dtype | format | shape | [blue]value_range | shape_range [/blue]| op_name | peer_idx"""
+        """idx | dtype | format | shape | [blue]value_range | shape_range[/blue] | op_name | peer_idx"""
         if origin_txt:
             return "[%d][%s][%s]%s %s:%d" % (self.idx(), self.dtype(), self.format(),
                                              self.shape(), self.name(), self.peer_idx())
