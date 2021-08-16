@@ -631,14 +631,7 @@ void ModelProcess::OutputModelResult(std::string& s, std::string& modelName, std
                 ERROR_LOG("malloc device buffer failed, ret[%d]", ret);
                 return;
             }
-        }
-        dim = reinterpret_cast<aclmdlIODims*>(dims);
-        ret = aclmdlGetCurOutputDims(modelDesc_, i, dim);
-        if (ret != ACL_ERROR_NONE) {
-            ERROR_LOG("aclmdlGetCurOutputDims failed, ret[%d]", ret);
-            return;
-        }
-        
+        }   
         if (!g_is_device) {
             ret = aclrtMallocHost(&outHostData, len);
             if (ret != ACL_ERROR_NONE) {
