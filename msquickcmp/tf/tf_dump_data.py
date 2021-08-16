@@ -145,6 +145,12 @@ class TfDumpData(DumpData):
                     input_nodes.append(input_name)
         return input_nodes, node_list
 
+    def _check_node_output(self, node_name):
+        op = self.global_graph.get_operation_by_name(node_name)
+        if op.outputs:
+            return True
+        return False
+
     def _check_output_nodes_valid(self, outputs_tensor, node_list):
         for tensor in outputs_tensor:
             tensor_info = tensor.strip().split(':')
@@ -173,7 +179,8 @@ class TfDumpData(DumpData):
         else:
             output_nodes = list(set(node_list).difference(set(input_nodes)))
             for name in output_nodes:
-                outputs_tensor.append(name + ":0")
+                if self._check_node_output(name):
+                    outputs_tensor.append(name + ":0")
         utils.print_info_log("The outputs tensor:\n{}\n".format(outputs_tensor))
         return outputs_tensor
 
