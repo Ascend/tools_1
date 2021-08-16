@@ -364,12 +364,7 @@ Result ModelProcess::PrintDesc()
             cout << dimsOutput.dims[j] << " ";
         }
         cout << endl;
-        ret = aclmdlGetCurOutputDims(modelDesc_, i, &dimsCurrentOutput);
-        DEBUG_LOG("the dims of %zu current output:", i);
-        for (size_t j = 0; j < dimsCurrentOutput.dimCount; j++) {
-            cout << dimsCurrentOutput.dims[j] << " ";
-        }
-        cout << endl;
+
         DEBUG_LOG("the name of %zu output: %s", i, aclmdlGetOutputNameByIndex(modelDesc_, i));
         DEBUG_LOG("the Format of %zu output: %u", i, aclmdlGetOutputFormat(modelDesc_, i));
         DEBUG_LOG("the DataType of %zu output: %u", i, aclmdlGetOutputDataType(modelDesc_, i));
