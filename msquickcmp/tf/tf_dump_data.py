@@ -160,11 +160,19 @@ class TfDumpData(DumpData):
                     'Invalid output nodes (%s). Only support "name1:0;name2:1". Please check the output node.' % tensor)
                 raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
             node_name = tensor_info[0].strip()  # 0 for node_name
+            if not node_name:
+                utils.print_error_log(
+                    'Invalid output nodes (%s). Only support "name1:0;name2:1". Please check the output node.' % tensor)
+                raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
             if node_name not in node_list:
                 utils.print_error_log(
                     "The output node (%s) is not in the graph. Please check the output node." % node_name)
                 raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
             index = tensor_info[1].strip()  # 1 for tensor_index
+            if not index:
+                utils.print_error_log(
+                    'Invalid output nodes (%s). Only support "name1:0;name2:1". Please check the output node.' % tensor)
+                raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
             op = self.global_graph.get_operation_by_name(node_name)
             pattern = re.compile(r'^[0-9]+$')
             match = pattern.match(index)
