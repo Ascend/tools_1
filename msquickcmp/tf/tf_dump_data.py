@@ -6,6 +6,7 @@ This class is used to generate GUP dump data of the TensorFlow model.
 Copyright Information:
 Huawei Technologies Co., Ltd. All Rights Reserved © 2021
 """
+import re
 import sys
 import readline
 import pexpect
@@ -165,8 +166,14 @@ class TfDumpData(DumpData):
                 raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
             index = tensor_info[1].strip()  # 1 for tensor_index
             op = self.global_graph.get_operation_by_name(node_name)
-            if index < 0 or index >= len(op.outputs):
-                utils.print_error_log("The index (%d) of %s out of range [0, %d). Please check the output node."
+            pattern = re.compile(r'^[0-9]+$')
+            match = pattern.match(index)
+            if match is None:
+                utils.print_error_log("The index (%s) of %s is invalid. Please check the output node."
+                                      % (index, node_name))
+                raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
+            if int(index) < 0 or int(index) >= len(op.outputs):
+                utils.print_error_log("The index (%s) of %s out of range [0, %d). Please check the output node."
                                       % (index, node_name, len(op.outputs)))
                 raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
 
