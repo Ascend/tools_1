@@ -134,7 +134,7 @@ class TfDumpData(DumpData):
         tf_dbg.sendline('exit')
         utils.print_info_log('Finish dump tf data.')
 
-    def _get_all_node_and_input_node(self) -> (list, list):
+    def _get_all_node_and_input_node(self):
         input_nodes = []
         node_list = []
         operations = self.global_graph.get_operations()
