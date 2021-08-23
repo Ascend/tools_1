@@ -179,6 +179,7 @@ class NpuDumpData(DumpData):
         for input_object in input_desc_array:
             if SHAPE_OBJECT not in input_object:
                 value.append(0)
+                continue
             item_sum = 1
             for num in input_object.get(SHAPE_OBJECT).get(DIM_OBJECT):
                 item_sum *= num
