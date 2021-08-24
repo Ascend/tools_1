@@ -1,6 +1,6 @@
 English|[中文](README.md)
 
-# for_1.0.10.alpha
+# for_1.0.11.alpha
 
 ## Supporting relationship  
 The business card requires the driver and firmware package. 
@@ -20,4 +20,4 @@ For details about the version mapping between the Atlas 200 DK Driver and Firmwa
 
 ## Procedure
 
-For card making steps, please refer to [Atlas 200 DK Developer Kit (1.0.10.alpha)]()
+For card making steps, please refer to [Atlas 200 DK Developer Kit (1.0.11.alpha)]()
