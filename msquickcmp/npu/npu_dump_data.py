@@ -200,7 +200,7 @@ class NpuDumpData(DumpData):
 
     @staticmethod
     def _shape_size_vs_bin_file_size(shape_size_array, bin_files_size_array):
-        if len(shape_size_array) != len(bin_files_size_array):
+        if len(shape_size_array) < len(bin_files_size_array):
             utils.print_error_log("The number of input bin files is incorrect.")
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_BIN_FILE_ERROR)
         for shape_size, bin_file_size in zip(shape_size_array, bin_files_size_array):
