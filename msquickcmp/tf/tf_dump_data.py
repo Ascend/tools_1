@@ -117,7 +117,9 @@ class TfDumpData(DumpData):
             tf_dbg.expect('tfdbg>', timeout=tf_common.TF_DEBUG_TIMEOUT)
             utils.print_info_log("Start to run. Please wait....")
             tf_dbg.sendline('run')
-            tf_dbg.expect('tfdbg>', timeout=tf_common.TF_DEBUG_TIMEOUT)
+            index = tf_dbg.expect(['An error occurred during the run', 'tfdbg>'], timeout=tf_common.TF_DEBUG_TIMEOUT)
+            if index == 0:
+                raise AccuracyCompareException(utils.ACCURACY_COMPARISON_PYTHON_COMMAND_ERROR)
         except Exception as ex:
             tf_dbg.sendline('exit')
             utils.print_error_log("Failed to run command: %s. %s" % (cmd_line, ex))
