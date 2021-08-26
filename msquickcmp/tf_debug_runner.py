@@ -16,7 +16,7 @@ from common import utils, tf_common
 from common.utils import AccuracyCompareException
 
 
-class TfDebugRunner:
+class TfDebugRunner(object):
     """
     This class is used to generate GUP dump data of the TensorFlow model.
     """
