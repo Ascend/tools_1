@@ -12,12 +12,11 @@ import os
 import numpy as np
 import tensorflow as tf
 from tensorflow.python import debug as tf_debug
-from common.dump_data import DumpData
 from common import utils, tf_common
 from common.utils import AccuracyCompareException
 
 
-class TfDebugRunner(DumpData):
+class TfDebugRunner:
     """
     This class is used to generate GUP dump data of the TensorFlow model.
     """

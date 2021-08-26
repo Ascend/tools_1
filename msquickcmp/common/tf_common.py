@@ -45,6 +45,16 @@ def convert_to_numpy_type(tensor_type):
 
 
 def convert_tensor_shape(tensor_shape):
+    """
+    Function Description:
+        convert tensor shape
+    Parameter:
+        tensor_shape:the tensor shape
+    Return Value:
+        shape tuple
+    Exception Description:
+        When tensor dim is none throw exception
+    """
     tensor_shape_list = tensor_shape.as_list()
     for i in range(len(tensor_shape_list)):
         if tensor_shape_list[i] is None:
