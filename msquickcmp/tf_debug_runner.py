@@ -13,7 +13,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.python import debug as tf_debug
 from common.dump_data import DumpData
-from common import utils
+from common import utils, tf_common
 from common.utils import AccuracyCompareException
 
 
@@ -53,7 +53,7 @@ class TfDebugRunner(DumpData):
         input_path = self.args.input_path.split(",")
         for index, tensor in enumerate(inputs_tensor):
             try:
-                input_data = np.fromfile(input_path[index], utils.convert_to_numpy_type(tensor.dtype))
+                input_data = np.fromfile(input_path[index], tf_common.convert_to_numpy_type(tensor.dtype))
                 if tensor.shape:
                     input_data = input_data.reshape(tensor.shape)
                 inputs_map[tensor] = input_data
@@ -76,7 +76,7 @@ class TfDebugRunner(DumpData):
             run TensorFlow model
         """
         self._load_graph()
-        inputs_tensor = utils.get_inputs_tensor(self.global_graph, self.args.input_shape)
+        inputs_tensor = tf_common.get_inputs_tensor(self.global_graph, self.args.input_shape)
         inputs_map = self._get_inputs_data(inputs_tensor)
         outputs_tensor = self._get_outputs_tensor()
         self._run_model(inputs_map, outputs_tensor)
