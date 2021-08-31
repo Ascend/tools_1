@@ -30,11 +30,11 @@ def bfsTravel(graph, source, show_level1):
         for frontier in frontiers:
             for node2 in graph.node:
                 if str(node2.name) == str(frontier).replace(':0',''):
-                    input_len = len(node2.input)
-                    while input_len:
-                        input_len -= 1
-                        travel.append(node2.input[input_len])
-                        nexts.append(node2.input[input_len])
+                    input_len1 = len(node2.input)
+                    while input_len1:
+                        input_len1 -= 1
+                        travel.append(node2.input[input_len1])
+                        nexts.append(node2.input[input_len1])
         frontiers = nexts
         show_level1 -= 1
     return travel
