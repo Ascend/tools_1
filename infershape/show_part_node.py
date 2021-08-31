@@ -4,39 +4,39 @@ import sys
 
 from google.protobuf import text_format
 
-def load_groph_def_from_pb(path):
-    with open(path, "rb") as f:
-        data = f.read()
+def load_graph_def_from_pb(path):
+    with open(path, "rb") as fd:
+        data = fd.read()
         model = onnx.ModelProto()
         text_format.Parse(data, model)
     return model.graph
     
 def get_node_shape(graph, node_name):
     shape_attr = None
-    for node in graph.node:
-        if str(node.name) == str(node_name):
-            for attr in node.attribute:
+    for node1 in graph.node:
+        if str(node1.name) == str(node_name):
+            for attr in node1.attribute:
                 if (attr.name == "output_desc_shape:0"):
                     shape_attr = attr
             if (shape_attr == None):
                 return []
             return "[" + ",".join('%s' %id for id in shape_attr.ints) + "]" + r'\n' + 'type:' + str(shape_attr.type)
 
-def bfsTravel(graph, source, show_level):
+def bfsTravel(graph, source, show_level1):
     frontiers = [source]
     travel = [source]
-    while show_level:
+    while show_level1:
         nexts = []
         for frontier in frontiers:
-            for node in graph.node:
-                if str(node.name) == str(frontier).replace(':0',''):
-                    input_len = len(node.input)
+            for node2 in graph.node:
+                if str(node2.name) == str(frontier).replace(':0',''):
+                    input_len = len(node2.input)
                     while input_len:
                         input_len -= 1
-                        travel.append(node.input[input_len])
-                        nexts.append(node.input[input_len])
+                        travel.append(node2.input[input_len])
+                        nexts.append(node2.input[input_len])
         frontiers = nexts
-        show_level -= 1
+        show_level1 -= 1
     return travel
 
 if __name__ == "__main__":
