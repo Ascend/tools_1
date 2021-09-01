@@ -77,7 +77,7 @@ Result SampleProcess::InitResource()
     else {
         ret = aclInit(nullptr);
     }
-    if (ret != ACL_ERROR_NONE) {
+    if (ret != ACL_SUCCESS) {
         ERROR_LOG("acl init failed");
         return FAILED;
     }
@@ -86,7 +86,7 @@ Result SampleProcess::InitResource()
     // open device
     deviceId_ = g_device_id;
     ret = aclrtSetDevice(deviceId_);
-    if (ret != ACL_ERROR_NONE) {
+    if (ret != ACL_SUCCESS) {
         ERROR_LOG("acl open device %d failed", deviceId_);
         return FAILED;
     }
@@ -94,7 +94,7 @@ Result SampleProcess::InitResource()
 
     // create context (set current)
     ret = aclrtCreateContext(&context_, deviceId_);
-    if (ret != ACL_ERROR_NONE) {
+    if (ret != ACL_SUCCESS) {
         ERROR_LOG("acl create context failed");
         return FAILED;
     }
@@ -102,7 +102,7 @@ Result SampleProcess::InitResource()
 
     // create stream
     ret = aclrtCreateStream(&stream_);
-    if (ret != ACL_ERROR_NONE) {
+    if (ret != ACL_SUCCESS) {
         ERROR_LOG("acl create stream failed");
         return FAILED;
     }
@@ -111,7 +111,7 @@ Result SampleProcess::InitResource()
     // get run mode
     aclrtRunMode runMode;
     ret = aclrtGetRunMode(&runMode);
-    if (ret != ACL_ERROR_NONE) {
+    if (ret != ACL_SUCCESS) {
         ERROR_LOG("acl get run mode failed");
         return FAILED;
     }
@@ -445,7 +445,7 @@ void SampleProcess::DestroyResource()
     aclError ret;
     if (stream_ != nullptr) {
         ret = aclrtDestroyStream(stream_);
-        if (ret != ACL_ERROR_NONE) {
+        if (ret != ACL_SUCCESS) {
             ERROR_LOG("destroy stream failed");
         }
         stream_ = nullptr;
@@ -454,7 +454,7 @@ void SampleProcess::DestroyResource()
 
     if (context_ != nullptr) {
         ret = aclrtDestroyContext(context_);
-        if (ret != ACL_ERROR_NONE) {
+        if (ret != ACL_SUCCESS) {
             ERROR_LOG("destroy context failed");
         }
         context_ = nullptr;
@@ -462,13 +462,13 @@ void SampleProcess::DestroyResource()
     INFO_LOG("end to destroy context");
 
     ret = aclrtResetDevice(deviceId_);
-    if (ret != ACL_ERROR_NONE) {
+    if (ret != ACL_SUCCESS) {
         ERROR_LOG("reset device failed");
     }
     INFO_LOG("end to reset device is %d", deviceId_);
 
     ret = aclFinalize();
-    if (ret != ACL_ERROR_NONE) {
+    if (ret != ACL_SUCCESS) {
         ERROR_LOG("finalize acl failed");
     }
     INFO_LOG("end to finalize acl");
