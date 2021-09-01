@@ -39,7 +39,7 @@ void* Utils::ReadBinFile(std::string fileName, uint32_t& fileSize)
     binFile.seekg(0, binFile.beg);
 
     void* binFileBufferData = nullptr;
-    aclError ret = ACL_ERROR_NONE;
+    aclError ret = ACL_SUCCESS;
     if (!g_is_device) {
         ret = aclrtMallocHost(&binFileBufferData, binFileBufferLen);
         if (binFileBufferData == nullptr) {
@@ -49,7 +49,7 @@ void* Utils::ReadBinFile(std::string fileName, uint32_t& fileSize)
         }
     } else {
         ret = aclrtMalloc(&binFileBufferData, binFileBufferLen, ACL_MEM_MALLOC_NORMAL_ONLY);
-        if (ret != ACL_ERROR_NONE) {
+        if (ret != ACL_SUCCESS) {
             ERROR_LOG("malloc device buffer failed. size is %u", binFileBufferLen);
             binFile.close();
             return nullptr;
@@ -73,14 +73,14 @@ void* Utils::GetDeviceBufferOfFile(std::string fileName, uint32_t& fileSize)
         void* inBufferDev = nullptr;
         uint32_t inBufferSize = inputHostBuffSize;
         aclError ret = aclrtMalloc(&inBufferDev, inBufferSize, ACL_MEM_MALLOC_NORMAL_ONLY);
-        if (ret != ACL_ERROR_NONE) {
+        if (ret != ACL_SUCCESS) {
             ERROR_LOG("malloc device buffer failed. size is %u", inBufferSize);
             aclrtFreeHost(inputHostBuff);
             return nullptr;
         }
 
         ret = aclrtMemcpy(inBufferDev, inBufferSize, inputHostBuff, inputHostBuffSize, ACL_MEMCPY_HOST_TO_DEVICE);
-        if (ret != ACL_ERROR_NONE) {
+        if (ret != ACL_SUCCESS) {
             ERROR_LOG("memcpy failed. device buffer size is %u, input host buffer size is %u",
                 inBufferSize, inputHostBuffSize);
             aclrtFree(inBufferDev);
