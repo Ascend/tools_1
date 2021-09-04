@@ -27,7 +27,7 @@ do
 
     cpu_array=(${cpu_line/ / })
     # dtype match judge, not match then exit
-    cpu_dtype=${cpu_array[3]}
+    cpu_dtype=${cpu_array[3]%%_REF}
     if [ $cpu_dtype != $npu_dtype ]; then
         echo -e "\033[31m[FOUND] $npu_node is the first one which out $npu_index's $npu_dtype different from cpu $cpu_dtype \033[0m"
         exit

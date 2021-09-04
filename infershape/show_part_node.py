@@ -17,10 +17,23 @@ def get_node_shape(graph, node_name):
         if str(node1.name) == str(node_name):
             for attr in node1.attribute:
                 if (attr.name == "output_desc_shape:0"):
-                    shape_attr = attr
-            if (shape_attr == None):
-                return []
-            return "[" + ",".join('%s' %id for id in shape_attr.ints) + "]" + r'\n' + 'type:' + str(shape_attr.type)
+                    break
+            content = "shape:" + "[" + ",".join('%s' %id for id in attr.ints) + "]" + r'\n'
+            break
+    for node1 in graph.node:
+        if str(node1.name) == str(node_name):
+            for attr in node1.attribute:
+                if (attr.name == "output_desc_layout:0"):
+                    break
+            content = content + "format:" + str(attr.s).replace("b","").replace("'","") + r'\n'
+            break
+    for node1 in graph.node:
+        if str(node1.name) == str(node_name):
+            for attr in node1.attribute:
+                if (attr.name == "output_desc_dtype:0"):
+                    break
+            content = content + "dtype:" + str(attr.s).replace("b","").replace("'","")
+            return content
 
 def bfsTravel(graph, source, show_level1):
     frontiers = [source]
@@ -61,8 +74,8 @@ if __name__ == "__main__":
                 while input_len:
                     input_len -= 1
                     if len(node.input[input_len]) != 0:
-                        shape_content = '"[label="shape:' + get_node_shape(graph_def, node.input[input_len].replace(':0',''))
-                        total_content = '"' + node.input[input_len].replace(':0','').replace("/",r"\n/") + '" -> "' + node.name.replace("/",r"\n/") + shape_content + '", arrowhead="normal"];\n'
+                        shape_content = get_node_shape(graph_def, node.input[input_len].replace(':0',''))
+                        total_content = '"' + node.input[input_len].replace(':0','').replace("/",r"\n/") + '" -> "' + node.name.replace("/",r"\n/") + '"[label="' + shape_content + '", arrowhead="normal"];\n'
                         with open("part_node.dot", "a+") as f:
                             f.write(total_content)
     with open("part_node.dot", "a+") as f:
@@ -70,5 +83,3 @@ if __name__ == "__main__":
         
     commend = "dot -T png -o part_node.png part_node.dot"
     os.system(commend)
-    
-    
