@@ -53,7 +53,8 @@ class NpuDumpData(DumpData):
     def __init__(self, arguments, output_json_path):
         self.arguments = arguments
         self.output_json_path = output_json_path
-        self.json_object = None
+        self.json_object = self.load_json_file(self.output_json_path)
+        self.shape_range = self._is_input_shape_range()
 
     def generate_dump_data(self):
         """
@@ -89,7 +90,7 @@ class NpuDumpData(DumpData):
 
     def _make_msame_cmd_for_shape_range(self, msame_cmd):
         pattern = re.compile(r'^[0-9]+$')
-        if self._is_input_shape_range():
+        if self.shape_range:
             if not self.arguments.input_shape:
                 utils.print_error_log('In the dynamic shape scenario, the "-s" or "--input-shape" is mandatory.')
                 raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
@@ -172,7 +173,6 @@ class NpuDumpData(DumpData):
         self._shape_size_vs_bin_file_size(shape_size_array, bin_files_size_array)
 
     def _get_shape_size(self):
-        self.load_json_file(self.output_json_path)
         op_array = self._get_op_by_type()
         input_desc_array = self._get_input_desc_list(op_array)
         # extracts the input shape value
@@ -192,7 +192,7 @@ class NpuDumpData(DumpData):
         try:
             with open(json_file_path, "r") as input_file:
                 try:
-                    self.json_object = json.load(input_file)
+                    return json.load(input_file)
                 except Exception as load_input_file_except:
                     print(str(load_input_file_except))
                     raise AccuracyCompareException(utils.ACCURACY_COMPARISON_PARSER_JSON_FILE_ERROR)
@@ -260,17 +260,23 @@ class NpuDumpData(DumpData):
             bin_file_size.append(os.path.getsize(item))
         return bin_file_size
 
-    @staticmethod
-    def _shape_size_vs_bin_file_size(shape_size_array, bin_files_size_array):
+    def _shape_size_vs_bin_file_size(self, shape_size_array, bin_files_size_array):
         if len(shape_size_array) < len(bin_files_size_array):
             utils.print_error_log("The number of input bin files is incorrect.")
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_BIN_FILE_ERROR)
-        for shape_size, bin_file_size in zip(shape_size_array, bin_files_size_array):
-            if shape_size == 0:
-                continue
-            if shape_size != bin_file_size:
-                utils.print_error_log("The shape value is different from the size of the bin file.")
-                raise AccuracyCompareException(utils.ACCURACY_COMPARISON_BIN_FILE_ERROR)
+        if self.shape_range:
+            for bin_file_size in bin_files_size_array:
+                if bin_file_size not in shape_size_array:
+                    utils.print_error_log(
+                        "The size (%d) of bin file can not match the input of the model." % bin_file_size)
+                    raise AccuracyCompareException(utils.ACCURACY_COMPARISON_BIN_FILE_ERROR)
+        else:
+            for shape_size, bin_file_size in zip(shape_size_array, bin_files_size_array):
+                if shape_size == 0:
+                    continue
+                if shape_size != bin_file_size:
+                    utils.print_error_log("The shape value is different from the size of the bin file.")
+                    raise AccuracyCompareException(utils.ACCURACY_COMPARISON_BIN_FILE_ERROR)
 
     @staticmethod
     def _write_content_to_acl_json(acl_json_path, model_name, npu_data_output_dir):
