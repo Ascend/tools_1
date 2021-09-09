@@ -6,6 +6,7 @@ This class mainly involves generate npu dump data function.
 Copyright Information:
 HuaWei Technologies Co.,Ltd. All Rights Reserved © 2021
 """
+import itertools
 import json
 import os
 import re
@@ -31,11 +32,15 @@ TYPE_OBJECT = "type"
 INPUT_DESC_OBJECT = "input_desc"
 ATTR_OBJECT = "attr"
 SHAPE_OBJECT = "shape"
+SHAPE_RANGE_OBJECT = "shape_range"
 DIM_OBJECT = "dim"
 DATA_OBJECT = "Data"
 NET_OUTPUT_OBJECT = "NetOutput"
 ATC_CMDLINE_OBJECT = "atc_cmdline"
 INPUT_SHAPE_RANGE = "--input_shape_range"
+LIST_LIST_INT_OBJECT = 'list_list_int'
+LIST_LIST_I_OBJECT = 'list_list_i'
+LIST_I_OBJECT = 'list_i'
 KEY_OBJECT = "key"
 VALUE_OBJECT = "value"
 S_OBJECT = "s"
@@ -236,21 +241,52 @@ class NpuDumpData(DumpData):
         return input_desc_list
 
     @staticmethod
-    def _process_inputs(input_desc_array):
+    def _get_range_shape_size_list(input_object):
+        range_shape_size_list = []
+        if ATTR_OBJECT not in input_object:
+            return
+        shape_list = []
+        for attr in input_object.get(ATTR_OBJECT):
+            if KEY_OBJECT in attr and attr.get(KEY_OBJECT) == SHAPE_RANGE_OBJECT:
+                if VALUE_OBJECT in attr and LIST_LIST_INT_OBJECT in attr.get(VALUE_OBJECT):
+                    list_list_int_object = attr.get(VALUE_OBJECT).get(LIST_LIST_INT_OBJECT)
+                    if LIST_LIST_I_OBJECT in list_list_int_object:
+                        for list_list_i in list_list_int_object.get(LIST_LIST_I_OBJECT):
+                            if LIST_I_OBJECT in list_list_i:
+                                list_i = list_list_i.get(LIST_I_OBJECT)
+                                if list_i != 2:
+                                    continue
+                                shape_list.append((range(list_i[0], list_i[1] + 1)))
+        shape_list_all = list(itertools.product(*shape_list))
+        print(shape_list_all)
+        for item in shape_list_all:
+            item_sum = 1
+            for num in item:
+                item_sum *= num
+            range_shape_size_list.append(item_sum)
+        return range_shape_size_list
+
+    def _process_inputs(self, input_desc_array):
         value = []
         for input_object in input_desc_array:
             if SHAPE_OBJECT not in input_object:
                 value.append(0)
                 continue
-            item_sum = 1
-            for num in input_object.get(SHAPE_OBJECT).get(DIM_OBJECT):
-                item_sum *= num
             data_type = DTYPE_MAP.get(input_object.get(DTYPE_OBJECT))
             if not data_type:
                 utils.print_error_log(
                     "The dtype attribute does not support {} value.".format(input_object[DTYPE_OBJECT]))
                 raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_KEY_ERROR)
-            value.append(item_sum * np.dtype(data_type).itemsize)
+            data_type_size = np.dtype(data_type).itemsize
+            if self.shape_range:
+                range_shape_size_list = self._get_range_shape_size_list(input_object)
+                for item in range_shape_size_list:
+                    value.append(item * data_type_size)
+            else:
+                item_sum = 1
+                for num in input_object.get(SHAPE_OBJECT).get(DIM_OBJECT):
+                    item_sum *= num
+                value.append(item_sum * data_type_size)
         return value
 
     def _get_bin_file_size(self):
