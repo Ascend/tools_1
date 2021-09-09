@@ -33,6 +33,12 @@ ATTR_OBJECT = "attr"
 SHAPE_OBJECT = "shape"
 DIM_OBJECT = "dim"
 DATA_OBJECT = "Data"
+NET_OUTPUT_OBJECT = "NetOutput"
+ATC_CMDLINE_OBJECT = "atc_cmdline"
+INPUT_SHAPE_RANGE = "--input_shape_range"
+KEY_OBJECT = "key"
+VALUE_OBJECT = "value"
+S_OBJECT = "s"
 DTYPE_OBJECT = "dtype"
 DTYPE_MAP = {"DT_FLOAT": np.float32, "DT_FLOAT16": np.float16, "DT_DOUBLE": np.float64, "DT_INT8": np.int8,
              "DT_INT16": np.int16, "DT_INT32": np.int32, "DT_INT64": np.int64, "DT_UINT8": np.uint8,
@@ -47,6 +53,7 @@ class NpuDumpData(DumpData):
     def __init__(self, arguments, output_json_path):
         self.arguments = arguments
         self.output_json_path = output_json_path
+        self.json_object = None
 
     def generate_dump_data(self):
         """
@@ -80,6 +87,39 @@ class NpuDumpData(DumpData):
         utils.execute_command(build_sh_cmd)
         utils.print_info_log("Finish to compile %s." % msame_dir)
 
+    def _make_msame_cmd_for_shape_range(self, msame_cmd):
+        pattern = re.compile(r'^[0-9]+$')
+        if self._is_input_shape_range():
+            if not self.arguments.input_shape:
+                utils.print_error_log('In the dynamic shape scenario, the "-s" or "--input-shape" is mandatory.')
+                raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
+            msame_cmd.append('--dymShape')
+            msame_cmd.append(self.arguments.input_shape)
+            count = self._get_net_output_count()
+            if not self.arguments.output_size:
+                if count > 0:
+                    count_list = []
+                    for _ in range(count):
+                        count_list.append("90000000")
+                    self.arguments.output_size = ",".join(count_list)
+            if self.arguments.output_size:
+                output_size_list = self.arguments.output_size.split(',')
+                if output_size_list != count:
+                    utils.print_error_log('In the dynamic shape scenario, the "-s" or "--input-shape" is mandatory.')
+                    raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
+                for item in output_size_list:
+                    match = pattern.match(item)
+                    if match is None:
+                        utils.print_error_log("The size (%s) is invalid. Please check the output size."
+                                              % self.arguments.output_size)
+                        raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
+                    if int(item) <= 0:
+                        utils.print_error_log("The size (%s) must be large than zero. Please check the output size."
+                                              % self.arguments.output_size)
+                        raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
+                msame_cmd.append('--outputSize')
+                msame_cmd.append(self.arguments.output_size)
+
     def msame_run(self, msame_dir):
         """
         Function Description:
@@ -101,6 +141,7 @@ class NpuDumpData(DumpData):
         self._write_content_to_acl_json(acl_json_path, model_name, npu_data_output_dir)
         msame_cmd = ["./" + MSAME_COMMAND_PATH, "--model", self.arguments.offline_model_path, "--input",
                      self.arguments.input_path, "--output", npu_data_output_dir]
+        self._make_msame_cmd_for_shape_range(msame_cmd)
         os.chdir(os.path.join(msame_dir, OUT_PATH))
         # do msame command
         utils.print_info_log("Run command line: cd %s && %s" % (os.path.join(msame_dir, OUT_PATH), " ".join(msame_cmd)))
@@ -131,14 +172,13 @@ class NpuDumpData(DumpData):
         self._shape_size_vs_bin_file_size(shape_size_array, bin_files_size_array)
 
     def _get_shape_size(self):
-        json_object = self.load_json_file(self.output_json_path)
-        op_array = self._get_op_by_type(json_object)
+        self.load_json_file(self.output_json_path)
+        op_array = self._get_op_by_type()
         input_desc_array = self._get_input_desc_list(op_array)
         # extracts the input shape value
         return self._process_inputs(input_desc_array)
 
-    @staticmethod
-    def load_json_file(json_file_path):
+    def load_json_file(self, json_file_path):
         """
         Function Description:
             load json file
@@ -152,7 +192,7 @@ class NpuDumpData(DumpData):
         try:
             with open(json_file_path, "r") as input_file:
                 try:
-                    return json.load(input_file)
+                    self.json_object = json.load(input_file)
                 except Exception as load_input_file_except:
                     print(str(load_input_file_except))
                     raise AccuracyCompareException(utils.ACCURACY_COMPARISON_PARSER_JSON_FILE_ERROR)
@@ -160,13 +200,31 @@ class NpuDumpData(DumpData):
             utils.print_error_log('Failed to open"' + json_file_path + '", ' + str(input_file_open_except))
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_OPEN_FILE_ERROR)
 
-    def _get_op_by_type(self, json_object):
+    def _get_op_by_type(self):
         op_array = []
-        for graph in json_object.get(GRAPH_OBJECT):
+        for graph in self.json_object.get(GRAPH_OBJECT):
             for operator in graph.get(OP_OBJECT):
                 if DATA_OBJECT == operator.get(TYPE_OBJECT):
                     op_array.append(operator)
         return op_array
+
+    def _get_net_output_count(self):
+        count = 0
+        for graph in self.json_object.get(GRAPH_OBJECT):
+            for operator in graph.get(OP_OBJECT):
+                if NET_OUTPUT_OBJECT == operator.get(TYPE_OBJECT) and INPUT_DESC_OBJECT in operator:
+                    count += len(operator.get(INPUT_DESC_OBJECT))
+        return count
+
+    def _is_input_shape_range(self):
+        if ATTR_OBJECT not in self.json_object:
+            return False
+        for attr in self.json_object.get(ATTR_OBJECT):
+            if KEY_OBJECT in attr and attr.get(KEY_OBJECT) == ATC_CMDLINE_OBJECT:
+                if VALUE_OBJECT in attr and S_OBJECT in attr.get(VALUE_OBJECT):
+                    if INPUT_SHAPE_RANGE in attr.get(VALUE_OBJECT).get(S_OBJECT):
+                        return True
+        return False
 
     @staticmethod
     def _get_input_desc_list(op_array):
