@@ -149,6 +149,8 @@ class NpuDumpData(DumpData):
 
     def _compare_shape_vs_bin_file(self):
         shape_size_array = self.om_parser.get_shape_size()
+        if self.om_parser.contain_negative_1:
+            return
         bin_files_size_array = self._get_bin_file_size()
         self._shape_size_vs_bin_file_size(shape_size_array, bin_files_size_array)
 

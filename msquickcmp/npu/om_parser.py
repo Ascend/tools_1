@@ -49,6 +49,7 @@ class OmParser:
         self.json_object = self._load_json_file(output_json_path)
         self.subgraph_name = self._get_sub_graph_name()
         self.shape_range = self._is_input_shape_range()
+        self.contain_negative_1 = False
 
     def _get_sub_graph_name(self):
         subgraph_name = []
@@ -124,8 +125,7 @@ class OmParser:
                         return True
         return False
 
-    @staticmethod
-    def _get_range_shape_size_list(input_object):
+    def _get_range_shape_size_list(self, input_object):
         range_shape_size_list = []
         if ATTR_OBJECT not in input_object:
             return
@@ -138,6 +138,9 @@ class OmParser:
                         for list_list_i in list_list_int_object.get(LIST_LIST_I_OBJECT):
                             if LIST_I_OBJECT in list_list_i:
                                 list_i = list_list_i.get(LIST_I_OBJECT)
+                                if -1 in list_i:
+                                    self.contain_negative_1 = True
+                                    return []
                                 if len(list_i) != 2:
                                     continue
                                 shape_list.append(list(range(list_i[0], list_i[1] + 1)))
