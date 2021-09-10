@@ -14,7 +14,6 @@ from common.dump_data import DumpData
 from common import utils
 from common.utils import AccuracyCompareException
 
-
 GRAPH_OBJECT = "graph"
 OP_OBJECT = "op"
 NAME_OBJECT = "name"
@@ -43,7 +42,7 @@ DTYPE_MAP = {"DT_FLOAT": np.float32, "DT_FLOAT16": np.float16, "DT_DOUBLE": np.f
 
 class OmParser:
     """
-    This class is used to generate GUP dump data of the ONNX model.
+    This class is used to parse om model.
     """
 
     def __init__(self, output_json_path):
@@ -56,7 +55,7 @@ class OmParser:
         for graph in self.json_object.get(GRAPH_OBJECT):
             for operator in graph.get(OP_OBJECT):
                 if SUBGRAPH_NAME in operator:
-                    self.subgraph_name.append(operator.get(SUBGRAPH_NAME))
+                    subgraph_name += operator.get(SUBGRAPH_NAME)
         return subgraph_name
 
     def get_shape_size(self):

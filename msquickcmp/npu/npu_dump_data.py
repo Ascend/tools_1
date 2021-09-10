@@ -13,7 +13,7 @@ import re
 from common import utils
 from common.dump_data import DumpData
 from common.utils import AccuracyCompareException
-from om_parser import OmParser
+from npu.om_parser import OmParser
 
 MSAME_DIR = "msame"
 BUILD_SH = "build.sh"
@@ -32,7 +32,7 @@ class NpuDumpData(DumpData):
 
     def __init__(self, arguments, output_json_path):
         self.arguments = arguments
-        self.om_parser = OmParser(self.output_json_path)
+        self.om_parser = OmParser(output_json_path)
 
     def generate_dump_data(self):
         """
