@@ -23,7 +23,7 @@ class L1BufferDataParser:
     TWO_M = 2 * 1024 * 1024
 
     def __init__(self, args):
-        self.dump_path = os.path.realpath(args.model_path)
+        self.dump_path = os.path.realpath(args.dump_path)
         self.output_path = os.path.realpath(args.output_path)
         self.offset = args.offset
         self.size = args.size
@@ -56,11 +56,11 @@ class L1BufferDataParser:
         self._check_path_valid(self.dump_path, is_file=True)
         self._check_path_valid(self.output_path, is_file=False)
         if self.offset < 0 or self.offset >= self.TWO_M:
-            print('ERROR: The offset (%d) is invalid, out of range [0, %d). Please check the path.'
+            print('ERROR: The offset (%d) is invalid, out of range [0, %d). Please check the offset.'
                   % (self.offset, self.TWO_M))
             sys.exit(self.INVALID_PARAM_ERROR)
         if self.size <= 0 or self.size > self.TWO_M - self.offset:
-            print('ERROR: The offset (%d) is invalid, out of range (0, %d). Please check the path.'
+            print('ERROR: The size (%d) is invalid, out of range (0, %d). Please check the size.'
                   % (self.size, self.TWO_M - self.offset))
             sys.exit(self.INVALID_PARAM_ERROR)
 
@@ -76,14 +76,14 @@ class L1BufferDataParser:
                            "wb") as output_file:
                 output_file.write(data)
             print("INFO: The l1 buffer data for [%d, %d) has been saved in %s."
-                  % (self.offset, self.size, output_file_path))
+                  % (self.offset, self.offset + self.size, output_file_path))
 
 
 def _parser_argument(parser):
     parser.add_argument("-d", "--dump-path", dest="dump_path", default="",
                         help="<Required> The l1 buffer data path", required=True)
-    parser.add_argument("-o", "--offset", dest="offset", type=int,
-                        help="<Required> The offset of the data", required=True)
+    parser.add_argument("-o", "--offset", dest="offset", type=int, default=0,
+                        help="<Optional> The offset of the data. the default value is 0.")
     parser.add_argument("-s", "--size", dest="size", type=int,
                         help="<Required> The size of the data", required=True)
     parser.add_argument("-out", "--output-path", dest="output_path", default="", help="<Optional> The output path")

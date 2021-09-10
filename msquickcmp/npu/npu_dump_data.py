@@ -6,16 +6,14 @@ This class mainly involves generate npu dump data function.
 Copyright Information:
 HuaWei Technologies Co.,Ltd. All Rights Reserved © 2021
 """
-import itertools
 import json
 import os
 import re
 
-import numpy as np
-
 from common import utils
 from common.dump_data import DumpData
 from common.utils import AccuracyCompareException
+from om_parser import OmParser
 
 MSAME_DIR = "msame"
 BUILD_SH = "build.sh"
@@ -25,29 +23,6 @@ ACL_JSON_PATH = "out/acl.json"
 NPU_DUMP_DATA_BASE_PATH = "dump_data/npu"
 RESULT_DIR = "result"
 INPUT = "input"
-GRAPH_OBJECT = "graph"
-OP_OBJECT = "op"
-NAME_OBJECT = "name"
-TYPE_OBJECT = "type"
-INPUT_DESC_OBJECT = "input_desc"
-ATTR_OBJECT = "attr"
-SHAPE_OBJECT = "shape"
-SHAPE_RANGE_OBJECT = "shape_range"
-DIM_OBJECT = "dim"
-DATA_OBJECT = "Data"
-NET_OUTPUT_OBJECT = "NetOutput"
-ATC_CMDLINE_OBJECT = "atc_cmdline"
-INPUT_SHAPE_RANGE = "--input_shape_range"
-LIST_LIST_INT_OBJECT = 'list_list_int'
-LIST_LIST_I_OBJECT = 'list_list_i'
-LIST_I_OBJECT = 'list_i'
-KEY_OBJECT = "key"
-VALUE_OBJECT = "value"
-S_OBJECT = "s"
-DTYPE_OBJECT = "dtype"
-DTYPE_MAP = {"DT_FLOAT": np.float32, "DT_FLOAT16": np.float16, "DT_DOUBLE": np.float64, "DT_INT8": np.int8,
-             "DT_INT16": np.int16, "DT_INT32": np.int32, "DT_INT64": np.int64, "DT_UINT8": np.uint8,
-             "DT_UINT16": np.uint16, "DT_UINT32": np.uint32, "DT_UINT64": np.uint64, "DT_BOOL": np.bool}
 
 
 class NpuDumpData(DumpData):
@@ -57,9 +32,7 @@ class NpuDumpData(DumpData):
 
     def __init__(self, arguments, output_json_path):
         self.arguments = arguments
-        self.output_json_path = output_json_path
-        self.json_object = self.load_json_file(self.output_json_path)
-        self.shape_range = self._is_input_shape_range()
+        self.om_parser = OmParser(self.output_json_path)
 
     def generate_dump_data(self):
         """
@@ -95,13 +68,13 @@ class NpuDumpData(DumpData):
 
     def _make_msame_cmd_for_shape_range(self, msame_cmd):
         pattern = re.compile(r'^[0-9]+$')
-        if self.shape_range:
+        if self.om_parser.shape_range:
             if not self.arguments.input_shape:
                 utils.print_error_log('In the dynamic shape scenario, the "-s" or "--input-shape" is mandatory.')
                 raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
             msame_cmd.append('--dymShape')
             msame_cmd.append(self.arguments.input_shape)
-            count = self._get_net_output_count()
+            count = self.om_parser.get_net_output_count()
             if not self.arguments.output_size:
                 if count > 0:
                     count_list = []
@@ -110,8 +83,10 @@ class NpuDumpData(DumpData):
                     self.arguments.output_size = ",".join(count_list)
             if self.arguments.output_size:
                 output_size_list = self.arguments.output_size.split(',')
-                if output_size_list != count:
-                    utils.print_error_log('In the dynamic shape scenario, the "-s" or "--input-shape" is mandatory.')
+                if len(output_size_list) != count:
+                    utils.print_error_log(
+                        'The output size (%d) is not equal %d in model. Please check the "--output-size" argument.'
+                        % (len(output_size_list), count))
                     raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
                 for item in output_size_list:
                     match = pattern.match(item)
@@ -173,121 +148,9 @@ class NpuDumpData(DumpData):
             self.arguments.input_path = ",".join(bin_file_path_array)
 
     def _compare_shape_vs_bin_file(self):
-        shape_size_array = self._get_shape_size()
+        shape_size_array = self.om_parser.get_shape_size()
         bin_files_size_array = self._get_bin_file_size()
         self._shape_size_vs_bin_file_size(shape_size_array, bin_files_size_array)
-
-    def _get_shape_size(self):
-        op_array = self._get_op_by_type()
-        input_desc_array = self._get_input_desc_list(op_array)
-        # extracts the input shape value
-        return self._process_inputs(input_desc_array)
-
-    def load_json_file(self, json_file_path):
-        """
-        Function Description:
-            load json file
-        Parameter:
-            json_file_path: json file path
-        Return Value:
-            json object
-        Exception Description:
-            when invalid json file path throw exception
-        """
-        try:
-            with open(json_file_path, "r") as input_file:
-                try:
-                    return json.load(input_file)
-                except Exception as load_input_file_except:
-                    print(str(load_input_file_except))
-                    raise AccuracyCompareException(utils.ACCURACY_COMPARISON_PARSER_JSON_FILE_ERROR)
-        except IOError as input_file_open_except:
-            utils.print_error_log('Failed to open"' + json_file_path + '", ' + str(input_file_open_except))
-            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_OPEN_FILE_ERROR)
-
-    def _get_op_by_type(self):
-        op_array = []
-        for graph in self.json_object.get(GRAPH_OBJECT):
-            for operator in graph.get(OP_OBJECT):
-                if DATA_OBJECT == operator.get(TYPE_OBJECT):
-                    op_array.append(operator)
-        return op_array
-
-    def _get_net_output_count(self):
-        count = 0
-        for graph in self.json_object.get(GRAPH_OBJECT):
-            for operator in graph.get(OP_OBJECT):
-                if NET_OUTPUT_OBJECT == operator.get(TYPE_OBJECT) and INPUT_DESC_OBJECT in operator:
-                    count += len(operator.get(INPUT_DESC_OBJECT))
-        return count
-
-    def _is_input_shape_range(self):
-        if ATTR_OBJECT not in self.json_object:
-            return False
-        for attr in self.json_object.get(ATTR_OBJECT):
-            if KEY_OBJECT in attr and attr.get(KEY_OBJECT) == ATC_CMDLINE_OBJECT:
-                if VALUE_OBJECT in attr and S_OBJECT in attr.get(VALUE_OBJECT):
-                    if INPUT_SHAPE_RANGE in attr.get(VALUE_OBJECT).get(S_OBJECT):
-                        return True
-        return False
-
-    @staticmethod
-    def _get_input_desc_list(op_array):
-        input_desc_list = []
-        for operator in op_array:
-            if len(operator.get(INPUT_DESC_OBJECT)) != 0:
-                for item in operator.get(INPUT_DESC_OBJECT):
-                    input_desc_list.append(item)
-        return input_desc_list
-
-    @staticmethod
-    def _get_range_shape_size_list(input_object):
-        range_shape_size_list = []
-        if ATTR_OBJECT not in input_object:
-            return
-        shape_list = []
-        for attr in input_object.get(ATTR_OBJECT):
-            if KEY_OBJECT in attr and attr.get(KEY_OBJECT) == SHAPE_RANGE_OBJECT:
-                if VALUE_OBJECT in attr and LIST_LIST_INT_OBJECT in attr.get(VALUE_OBJECT):
-                    list_list_int_object = attr.get(VALUE_OBJECT).get(LIST_LIST_INT_OBJECT)
-                    if LIST_LIST_I_OBJECT in list_list_int_object:
-                        for list_list_i in list_list_int_object.get(LIST_LIST_I_OBJECT):
-                            if LIST_I_OBJECT in list_list_i:
-                                list_i = list_list_i.get(LIST_I_OBJECT)
-                                if list_i != 2:
-                                    continue
-                                shape_list.append((range(list_i[0], list_i[1] + 1)))
-        shape_list_all = list(itertools.product(*shape_list))
-        print(shape_list_all)
-        for item in shape_list_all:
-            item_sum = 1
-            for num in item:
-                item_sum *= num
-            range_shape_size_list.append(item_sum)
-        return range_shape_size_list
-
-    def _process_inputs(self, input_desc_array):
-        value = []
-        for input_object in input_desc_array:
-            if SHAPE_OBJECT not in input_object:
-                value.append(0)
-                continue
-            data_type = DTYPE_MAP.get(input_object.get(DTYPE_OBJECT))
-            if not data_type:
-                utils.print_error_log(
-                    "The dtype attribute does not support {} value.".format(input_object[DTYPE_OBJECT]))
-                raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_KEY_ERROR)
-            data_type_size = np.dtype(data_type).itemsize
-            if self.shape_range:
-                range_shape_size_list = self._get_range_shape_size_list(input_object)
-                for item in range_shape_size_list:
-                    value.append(item * data_type_size)
-            else:
-                item_sum = 1
-                for num in input_object.get(SHAPE_OBJECT).get(DIM_OBJECT):
-                    item_sum *= num
-                value.append(item_sum * data_type_size)
-        return value
 
     def _get_bin_file_size(self):
         bin_file_size = []
@@ -300,7 +163,7 @@ class NpuDumpData(DumpData):
         if len(shape_size_array) < len(bin_files_size_array):
             utils.print_error_log("The number of input bin files is incorrect.")
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_BIN_FILE_ERROR)
-        if self.shape_range:
+        if self.om_parser.shape_range:
             for bin_file_size in bin_files_size_array:
                 if bin_file_size not in shape_size_array:
                     utils.print_error_log(
