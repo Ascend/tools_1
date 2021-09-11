@@ -1,7 +1,9 @@
 [中文](https://gitee.com/ascend/tools/blob/master/msame/README.md)|EN
 
 # Ascend Model Executor: msame
-
+### Explain
+Applicable version: 5.0.3.alpha001 and above  
+For versions before 5.0.3.alpha001, please use [msame.zip](https://obs-book.obs.cn-east-2.myhuaweicloud.com/cjl/msame.zip)
 ### Overview
 
 The tool runs an offline model (.om) on the binary input data and returns the model inference result. The tool allows you to run repeated inferences on the same input data.
