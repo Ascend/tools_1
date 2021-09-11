@@ -25,6 +25,7 @@ using namespace std;
 extern bool g_is_device;
 extern bool g_is_txt;
 extern size_t g_dymindex;
+extern vector<int> g_output_size;
 
 ModelProcess::ModelProcess()
     : modelId_(0)
@@ -108,6 +109,86 @@ Result ModelProcess::GetDynamicIndex(size_t &dymindex)
     return SUCCESS;
 }
 
+Result ModelProcess::CheckDynamicShape(std::vector<std::string> dym_shape_tmp, std::map<string, int64_t *> &dym_shape_map, std::vector<int64_t> &dims_num)
+{
+    aclError ret; 
+    const char *inputname = nullptr;
+    vector<const char *> inputnames;
+    string name;
+    string shape_str;
+    size_t numInputs = aclmdlGetNumInputs(modelDesc_);
+    int64_t num_tmp = 0; 
+    if (numInputs != dym_shape_tmp.size()){
+        ERROR_LOG("om has %zu input, but dymShape parametet give %zu", numInputs, dym_shape_tmp.size());
+        return FAILED;        
+    }
+    
+    for (size_t i = 0; i < numInputs; i++) {
+        inputname = aclmdlGetInputNameByIndex(modelDesc_, i);
+        if (inputname == nullptr) {
+            ERROR_LOG("get input name failed, index = %zu.", i);
+            return FAILED;
+        }    
+        inputnames.push_back(inputname);    
+    }
+    for (size_t i = 0; i < dym_shape_tmp.size(); ++i){
+        istringstream block(dym_shape_tmp[i]);
+        string cell;
+        size_t index = 0;
+        vector<string> shape_tmp;
+        while (getline(block, cell, ':')) {
+            if (index == 0){
+                name = cell;
+            }
+            else if (index == 1){
+               shape_str = cell; 
+            }
+            index += 1;
+        }
+        Utils::SplitStringWithPunctuation(shape_str, shape_tmp, ',');
+        size_t shape_tmp_size = shape_tmp.size();
+        int64_t* shape_array_tmp = new int64_t[shape_tmp_size];
+	dims_num.push_back(shape_tmp_size);
+        for(int index = 0; index < shape_tmp_size; ++index){
+            num_tmp = atoi(shape_tmp[index].c_str());
+	    shape_array_tmp[index] = num_tmp;
+        }
+        dym_shape_map[name] = shape_array_tmp; 
+          
+    }
+    for (size_t i = 0; i < inputnames.size(); ++i){
+        if (dym_shape_map.count(inputnames[i]) <= 0){
+            ERROR_LOG("the dymShape parameter set error, please check input name"); 
+            return FAILED;       
+        }
+    }
+    INFO_LOG("check Dynamic Shape success");
+    return SUCCESS;
+
+}
+
+Result ModelProcess::SetDynamicShape(std::map<std::string, int64_t *> dym_shape_map, std::vector<int64_t> &dims_num)
+{
+    aclError ret;
+    const char *name;
+    int input_num = dym_shape_map.size();
+    int num_dims = 0;
+    aclTensorDesc * inputDesc;
+    for (size_t i = 0; i < input_num; i++) {
+        name = aclmdlGetInputNameByIndex(modelDesc_, i);
+	num_dims = sizeof(&dym_shape_map[name]) / sizeof(dym_shape_map[name][0]);
+
+	inputDesc = aclCreateTensorDesc(ACL_FLOAT, dims_num[i], dym_shape_map[name], ACL_FORMAT_NCHW);
+        ret = aclmdlSetDatasetTensorDesc(input_, inputDesc, i);
+        if (ret != ACL_SUCCESS) {
+            ERROR_LOG("aclmdlSetDatasetTensorDesc failed %d", ret);
+            return FAILED;
+        }
+    }
+    INFO_LOG("set Dynamic shape success");
+	return SUCCESS;	
+}
+
 Result ModelProcess::CheckDynamicHWSize(pair<int, int> dynamicPair, bool &is_dymHW)
 {
     aclmdlHW dynamicHW;
@@ -150,6 +231,7 @@ Result ModelProcess::SetDynamicHW(std::pair<uint64_t , uint64_t > dynamicPair)
         ERROR_LOG("aclmdlSetDynamicHWSize failed %d", ret);
         return FAILED;
     }
+    INFO_LOG("set Dynamic HW success");
     return SUCCESS;
 }
 
@@ -233,20 +315,20 @@ Result ModelProcess::GetCurOutputDimsMul(size_t index, vector<int64_t>& curOutpu
     return SUCCESS;
 }
 
-Result ModelProcess::CheckDynamicDims(vector<string> dymDims, size_t gearCount, aclmdlIODims *dims)
+Result ModelProcess::CheckDynamicDims(vector<string> dym_dims, size_t gearCount, aclmdlIODims *dims)
 {
     aclmdlGetInputDynamicDims(modelDesc_, -1, dims, gearCount);
     bool if_same = false;
     for (size_t i = 0; i < gearCount; i++)
     {
-        if ((size_t)dymDims.size() != dims[i].dimCount){
+        if ((size_t)dym_dims.size() != dims[i].dimCount){
             ERROR_LOG("the dymDims parameter is not correct");
             GetDimInfo(gearCount, dims);
             return FAILED;
         }
         for (size_t j = 0; j < dims[i].dimCount; j++)
         {   
-            if (dims[i].dims[j] != atoi(dymDims[j].c_str()))
+            if (dims[i].dims[j] != atoi(dym_dims[j].c_str()))
             {
                 break;
             }
@@ -268,13 +350,13 @@ Result ModelProcess::CheckDynamicDims(vector<string> dymDims, size_t gearCount, 
  
 }
 
-Result ModelProcess::SetDynamicDims(vector<string> dymDims)
+Result ModelProcess::SetDynamicDims(vector<string> dym_dims)
 {   
     aclmdlIODims dims;
-    dims.dimCount = dymDims.size();
+    dims.dimCount = dym_dims.size();
     for (size_t i = 0; i < dims.dimCount; i++)
     {   
-        dims.dims[i] = atoi(dymDims[i].c_str());
+        dims.dims[i] = atoi(dym_dims[i].c_str());
     }
 
     aclError ret = aclmdlSetInputDynamicDims(modelId_, input_, g_dymindex, &dims);
@@ -565,10 +647,21 @@ Result ModelProcess::CreateOutput()
         return FAILED;
     }
 
-    size_t outputSize = aclmdlGetNumOutputs(modelDesc_);
-    for (size_t i = 0; i < outputSize; ++i) {
-        size_t buffer_size = aclmdlGetOutputSizeByIndex(modelDesc_, i);
+    size_t outputNum = aclmdlGetNumOutputs(modelDesc_);
 
+    if ((g_output_size.empty() == false)  && (outputNum != g_output_size.size())){
+        ERROR_LOG("om has %zu output, but outputSize parametet give %zu", outputNum, g_output_size.size());
+        return FAILED;   
+    }
+
+    for (size_t i = 0; i < outputNum; ++i) {
+        size_t buffer_size = 0;
+        if (g_output_size.empty() == false){
+            buffer_size = g_output_size[i];
+        }
+        else{
+            buffer_size = aclmdlGetOutputSizeByIndex(modelDesc_, i);
+        }
         void* outputBuffer = nullptr;
         aclError ret = aclrtMalloc(&outputBuffer, buffer_size, ACL_MEM_MALLOC_NORMAL_ONLY);
         if (ret != ACL_SUCCESS) {
@@ -596,16 +689,14 @@ Result ModelProcess::CreateOutput()
     return SUCCESS;
 }
 
-void ModelProcess::OutputModelResult(std::string& s, std::string& modelName, std::uint64_t dymbatch_size)
+void ModelProcess::OutputModelResult(std::string& s, std::string& modelName, std::uint64_t dymbatch_size, bool is_dymshape)
 {
-    void* dims = nullptr;
     void* data = nullptr;
     void* outHostData = nullptr;
     void* outData = nullptr;
-    aclmdlIODims* dim = nullptr;
     aclError ret = ACL_SUCCESS;    
     uint64_t maxBatchSize = 0;
-    uint32_t len = 0;
+    size_t len = 0;
     ret = GetMaxBatchSize(maxBatchSize);
     if (ret != ACL_SUCCESS) {
         ERROR_LOG("aclrtMallocHost failed, ret[%d]", ret);
@@ -614,24 +705,18 @@ void ModelProcess::OutputModelResult(std::string& s, std::string& modelName, std
     for (size_t i = 0; i < aclmdlGetDatasetNumBuffers(output_); ++i) {
         aclDataBuffer* dataBuffer = aclmdlGetDatasetBuffer(output_, i);
         data = aclGetDataBufferAddr(dataBuffer);
-        len = aclGetDataBufferSizeV2(dataBuffer);
-        if (dymbatch_size > 0 && maxBatchSize > 0){
-            len = len / (maxBatchSize / dymbatch_size);
-        }
+        if (is_dymshape){
+	    aclTensorDesc *outputDesc = aclmdlGetDatasetTensorDesc(output_, i);
+	    len = aclGetTensorDescSize(outputDesc);
+	}
+        else
+	{
+	    len = aclGetDataBufferSizeV2(dataBuffer);
+            if (dymbatch_size > 0 && maxBatchSize > 0){
+                len = len / (maxBatchSize / dymbatch_size);
+            }
+	}
         aclDataType datatype = aclmdlGetOutputDataType(modelDesc_, i);
-        if (!g_is_device) {
-            ret = aclrtMallocHost(&dims, sizeof(aclmdlIODims));
-            if (ret != ACL_SUCCESS) {
-                ERROR_LOG("aclrtMallocHost failed, ret[%d]", ret);
-                return;
-            }
-        } else {
-            ret = aclrtMalloc(&dims, sizeof(aclmdlIODims), ACL_MEM_MALLOC_NORMAL_ONLY);
-            if (ret != ACL_SUCCESS) {
-                ERROR_LOG("malloc device buffer failed, ret[%d]", ret);
-                return;
-            }
-        }   
         if (!g_is_device) {
             ret = aclrtMallocHost(&outHostData, len);
             if (ret != ACL_SUCCESS) {
