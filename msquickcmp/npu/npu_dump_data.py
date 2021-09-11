@@ -89,6 +89,7 @@ class NpuDumpData(DumpData):
                         % (len(output_size_list), count))
                     raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
                 for item in output_size_list:
+                    item = item.strip()
                     match = pattern.match(item)
                     if match is None:
                         utils.print_error_log("The size (%s) is invalid. Please check the output size."
