@@ -218,7 +218,6 @@ Result SampleProcess::Process(map<char, string>& params, vector<string>& input_f
         mkdir(temp_s, 0775);
     }
     std::string T = Utils::printCurrentTime();
-    //std::string T = Utils::TimeLine();
     string times = output_path + "/" + T;
     const char* time = times.c_str();
     cout<<time<<endl;
