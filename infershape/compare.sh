@@ -1,5 +1,7 @@
 #!/bin/bash
 
+last_node=$1
+
 npu_file=npu_infershape_result
 cpu_file=cpu_infershape_result
 
@@ -51,29 +53,51 @@ do
     npu_shape_array=(${npu_shape_raw//,/ })
 
     if [ ${#cpu_shape_array[@]} == 1 ] && [ ${cpu_shape_array[0]} == -2 ]; then
+        if [ ${#cpu_shape_array[@]} != 1 ] || [ ${cpu_shape_array[0]} != -2 ]; then
+            echo "[WARNING] $node cpu infer result is unknown rank, can't judge"
+        fi
         continue
     fi
 
     if [ ${#cpu_shape_array[@]} != ${#npu_shape_array[@]} ]; then
-        echo -e "\033[31m[FOUND] $npu_node is the first one which out $npu_index's $npu_shape different from cpu $cpu_shape \033[0m"
-        exit
+        if [ $cpu_dtype == "dtype:DT_RESOURCE" ]; then
+            echo "[WARNING] $node dtype is DT_RESOURCE and out $npu_index's $npu_shape different from cpu $cpu_shape, can't judge"
+            continue
+        else
+            echo -e "\033[31m[FOUND] $npu_node is the first one which out $npu_index's $npu_shape different from cpu $cpu_shape \033[0m"
+            exit
+        fi
     fi
 
     i=0
     for cpu_dim in ${cpu_shape_array[@]}
     do
         if [ ${npu_shape_array[$i]} == -2 ]; then
-            echo -e "\033[31m[FOUND] $npu_node is the first one which out $npu_index's $npu_shape different from cpu $cpu_shape \033[0m"
-            exit
+            if [ $cpu_dtype == "dtype:DT_RESOURCE" ]; then
+                echo "[WARNING] $node dtype is DT_RESOURCE and out $npu_index's $npu_shape different from cpu $cpu_shape, can't judge"
+                continue
+            else
+                echo -e "\033[31m[FOUND] $npu_node is the first one which out $npu_index's $npu_shape different from cpu $cpu_shape \033[0m"
+                exit
+            fi
         fi
 
         if [ $cpu_dim != ${npu_shape_array[$i]} ] && [ $cpu_dim != "?" ] && [ $cpu_dim != -1 ]; then
-            echo -e "\033[31m[FOUND] $npu_node is the first one which out $npu_index's $npu_shape different from cpu $cpu_shape \033[0m"
-            exit
+            if [ $cpu_dtype == "dtype:DT_RESOURCE" ]; then
+                echo "[WARNING] $node dtype is DT_RESOURCE and out $npu_index's $npu_shape different from cpu $cpu_shape, can't judge"
+                continue
+            else
+                echo -e "\033[31m[FOUND] $npu_node is the first one which out $npu_index's $npu_shape different from cpu $cpu_shape \033[0m"
+                exit
+            fi
         fi
         i=$i+1
     done
-    #echo "[WARNING] $node cpu infer result is unknown, can't be compared"
+
+    if [ $last_node ] && [ $last_node == ${npu_node##*node:} ]; then
+        echo "[INFO] reach last $last_node, end to compare, no mismatch node found"
+        exit
+    fi
 done
 
 echo "[INFO] end to compare, no mismatch node found"

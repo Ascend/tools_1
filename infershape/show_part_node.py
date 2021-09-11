@@ -1,5 +1,5 @@
 import onnx
-import os 
+import os
 import sys
 
 from google.protobuf import text_format
@@ -10,27 +10,27 @@ def load_graph_def_from_pb(path):
         model = onnx.ModelProto()
         text_format.Parse(data, model)
     return model.graph
-    
-def get_node_shape(graph, node_name):
+
+def get_node_shape(graph, node_name, index):
     shape_attr = None
     for node1 in graph.node:
         if str(node1.name) == str(node_name):
             for attr in node1.attribute:
-                if (attr.name == "output_desc_shape:0"):
+                if (attr.name == ("output_desc_shape:" + index)):
                     break
             content = "shape:" + "[" + ",".join('%s' %id for id in attr.ints) + "]" + r'\n'
             break
     for node1 in graph.node:
         if str(node1.name) == str(node_name):
             for attr in node1.attribute:
-                if (attr.name == "output_desc_layout:0"):
+                if (attr.name == ("output_desc_layout:" + index)):
                     break
             content = content + "format:" + str(attr.s).replace("b","").replace("'","") + r'\n'
             break
     for node1 in graph.node:
         if str(node1.name) == str(node_name):
             for attr in node1.attribute:
-                if (attr.name == "output_desc_dtype:0"):
+                if (attr.name == ("output_desc_dtype:" + index)):
                     break
             content = content + "dtype:" + str(attr.s).replace("b","").replace("'","")
             return content
@@ -42,12 +42,12 @@ def bfsTravel(graph, source, show_level1):
         nexts = []
         for frontier in frontiers:
             for node2 in graph.node:
-                if str(node2.name) == str(frontier).replace(':0',''):
+                if str(node2.name) == str(frontier):
                     input_len1 = len(node2.input)
                     while input_len1:
                         input_len1 -= 1
-                        travel.append(node2.input[input_len1])
-                        nexts.append(node2.input[input_len1])
+                        travel.append(node2.input[input_len1].split(":")[0])
+                        nexts.append(node2.input[input_len1].split(":")[0])
         frontiers = nexts
         show_level1 -= 1
     return travel
@@ -62,24 +62,27 @@ if __name__ == "__main__":
     total_content = 'digraph G {\nrankdir = "TB";\nnode[shape = "box", with = 0, height = 0];\nedge[arrowhead = "none", style = "solid"];\n'
     with open("part_node.dot", "w") as f:
         f.write(total_content)
-        
+
     graph_def = load_graph_def_from_pb(sys.argv[1])
     target_node = sys.argv[2]
     show_level = int(sys.argv[3]) - 1
-    
+
     for tnode in bfsTravel(graph_def, target_node, show_level):
         for node in graph_def.node:
-            if str(node.name) == str(tnode).replace(':0',''):
+            if str(node.name) == str(tnode):
                 input_len = len(node.input)
                 while input_len:
                     input_len -= 1
                     if len(node.input[input_len]) != 0:
-                        shape_content = get_node_shape(graph_def, node.input[input_len].replace(':0',''))
-                        total_content = '"' + node.input[input_len].replace(':0','').replace("/",r"\n/") + '" -> "' + node.name.replace("/",r"\n/") + '"[label="' + shape_content + '", arrowhead="normal"];\n'
+                        node_info = node.input[input_len].split(":")
+                        node_name = node_info[0]
+                        index = node_info[1]
+                        shape_content = get_node_shape(graph_def, node_name, index)
+                        total_content = '"' + node_name.replace("/",r"\n/") + '" -> "' + node.name.replace("/",r"\n/") + '"[label="' + shape_content + '", arrowhead="normal"];\n'
                         with open("part_node.dot", "a+") as f:
                             f.write(total_content)
     with open("part_node.dot", "a+") as f:
         f.write("}")
-        
+
     commend = "dot -T png -o part_node.png part_node.dot"
     os.system(commend)
