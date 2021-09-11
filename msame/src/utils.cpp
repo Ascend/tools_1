@@ -165,7 +165,7 @@ std::string Utils::TimeLine()
     return stCurrentTime;
 }
 
-void Utils::printCurrentTime()
+std::string Utils::printCurrentTime()
 {
     char szBuf[256] = { 0 };
     struct timeval tv;
@@ -174,7 +174,10 @@ void Utils::printCurrentTime()
 
     gettimeofday(&tv, &tz);
     p = localtime(&tv.tv_sec);
-    printf("%02d-%02d-%02d %02d:%02d:%02d.%06ld\n", p->tm_year + 1900, p->tm_mon + 1, p->tm_mday, p->tm_hour, p->tm_min, p->tm_sec, tv.tv_usec);
+    std::string pi = std::to_string(p->tm_year + 1900) + std::to_string(p->tm_mon + 1) + std::to_string(p->tm_mday) \
+		     + "_" + std::to_string(p->tm_hour) + "_" + std::to_string(p->tm_min) + "_" + \
+		     std::to_string(p->tm_sec) + "_" + std::to_string(tv.tv_usec); 
+    return pi;
 }
 void Utils::printHelpLetter()
 {
