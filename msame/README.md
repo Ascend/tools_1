@@ -1,7 +1,9 @@
 中文|[EN](README_EN.md)
 
 # msame工具为模型推理工具
-
+### 说明  
+ **适用版本**： 5.0.3.alpha001及以上版本  
+5.0.3.alpha001前的版本，请使用[msame.zip](https://obs-book.obs.cn-east-2.myhuaweicloud.com/cjl/msame.zip)
 ### 功能
 输入.om模型和模型所需要的输入bin文件，输出模型的输出数据文件，支持多次推理（指对同一输入数据进行推理）。
 
