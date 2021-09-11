@@ -29,6 +29,7 @@ extern bool g_is_dump;
 extern size_t g_dymindex;
 extern size_t g_dym_gear_count;
 extern bool g_is_dymdims;
+extern bool g_is_dymShape;
 extern bool g_is_dymbatch;
 extern bool g_is_dymHW;
 extern uint64_t g_dymbatch_size;
@@ -43,26 +44,6 @@ SampleProcess::SampleProcess()
 SampleProcess::~SampleProcess()
 {
     DestroyResource();
-}
-
-Result SampleProcess::PrepareDynamicDims(map<char, string> &params, vector<string> &dymDims, ModelProcess &processModel){
-        
-    aclmdlIODims *dims = new aclmdlIODims[g_dym_gear_count];
-    Utils::SplitStringSimple(params['h'], dymDims, ';', ':', ',');
-    if (g_dym_gear_count <= 0){
-        ERROR_LOG("the dynamic_dims parameter is not specified for model conversion");
-        delete [] dims;
-        return FAILED;    
-    }else{
-        g_is_dymdims = true;
-    }    
-    aclError ret = processModel.CheckDynamicDims(dymDims, g_dym_gear_count, dims);
-    if (ret != SUCCESS) {
-        ERROR_LOG("check dynamic dims failed, please set correct dymDims paramenter");
-        return FAILED;
-    }
-    INFO_LOG("prepare dynamic dims successful");
-    return SUCCESS;
 }
 
 Result SampleProcess::InitResource()
@@ -137,6 +118,12 @@ Result SampleProcess::Process(map<char, string>& params, vector<string>& input_f
     struct timeval begin;
     struct timeval end;
     double inference_time[g_loop];
+
+    vector<string> dym_dims;
+    vector<string> dym_shape_tmp;
+    map<string, int64_t *> dym_shape_map;
+    vector<int64_t> dims_num;
+
     Result ret = processModel.LoadModelFromFile(omModelPath);
     if (ret != SUCCESS) {
         ERROR_LOG("load model from file failed");
@@ -148,7 +135,6 @@ Result SampleProcess::Process(map<char, string>& params, vector<string>& input_f
         ERROR_LOG("create model description failed");
         return FAILED;
     }
-
     ret = processModel.GetDynamicGearCount(g_dym_gear_count);
     if (ret != SUCCESS) {
         return FAILED;
@@ -161,7 +147,6 @@ Result SampleProcess::Process(map<char, string>& params, vector<string>& input_f
             return FAILED;
         }
     }
-
     if (params.count('w')) {
         ret = processModel.CheckDynamicHWSize(g_dynamicHW, g_is_dymHW);
         if (ret != SUCCESS) {
@@ -170,10 +155,24 @@ Result SampleProcess::Process(map<char, string>& params, vector<string>& input_f
         }
     }
 
-    vector<string> dymDims;
+    if (params.count('s')){
+        if (input_files.empty() == 1) {
+            ERROR_LOG("the dymShape parameter must be used with the input parameter");
+            return FAILED;    
+        }
+        Utils::SplitStringWithPunctuation(params['s'], dym_shape_tmp, ';'); 
+        ret = processModel.CheckDynamicShape(dym_shape_tmp, dym_shape_map, dims_num); 
+        if (ret != SUCCESS) {
+            ERROR_LOG("check dynamic shape failed");
+            return FAILED;
+        }
+
+        g_is_dymShape = true;
+    }
+
     if (params.count('h')) {
         aclmdlIODims *dims = new aclmdlIODims[g_dym_gear_count];
-        Utils::SplitStringSimple(params['h'], dymDims, ';', ':', ',');
+        Utils::SplitStringSimple(params['h'], dym_dims, ';', ':', ',');
         if (g_dym_gear_count <= 0){
             ERROR_LOG("the dynamic_dims parameter is not specified for model conversion");
             delete [] dims;
@@ -181,7 +180,7 @@ Result SampleProcess::Process(map<char, string>& params, vector<string>& input_f
         }else{
             g_is_dymdims = true;
         }    
-        aclError ret = processModel.CheckDynamicDims(dymDims, g_dym_gear_count, dims);
+        aclError ret = processModel.CheckDynamicDims(dym_dims, g_dym_gear_count, dims);
         if (ret != SUCCESS) {
             ERROR_LOG("check dynamic dims failed, please set correct dymDims paramenter");
             return FAILED;
@@ -193,6 +192,7 @@ Result SampleProcess::Process(map<char, string>& params, vector<string>& input_f
             return FAILED;
         }
     }  
+
     if (g_is_dymdims || g_is_dymbatch || g_is_dymHW){
         ret = processModel.GetDynamicIndex(g_dymindex);
         if (ret != SUCCESS) {
@@ -217,11 +217,10 @@ Result SampleProcess::Process(map<char, string>& params, vector<string>& input_f
     if (NULL == opendir(temp_s)) {
         mkdir(temp_s, 0775);
     }
-
     std::string T = Utils::TimeLine();
     string times = output_path + "/" + T;
     const char* time = times.c_str();
-    cout << time << endl;
+    cout<<time<<endl;
     mkdir(time, 0775);
     if (NULL == opendir(time)) {
         ERROR_LOG("current user does not have permission");
@@ -284,9 +283,8 @@ Result SampleProcess::Process(map<char, string>& params, vector<string>& input_f
                     }
                 }
             }
-            
             if (g_is_dymdims){
-                ret = processModel.SetDynamicDims(dymDims);
+                ret = processModel.SetDynamicDims(dym_dims);
                 if (ret != SUCCESS) {
                     ERROR_LOG("set dynamic dims failed");
                     return FAILED;
@@ -306,7 +304,13 @@ Result SampleProcess::Process(map<char, string>& params, vector<string>& input_f
                     return FAILED;
                 }                    
             }
-            
+            else if (g_is_dymShape){
+		ret = processModel.SetDynamicShape(dym_shape_map, dims_num);
+                if (ret != SUCCESS) {
+                    ERROR_LOG("set dynamic shape failed");
+                    return FAILED;
+                }
+            }
 
             gettimeofday(&begin, NULL);
             ret = processModel.Execute();
@@ -329,10 +333,7 @@ Result SampleProcess::Process(map<char, string>& params, vector<string>& input_f
             size_t dex = (framename).find_last_of(".");
             modelName = (framename).erase(dex);
             
-            processModel.OutputModelResult(times, modelName, g_dymbatch_size);
-            // for (size_t index = 0; index < picDevBuffer.size(); ++index) {
-            //     aclrtFreeHost(picDevBuffer[index]);
-            // }
+            processModel.OutputModelResult(times, modelName, g_dymbatch_size, g_is_dymShape);
             processModel.DestroyInput();
             
         }
@@ -384,9 +385,9 @@ Result SampleProcess::Process(map<char, string>& params, vector<string>& input_f
                     }
                 }
             }
-        } 
+        }
         if (g_is_dymdims){       
-            ret = processModel.SetDynamicDims(dymDims);
+            ret = processModel.SetDynamicDims(dym_dims);
             if (ret != SUCCESS) {
                 ERROR_LOG("set dynamic dims failed");
                 return FAILED;
@@ -406,6 +407,14 @@ Result SampleProcess::Process(map<char, string>& params, vector<string>& input_f
                 return FAILED;
             }                    
         }
+        else if (g_is_dymShape){
+            ret = processModel.SetDynamicShape(dym_shape_map, dims_num);
+            if (ret != SUCCESS) {
+                ERROR_LOG("set dynamic shape failed");
+                return FAILED;
+            }
+        }
+
         // loop end
         for (size_t t = 0; t < g_loop; ++t) {
             gettimeofday(&begin, NULL);
@@ -418,7 +427,7 @@ Result SampleProcess::Process(map<char, string>& params, vector<string>& input_f
                 return FAILED;
             }
         }
-        processModel.OutputModelResult(times, modelName, g_dymbatch_size);
+        processModel.OutputModelResult(times, modelName, g_dymbatch_size, g_is_dymShape);
         double infer_time_ave = Utils::InferenceTimeAverage(inference_time, g_loop);
         printf("Inference average time: %f ms\n", infer_time_ave);
         if (g_loop > 1) {

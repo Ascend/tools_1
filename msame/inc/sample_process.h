@@ -52,7 +52,7 @@ public:
     * @brief split string and check Dynamic Dims
     * @return result
     */
-    Result PrepareDynamicDims(std::map<char, std::string> &params, std::vector<std::string> &dymDims, ModelProcess &processModel);
+    Result PrepareDynamicDims(std::map<char, std::string> &params, std::vector<std::string> &dym_dims, ModelProcess &processModel);
 
 private:
     void DestroyResource();
