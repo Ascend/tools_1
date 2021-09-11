@@ -4,19 +4,20 @@ if [ $# -lt 2 ];then
     echo -e "\033[31m[ERROR] argument num must be 2 or 3 \033[0m"
     echo "argument1: npu dump onnx graph file, name has after_infershape, for example ge_onnx_00000012_graph_0_after_infershape.pbtxt"
     echo "argument2: on tf inference case: pb file used for atc command; on onnx inference case: onnx file used for atc command; on tf train case: geop dump graph from adapter, for example TF_GeOp5_0.pbtxt;"
-    echo "argument3: on tf inference case: input_shape info, content consisted with pass to atc; other cast not need"
+    echo "argument3: on inference case: input_shape info, content consisted with pass to atc; other cast not need"
     exit
 fi
 
 npu_dump_graph=$1
 cpu_file=$2
 input_shape=$3
+last_node=$4
 
 if [ ! -f $npu_dump_graph ];then
     echo -e "\033[31m[ERROR] npu dump graph file not exist \033[0m"
     echo "argument1: npu dump onnx graph file, name has after_infershape, for example ge_onnx_00000012_graph_0_after_infershape.pbtxt"
     echo "argument2: on tf inference case: pb file used for atc command; on onnx inference case: onnx file used for atc command; on tf train case: geop dump graph from adapter, for example TF_GeOp5_0.pbtxt;"
-    echo "argument3: on tf inference case: input_shape info, content consisted with pass to atc; other cast not need"
+    echo "argument3: on inference case: input_shape info, content consisted with pass to atc; other cast not need"
     exit
 fi
 
@@ -24,7 +25,7 @@ if [ ! -f $cpu_file ];then
     echo -e "\033[31m[ERROR] cpu file not exist \033[0m"
     echo "argument1: npu dump onnx graph file, name has after_infershape, for example ge_onnx_00000012_graph_0_after_infershape.pbtxt"
     echo "argument2: on tf inference case: pb file used for atc command; on onnx inference case: onnx file used for atc command; on tf train case: geop dump graph from adapter, for example TF_GeOp5_0.pbtxt;"
-    echo "argument3: on tf inference case: input_shape info, content consisted with pass to atc; other cast not need"
+    echo "argument3: on inference case: input_shape info, content consisted with pass to atc; other cast not need"
     exit
 fi
 
@@ -32,7 +33,7 @@ if ! grep -q -E '.*ge_onnx.*after_infershape\.pbtxt$' <<< "$npu_dump_graph"; the
     echo -e "\033[31m[ERROR] npu dump graph must use onnx version, and use the one named after_infershape \033[0m"
     echo "argument1: npu dump onnx graph file, name has after_infershape, for example ge_onnx_00000012_graph_0_after_infershape.pbtxt"
     echo "argument2: on tf inference case: pb file used for atc command; on onnx inference case: onnx file used for atc command; on tf train case: geop dump graph from adapter, for example TF_GeOp5_0.pbtxt;"
-    echo "argument3: on tf inference case: input_shape info, content consisted with pass to atc; other cast not need"
+    echo "argument3: on inference case: input_shape info, content consisted with pass to atc; other cast not need"
     exit
 fi
 
@@ -51,7 +52,7 @@ else
     echo -e "\033[31m[ERROR] cpu file not invalid \033[0m"
     echo "argument1: npu dump onnx graph file, name has after_infershape, for example ge_onnx_00000012_graph_0_after_infershape.pbtxt"
     echo "argument2: on tf inference case: pb file used for atc command; on onnx inference case: onnx file used for atc command; on tf train case: geop dump graph from adapter, for example TF_GeOp5_0.pbtxt;"
-    echo "argument3: on tf inference case: input_shape info, content consisted with pass to atc; other cast not need"
+    echo "argument3: on inference case: input_shape info, content consisted with pass to atc; other cast not need"
     exit
 fi
 
@@ -59,7 +60,7 @@ if [ $is_train -eq 0 ] && [ $# -ne 3 ];then
     echo -e "\033[31m[ERROR] argument num must be 3 when inference case \033[0m"
     echo "argument1: npu dump onnx graph file, name has after_infershape, for example ge_onnx_00000012_graph_0_after_infershape.pbtxt"
     echo "argument2: on tf inference case: pb file used for atc command; on onnx inference case: onnx file used for atc command; on tf train case: geop dump graph from adapter, for example TF_GeOp5_0.pbtxt;"
-    echo "argument3: on tf inference case: input_shape info, content consisted with pass to atc; other cast not need"
+    echo "argument3: on inference case: input_shape info, content consisted with pass to atc; other cast not need"
     exit
 fi
 
@@ -104,6 +105,6 @@ echo "[INFO] finish to analyze npu infershape result, store in file npu_infersha
 
 echo "[INFO] start to compare two infershape result"
 
-bash compare.sh
+bash compare.sh $last_node
 
 
