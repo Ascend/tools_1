@@ -217,7 +217,7 @@ Result SampleProcess::Process(map<char, string>& params, vector<string>& input_f
     if (NULL == opendir(temp_s)) {
         mkdir(temp_s, 0775);
     }
-    std::string T = Utils::TimeLine();
+    std::string T = Utils::printCurrentTime();
     string times = output_path + "/" + T;
     const char* time = times.c_str();
     cout<<time<<endl;
