@@ -59,7 +59,7 @@ class DumpManager(object):
         # tf decode file
         tf_decode_files = self.tf_dump.get_dump_files_by_name(file_name, True)
         # pt decode file
-        pt_decode_files = self.pt_dump.get_dump_files_by_name(file_name)
+        # pt_decode_files = self.pt_dump.get_dump_files_by_name(file_name)
         self._print_tensors(npu_convert_files, is_convert)
         self._print_tensors(tf_decode_files, is_convert)
 

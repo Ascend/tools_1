@@ -17,17 +17,24 @@ FUSION_OFF_FILE = os.path.join(os.path.dirname(__file__), 'fusion_off.cfg')
 
 DEFAULT_OP_DEBUG_DIR = cfg.DEFAULT_OP_DEBUG_DIR
 
-# set random seed
-random.seed(cfg.DUMP_SEED)
-tf.random.set_random_seed(cfg.DUMP_SEED)
-print("[PrecisionTool] Set Tensorflow random seed to %d success." % cfg.DUMP_SEED)
-try:
-    import numpy as np
-    np.random.seed(cfg.DUMP_SEED)
-    print("[PrecisionTool] Set numpy random seed to %d success." % cfg.DUMP_SEED)
-except ImportError as err:
-    np = None
-    print("[PrecisionTool] No numpy module.", err)
+
+def seed_everything(seed=cfg.DUMP_SEED):
+    # set random seed
+    os.environ['PYTHONHASHSEED'] = str(seed)
+    random.seed(seed)
+    tf.random.set_random_seed(seed)
+    print("[PrecisionTool] Set Tensorflow random seed to %d success." % seed)
+    try:
+        import numpy as np
+        np.random.seed(seed)
+        print("[PrecisionTool] Set numpy random seed to %d success." % seed)
+    except ImportError as err:
+        np = None
+        print("[PrecisionTool] No numpy module.", err)
+
+
+# set global random seed
+seed_everything()
 
 
 def sess_dump(sess):
