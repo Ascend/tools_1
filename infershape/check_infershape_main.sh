@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ $# -lt 2 ];then
-    echo -e "\033[31m[ERROR] argument num must be 2 or 3 \033[0m"
+    echo -e "\033[31m[ERROR] argument num at least be 2 \033[0m"
     echo "argument1: npu dump onnx graph file, name has after_infershape, for example ge_onnx_00000012_graph_0_after_infershape.pbtxt"
     echo "argument2: on tf inference case: pb file used for atc command; on onnx inference case: onnx file used for atc command; on tf train case: geop dump graph from adapter, for example TF_GeOp5_0.pbtxt;"
     echo "argument3: on inference case: input_shape info, content consisted with pass to atc; other cast not need"
@@ -50,14 +50,6 @@ elif grep -q -e '\.onnx$' <<< "$cpu_file"; then
     is_pb=0
 else
     echo -e "\033[31m[ERROR] cpu file not invalid \033[0m"
-    echo "argument1: npu dump onnx graph file, name has after_infershape, for example ge_onnx_00000012_graph_0_after_infershape.pbtxt"
-    echo "argument2: on tf inference case: pb file used for atc command; on onnx inference case: onnx file used for atc command; on tf train case: geop dump graph from adapter, for example TF_GeOp5_0.pbtxt;"
-    echo "argument3: on inference case: input_shape info, content consisted with pass to atc; other cast not need"
-    exit
-fi
-
-if [ $is_train -eq 0 ] && [ $# -ne 3 ];then
-    echo -e "\033[31m[ERROR] argument num must be 3 when inference case \033[0m"
     echo "argument1: npu dump onnx graph file, name has after_infershape, for example ge_onnx_00000012_graph_0_after_infershape.pbtxt"
     echo "argument2: on tf inference case: pb file used for atc command; on onnx inference case: onnx file used for atc command; on tf train case: geop dump graph from adapter, for example TF_GeOp5_0.pbtxt;"
     echo "argument3: on inference case: input_shape info, content consisted with pass to atc; other cast not need"

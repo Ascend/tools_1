@@ -13,6 +13,11 @@ do
     npu_shape=${npu_array[2]}
     npu_dtype=${npu_array[3]}
 
+    if [ $last_node ] && [ $last_node == ${npu_node##*node:} ]; then
+        echo "[INFO] reach last $last_node, end to compare, no mismatch node found"
+        exit
+    fi
+
     # search name, no match then skip
     cpu_line=`grep -r "$npu_node" $cpu_file`
     if [ "$cpu_line" == "" ]; then
@@ -53,15 +58,15 @@ do
     npu_shape_array=(${npu_shape_raw//,/ })
 
     if [ ${#cpu_shape_array[@]} == 1 ] && [ ${cpu_shape_array[0]} == -2 ]; then
-        if [ ${#cpu_shape_array[@]} != 1 ] || [ ${cpu_shape_array[0]} != -2 ]; then
-            echo "[WARNING] $node cpu infer result is unknown rank, can't judge"
+        if [ ${#npu_shape_array[@]} != 1 ] || [ ${npu_shape_array[0]} != -2 ]; then
+            echo "[WARNING] $npu_node cpu infer result is unknown rank, can't judge"
         fi
         continue
     fi
 
     if [ ${#cpu_shape_array[@]} != ${#npu_shape_array[@]} ]; then
         if [ $cpu_dtype == "dtype:DT_RESOURCE" ]; then
-            echo "[WARNING] $node dtype is DT_RESOURCE and out $npu_index's $npu_shape different from cpu $cpu_shape, can't judge"
+            echo "[WARNING] $npu_node dtype is DT_RESOURCE and out $npu_index's $npu_shape different from cpu $cpu_shape, can't judge"
             continue
         else
             echo -e "\033[31m[FOUND] $npu_node is the first one which out $npu_index's $npu_shape different from cpu $cpu_shape \033[0m"
@@ -74,7 +79,7 @@ do
     do
         if [ ${npu_shape_array[$i]} == -2 ]; then
             if [ $cpu_dtype == "dtype:DT_RESOURCE" ]; then
-                echo "[WARNING] $node dtype is DT_RESOURCE and out $npu_index's $npu_shape different from cpu $cpu_shape, can't judge"
+                echo "[WARNING] $npu_node dtype is DT_RESOURCE and out $npu_index's $npu_shape different from cpu $cpu_shape, can't judge"
                 continue
             else
                 echo -e "\033[31m[FOUND] $npu_node is the first one which out $npu_index's $npu_shape different from cpu $cpu_shape \033[0m"
@@ -84,8 +89,8 @@ do
 
         if [ $cpu_dim != ${npu_shape_array[$i]} ] && [ $cpu_dim != "?" ] && [ $cpu_dim != -1 ]; then
             if [ $cpu_dtype == "dtype:DT_RESOURCE" ]; then
-                echo "[WARNING] $node dtype is DT_RESOURCE and out $npu_index's $npu_shape different from cpu $cpu_shape, can't judge"
-                continue
+                echo "[WARNING] $npu_node dtype is DT_RESOURCE and out $npu_index's $npu_shape different from cpu $cpu_shape, can't judge"
+                break
             else
                 echo -e "\033[31m[FOUND] $npu_node is the first one which out $npu_index's $npu_shape different from cpu $cpu_shape \033[0m"
                 exit
@@ -93,11 +98,6 @@ do
         fi
         i=$i+1
     done
-
-    if [ $last_node ] && [ $last_node == ${npu_node##*node:} ]; then
-        echo "[INFO] reach last $last_node, end to compare, no mismatch node found"
-        exit
-    fi
 done
 
 echo "[INFO] end to compare, no mismatch node found"
