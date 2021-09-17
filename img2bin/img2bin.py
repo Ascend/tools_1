@@ -214,10 +214,6 @@ def mean(args, input_img):
         input_img[:, :, 0] -= args.mean[0]
         input_img[:, :, 1] -= args.mean[1]
         input_img[:, :, 2] -= args.mean[2]
-    else:
-        input_img[: int(args.width / 1.5), :] -= args.mean[0]
-        input_img[int(args.width / 1.5) :, :: 2] -= args.mean[1]
-        input_img[int(args.width / 1.5) :, 1: 2] -= args.mean[2]
     return input_img
 
 
