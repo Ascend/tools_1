@@ -41,14 +41,7 @@ IMG_EXT = ['.jpg', '.JPG', '.png', '.PNG', '.bmp', '.BMP', '.jpeg', '.JPEG']
 
 try:
     import cv2 as cv 
-except:
-    '''
-    output = getpass.getuser()
-    if output != 'root':
-        print('[ERROR] opencv-python not installed.')
-        print("[ERROR] Please use the root user to execute this script again")
-        exit(0)
-    '''
+except ImportError:
     if sys.version_info.major == 2:
         confirm = raw_input("[info] Begin to install opencv-python, input[Y/N]:")
     else:
@@ -58,17 +51,15 @@ except:
         print('[info] Starting to install opencv-python...') 
         if sys.version_info.major == 2:
             import commands
-            ret, output = commands.getstatusoutput("sudo yum install -y opencv-python")
-            # ret =  os.popen('sudo yum install -y opencv-python')
-            if ret != 0:
-                # ret = os.popen('sudo apt-get install -y python-opencv')
-                ret, output = commands.getstatusoutput("sudo apt-get install -y python-opencv")
-                if ret != 0:
+            retu, output = commands.getstatusoutput("sudo yum install -y opencv-python")
+            if retu != 0:
+                retu, output = commands.getstatusoutput("sudo apt-get install -y python-opencv")
+                if retu != 0:
                     print('[ERROR] install opencv-python failed,please check env.')
                     exit(0)
         else:
-            ret = os.system('sudo python3 -m pip install opencv-python')
-            if ret != 0:
+            retu = os.system('sudo python3 -m pip install opencv-python')
+            if retu != 0:
                 print('[ERROR] install opencv-python failed,please check env.')
                 exit(0)
         
@@ -79,7 +70,7 @@ except:
     
 try:
     import numpy as np  
-except:
+except ImportError:
     if sys.version_info.major == 2:
         os.system('pip2 install numpy')
     else:
