@@ -209,6 +209,9 @@ def mean(args, input_img):
 
 
 def coefficient(args, input_img):
+    """
+    Normalize the input image 
+    """
     if isinstance (args.coefficient, str):
         args.coefficient = json.loads(args.coefficient)
     input_img = input_img.astype(np.float32)
