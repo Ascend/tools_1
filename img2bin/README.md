@@ -3,7 +3,7 @@
 # img2bin
 
 img2bin能够生成模型推理所需的输入数据，以.bin格式保存。当前仅支撑输入为图片类型的神经网络预处理。  
-有两类数据，一类是图片数据，另一类是模型需要的第二个输入数据，如fasterrcnn的第二个输入是图片的shape信息。  
+有两类数据，一类是图片数据，另一类是模型需要的第二个输入数据，如Faster R-CNN的第二个输入是图片的shape信息。  
 图片缩放采用的是等比例缩放，空余的地方用0填充。
 
 ## 前提条件  
@@ -24,7 +24,7 @@ img2bin能够生成模型推理所需的输入数据，以.bin格式保存。当
 
    在命令行中：$HOME/AscendProjects目录下执行以下命令下载代码。
 
-   **git clone  https://gitee.com/ascend/tools.git**
+   **git clone https://gitee.com/ascend/tools.git**
 
 ## 使用方法
 进入脚本所在目录。
