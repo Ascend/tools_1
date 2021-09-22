@@ -44,14 +44,11 @@ Ascend tools
 
    **One-button precision comparison tool for the whole process**：The tool works with TensorFlow and OnNX models, input the original model and the corresponding offline OM model and output precision comparison results.    
 
-8. [dockerimages](./dockerimages)    
-   **docker images**：docker images for developing/catenation on Atlas products (Atlas200DK/Atlas300).  
-
-9. [dockerimages](./precision_tool)    
+8. [dockerimages](./precision_tool)    
    **precision problem analysis tools**：The toolkit provides common features of precision comparison. Currently, the tool is mainly suitable for TensorFlow training scenarios and provides interactive query and operation entry for Dump data/graph information.
 
-10. [cann-benchmark_infer_scripts](./cann-benchmark_infer_scripts)     
+9. [cann-benchmark_infer_scripts](./cann-benchmark_infer_scripts)     
     **model preprocess and postprocess scripts for cann-benchamrk inference tool**： The tool contains cann-benchamrk inference tool model processing scripts, including result analysis script, preprocess and postprocess scripts, etc.These scripts need to be used according to the cann-benchmark insturction manual. 
 
-11. [tfdbg_ascend](./tfdbg_ascend)    
+10. [tfdbg_ascend](./tfdbg_ascend)    
    **Tensorflow2.x dump tool**：The tool provides Tensorflow 2.x runtime data dump capability on the CPU/GPU platform.
