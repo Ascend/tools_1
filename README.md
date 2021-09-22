@@ -37,15 +37,12 @@ Ascend tools，昇腾工具仓库。
 
    **一键式全流程精度比对工具**：该工具适用于tensorflow和onnx模型，输入原始模型和对应的离线om模型，输出精度比对结果。    
 
-8. [dockerimages](./dockerimages)    
-   **docker 镜像**：Atlas200DK/Atlas300开发/开发运行环境的docker镜像。 
-
-9. [precision_tool](./precision_tool)    
+8. [precision_tool](./precision_tool)    
    **精度问题分析工具**：该工具包提供了精度比对常用的功能，当前该工具主要适配Tensorflow训练场景，同时提供Dump数据/图信息的交互式查询和操作入口。 
 
-10. [cann-benchmark_infer_scripts](./cann-benchmark_infer_scripts)    
+9. [cann-benchmark_infer_scripts](./cann-benchmark_infer_scripts)    
     **cann-benchmark推理软件对应的模型前后处理脚本**： 该工具包含cann-benchmark推理工具模型处理脚本, 包括：结果解析脚本和前后处理脚本等。这些脚本需根据cann-benchmark指导手册说明使用。
-11. [tfdbg_ascend](./tfdbg_ascend)    
+10. [tfdbg_ascend](./tfdbg_ascend)    
     **Tensorflow2.x dump工具**：该工具提供CPU/GPU平台上Tensorflow2.x运行时数据Dump能力。
 #### 贡献
 
