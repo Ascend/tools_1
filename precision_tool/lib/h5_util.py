@@ -7,11 +7,33 @@ from lib.constant import Constant
 import config as cfg
 
 
+class IdxType(object):
+    # /batch_norm/88/input/xxx
+    OP_TYPE = 'OP_TYPE'
+    OP_NAME = 'OP_NAME'
+    OP_ANC = 'OP_ANC'
+
+H5_NAME_IDX = [IdxType.OP_TYPE, IdxType.OP_NAME, IdxType.OP_ANC]
+
+class H5OpDesc(object):
+    def __init__(self, name, data):
+        self.name = name
+        self.data = data
+
+
+class H5Op(object):
+    def __init__(self, tid):
+        self.id = tid
+        self.inputs = []
+        self.outputs = []
+
+
 class H5Util(object):
     def __init__(self, file_name):
         self.log = util.get_log()
         self.file_name = file_name
         self.h5 = None
+        self.ops = {}
         self._prepare()
 
     def __del__(self):
@@ -22,12 +44,26 @@ class H5Util(object):
         if not os.path.isfile(self.file_name) or not str(self.file_name).endswith(Constant.Suffix.H5):
             self.log.error("File [%s] not exist or not a h5 file" % self.file_name)
         self.h5 = h5py.File(self.file_name, 'r')
+        self._list_tensors(self.h5)
+
+    def _list_tensors(self, h5, idx=0, name=''):
+        for item in h5:
+            if isinstance(h5[item], h5py.Group):
+                item_name = name + '/' + item
+                if H5_NAME_IDX[idx] == IdxType.OP_NAME and item_name not in self.ops:
+                    self.ops[item_name] = H5Op(item)
+                if H5_NAME_IDX[idx] == IdxType.OP_ANC:
+                    self.ops[]
+                self._list_tensors(h5[item], idx + 1, item_name)
+
 
     def get_tensor_by_name(self, tensor_name):
         if self.h5 is None:
             self.log.warning("h5 file is None.")
             return None
-        return np.array(self.h5[tensor_name])
+        if tensor_name in self.h5:
+            return np.array(self.h5[tensor_name])
+        return None
 
     def print_tensor(self, tensor_name):
         tensor = self.get_tensor_by_name(tensor_name)

@@ -13,7 +13,8 @@ from lib.precision_tool_exception import PrecisionToolException
 class PTDump(object):
     def __init__(self):
         self.log = util.get_log()
-        # self.h5_util =
+        self.npu_files = []
+        self.gpu_files = []
 
     def prepare(self):
         print("test")

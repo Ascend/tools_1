@@ -71,7 +71,8 @@ TF_GRAPH_DIR = os.path.join(TF_DIR, 'graph')
 
 # pytroch dirs
 PT_DIR = os.path.join(DATA_ROOT_DIR, 'pt')
-PT_DUMP_DIR = os.path.join(PT_DIR, 'dump')
+PT_NPU_DIR = os.path.join(PT_DIR, 'npu')
+PT_GPU_DIR = os.path.join(PT_DIR, 'gpu')
 
 # tmp dirs
 TMP_DIR = os.path.join(DATA_ROOT_DIR, 'temp')

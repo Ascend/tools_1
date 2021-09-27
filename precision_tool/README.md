@@ -263,12 +263,12 @@ sudo yum install graphviz
    [Mul][TbeMultiOutputFusionPass] InceptionV3/InceptionV3/Mixed_6b/Branch_1/mul_3
     ```
 
-4. ni (-n) [op_name] -d -s [save sub graph deep]
+4. ni (-n) [op_name] -s [save sub graph deep]
     ```shell
     # 通过[算子名]查询算子节点信息
     # -d 显示相应的dump数据信息
     # -s 保存一个以当前算子节点为根，深度为参数值的子图
-   PrecisionTool >  ni gradients/InceptionV3/InceptionV3/Mixed_7a/Branch_0/Maximum_1_grad/GreaterEqual -d -s 3
+   PrecisionTool >  ni gradients/InceptionV3/InceptionV3/Mixed_7a/Branch_0/Maximum_1_grad/GreaterEqual -s 3
    ╭─────────────────── [GreaterEqual]gradients/InceptionV3/InceptionV3/Mixed_7a/Branch_0/Maximum_1_grad/GreaterEqual ────────────────────╮
    │ [GreaterEqual] gradients/InceptionV3/InceptionV3/Mixed_7a/Branch_0/Maximum_1_grad/GreaterEqual                                       │
    │ Input:                                                                                                                               │
