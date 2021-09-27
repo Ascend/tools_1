@@ -77,7 +77,7 @@ public:
 
     static std::string TimeLine();
 
-    static void printCurrentTime();
+    static std::string printCurrentTime();
 
     static void printHelpLetter();
 

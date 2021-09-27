@@ -59,13 +59,28 @@ if __name__ == "__main__":
         print("argument2 : target onde(full name)")
         print("argument3 : back layer from target node")
         exit(0)
-    total_content = 'digraph G {\nrankdir = "TB";\nnode[shape = "box", with = 0, height = 0];\nedge[arrowhead = "none", style = "solid"];\n'
-    with open("part_node.dot", "w") as f:
-        f.write(total_content)
+
+    if (os.path.exists(sys.argv[1]) == False):
+        print("[ERROR] onnx graph" + sys.argv[1] + " not exist")
+        exit(0)
 
     graph_def = load_graph_def_from_pb(sys.argv[1])
     target_node = sys.argv[2]
     show_level = int(sys.argv[3]) - 1
+
+    target_node_exist = False
+    for node in graph_def.node:
+        if node.name == target_node:
+            target_node_exist = True
+            break
+
+    if (target_node_exist == False):
+        print("[ERROR] target node " + target_node + " not in graph" + sys.argv[1])
+        exit(0)
+
+    total_content = 'digraph G {\nrankdir = "TB";\nnode[shape = "box", with = 0, height = 0];\nedge[arrowhead = "none", style = "solid"];\n'
+    with open("part_node.dot", "w") as f:
+        f.write(total_content)
 
     for tnode in bfsTravel(graph_def, target_node, show_level):
         for node in graph_def.node:
