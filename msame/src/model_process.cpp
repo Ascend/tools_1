@@ -792,7 +792,7 @@ void ModelProcess::OutputModelResult(std::string& s, std::string& modelName, std
                 }
                 break;
             case 1:
-                for (int i = 0; i < len / sizeof(aclFloat16); i++) {
+                for (int i = 1; i <= len / sizeof(aclFloat16); i++) {
                     aclFloat16 out = *((aclFloat16*)outData + i);
                     outstr << out << " ";
                     vector<int64_t>::iterator it;
@@ -805,7 +805,7 @@ void ModelProcess::OutputModelResult(std::string& s, std::string& modelName, std
                 }
                 break;
             case 2:
-                for (int i = 0; i < len / sizeof(int8_t); i++) {
+                for (int i = 1; i <= len / sizeof(int8_t); i++) {
                     int8_t out = *((int8_t*)outData + i);
                     outstr << out << " ";
                     vector<int64_t>::iterator it;
@@ -831,7 +831,7 @@ void ModelProcess::OutputModelResult(std::string& s, std::string& modelName, std
                 }
                 break;
             case 4:
-                for (int i = 0; i < len / sizeof(uint8_t); i++) {
+                for (int i = 1; i <= len / sizeof(uint8_t); i++) {
                     uint8_t out = *((uint8_t*)outData + i);
                     outstr << out << " ";
                     vector<int64_t>::iterator it;
@@ -844,7 +844,7 @@ void ModelProcess::OutputModelResult(std::string& s, std::string& modelName, std
                 }
                 break;
             case 6:
-                for (int i = 0; i < len / sizeof(int16_t); i++) {
+                for (int i = 1; i <= len / sizeof(int16_t); i++) {
                     int16_t out = *((int16_t*)outData + i);
                     outstr << out << " ";
                     vector<int64_t>::iterator it;
@@ -857,7 +857,7 @@ void ModelProcess::OutputModelResult(std::string& s, std::string& modelName, std
                 }
                 break;
             case 7:
-                for (int i = 0; i < len / sizeof(uint16_t); i++) {
+                for (int i = 1; i <= len / sizeof(uint16_t); i++) {
                     uint16_t out = *((uint16_t*)outData + i);
                     outstr << out << " ";
                     vector<int64_t>::iterator it;
@@ -883,7 +883,7 @@ void ModelProcess::OutputModelResult(std::string& s, std::string& modelName, std
                 }
                 break;
             case 9:
-                for (int i = 0; i < len / sizeof(int64_t); i++) {
+                for (int i = 1; i <= len / sizeof(int64_t); i++) {
                     int64_t out = *((int64_t*)outData + i);
                     outstr << out << " ";
                     vector<int64_t>::iterator it;
@@ -896,7 +896,7 @@ void ModelProcess::OutputModelResult(std::string& s, std::string& modelName, std
                 }
                 break;
             case 10:
-                for (int i = 0; i < len / sizeof(uint64_t); i++) {
+                for (int i = 1; i <= len / sizeof(uint64_t); i++) {
                     uint64_t out = *((uint64_t*)outData + i);
                     outstr << out << " ";
                     vector<int64_t>::iterator it;
@@ -909,7 +909,7 @@ void ModelProcess::OutputModelResult(std::string& s, std::string& modelName, std
                 }
                 break;
             case 11:
-                for (int i = 0; i < len / sizeof(double); i++) {
+                for (int i = 1; i <= len / sizeof(double); i++) {
                     double out = *((double*)outData + i);
                     outstr << out << " ";
                     vector<int64_t>::iterator it;
@@ -922,7 +922,7 @@ void ModelProcess::OutputModelResult(std::string& s, std::string& modelName, std
                 }
                 break;
             case 12:
-                for (int i = 0; i < len / sizeof(bool); i++) {
+                for (int i = 1; i <= len / sizeof(bool); i++) {
                     int out = *((bool*)outData + i);
                     outstr << out << " ";
                     vector<int64_t>::iterator it;
