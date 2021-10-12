@@ -29,8 +29,8 @@ class CpuTvm():
     def _load_data(self, dump_files):
         ctx = tvm.cpu(0)
         data_tvm = []
-        for file in dump_files:
-            data_temp_numpy = np.load(file)
+        for dump_file in dump_files:
+            data_temp_numpy = np.load(dump_file)
             data_temp_tvm = tvm.nd.array(data_temp_numpy, ctx)
             data_tvm.append(data_temp_tvm)
         return data_tvm
