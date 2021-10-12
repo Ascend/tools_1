@@ -795,7 +795,7 @@ void ModelProcess::OutputModelResult(std::string& s, std::string& modelName, std
                 aclFloat16 * out_fp16 = reinterpret_cast<aclFloat16*>(outData);
                 float out = 0;
                 for (int i = 1; i <= len / sizeof(aclFloat16); i++) {
-		            out = aclFloat16ToFloat(out_fp16[i-1]);
+                    out = aclFloat16ToFloat(out_fp16[i-1]);
                     outstr << out << " ";
                     vector<int64_t>::iterator it;
                     for(it = curOutputDimsMul.begin(); it != curOutputDimsMul.end(); it++){
@@ -806,7 +806,7 @@ void ModelProcess::OutputModelResult(std::string& s, std::string& modelName, std
                     }                   
                 }
                 break;
-	        }
+            }
             case 2:
                 for (int i = 1; i <= len / sizeof(int8_t); i++) {
                     int8_t out = *((int8_t*)outData + i - 1);
