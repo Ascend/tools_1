@@ -791,10 +791,12 @@ void ModelProcess::OutputModelResult(std::string& s, std::string& modelName, std
                     }                    
                 }
                 break;
-            case 1:
+            case 1:{
+		aclFloat16 * out_fp16 = reinterpret_cast<aclFloat16*>(outData);
+		float out = 0;
                 for (int i = 1; i <= len / sizeof(aclFloat16); i++) {
-                    aclFloat16 out = *((aclFloat16*)outData + i - 1);
-                    outstr << out << " ";
+		    out = aclFloat16ToFloat(out_fp16[i-1]);
+		    outstr << out << " ";
                     vector<int64_t>::iterator it;
                     for(it = curOutputDimsMul.begin(); it != curOutputDimsMul.end(); it++){
                         if ((i != 0) && (i % *it == 0)){
@@ -804,6 +806,7 @@ void ModelProcess::OutputModelResult(std::string& s, std::string& modelName, std
                     }                   
                 }
                 break;
+	    }
             case 2:
                 for (int i = 1; i <= len / sizeof(int8_t); i++) {
                     int8_t out = *((int8_t*)outData + i - 1);
@@ -1006,3 +1009,4 @@ void ModelProcess::Unload()
     loadFlag_ = false;
     INFO_LOG("unload model success, model Id is %u", modelId_);
 }
+
