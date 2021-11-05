@@ -100,12 +100,12 @@ class GraphManager(object):
                 util.print_panel(Constant.NEW_LINE.join(ops_txt), debug_id)
 
     @staticmethod
-    def op_graph_summary(ops):
+    def op_graph_summary(ops, attr_detail=False):
         npu_summary = collections.OrderedDict()
         for debug_id, op in ops.items():
             npu_summary[debug_id] = collections.OrderedDict()
             for op_detail in op:
-                npu_summary[debug_id][op_detail.graph_name] = op_detail.summary()
+                npu_summary[debug_id][op_detail.graph_name] = op_detail.summary(attr_detail=attr_detail)
         return npu_summary, None
 
     def save_sub_graph(self, ops, deep):

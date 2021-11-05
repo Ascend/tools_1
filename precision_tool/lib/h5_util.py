@@ -13,7 +13,9 @@ class IdxType(object):
     OP_NAME = 'OP_NAME'
     OP_ANC = 'OP_ANC'
 
+
 H5_NAME_IDX = [IdxType.OP_TYPE, IdxType.OP_NAME, IdxType.OP_ANC]
+
 
 class H5OpDesc(object):
     def __init__(self, name, data):
@@ -50,12 +52,15 @@ class H5Util(object):
         for item in h5:
             if isinstance(h5[item], h5py.Group):
                 item_name = name + '/' + item
+                print(item_name)
+                # TODO
+                '''
                 if H5_NAME_IDX[idx] == IdxType.OP_NAME and item_name not in self.ops:
                     self.ops[item_name] = H5Op(item)
                 if H5_NAME_IDX[idx] == IdxType.OP_ANC:
-                    self.ops[]
+                    self.ops[item_name]
                 self._list_tensors(h5[item], idx + 1, item_name)
-
+                '''
 
     def get_tensor_by_name(self, tensor_name):
         if self.h5 is None:

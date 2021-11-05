@@ -120,7 +120,14 @@ class Op(object):
                 similar = similar and output_similar
         return Constant.NEW_LINE.join(res_str), similar
 
-    def summary(self, origin_txt=False):
+    def _attr_detail(self):
+        """Gen attr details"""
+        res_str = []
+        if JSON_KEY_ATTR in self.op_json:
+            res_str = [' ' + str(i) for i in self.op_json[JSON_KEY_ATTR]]
+        return Constant.NEW_LINE.join(res_str)
+
+    def summary(self, origin_txt=False, attr_detail=False):
         """Summary of current op"""
         res_str = ['Op(Type/Name): [green][%s][/green] %s' % (self.type(), self.name()),
                    'KernelName:    [yellow]%s[/yellow]' % self.kernel_name(),
@@ -132,6 +139,8 @@ class Op(object):
         origin_op = self.data_dump_original_op_names()
         if origin_op != '':
             res_str.append('OriginalOp: %s' % origin_op)
+        if attr_detail:
+            res_str.append(self._attr_detail())
         res_str.append('Input:%s' % InputDesc.summary.__doc__)
         for i in self.inputs():
             res_str.append(' -' + i.summary(origin_txt))
