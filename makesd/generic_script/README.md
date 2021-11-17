@@ -21,4 +21,4 @@ Atlas 200 DK的驱动包与CANN包的版本配套关系请参见：[版本配套
 
 ## 制卡步骤
 
-**制卡步骤请参见[Atlas 200 DK 开发者套件（1.0.11.alpha）](https://support.huaweicloud.com/environment-deployment-Atlas200DK1010/atlased_04_0011.html)**
+**制卡步骤请参见[硬件产品文档](https://www.hiascend.com/document?tag=hardware)下的【AI开发者套件】文档**
