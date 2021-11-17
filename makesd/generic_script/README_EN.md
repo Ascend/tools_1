@@ -1,6 +1,7 @@
 English|[中文](README.md)
 
-# for_1.0.11.alpha
+# generic_script
+**This script supports all versions of 1.0.12.alpha and above**
 
 ## Supporting relationship  
 The business card requires the driver and firmware package. 
@@ -20,4 +21,4 @@ For details about the version mapping between the Atlas 200 DK Driver and Firmwa
 
 ## Procedure
 
-For card making steps, please refer to [Atlas 200 DK Developer Kit (1.0.11.alpha)]()
+For card making steps, please refer to the [AI Developer Kit] document under the [Hardware Documentation](https://www.hiascend.com/en/document?tag=hardware)
