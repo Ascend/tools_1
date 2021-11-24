@@ -23,18 +23,18 @@ Ascend tools
 
 2.  [img2bin](https://gitee.com/ascend/tools/tree/master/img2bin)
 
-    **BIN file generation tool**：Generate input data required for model inference, saved in .bin format.
+    **BIN file generation tool**: Generate input data required for model inference, saved in .bin format.
 
 3.  [makesd](https://gitee.com/ascend/tools/tree/master/makesd)
     
-    **makesd tool**：card making tool package. Provide card making function under Ubuntu.  
+    **makesd tool**：card making tool package. Provide the card making function under Ubuntu.  
 
 4.  [configure_usb_ethernet](https://gitee.com/ascend/tools/tree/master/configure_usb_ethernet)  
      **USB virtual NIC connection script**：Configure the IP address of the USB NIC.
     
 5. [pt2pb](https://gitee.com/ascend/tools/tree/master/pt2pb)  
 
-   **Tool for converting PyTorch models to TensorFlow PB models**：Input the PyTorch weight parameters model，convert the model to the ONNX format and then to the PB format.
+   **Tool for converting PyTorch models to TensorFlow PB models**：Input the PyTorch weight parameters model and convert the model to the ONNX format and then to the PB format.
 
 6. [dnmetis](https://gitee.com/ascend/tools/tree/master/dnmetis)  
 
