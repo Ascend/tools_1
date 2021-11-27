@@ -73,7 +73,7 @@ class Desc(object):
 
     def _get_attr_list(self, key, data_type):
         val = self._get_attr_base(key, DT_LIST)
-        return val[data_type] if val is not None else []
+        return val[data_type] if val is not None and data_type in val else []
 
     def _get_attr(self, key, data_type):
         val = self._get_attr_base(key, data_type)
