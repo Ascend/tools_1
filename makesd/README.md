@@ -50,4 +50,4 @@
    **1.3x.0.0版本**：适配1.3x.0.0版本的制卡工具包。
 4. [generic_script](https://gitee.com/ascend/tools/tree/master/makesd/generic_script)
 
-   **通用制卡脚本**：1.0.12及以上版本的通用制卡工具包。
+   **通用制卡脚本**：1.0.12.alpha及以上版本的通用制卡工具包。
