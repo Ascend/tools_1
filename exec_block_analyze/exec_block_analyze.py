@@ -1103,10 +1103,11 @@ class Saver(object):
                 if SAVE_STREAMS_WITH_LABEL and stream_label != '':
                     stream_str += '|<i>' + stream_label + '</i>'
                 f.write('Stream' + str(stream_id) + '[label=<{' + stream_str + '}>')
+                if stream_id in self.graph.streams_in_branch:
+                    f.write(', color=blue')
                 if str(stream_id) in self.graph.stream_execing:
-                    f.write(', color=green, fontcolor=green]\n')
-                else:
-                    f.write(']\n')
+                    f.write(', fontcolor=green')
+                f.write(']\n')
 
             for node in self.graph.nodes:
                 if len(node.actived_streams) > 0:
