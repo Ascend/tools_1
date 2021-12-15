@@ -18,9 +18,11 @@ JSON_KEY = 'key'
 JSON_VALUE = 'value'
 JSON_KEY_LIST = 'list'
 JSON_KEY_STR = 's'
+JSON_KEY_INT = 'i'
 JSON_KEY_PASS_NAME = 'pass_name'
 JSON_KEY_DATA_DUMP_ORIGINAL_OP_NAMES = '_datadump_original_op_names'
 JSON_KEY_GE_ATTR_OP_KERNEL_LIB_NAME = "_ge_attr_op_kernel_lib_name"
+JSON_KEY_PARENT_NODE_INDEX = "_parent_node_index"
 
 KERNEL_NAME_SHUFFIX = '_kernelname'
 
@@ -76,6 +78,9 @@ class Op(object):
     def data_dump_original_op_names(self):
         return self._attr(JSON_KEY_DATA_DUMP_ORIGINAL_OP_NAMES)
 
+    def parent_node_index(self):
+        return self._attr(JSON_KEY_PARENT_NODE_INDEX)
+
     def _attr(self, key):
         if JSON_KEY_ATTR in self.op_json:
             for attr in self.op_json[JSON_KEY_ATTR]:
@@ -85,6 +90,8 @@ class Op(object):
                     elif JSON_KEY_LIST in attr[JSON_VALUE]:
                         if JSON_KEY_STR in attr[JSON_VALUE][JSON_KEY_LIST]:
                             return attr[JSON_VALUE][JSON_KEY_LIST][JSON_KEY_STR]
+                    elif JSON_KEY_INT in attr[JSON_VALUE]:
+                        return attr[JSON_VALUE][JSON_KEY_INT]
                     else:
                         self.log.warning("Unknown attr format: %s", attr[JSON_VALUE])
         return ''
