@@ -72,9 +72,9 @@ class NetCompare(object):
                              " is abnormal, please check whether the mapping between the comparison"
                              " data is correct.")
         for dir_path, subs_paths, files in os.walk(npu_net_output_data_path):
-            for file in sorted(files):
-                if file.endswith(".npy"):
-                    npu_dump_file[file_index] = os.path.join(dir_path, file)
+            for each_file in sorted(files):
+                if each_file.endswith(".npy"):
+                    npu_dump_file[file_index] = os.path.join(dir_path, each_file)
                     msaccucmp_cmd = ["python" + python_version, msaccucmp_command_file_path, "compare", "-m",
                                      npu_dump_file.get(file_index), "-g", golden_net_output_info.get(file_index)]
                     status, compare_result = self.execute_msaccucmp_command(msaccucmp_cmd, True)
