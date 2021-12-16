@@ -327,6 +327,9 @@ def check_input_name_in_model(tensor_name_list, input_name):
 
 
 def save_numpy_data(file_path, data):
+    """
+    save_numpy_data
+    """
     if not os.path.exists(os.path.dirname(file_path)):
         os.makedirs(os.path.dirname(file_path))
     np.save(file_path, data)

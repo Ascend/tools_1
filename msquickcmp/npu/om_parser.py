@@ -130,6 +130,9 @@ class OmParser:
         return net_output_info
 
     def get_net_output_data_info(self):
+        """
+        get_net_output_data_info
+        """
         for graph in self.json_object.get(GRAPH_OBJECT):
             if graph.get(NAME_OBJECT) in self.subgraph_name:
                 continue

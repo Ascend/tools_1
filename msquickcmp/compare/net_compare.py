@@ -58,6 +58,9 @@ class NetCompare(object):
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR)
 
     def net_output_compare(self, npu_net_output_data_path, golden_net_output_info):
+        """
+        net_output_compare
+        """
         if not golden_net_output_info:
             return
         npu_dump_file = {}
@@ -176,6 +179,9 @@ class NetCompare(object):
                     writer.writerow(new_content)
 
     def save_net_output_result_to_csv(self, npu_file, golden_file, result):
+        """
+        save_net_output_result_to_csv
+        """
         result_file_path = None
         result_file_backup_path = None
         npu_file_name = os.path.basename(npu_file)

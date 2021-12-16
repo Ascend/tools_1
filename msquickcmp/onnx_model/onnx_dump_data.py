@@ -219,4 +219,7 @@ class OnnxDumpData(DumpData):
         return onnx_dump_data_dir
 
     def get_net_output_info(self):
+        """
+        get_net_output_info
+        """
         return self.net_output
