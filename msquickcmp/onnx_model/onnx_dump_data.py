@@ -181,7 +181,7 @@ class OnnxDumpData(DumpData):
             utils.print_error_log(message)
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR)
         for index, value in enumerate(model_shape):
-            if isinstance(value, str):
+            if value is None or isinstance(value, str):
                 continue
             if input_shape[index] != value:
                 utils.print_error_log(message)
