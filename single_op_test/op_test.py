@@ -42,12 +42,17 @@ def parse_args():
                         help='the node to test, exp "ReduceSum_in_0"')
     parser.add_argument('--bin_path', dest='bin_path', required=False,
                         help='the bin to test, exp "kernel_meta/te_transdata_ff9a78fdaf5103c60_feb5e077cf4dd9cc.o"')
+    parser.add_argument('--value_path', dest='value_path', required=False,
+                        help='the dump data, exp "/home/HwHiAiUser/dumptonumpy/Pooling.pool1.1147.1589195081588018",'
+                        'value_path + "input.x.npy" wil be used for test')
     return parser.parse_args()
 
 
 class OpUTCase:
-    ascend_opp_path = os.environ.get('ASCEND_OPP_PATH') or os.path.join("usr", "local", "Ascend", "opp")
-    aic_info_path = os.path.join(ascend_opp_path, "op_impl", "built-in", "ai_core", "tbe", "config")
+    ascend_opp_path = os.environ.get('ASCEND_OPP_PATH') or os.path.join(
+        "usr", "local", "Ascend", "opp")
+    aic_info_path = os.path.join(
+        ascend_opp_path, "op_impl", "built-in", "ai_core", "tbe", "config")
 
     def __init__(self):
         self.soc_name = None
@@ -83,7 +88,8 @@ class OpUTCase:
         get args in aic_info.json
         """
         soc_name = soc_name.lower()
-        aic_info = os.path.join(self.aic_info_path, soc_name, "aic-{}-ops-info.json".format(soc_name))
+        aic_info = os.path.join(
+            self.aic_info_path, soc_name, "aic-{}-ops-info.json".format(soc_name))
         with open(aic_info) as aic_info_f:
             aic_info_dict = json.load(aic_info_f)
             op_type_info = aic_info_dict.get(op_type)
@@ -180,6 +186,7 @@ class OpUTCase:
         pb_file = self.sys_args.graph_name
         node_name = self.sys_args.node_name
         bin_path = self.sys_args.bin_path
+        value_path = self.sys_args.value_path
 
         graph_def = self.load_graph_def_from_pb(pb_file)
 
@@ -194,6 +201,8 @@ class OpUTCase:
                 if len(input) > 2 and input[-2] == '-':
                     continue
                 input_param = self.get_node_input_params(node, index)
+                if value_path:
+                  input_param["value"] = value_path + f".input.{index}.npy"
                 print("[INPUT:{}]:{}".format(index, input_param))
                 case_params.append(input_param)
                 index = index + 1
@@ -208,7 +217,8 @@ class OpUTCase:
                 index = index + 1
 
             self.op_type = node.op_type.replace("ge:", "")
-            self.soc_name = tbe.common.platform.get_soc_spec("FULL_SOC_VERSION") or "Ascend310"
+            self.soc_name = tbe.common.platform.get_soc_spec(
+                "FULL_SOC_VERSION") or "Ascend310"
             # self.soc_name = self.soc_name.lower()
             arg_keys = self.get_arg_list(self.soc_name, self.op_type)
             for arg_key in arg_keys:
@@ -218,7 +228,7 @@ class OpUTCase:
             case_params = {"params": case_params,
                            "case_name": self.op_type + "autogen_" + time.strftime("%Y%m%d%H%M%S", time.localtime())}
             if bin_path:
-                case_params["bin_paht"] = bin_path
+                case_params["bin_path"] = bin_path
             return case_params
         return None
 
