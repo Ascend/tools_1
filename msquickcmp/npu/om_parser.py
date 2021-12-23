@@ -26,6 +26,7 @@ DIM_OBJECT = "dim"
 DATA_OBJECT = "Data"
 NET_OUTPUT_OBJECT = "NetOutput"
 ATC_CMDLINE_OBJECT = "atc_cmdline"
+INPUT_SHAPE = "--input_shape"
 INPUT_SHAPE_RANGE = "--input_shape_range"
 LIST_LIST_INT_OBJECT = 'list_list_int'
 LIST_LIST_I_OBJECT = 'list_list_i'
@@ -146,7 +147,8 @@ class OmParser:
         for attr in self.json_object.get(ATTR_OBJECT):
             if KEY_OBJECT in attr and attr.get(KEY_OBJECT) == ATC_CMDLINE_OBJECT:
                 if VALUE_OBJECT in attr and S_OBJECT in attr.get(VALUE_OBJECT):
-                    if INPUT_SHAPE_RANGE in attr.get(VALUE_OBJECT).get(S_OBJECT):
+                    if INPUT_SHAPE in attr.get(VALUE_OBJECT).get(S_OBJECT) or \
+                            INPUT_SHAPE_RANGE in attr.get(VALUE_OBJECT).get(S_OBJECT):
                         return True
         return False
 
