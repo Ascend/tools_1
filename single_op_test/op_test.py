@@ -202,7 +202,7 @@ class OpUTCase:
                     continue
                 input_param = self.get_node_input_params(node, index)
                 if value_path:
-                  input_param["value"] = value_path + f".input.{index}.npy"
+                    input_param["value"] = f"{value_path}.input.{index}.npy"
                 print("[INPUT:{}]:{}".format(index, input_param))
                 case_params.append(input_param)
                 index = index + 1

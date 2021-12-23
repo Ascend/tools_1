@@ -42,6 +42,7 @@ class AscendOpKernel:
     """
     Class AscendOpKernel
     """
+
     def __init__(self, bin_path: str, json_path: str):
         if not os.path.exists(bin_path):
             raise IOError("bin_path not exist, path: %s" % bin_path)
