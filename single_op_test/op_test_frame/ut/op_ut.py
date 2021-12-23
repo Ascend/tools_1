@@ -597,8 +597,7 @@ class OpUT:  # 'pylint: disable=too-many-instance-attributes
                 with tbe.common.context.op_context.OpContext("dynamic"):
                     op_info = operator_info.OpInfo(self.op_type, self.op_type)
                     tbe.common.context.op_context.get_context().add_op_info(op_info)
-                    if not case_info.bin_path:
-                        op_func(*case_info.op_params, **addition_params)
+                    op_func(*case_info.op_params, **addition_params)
                     compile_info = tbe.common.context.get_context().get_compile_info()
                     self._save_compile_info_json(kernel_name=kernel_name, compile_info=compile_info)
             else:

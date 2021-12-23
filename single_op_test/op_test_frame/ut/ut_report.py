@@ -218,7 +218,8 @@ run command: %s
             for err_case in soc_detail.get(op_status.SUCCESS, []):
                 total_txt += "    " + err_case.summary_txt() + "\n"
             total_txt += "------------------------------------------------------------------------\n"
-
+        if self.failed_cnt > 0 or self.err_cnt > 0:
+            total_txt += "Some test case failed. Please check your code or case!"
         total_txt += "========================================================================\n"
         return total_txt
 

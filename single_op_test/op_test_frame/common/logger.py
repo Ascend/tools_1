@@ -29,8 +29,7 @@ class Constant:
     """
     This class for Constant.
     """
-    def __init__(self):
-        self.LOG_LEVEL = "INFO"
+    LOG_LEVEL = "INFO"
 
 
 def set_logger_level(level):
