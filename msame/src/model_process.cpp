@@ -55,6 +55,7 @@ Result ModelProcess::LoadModelFromFile(const string& modelPath)
 
     aclError ret = aclmdlLoadFromFile(modelPath.c_str(), &modelId_);
     if (ret != ACL_SUCCESS) {
+        cout << aclGetRecentErrMsg() << endl;
         ERROR_LOG("load model from file failed, model file is %s", modelPath.c_str());
         return FAILED;
     }
@@ -74,6 +75,7 @@ Result ModelProcess::CreateDesc()
 
     aclError ret = aclmdlGetDesc(modelDesc_, modelId_);
     if (ret != ACL_SUCCESS) {
+        cout << aclGetRecentErrMsg() << endl;
         ERROR_LOG("get model description failed");
         return FAILED;
     }
@@ -88,6 +90,7 @@ Result ModelProcess::GetDynamicGearCount(size_t &dymGearCount)
     aclError ret; 
     ret = aclmdlGetInputDynamicGearCount(modelDesc_, -1, &dymGearCount);
     if (ret != ACL_SUCCESS) {
+        cout << aclGetRecentErrMsg() << endl;
         ERROR_LOG("get input dynamic gear count failed %d", ret);
         return FAILED;
     }
@@ -102,6 +105,7 @@ Result ModelProcess::GetDynamicIndex(size_t &dymindex)
     aclError ret; 
     ret = aclmdlGetInputIndexByName(modelDesc_, ACL_DYNAMIC_TENSOR_NAME, &dymindex);
     if (ret != ACL_SUCCESS) {
+        cout << aclGetRecentErrMsg() << endl;
         ERROR_LOG("get input index by name failed %d", ret);
         return FAILED;
     }
@@ -148,10 +152,10 @@ Result ModelProcess::CheckDynamicShape(std::vector<std::string> dym_shape_tmp, s
         Utils::SplitStringWithPunctuation(shape_str, shape_tmp, ',');
         size_t shape_tmp_size = shape_tmp.size();
         int64_t* shape_array_tmp = new int64_t[shape_tmp_size];
-	dims_num.push_back(shape_tmp_size);
+	    dims_num.push_back(shape_tmp_size);
         for(int index = 0; index < shape_tmp_size; ++index){
             num_tmp = atoi(shape_tmp[index].c_str());
-	    shape_array_tmp[index] = num_tmp;
+	        shape_array_tmp[index] = num_tmp;
         }
         dym_shape_map[name] = shape_array_tmp; 
           
@@ -176,11 +180,12 @@ Result ModelProcess::SetDynamicShape(std::map<std::string, int64_t *> dym_shape_
     aclTensorDesc * inputDesc;
     for (size_t i = 0; i < input_num; i++) {
         name = aclmdlGetInputNameByIndex(modelDesc_, i);
-	num_dims = sizeof(&dym_shape_map[name]) / sizeof(dym_shape_map[name][0]);
+	    num_dims = sizeof(&dym_shape_map[name]) / sizeof(dym_shape_map[name][0]);
 
-	inputDesc = aclCreateTensorDesc(ACL_FLOAT, dims_num[i], dym_shape_map[name], ACL_FORMAT_NCHW);
+	    inputDesc = aclCreateTensorDesc(ACL_FLOAT, dims_num[i], dym_shape_map[name], ACL_FORMAT_NCHW);
         ret = aclmdlSetDatasetTensorDesc(input_, inputDesc, i);
         if (ret != ACL_SUCCESS) {
+            cout << aclGetRecentErrMsg() << endl;
             ERROR_LOG("aclmdlSetDatasetTensorDesc failed %d", ret);
             return FAILED;
         }
@@ -196,6 +201,7 @@ Result ModelProcess::CheckDynamicHWSize(pair<int, int> dynamicPair, bool &is_dym
     bool if_same = false;
     ret = aclmdlGetDynamicHW(modelDesc_, -1, &dynamicHW);
     if (ret != ACL_SUCCESS) {
+        cout << aclGetRecentErrMsg() << endl;
         ERROR_LOG("get DynamicHW failed");
         return FAILED;
     }
@@ -209,7 +215,6 @@ Result ModelProcess::CheckDynamicHWSize(pair<int, int> dynamicPair, bool &is_dym
         }
         if (! if_same){
             ERROR_LOG("the dymHW parameter is not correct");
-            // GetDymBatchInfo();
             return FAILED;                  
         }
         is_dymHW = true;
@@ -228,6 +233,7 @@ Result ModelProcess::SetDynamicHW(std::pair<uint64_t , uint64_t > dynamicPair)
     aclError ret;
     ret = aclmdlSetDynamicHWSize(modelId_, input_, g_dymindex, dynamicPair.first, dynamicPair.second);
     if (ret != ACL_SUCCESS) {
+        cout << aclGetRecentErrMsg() << endl;
         ERROR_LOG("aclmdlSetDynamicHWSize failed %d", ret);
         return FAILED;
     }
@@ -242,6 +248,7 @@ Result ModelProcess::CheckDynamicBatchSize(uint64_t dymbatch, bool &is_dymbatch)
     bool if_same = false;
     ret = aclmdlGetDynamicBatch(modelDesc_, &batch_info);
     if (ret != ACL_SUCCESS) {
+        cout << aclGetRecentErrMsg() << endl;
         ERROR_LOG("get DynamicBatch failed");
         return FAILED;
     }
@@ -271,6 +278,7 @@ Result ModelProcess::SetDynamicBatchSize(uint64_t batchSize)
 {
     aclError ret = aclmdlSetDynamicBatchSize(modelId_, input_, g_dymindex, batchSize);
     if (ret != ACL_SUCCESS) {
+        cout << aclGetRecentErrMsg() << endl;
         ERROR_LOG("aclmdlSetDynamicBatchSize failed %d", ret);
         return FAILED;
     }
@@ -284,6 +292,7 @@ Result ModelProcess::GetMaxBatchSize(uint64_t &maxBatchSize)
     aclError ret; 
     ret = aclmdlGetDynamicBatch(modelDesc_, &batch_info);
     if (ret != ACL_SUCCESS) {
+        cout << aclGetRecentErrMsg() << endl;
         ERROR_LOG("get DynamicBatch failed");
         return FAILED;
     }
@@ -305,6 +314,7 @@ Result ModelProcess::GetCurOutputDimsMul(size_t index, vector<int64_t>& curOutpu
     int64_t tmp_dim = 1;
     ret = aclmdlGetCurOutputDims(modelDesc_, index, &ioDims);
     if (ret != ACL_SUCCESS) {
+        cout << aclGetRecentErrMsg() << endl;
         WARN_LOG("aclmdlGetCurOutputDims failed ret[%d], maybe the modle has dynamic shape", ret);
         return FAILED;
     }
@@ -362,6 +372,7 @@ Result ModelProcess::SetDynamicDims(vector<string> dym_dims)
     aclError ret = aclmdlSetInputDynamicDims(modelId_, input_, g_dymindex, &dims);
  
     if (ret != ACL_SUCCESS) {
+        cout << aclGetRecentErrMsg() << endl;
         ERROR_LOG("aclmdlSetInputDynamicDims failed %d", ret);
         return FAILED;
     }
@@ -454,6 +465,7 @@ Result ModelProcess::PrintDesc()
     aclmdlBatch batch_info;
     ret = aclmdlGetDynamicBatch(modelDesc_, &batch_info);
     if (ret != ACL_SUCCESS) {
+        cout << aclGetRecentErrMsg() << endl;
         ERROR_LOG("get DynamicBatch failed");
         return FAILED;
     }
@@ -467,6 +479,7 @@ Result ModelProcess::PrintDesc()
     aclmdlHW dynamicHW;
     ret = aclmdlGetDynamicHW(modelDesc_, -1, &dynamicHW);
     if (ret != ACL_SUCCESS) {
+        cout << aclGetRecentErrMsg() << endl;
         modelDesc_ = nullptr;
         return FAILED;
     }
@@ -502,6 +515,7 @@ Result ModelProcess::CreateDymInput(size_t index)
     void* inBufferDev = nullptr;
     aclError ret = aclrtMalloc(&inBufferDev, buffer_size, ACL_MEM_MALLOC_HUGE_FIRST);
     if (ret != ACL_SUCCESS) {
+        cout << aclGetRecentErrMsg() << endl;
         ERROR_LOG("malloc device buffer failed. size is %zu", buffer_size);
         return FAILED;
     }
@@ -514,6 +528,7 @@ Result ModelProcess::CreateDymInput(size_t index)
     }
     ret = aclmdlAddDatasetBuffer(input_, inputData);
     if (ret != ACL_SUCCESS) {
+        cout << aclGetRecentErrMsg() << endl;
         ERROR_LOG("add input dataset buffer failed");
         aclrtFree(inBufferDev);
         inBufferDev = nullptr;
@@ -542,6 +557,7 @@ Result ModelProcess::CreateInput(void* inputDataBuffer, size_t bufferSize)
 
     aclError ret = aclmdlAddDatasetBuffer(input_, inputData);
     if (ret != ACL_SUCCESS) {
+        cout << aclGetRecentErrMsg() << endl;
         ERROR_LOG("add input dataset buffer failed");
         aclDestroyDataBuffer(inputData);
         inputData = nullptr;
@@ -574,13 +590,15 @@ Result ModelProcess::CreateZeroInput()
 
         ret = aclrtMalloc(&inBufferDev, buffer_size_zero, ACL_MEM_MALLOC_NORMAL_ONLY);
         if (ret != ACL_SUCCESS) {
+            cout << aclGetRecentErrMsg() << endl;
             ERROR_LOG("malloc device buffer failed. size is %zu", buffer_size_zero);
             return FAILED;
         }
         if (strcmp(name, ACL_DYNAMIC_TENSOR_NAME) != 0) {
             ret = aclrtMemset(inBufferDev, buffer_size_zero, 0, buffer_size_zero);
             if (ret != ACL_SUCCESS) {
-                ERROR_LOG("memory set failed");\
+                cout << aclGetRecentErrMsg() << endl;
+                ERROR_LOG("memory set failed");
                 aclrtFree(inBufferDev);
                 inBufferDev = nullptr;
                 return FAILED;
@@ -596,6 +614,7 @@ Result ModelProcess::CreateZeroInput()
         }
         ret = aclmdlAddDatasetBuffer(input_, inputData);
         if (ret != ACL_SUCCESS) {
+            cout << aclGetRecentErrMsg() << endl;
             ERROR_LOG("add input dataset buffer failed");
             aclrtFree(inBufferDev);
             inBufferDev = nullptr;
@@ -665,12 +684,14 @@ Result ModelProcess::CreateOutput()
         void* outputBuffer = nullptr;
         aclError ret = aclrtMalloc(&outputBuffer, buffer_size, ACL_MEM_MALLOC_NORMAL_ONLY);
         if (ret != ACL_SUCCESS) {
+            cout << aclGetRecentErrMsg() << endl;
             ERROR_LOG("can't malloc buffer, size is %zu, create output failed", buffer_size);
             return FAILED;
         }
 
         aclDataBuffer* outputData = aclCreateDataBuffer(outputBuffer, buffer_size);
         if (ret != ACL_SUCCESS) {
+            cout << aclGetRecentErrMsg() << endl;
             ERROR_LOG("can't create data buffer, create output failed");
             aclrtFree(outputBuffer);
             return FAILED;
@@ -678,6 +699,7 @@ Result ModelProcess::CreateOutput()
 
         ret = aclmdlAddDatasetBuffer(output_, outputData);
         if (ret != ACL_SUCCESS) {
+            cout << aclGetRecentErrMsg() << endl;
             ERROR_LOG("can't add data buffer, create output failed");
             aclrtFree(outputBuffer);
             aclDestroyDataBuffer(outputData);
@@ -699,6 +721,7 @@ void ModelProcess::OutputModelResult(std::string& s, std::string& modelName, std
     size_t len = 0;
     ret = GetMaxBatchSize(maxBatchSize);
     if (ret != ACL_SUCCESS) {
+        cout << aclGetRecentErrMsg() << endl;
         ERROR_LOG("aclrtMallocHost failed, ret[%d]", ret);
         return;
     }   
@@ -720,11 +743,13 @@ void ModelProcess::OutputModelResult(std::string& s, std::string& modelName, std
         if (!g_is_device) {
             ret = aclrtMallocHost(&outHostData, len);
             if (ret != ACL_SUCCESS) {
+                cout << aclGetRecentErrMsg() << endl;
                 ERROR_LOG("aclrtMallocHost failed, ret[%d]", ret);
                 return;
             }
             ret = aclrtMemcpy(outHostData, len, data, len, ACL_MEMCPY_DEVICE_TO_HOST);
             if (ret != ACL_SUCCESS) {
+                cout << aclGetRecentErrMsg() << endl;
                 ERROR_LOG("aclrtMemcpy failed, ret[%d]", ret);
                 return;
             }
@@ -952,6 +977,7 @@ void ModelProcess::OutputModelResult(std::string& s, std::string& modelName, std
         if (!g_is_device) {
             ret = aclrtFreeHost(outHostData);
             if (ret != ACL_SUCCESS) {
+                cout << aclGetRecentErrMsg() << endl;
                 ERROR_LOG("aclrtFreeHost failed, ret[%d]", ret);
                 return;
             }
@@ -983,6 +1009,7 @@ Result ModelProcess::Execute()
 {
     aclError ret = aclmdlExecute(modelId_, input_, output_);
     if (ret != ACL_SUCCESS) {
+        cout << aclGetRecentErrMsg() << endl;
         ERROR_LOG("execute model failed, modelId is %u", modelId_);
         return FAILED;
     }
@@ -1000,6 +1027,7 @@ void ModelProcess::Unload()
 
     aclError ret = aclmdlUnload(modelId_);
     if (ret != ACL_SUCCESS) {
+        cout << aclGetRecentErrMsg() << endl;
         ERROR_LOG("unload model failed, modelId is %u", modelId_);
     }
     if (modelDesc_ != nullptr) {

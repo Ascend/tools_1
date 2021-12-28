@@ -59,6 +59,7 @@ Result SampleProcess::InitResource()
         ret = aclInit(nullptr);
     }
     if (ret != ACL_SUCCESS) {
+        cout << aclGetRecentErrMsg() << endl;
         ERROR_LOG("acl init failed");
         return FAILED;
     }
@@ -68,6 +69,7 @@ Result SampleProcess::InitResource()
     deviceId_ = g_device_id;
     ret = aclrtSetDevice(deviceId_);
     if (ret != ACL_SUCCESS) {
+        cout << aclGetRecentErrMsg() << endl;
         ERROR_LOG("acl open device %d failed", deviceId_);
         return FAILED;
     }
@@ -76,6 +78,7 @@ Result SampleProcess::InitResource()
     // create context (set current)
     ret = aclrtCreateContext(&context_, deviceId_);
     if (ret != ACL_SUCCESS) {
+        cout << aclGetRecentErrMsg() << endl;
         ERROR_LOG("acl create context failed");
         return FAILED;
     }
@@ -84,6 +87,7 @@ Result SampleProcess::InitResource()
     // create stream
     ret = aclrtCreateStream(&stream_);
     if (ret != ACL_SUCCESS) {
+        cout << aclGetRecentErrMsg() << endl;
         ERROR_LOG("acl create stream failed");
         return FAILED;
     }
@@ -93,6 +97,7 @@ Result SampleProcess::InitResource()
     aclrtRunMode runMode;
     ret = aclrtGetRunMode(&runMode);
     if (ret != ACL_SUCCESS) {
+        cout << aclGetRecentErrMsg() << endl;
         ERROR_LOG("acl get run mode failed");
         return FAILED;
     }
@@ -455,6 +460,7 @@ void SampleProcess::DestroyResource()
     if (stream_ != nullptr) {
         ret = aclrtDestroyStream(stream_);
         if (ret != ACL_SUCCESS) {
+            cout << aclGetRecentErrMsg() << endl;
             ERROR_LOG("destroy stream failed");
         }
         stream_ = nullptr;
@@ -464,6 +470,7 @@ void SampleProcess::DestroyResource()
     if (context_ != nullptr) {
         ret = aclrtDestroyContext(context_);
         if (ret != ACL_SUCCESS) {
+            cout << aclGetRecentErrMsg() << endl;
             ERROR_LOG("destroy context failed");
         }
         context_ = nullptr;
@@ -472,12 +479,14 @@ void SampleProcess::DestroyResource()
 
     ret = aclrtResetDevice(deviceId_);
     if (ret != ACL_SUCCESS) {
+        cout << aclGetRecentErrMsg() << endl;
         ERROR_LOG("reset device failed");
     }
     INFO_LOG("end to reset device is %d", deviceId_);
 
     ret = aclFinalize();
     if (ret != ACL_SUCCESS) {
+        cout << aclGetRecentErrMsg() << endl;
         ERROR_LOG("finalize acl failed");
     }
     INFO_LOG("end to finalize acl");
