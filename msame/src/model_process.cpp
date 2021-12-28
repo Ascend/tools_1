@@ -185,7 +185,7 @@ Result ModelProcess::SetDynamicShape(std::map<std::string, int64_t *> dym_shape_
 	    inputDesc = aclCreateTensorDesc(ACL_FLOAT, dims_num[i], dym_shape_map[name], ACL_FORMAT_NCHW);
         ret = aclmdlSetDatasetTensorDesc(input_, inputDesc, i);
         if (ret != ACL_SUCCESS) {
-        cout << aclGetRecentErrMsg() << endl;
+            cout << aclGetRecentErrMsg() << endl;
             ERROR_LOG("aclmdlSetDatasetTensorDesc failed %d", ret);
             return FAILED;
         }
@@ -590,15 +590,15 @@ Result ModelProcess::CreateZeroInput()
 
         ret = aclrtMalloc(&inBufferDev, buffer_size_zero, ACL_MEM_MALLOC_NORMAL_ONLY);
         if (ret != ACL_SUCCESS) {
-        cout << aclGetRecentErrMsg() << endl;
+            cout << aclGetRecentErrMsg() << endl;
             ERROR_LOG("malloc device buffer failed. size is %zu", buffer_size_zero);
             return FAILED;
         }
         if (strcmp(name, ACL_DYNAMIC_TENSOR_NAME) != 0) {
             ret = aclrtMemset(inBufferDev, buffer_size_zero, 0, buffer_size_zero);
             if (ret != ACL_SUCCESS) {
-        cout << aclGetRecentErrMsg() << endl;
-                ERROR_LOG("memory set failed");\
+                cout << aclGetRecentErrMsg() << endl;
+                ERROR_LOG("memory set failed");
                 aclrtFree(inBufferDev);
                 inBufferDev = nullptr;
                 return FAILED;
@@ -614,7 +614,7 @@ Result ModelProcess::CreateZeroInput()
         }
         ret = aclmdlAddDatasetBuffer(input_, inputData);
         if (ret != ACL_SUCCESS) {
-        cout << aclGetRecentErrMsg() << endl;
+            cout << aclGetRecentErrMsg() << endl;
             ERROR_LOG("add input dataset buffer failed");
             aclrtFree(inBufferDev);
             inBufferDev = nullptr;
@@ -684,14 +684,14 @@ Result ModelProcess::CreateOutput()
         void* outputBuffer = nullptr;
         aclError ret = aclrtMalloc(&outputBuffer, buffer_size, ACL_MEM_MALLOC_NORMAL_ONLY);
         if (ret != ACL_SUCCESS) {
-        cout << aclGetRecentErrMsg() << endl;
+            cout << aclGetRecentErrMsg() << endl;
             ERROR_LOG("can't malloc buffer, size is %zu, create output failed", buffer_size);
             return FAILED;
         }
 
         aclDataBuffer* outputData = aclCreateDataBuffer(outputBuffer, buffer_size);
         if (ret != ACL_SUCCESS) {
-        cout << aclGetRecentErrMsg() << endl;
+            cout << aclGetRecentErrMsg() << endl;
             ERROR_LOG("can't create data buffer, create output failed");
             aclrtFree(outputBuffer);
             return FAILED;
@@ -699,7 +699,7 @@ Result ModelProcess::CreateOutput()
 
         ret = aclmdlAddDatasetBuffer(output_, outputData);
         if (ret != ACL_SUCCESS) {
-        cout << aclGetRecentErrMsg() << endl;
+            cout << aclGetRecentErrMsg() << endl;
             ERROR_LOG("can't add data buffer, create output failed");
             aclrtFree(outputBuffer);
             aclDestroyDataBuffer(outputData);
@@ -743,13 +743,13 @@ void ModelProcess::OutputModelResult(std::string& s, std::string& modelName, std
         if (!g_is_device) {
             ret = aclrtMallocHost(&outHostData, len);
             if (ret != ACL_SUCCESS) {
-        cout << aclGetRecentErrMsg() << endl;
+                cout << aclGetRecentErrMsg() << endl;
                 ERROR_LOG("aclrtMallocHost failed, ret[%d]", ret);
                 return;
             }
             ret = aclrtMemcpy(outHostData, len, data, len, ACL_MEMCPY_DEVICE_TO_HOST);
             if (ret != ACL_SUCCESS) {
-        cout << aclGetRecentErrMsg() << endl;
+                cout << aclGetRecentErrMsg() << endl;
                 ERROR_LOG("aclrtMemcpy failed, ret[%d]", ret);
                 return;
             }
@@ -977,7 +977,7 @@ void ModelProcess::OutputModelResult(std::string& s, std::string& modelName, std
         if (!g_is_device) {
             ret = aclrtFreeHost(outHostData);
             if (ret != ACL_SUCCESS) {
-        cout << aclGetRecentErrMsg() << endl;
+                cout << aclGetRecentErrMsg() << endl;
                 ERROR_LOG("aclrtFreeHost failed, ret[%d]", ret);
                 return;
             }

@@ -460,7 +460,7 @@ void SampleProcess::DestroyResource()
     if (stream_ != nullptr) {
         ret = aclrtDestroyStream(stream_);
         if (ret != ACL_SUCCESS) {
-        cout << aclGetRecentErrMsg() << endl;
+            cout << aclGetRecentErrMsg() << endl;
             ERROR_LOG("destroy stream failed");
         }
         stream_ = nullptr;
@@ -470,7 +470,7 @@ void SampleProcess::DestroyResource()
     if (context_ != nullptr) {
         ret = aclrtDestroyContext(context_);
         if (ret != ACL_SUCCESS) {
-        cout << aclGetRecentErrMsg() << endl;
+            cout << aclGetRecentErrMsg() << endl;
             ERROR_LOG("destroy context failed");
         }
         context_ = nullptr;
