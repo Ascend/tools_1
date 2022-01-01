@@ -27,6 +27,7 @@ DIM_OBJECT = "dim"
 DATA_OBJECT = "Data"
 NET_OUTPUT_OBJECT = "NetOutput"
 ATC_CMDLINE_OBJECT = "atc_cmdline"
+INPUT_SHAPE = "--input_shape"
 INPUT_SHAPE_RANGE = "--input_shape_range"
 LIST_LIST_INT_OBJECT = 'list_list_int'
 LIST_LIST_I_OBJECT = 'list_list_i'
