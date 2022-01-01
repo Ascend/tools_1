@@ -155,7 +155,7 @@ class NetCompare(object):
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_OPEN_FILE_ERROR)
         return None
 
-    @staticmethod
+ @staticmethod
     def _process_result_one_line(fp_write, fp_read, npu_file_name, golden_file_name, result):
         writer = csv.writer(fp_write)
         # write header to file
@@ -166,7 +166,10 @@ class NetCompare(object):
         result_reader = csv.reader(fp_read)
         # update result data
         for line in result_reader:
-            if "Node_Output" != line[1]:
+            if len(line) < 3:
+                utils.print_warn_log('The len of line is {}'.format(len(line)))
+                continue
+            if line[1] != "Node_Output":
                 writer.writerow(line)
             else:
                 new_content = [line[0], "Node_Output", npu_file_name, golden_file_name, "[]"]
@@ -179,9 +182,6 @@ class NetCompare(object):
                     writer.writerow(new_content)
 
     def save_net_output_result_to_csv(self, npu_file, golden_file, result):
-        """
-        save_net_output_result_to_csv
-        """
         result_file_path = None
         result_file_backup_path = None
         npu_file_name = os.path.basename(npu_file)
@@ -207,7 +207,23 @@ class NetCompare(object):
             pass
 
     @staticmethod
-    def execute_msaccucmp_command(cmd, catch_log=False):
+    def _catch_compare_result(log_line, catch):
+        result = []
+        try:
+            if catch:
+                # get the compare result
+                message = log_line.decode().split("[INFO]")[1].strip().split(" ")
+                message = [item for item in message if item != '']
+                pattern = re.compile(r'^([0-9]+)\.?([0-9]+)?')
+                match = pattern.match(message[0])
+                if match is not None:
+                    result = message
+        except (OSError, SystemError, ValueError, TypeError, RuntimeError, MemoryError):
+            utils.print_warn_log('Failed to parse the alg compare result!')
+        finally:
+            return result
+
+    def execute_msaccucmp_command(self, cmd, catch=False):
         """
         Function Description:
             run the following command
@@ -224,12 +240,6 @@ class NetCompare(object):
             line = line.strip()
             if line:
                 print(line)
-                if catch_log:
-                    # get the compare result by alg
-                    message = line.decode().split("[INFO]")[1].strip().split(" ")
-                    message = [item for item in message if item != '']
-                    pattern = re.compile(r'^([0-9]+)\.?([0-9]+)?')
-                    match = pattern.match(message[0])
-                    if match is not None:
-                        result = message
+                compare_result = self._catch_compare_result(line, catch)
+                result = compare_result if compare_result else result
         return process.returncode, result
