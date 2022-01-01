@@ -186,8 +186,7 @@ class OmParser:
         for attr in self.json_object.get(ATTR_OBJECT):
             if KEY_OBJECT in attr and attr.get(KEY_OBJECT) == ATC_CMDLINE_OBJECT:
                 if VALUE_OBJECT in attr and S_OBJECT in attr.get(VALUE_OBJECT):
-                    if INPUT_SHAPE in attr.get(VALUE_OBJECT).get(S_OBJECT) or \
-                            INPUT_SHAPE_RANGE in attr.get(VALUE_OBJECT).get(S_OBJECT):
+                    if INPUT_SHAPE_RANGE in attr.get(VALUE_OBJECT).get(S_OBJECT):
                         return True
         return False
 
