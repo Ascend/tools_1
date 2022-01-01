@@ -155,7 +155,7 @@ class NetCompare(object):
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_OPEN_FILE_ERROR)
         return None
 
- @staticmethod
+    @staticmethod
     def _process_result_one_line(fp_write, fp_read, npu_file_name, golden_file_name, result):
         writer = csv.writer(fp_write)
         # write header to file

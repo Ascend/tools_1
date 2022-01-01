@@ -175,12 +175,9 @@ class OmParser:
         """
         get_net_output_data_info
         """
-        for graph in self.json_object.get(GRAPH_OBJECT):
-            if graph.get(NAME_OBJECT) in self.subgraph_name:
-                continue
-            for operator in graph.get(OP_OBJECT):
-                if NET_OUTPUT_OBJECT == operator.get(TYPE_OBJECT):
-                    return self._parse_net_output_node_attr(operator)
+        for operator in self._gen_operator_list():
+            if NET_OUTPUT_OBJECT == operator.get(TYPE_OBJECT):
+                return self._parse_net_output_node_attr(operator)
 
     def _is_input_shape_range(self):
         if ATTR_OBJECT not in self.json_object:
