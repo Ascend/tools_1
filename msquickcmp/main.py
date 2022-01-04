@@ -65,7 +65,6 @@ def _correct_the_wrong_order(left_index, right_index, golden_net_output_info):
 
 
 def _check_output_node_name_mapping(original_net_output_node, golden_net_output_info):
-
     for left_index, node_name in original_net_output_node.items():
         match = False
         for right_index, dump_file_path in golden_net_output_info.items():

@@ -20,6 +20,10 @@ MSACCUCMP_FILE_NAME = ["msaccucmp.py", "msaccucmp.pyc"]
 PYC_FILE_TO_PYTHON_VERSION = "3.7.5"
 WRITE_FLAGS = os.O_WRONLY | os.O_CREAT
 WRITE_MODES = stat.S_IWUSR | stat.S_IRUSR
+# index of each member in compare result_*.csv file
+LEFTOP_INDEX = 1
+RIGHTOP_INDEX = 2
+MIN_ELEMENT_NUM = 3
 
 
 class NetCompare(object):
@@ -166,16 +170,16 @@ class NetCompare(object):
         result_reader = csv.reader(fp_read)
         # update result data
         for line in result_reader:
-            if len(line) < 3:
-                utils.print_warn_log('The len of line is {}'.format(len(line)))
+            if len(line) < MIN_ELEMENT_NUM:
+                utils.print_warn_log('The content of line is {}'.format(line))
                 continue
-            if line[1] != "Node_Output":
+            if line[LEFTOP_INDEX] != "Node_Output":
                 writer.writerow(line)
             else:
                 new_content = [line[0], "Node_Output", npu_file_name, golden_file_name, "[]"]
                 new_content.extend(result)
                 new_content.extend([""])
-                if "*" == line[2]:
+                if line[RIGHTOP_INDEX] == "*":
                     writer.writerow(new_content)
                 else:
                     writer.writerow(line)
