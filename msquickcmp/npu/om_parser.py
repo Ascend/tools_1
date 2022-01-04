@@ -44,7 +44,7 @@ DTYPE_MAP = {"DT_FLOAT": np.float32, "DT_FLOAT16": np.float16, "DT_DOUBLE": np.f
 SPECIAL_OPS_TYPE = ("Cast", "TransData")
 
 
-class OmParser:
+class OmParser(object):
     """
     This class is used to parse om model.
     """
