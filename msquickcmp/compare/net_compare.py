@@ -225,10 +225,12 @@ class NetCompare(object):
                 match = pattern.match(message[0])
                 if match is not None:
                     result = message
+            return result
         except (OSError, SystemError, ValueError, TypeError, RuntimeError, MemoryError):
             utils.print_warn_log('Failed to parse the alg compare result!')
+            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_NET_OUTPUT_ERROR)
         finally:
-            return result
+            pass
 
     def execute_msaccucmp_command(self, cmd, catch=False):
         """
