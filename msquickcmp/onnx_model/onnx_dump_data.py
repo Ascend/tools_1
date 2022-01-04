@@ -158,15 +158,13 @@ class OnnxDumpData(DumpData):
 
     def _save_dump_data(self, dump_bins, onnx_dump_data_dir, old_onnx_model, net_output_node):
         res_idx = 0
-        output_idx = 0
         for node in old_onnx_model.graph.node:
             for j, output in enumerate(node.output):
                 file_name = node.name.replace('.', '_').replace('/', '_') + "." + str(j) + "." \
                             + str(round(time.time() * 1000000)) + ".npy"
                 file_path = os.path.join(onnx_dump_data_dir, file_name)
                 if output in net_output_node:
-                    self.net_output[output_idx] = file_path
-                    output_idx += 1
+                    self.net_output[net_output_node.index(output)] = file_path
                 np.save(file_path, dump_bins[res_idx])
                 res_idx += 1
         for key, value in self.net_output.items():

@@ -104,7 +104,6 @@ class TfDumpData(DumpData):
             next(tensor_name_file)
             next(tensor_name_file)
             # start to convert tensor to pt command
-            output_index = 0
             for line in tensor_name_file:
                 new_line = line.strip()
                 tensor_name = new_line[new_line.rfind(' ') + 1:]
@@ -113,8 +112,7 @@ class TfDumpData(DumpData):
                 npy_file_path = os.path.join(self.tf_dump_data_dir, npy_file_name)
                 # get the net_output dump file info
                 if tensor_name in self.net_output_name:
-                    self.net_output[output_index] = npy_file_path
-                    output_index += 1
+                    self.net_output[self.net_output_name.index(tensor_name)] = npy_file_path
                 pt_command_list.append("pt %s -n 0 -w %s" % (tensor_name, npy_file_path))
         return pt_command_list
 

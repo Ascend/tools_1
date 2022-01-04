@@ -47,6 +47,15 @@ class NpuDumpData(DumpData):
         self.msame_compile(msame_dir)
         return self.msame_run(msame_dir)
 
+    def get_expect_output_name(self):
+        """
+        Function Description:
+            get expect output node name in golden net
+        Return Value:
+            output node name in golden net
+        """
+        return self.om_parser.get_expect_net_output_name()
+
     def msame_compile(self, msame_dir):
         """
         Function Description:
