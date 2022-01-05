@@ -18,6 +18,7 @@ from common.utils import AccuracyCompareException
 MSACCUCMP_DIR_PATH = "toolkit/tools/operator_cmp/compare"
 MSACCUCMP_FILE_NAME = ["msaccucmp.py", "msaccucmp.pyc"]
 PYC_FILE_TO_PYTHON_VERSION = "3.7.5"
+INFO_FLAG = "[INFO]"
 WRITE_FLAGS = os.O_WRONLY | os.O_CREAT
 WRITE_MODES = stat.S_IWUSR | stat.S_IRUSR
 # index of each member in compare result_*.csv file
@@ -219,12 +220,17 @@ class NetCompare(object):
         try:
             if catch:
                 # get the compare result
-                message = log_line.decode().split("[INFO]")[1].strip().split(" ")
-                message = [item for item in message if item != '']
-                pattern = re.compile(r'^([0-9]+)\.?([0-9]+)?')
-                match = pattern.match(message[0])
-                if match is not None:
-                    result = message
+                info = log_line.decode().split(INFO_FLAG)
+                if len(info) > 1:
+                    info_content = info[1].strip().split(" ")
+                    info_content = [item for item in info_content if item != '']
+                    pattern_num = re.compile(r'^([0-9]+)\.?([0-9]+)?')
+                    pattern_nan = re.compile(r'NaN')
+                    match = pattern_num.match(info_content[0])
+                    if match:
+                        result = info_content
+                    if not match and pattern_nan.match(info_content[0]):
+                        result = info_content
             return result
         except (OSError, SystemError, ValueError, TypeError, RuntimeError, MemoryError):
             utils.print_warn_log('Failed to parse the alg compare result!')
