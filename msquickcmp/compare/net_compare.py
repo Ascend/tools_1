@@ -225,7 +225,7 @@ class NetCompare(object):
                     info_content = info[1].strip().split(" ")
                     info_content = [item for item in info_content if item != '']
                     pattern_num = re.compile(r'^([0-9]+)\.?([0-9]+)?')
-                    pattern_nan = re.compile(r'NaN')
+                    pattern_nan = re.compile(r'NaN', re.I)
                     match = pattern_num.match(info_content[0])
                     if match:
                         result = info_content
