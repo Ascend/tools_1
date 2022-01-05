@@ -26,6 +26,7 @@ LEFTOP_INDEX = 1
 RIGHTOP_INDEX = 2
 MIN_ELEMENT_NUM = 3
 
+
 class NetCompare(object):
     """
     Class for compare the entire network
