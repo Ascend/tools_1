@@ -34,6 +34,8 @@ def _accuracy_compare_parser(parser):
     parser.add_argument("-s", "--input-shape", dest="input_shape", default="",
                         help="<Optional> Shape of input shape. Separate multiple nodes with semicolons(;)."
                              " E.g: input_name1:1,224,224,3;input_name2:3,300")
+    parser.add_argument("-d", "--device", dest="device", default="0",
+                        help="<Optional> Input device ID [0, 255], default is 0.")
     parser.add_argument("--output-size", dest="output_size", default="",
                         help="<Optional> The size of output. Separate multiple sizes with commas(,)."
                              " E.g: 10200,34000")

@@ -24,6 +24,7 @@ ACL_JSON_PATH = "out/acl.json"
 NPU_DUMP_DATA_BASE_PATH = "dump_data/npu"
 RESULT_DIR = "result"
 INPUT = "input"
+MAX_DEVICE_ID = 255
 
 
 class NpuDumpData(DumpData):
@@ -43,6 +44,7 @@ class NpuDumpData(DumpData):
             npu dump data path
         """
         self._check_input_path_param()
+
         msame_dir = os.path.join(os.path.realpath(".."), MSAME_DIR)
         self.msame_compile(msame_dir)
         return self.msame_run(msame_dir)
@@ -132,7 +134,7 @@ class NpuDumpData(DumpData):
             os.mknod(acl_json_path, mode=0o600)
         self._write_content_to_acl_json(acl_json_path, model_name, npu_data_output_dir)
         msame_cmd = ["./" + MSAME_COMMAND_PATH, "--model", self.arguments.offline_model_path, "--input",
-                     self.arguments.input_path, "--output", npu_data_output_dir]
+                     self.arguments.input_path, "--device", self.arguments.device, "--output", npu_data_output_dir]
         self._make_msame_cmd_for_shape_range(msame_cmd)
         os.chdir(os.path.join(msame_dir, OUT_PATH))
         # do msame command
@@ -174,6 +176,14 @@ class NpuDumpData(DumpData):
         else:
             bin_file_path_array = utils.check_input_bin_file_path(self.arguments.input_path)
             self.arguments.input_path = ",".join(bin_file_path_array)
+
+    def _check_device_param_valid(self):
+        if not self.arguments.device.isdigit() and int(self.arguments.device) > MAX_DEVICE_ID:
+            utils.print_error_log(
+                "Please enter a valid number for device, the device id should"
+                " in [0, 255], now is %s." % self.arguments.device)
+            raise AccuracyCompareException(
+                utils.ACCURACY_COMPARISON_INVALID_DEVICE_ERROR)
 
     def _compare_shape_vs_bin_file(self):
         shape_size_array = self.om_parser.get_shape_size()
