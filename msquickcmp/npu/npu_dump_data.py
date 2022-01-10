@@ -44,7 +44,7 @@ class NpuDumpData(DumpData):
             npu dump data path
         """
         self._check_input_path_param()
-
+        self._check_device_param_valid()
         msame_dir = os.path.join(os.path.realpath(".."), MSAME_DIR)
         self.msame_compile(msame_dir)
         return self.msame_run(msame_dir)
