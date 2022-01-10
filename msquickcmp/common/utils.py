@@ -343,6 +343,6 @@ def check_device_param_valid(device):
     """
     if not device.isdigit() or int(device) > MAX_DEVICE_ID:
         print_error_log(
-            "Please enter a valid number for device, the device id should"
+            "Please enter a valid number for device, the device id should be"
             " in [0, 255], now is %s." % device)
         raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_DEVICE_ERROR)
