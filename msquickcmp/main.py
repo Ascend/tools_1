@@ -99,6 +99,7 @@ def main():
         args.out_path = os.path.realpath(os.path.join(args.out_path, time_dir))
         utils.check_file_or_directory_path(args.model_path)
         utils.check_file_or_directory_path(args.offline_model_path)
+        utils.check_device_param_valid(args.device)
         # generate dump data by the original model
         golden_dump = _generate_golden_data_model(args)
         golden_dump_data_path = golden_dump.generate_dump_data()
