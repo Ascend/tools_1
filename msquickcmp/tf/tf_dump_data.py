@@ -115,8 +115,11 @@ class TfDumpData(DumpData):
                 count_tensor_name = tensor_count.get(tensor_name)
                 npy_file_name = "%s.%s.npy" % (tensor_name.replace("/", "_").replace(":", "."),
                                                str(round(time.time() * 1000000)))
-                pt_command_list.append("pt %s -n %d -w %s" % (tensor_name, count_tensor_name,
-                                       os.path.join("sym/data", npy_file_name)))
+                npy_file_path = os.path.join(self.tf_dump_data_dir, npy_file_name)
+                # get the net_output dump file info
+                if tensor_name in self.net_output_name:
+                    self.net_output[self.net_output_name.index(tensor_name)] = npy_file_path
+                pt_command_list.append("pt %s -n %d -w %s" % (tensor_name, count_tensor_name, npy_file_path))
         return pt_command_list
 
     def _run_tf_dbg_dump(self, cmd_line):
