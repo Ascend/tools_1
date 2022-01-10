@@ -34,6 +34,8 @@ def _accuracy_compare_parser(parser):
     parser.add_argument("-s", "--input-shape", dest="input_shape", default="",
                         help="<Optional> Shape of input shape. Separate multiple nodes with semicolons(;)."
                              " E.g: input_name1:1,224,224,3;input_name2:3,300")
+    parser.add_argument("-d", "--device", dest="device", default="0",
+                        help="<Optional> Input device ID [0, 255], default is 0.")
     parser.add_argument("--output-size", dest="output_size", default="",
                         help="<Optional> The size of output. Separate multiple sizes with commas(,)."
                              " E.g: 10200,34000")
@@ -97,6 +99,7 @@ def main():
         args.out_path = os.path.realpath(os.path.join(args.out_path, time_dir))
         utils.check_file_or_directory_path(args.model_path)
         utils.check_file_or_directory_path(args.offline_model_path)
+        utils.check_device_param_valid(args.device)
         # generate dump data by the original model
         golden_dump = _generate_golden_data_model(args)
         golden_dump_data_path = golden_dump.generate_dump_data()

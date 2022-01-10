@@ -132,7 +132,7 @@ class NpuDumpData(DumpData):
             os.mknod(acl_json_path, mode=0o600)
         self._write_content_to_acl_json(acl_json_path, model_name, npu_data_output_dir)
         msame_cmd = ["./" + MSAME_COMMAND_PATH, "--model", self.arguments.offline_model_path, "--input",
-                     self.arguments.input_path, "--output", npu_data_output_dir]
+                     self.arguments.input_path, "--device", self.arguments.device, "--output", npu_data_output_dir]
         self._make_msame_cmd_for_shape_range(msame_cmd)
         os.chdir(os.path.join(msame_dir, OUT_PATH))
         # do msame command
