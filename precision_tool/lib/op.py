@@ -12,6 +12,7 @@ NO_INPUT_NODES = ['Data', 'AtomicAddrClean', 'Recv', 'Constant']
 NO_OUTPUT_NODES = ['Send', 'Recv', 'NetOutput']
 
 JSON_KEY_NAME = 'name'
+JSON_KEY_ID = 'id'
 JSON_KEY_TYPE = 'type'
 JSON_KEY_ATTR = 'attr'
 JSON_KEY = 'key'
@@ -46,6 +47,10 @@ class Op(object):
     def name(self):
         """Get op name"""
         return self.op_json[JSON_KEY_NAME]
+
+    def id(self):
+        """Get op id"""
+        return self.op_json[JSON_KEY_ID] if JSON_KEY_ID in self.op_json else ''
 
     def json(self):
         return json.dumps(self.op_json, indent=2)
@@ -137,6 +142,7 @@ class Op(object):
     def summary(self, origin_txt=False, attr_detail=False):
         """Summary of current op"""
         res_str = ['Op(Type/Name): [green][%s][/green] %s' % (self.type(), self.name()),
+                   'ID:    [yellow]%s[/yellow]' % self.id(),
                    'KernelName:    [yellow]%s[/yellow]' % self.kernel_name(),
                    'KernelLibName: [yellow]%s[/yellow]' % self.ge_attr_op_kernel_lib_name(),
                    'GraphName:     [yellow]%s[/yellow]' % self.graph_name]

@@ -1,6 +1,12 @@
-import h5py
 import os
 import numpy as np
+
+try:
+    import h5py
+except ImportError as import_err:
+    h5py = None
+    print("Failed to import h5py. some function may disable. Run 'pip3 install h5py' to fix it.",
+          import_err)
 
 from lib.util import util
 from lib.constant import Constant
@@ -45,6 +51,8 @@ class H5Util(object):
     def _prepare(self):
         if not os.path.isfile(self.file_name) or not str(self.file_name).endswith(Constant.Suffix.H5):
             self.log.error("File [%s] not exist or not a h5 file" % self.file_name)
+        if h5py is None:
+            self.log.warning("Can not find python module h5py.")
         self.h5 = h5py.File(self.file_name, 'r')
         self._list_tensors(self.h5)
 

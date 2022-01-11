@@ -10,6 +10,7 @@ from . import config as cfg
 FLAG_DUMP_GE_GRAPH = 'DUMP_GE_GRAPH'
 FLAG_DUMP_GRAPH_LEVEL = 'DUMP_GRAPH_LEVEL'
 FLAG_DUMP_GRAPH_PATH = 'DUMP_GRAPH_PATH'
+FLAG_NPU_DUMP_GRAPH = 'NPU_DUMP_GRAPH'
 
 # Fusion switch file path
 FUSION_SWITCH_FILE = os.path.join(os.path.dirname(__file__), 'fusion_switch.cfg')
@@ -160,6 +161,7 @@ def _set_dump_graph_flags():
     os.environ[FLAG_DUMP_GE_GRAPH] = str(cfg.DUMP_GE_GRAPH_VALUE)
     os.environ[FLAG_DUMP_GRAPH_LEVEL] = str(cfg.DUMP_GRAPH_LEVEL_VALUE)
     os.environ[FLAG_DUMP_GRAPH_PATH] = cfg.DEFAULT_NPU_GRAPH_DIR
+    os.environ[FLAG_NPU_DUMP_GRAPH] = 'true'
 
 
 def _is_dump(action):
