@@ -128,7 +128,7 @@ output-path/timestamp
 | -i，--input-path          | 模型的输入数据路径，默认根据模型的input随机生成，多个输入以逗号分隔，例如：/home/input\_0.bin，/home/input\_1.bin | 否    |
 | -c，--cann-path           | CANN包安装完后路径，默认为/usr/local/Ascend/ascend-toolkit/latest | 否    |
 | -o，--output-path         | 输出文件路径，默认为当前路径                           | 否    |
-| -s，--input_shape         | 模型输入的shape信息，默认为空，例如input_name1:1,224,224,3;input_name2:3,300,节点中间使用英文分号隔开。input_name必须是转换前的网络模型中的节点名称 | 否    |
+| -s，--input-shape         | 模型输入的shape信息，默认为空，例如input_name1:1,224,224,3;input_name2:3,300,节点中间使用英文分号隔开。input_name必须是转换前的网络模型中的节点名称 | 否    |
 | -d，--device              | 指定运行设备 [0,255]，可选参数，默认0                  | 否    |
 | --output-nodes           | 用户指定的输出节点。多个节点用英文分号（;）隔开。例如:node_name1:0;node_name2:1;node_name3:0 | 否    |
 | --output-size            | 指定模型的输出size，有几个输出，就设几个值。动态shape场景下，获取模型的输出size可能为0，用户需根据输入的shape预估一个较合适的值去申请内存。多个输出size用英文分号（,）隔开, 例如"10000,10000,10000"。 | 否    |
