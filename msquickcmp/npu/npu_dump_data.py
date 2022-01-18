@@ -110,7 +110,7 @@ class NpuDumpData(DumpData):
                                           % self.arguments.output_size)
                     raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
             msame_cmd.append('--outputSize')
-            msame_cmd.append('%s' % self.arguments.output_size)
+            msame_cmd.append(self.arguments.output_size)
 
     def msame_run(self, msame_dir):
         """
