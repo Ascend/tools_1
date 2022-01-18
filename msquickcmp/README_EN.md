@@ -21,7 +21,7 @@ For details about the usage restrictions of the tool, visit https://support.huaw
 4. Install TensorFlow 1.15.0.
 
    For details, visit: https://bbs.huaweicloud.com/blogs/181055
-
+- Note: If the installation of dependent modules fails using the pip command, it is recommended to execute the command **pip3 install --upgrade pip** to avoid installation failure due to low pip version.
 ### Tool Download
 
 - By downloading the package:

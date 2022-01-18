@@ -21,7 +21,7 @@
 4. 安装TensorFlow1.15.0的环境
 
    安装参考文档：https://bbs.huaweicloud.com/blogs/181055
-
+- 注：若pip安装依赖失败，建议执行命令pip3 install --upgrade pip 进行升级，避免因pip版本过低导致安装失败。
 ### 获取
 
 - 下载压缩包方式获取。
