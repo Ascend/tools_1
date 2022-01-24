@@ -48,7 +48,7 @@ void* Utils::ReadBinFile(std::string fileName, uint32_t& fileSize)
             return nullptr;
         }
     } else {
-        ret = aclrtMalloc(&binFileBufferData, binFileBufferLen, ACL_MEM_MALLOC_NORMAL_ONLY);
+        ret = aclrtMalloc(&binFileBufferData, binFileBufferLen, ACL_MEM_MALLOC_HUGE_FIRST);
         if (ret != ACL_SUCCESS) {
             cout << aclGetRecentErrMsg() << endl;
             ERROR_LOG("malloc device buffer failed. size is %u", binFileBufferLen);
@@ -73,7 +73,7 @@ void* Utils::GetDeviceBufferOfFile(std::string fileName, uint32_t& fileSize)
     if (!g_is_device) {
         void* inBufferDev = nullptr;
         uint32_t inBufferSize = inputHostBuffSize;
-        aclError ret = aclrtMalloc(&inBufferDev, inBufferSize, ACL_MEM_MALLOC_NORMAL_ONLY);
+        aclError ret = aclrtMalloc(&inBufferDev, inBufferSize, ACL_MEM_MALLOC_HUGE_FIRST);
         if (ret != ACL_SUCCESS) {
             cout << aclGetRecentErrMsg() << endl;
             ERROR_LOG("malloc device buffer failed. size is %u", inBufferSize);

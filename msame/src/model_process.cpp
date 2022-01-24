@@ -588,7 +588,7 @@ Result ModelProcess::CreateZeroInput()
         size_t buffer_size_zero = aclmdlGetInputSizeByIndex(modelDesc_, i);
         void* inBufferDev = nullptr;
 
-        ret = aclrtMalloc(&inBufferDev, buffer_size_zero, ACL_MEM_MALLOC_NORMAL_ONLY);
+        ret = aclrtMalloc(&inBufferDev, buffer_size_zero, ACL_MEM_MALLOC_HUGE_FIRST);
         if (ret != ACL_SUCCESS) {
             cout << aclGetRecentErrMsg() << endl;
             ERROR_LOG("malloc device buffer failed. size is %zu", buffer_size_zero);
@@ -682,7 +682,7 @@ Result ModelProcess::CreateOutput()
             buffer_size = aclmdlGetOutputSizeByIndex(modelDesc_, i);
         }
         void* outputBuffer = nullptr;
-        aclError ret = aclrtMalloc(&outputBuffer, buffer_size, ACL_MEM_MALLOC_NORMAL_ONLY);
+        aclError ret = aclrtMalloc(&outputBuffer, buffer_size, ACL_MEM_MALLOC_HUGE_FIRST);
         if (ret != ACL_SUCCESS) {
             cout << aclGetRecentErrMsg() << endl;
             ERROR_LOG("can't malloc buffer, size is %zu, create output failed", buffer_size);
