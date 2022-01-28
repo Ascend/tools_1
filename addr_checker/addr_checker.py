@@ -101,7 +101,7 @@ def _get_the_latest_aicerr_form_ret(ret: list) -> int:
 def _get_time_and_kernel_name() -> tuple:
     data = _get_time_and_kernel_name_execute_command()
     regexp = r"(\d+-\d+-\d+-\d+:\d+:\d+\.\d+\.\d+).+?device_id=(\d+)\s*,\s*stream_id=" \
-             r"(\d+)\s*.+?\s*task_id=(\d+)\s*,\s*fault kernel_name=" \
+             r"(\d+)\s*.+?\s*task_id=(\d+)\s*,.*?fault kernel_name=" \
              r"([-\d_]{0,}(\S+?)),\s*func_name=(\S+)__kernel\d+"
     ret = re.findall(regexp, data, re.M | re.S)
     if len(ret) == 0:
@@ -126,6 +126,14 @@ def _get_alloc_addr() -> list:
     for _, (_, size, addr) in enumerate(ret):
         alloc_addr.append((addr, int(size)))
     return alloc_addr
+
+
+def _remove_first_found_addr(addr, addr_list):
+    for i, ava_addr_item in enumerate(addr_list):
+        if addr == ava_addr_item[0]:
+            addr_list.pop(i)
+            break
+    return addr_list
 
 
 def _get_available_addrs(occur_time: str) -> list:
@@ -157,7 +165,8 @@ def _get_available_addrs(occur_time: str) -> list:
     for _, (free_time, addr) in enumerate(free_ret):
         free_time_obj = Utils.strplogtime(free_time)
         if free_time_obj < occur_time_obj:
-            avl_addr = list(filter(lambda t: addr not in t, avl_addr))
+            avl_addr = _remove_first_found_addr(addr, avl_addr)
+
     return avl_addr
 
 
@@ -324,27 +333,32 @@ def print_summary(ava_addr, used_addrs):
             print(f"*[ERROR]output[{index}] is out of range")
     print("\n")
     for input_param in input_params:
-        index = input_param.get("index")
-        size = input_param.get("size")
+        index = int(input_param.get("index"))
+        size = int(input_param.get("size"))
         addr = int(input_param.get("addr"))
-        print(f"input[{index}] addr: {addr} size: {size}")
+        end_addr = addr + size
+        print(f"input[{index}] addr: {hex(addr)} end_addr:{hex(end_addr)} size: {hex(size)}")
 
     for output_param in output_params:
-        index = output_param.get("index")
-        size = output_param.get("size")
+        index = int(output_param.get("index"))
+        size = int(output_param.get("size"))
         addr = int(output_param.get("addr"))
-        print(f"output[{index}] addr: {addr} size: {size}")
+        end_addr = addr + size
+        print(f"output[{index}] addr: {hex(addr)} end_addr:{hex(end_addr)} size: {hex(size)}")
 
     if workspace:
         print(f"workspace_bytes:{workspace}")
 
-    print("\navaliable addrs:\nstart_addr        size\n")
+    print("\navaliable addrs:\nstart_addr            end_addr              size\n")
     for alloc_addr in ava_addr:
-        print(f"{alloc_addr[0]}        {alloc_addr[1]}\n")
+        start_addr = int(alloc_addr[0], 16)
+        size = int(alloc_addr[1])
+        end_addr = start_addr + size
+        print(f"{hex(start_addr)}        {hex(end_addr)}        {hex(size)}\n")
 
-    print("===================================================="
-        "==============Summary===============================")
-    
+    print("\n\n\n============================================================"
+          "======Summary======================================================")
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -366,5 +380,3 @@ if __name__ == "__main__":
     except BaseException as e:
         logging.exception(e)
         print("Check addr error failed")
-
-

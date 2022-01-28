@@ -6,7 +6,7 @@
 
 ## **前置条件**<a name="section1119055923713"></a>
 
-使用一键收集故障信息工具[npucollecter](https://gitee.com/ascend/tools/tree/master/npucollector)收集上报AI Core Error时的运行过程日志。例如：l2loss.tar.gz，存放到路径下：/home/user/log/host/cann。
+获取程序运行host日志。例如：/home/user/log/host/cann。
 
 ## **使用方法**<a name="section204356973818"></a>
 
