@@ -241,6 +241,7 @@ void Utils::ProfilerJson(bool isprof, map<char, string>& params)
         std::string out_profiler_path = out_path + "/profiler";
         ofstream outstr("acl.json", ios::out);
         outstr << "{\n\"profiler\": {\n    \"switch\": \"on\",\n";
+        outstr << "\"aicpu\": \"on\",\n";
         outstr << "\"output\": \"" << out_profiler_path << "\",\n    ";
         outstr << "\"aic_metrics\": \"\"}\n}";
         outstr.close();
