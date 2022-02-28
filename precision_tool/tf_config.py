@@ -56,6 +56,27 @@ def estimator_dump():
     return tf_debug.DumpingDebugHook(cfg.TF_DEBUG_DUMP_DIR)
 
 
+def npu_device_dump_config(npu_device, action):
+    """For tf2.x
+    :param npu_device: npu_device
+    :param action: dump | overflow| fusion_off | fusion_switch
+    :return: npu_device
+    """
+    _init()
+    if _is_overflow(action):
+        npu_device.global_options().dump_config.enable_dump_debug = True
+        npu_device.global_options().dump_config.dump_path = cfg.NPU_OVERFLOW_DUMP_DIR
+        npu_device.global_options().dump_config.dump_debug_mode = "all"
+        # npu_device.global_options().op_debug_level
+    if _is_dump(action):
+        npu_device.global_options().dump_config.enable_dump = True
+        npu_device.global_options().dump_config.dump_path = cfg.DEFAULT_NPU_DUMP_DIR
+        npu_device.global_options().dump_config.dump_debug_mode = "all"
+    if _is_fusion_off(action):
+        print("TODO....")
+    return npu_device
+
+
 def estimator_dump_config(action=None):
     """return DumpConfig.
     In estimator mode. set dump_config in NPURunConfig().
