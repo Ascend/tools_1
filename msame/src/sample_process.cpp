@@ -126,7 +126,7 @@ Result SampleProcess::Process(map<char, string>& params, vector<string>& input_f
 
     vector<string> dym_dims;
     vector<string> dym_shape_tmp;
-    map<string, int64_t *> dym_shape_map;
+    map<string, std::vector<int64_t>> dym_shape_map;
     vector<int64_t> dims_num;
 
     Result ret = processModel.LoadModelFromFile(omModelPath);
@@ -310,7 +310,7 @@ Result SampleProcess::Process(map<char, string>& params, vector<string>& input_f
                 }                    
             }
             else if (g_is_dymShape){
-		ret = processModel.SetDynamicShape(dym_shape_map, dims_num);
+		        ret = processModel.SetDynamicShape(dym_shape_map, dims_num);
                 if (ret != SUCCESS) {
                     ERROR_LOG("set dynamic shape failed");
                     return FAILED;
