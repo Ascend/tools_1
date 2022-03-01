@@ -113,7 +113,7 @@ Result ModelProcess::GetDynamicIndex(size_t &dymindex)
     return SUCCESS;
 }
 
-Result ModelProcess::CheckDynamicShape(std::vector<std::string> dym_shape_tmp, std::map<string, int64_t *> &dym_shape_map, std::vector<int64_t> &dims_num)
+Result ModelProcess::CheckDynamicShape(std::vector<std::string> dym_shape_tmp, std::map<string, std::vector<int64_t>> &dym_shape_map, std::vector<int64_t> &dims_num)
 {
     aclError ret; 
     const char *inputname = nullptr;
@@ -151,14 +151,14 @@ Result ModelProcess::CheckDynamicShape(std::vector<std::string> dym_shape_tmp, s
         }
         Utils::SplitStringWithPunctuation(shape_str, shape_tmp, ',');
         size_t shape_tmp_size = shape_tmp.size();
-        int64_t* shape_array_tmp = new int64_t[shape_tmp_size];
+        vector<int64_t> shape_array_tmp;
+        
 	    dims_num.push_back(shape_tmp_size);
         for(int index = 0; index < shape_tmp_size; ++index){
             num_tmp = atoi(shape_tmp[index].c_str());
-	        shape_array_tmp[index] = num_tmp;
+            shape_array_tmp.push_back(num_tmp);  
         }
-        dym_shape_map[name] = shape_array_tmp; 
-          
+        dym_shape_map[name] = shape_array_tmp;     
     }
     for (size_t i = 0; i < inputnames.size(); ++i){
         if (dym_shape_map.count(inputnames[i]) <= 0){
@@ -171,18 +171,17 @@ Result ModelProcess::CheckDynamicShape(std::vector<std::string> dym_shape_tmp, s
 
 }
 
-Result ModelProcess::SetDynamicShape(std::map<std::string, int64_t *> dym_shape_map, std::vector<int64_t> &dims_num)
+Result ModelProcess::SetDynamicShape(std::map<std::string, std::vector<int64_t>> dym_shape_map, std::vector<int64_t> &dims_num)
 {
     aclError ret;
     const char *name;
     int input_num = dym_shape_map.size();
-    int num_dims = 0;
     aclTensorDesc * inputDesc;
     for (size_t i = 0; i < input_num; i++) {
         name = aclmdlGetInputNameByIndex(modelDesc_, i);
-	    num_dims = sizeof(&dym_shape_map[name]) / sizeof(dym_shape_map[name][0]);
-
-	    inputDesc = aclCreateTensorDesc(ACL_FLOAT, dims_num[i], dym_shape_map[name], ACL_FORMAT_NCHW);
+        int64_t arr[dym_shape_map[name].size()];
+        std::copy(dym_shape_map[name].begin(), dym_shape_map[name].end(), arr);
+	    inputDesc = aclCreateTensorDesc(ACL_FLOAT, dims_num[i], arr, ACL_FORMAT_NCHW);
         ret = aclmdlSetDatasetTensorDesc(input_, inputDesc, i);
         if (ret != ACL_SUCCESS) {
             cout << aclGetRecentErrMsg() << endl;
