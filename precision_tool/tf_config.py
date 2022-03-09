@@ -67,13 +67,19 @@ def npu_device_dump_config(npu_device, action):
         npu_device.global_options().dump_config.enable_dump_debug = True
         npu_device.global_options().dump_config.dump_path = cfg.NPU_OVERFLOW_DUMP_DIR
         npu_device.global_options().dump_config.dump_debug_mode = "all"
-        # npu_device.global_options().op_debug_level
+        npu_device.global_options().op_debug_level = cfg.OP_DEBUG_LEVEL
     if _is_dump(action):
         npu_device.global_options().dump_config.enable_dump = True
         npu_device.global_options().dump_config.dump_path = cfg.DEFAULT_NPU_DUMP_DIR
         npu_device.global_options().dump_config.dump_debug_mode = "all"
+        npu_device.global_options().op_debug_level = cfg.OP_DEBUG_LEVEL
+        npu_device.global_options().dump_config.dump_step = cfg.TF_DUMP_STEP
     if _is_fusion_off(action):
-        print("TODO....")
+        npu_device.global_options().fusion_switch_file = FUSION_OFF_FILE
+        print("[PrecisionTool] Set fusion switch file: ", FUSION_OFF_FILE)
+    if _is_fusion_switch(action):
+        npu_device.global_options().fusion_switch_file = FUSION_SWITCH_FILE
+        print("[PrecisionTool] Set fusion switch file: ", FUSION_SWITCH_FILE)
     return npu_device
 
 

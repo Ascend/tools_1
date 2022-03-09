@@ -135,7 +135,7 @@ sudo yum install graphviz
 * 【不推荐】方法二：参考[使用溢出检测工具分析算子溢出](https://www.hiascend.com/document?tag=community-developer) 修改训练脚本，
    并将溢出数据拷贝至【precision_tool/dump/overflow/】目录
 
-#### 4. TF的DUMP数据获取（缺少该数据无法使用数据比对功能）
+#### 4. TF的DUMP数据获取（缺少该数据无法使用数据比对功能）(适用于TF 1.15， TF2.x参考tfdbg_ascend)
 * 【推荐】方法一：在CPU/GPU训练脚本中添加tf_debug代码，并使用precision_tool中提供的辅助命令行工具生成标杆DUMP数据
    ```python
     import precision_tool.tf_config as npu_tf_config
@@ -354,6 +354,7 @@ sudo yum install graphviz
     # -lt 必选，其中一个文件目录
     # -rt 必选，另一个目录，一般是标杆目录 
     # -g 可选，指定-g将尝试解析graph内的映射关系比对（一般用于NPU和TF之间的数据比对， NPU与NPU之间比对不需要，直接按照算子name对比）
+    # 需要指定到dump数据所在的目录层级，precision_data/npu/debug_0/dump/20220217095546/3/ge_default_20220217095547_1/1/0/
    ```
 8. vcs -f [file_name] -c [cos_sim_threshold] -l [limit]
    ```python

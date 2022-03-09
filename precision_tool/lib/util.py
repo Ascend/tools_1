@@ -378,6 +378,13 @@ class Util(object):
         rich_print(content)
 
     @staticmethod
+    def render(content, rich=True):
+        if rich:
+            rich_print(content)
+        else:
+            print(content)
+
+    @staticmethod
     def create_table(title, columns):
         if Table is None:
             raise PrecisionToolException("No rich module error.")

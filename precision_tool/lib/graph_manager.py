@@ -7,7 +7,6 @@ import os
 import collections
 import time
 import config as cfg
-from lib.tf_graph import TfGraph
 from lib.op import Op
 from lib.constant import Constant
 from lib.npu_graph import NpuGraph
@@ -90,7 +89,7 @@ class GraphManager(object):
                 for op_types, count in op_type_counter.items():
                     table.add_row(op_types, str(count))
                 table_list.append(table)
-            util.print(util.create_columns(table_list))
+            util.render(util.create_columns(table_list))
 
         else:
             for debug_id, graph in self.npu_graphs.items():

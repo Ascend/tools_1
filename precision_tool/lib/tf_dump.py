@@ -131,18 +131,6 @@ class TfDump(object):
             self.log.error("Failed to get tensor name in tf_debug.")
             raise PrecisionToolException("Get tensor name in tf_debug failed.")
         self.log.info("Save tensor name success. Generate tf dump commands from file: %s", cfg.TF_TENSOR_NAMES)
-        '''
-        convert_cmd = "timestamp=" + str(int(time.time())) + "; cat " + cfg.TF_TENSOR_NAMES + \
-                      " | awk '{print \"pt\",$4,$4}'| awk '{gsub(\"/\", \"_\", $3); gsub(\":\", \".\", $3);" \
-                      "print($1,$2,\"-n 0 -w " + cfg.TF_DUMP_DIR + "/" + \
-                      "\"$3\".\"\"'$timestamp'\"\".npy\")}' > " + cfg.TF_TENSOR_DUMP_CMD
-        util.execute_command(convert_cmd)
-        if not os.path.exists(cfg.TF_TENSOR_DUMP_CMD):
-            self.log.error("Save tf dump cmd failed")
-            raise PrecisionToolException("Failed to generate tf dump command.")
-        self.log.info("Generate tf dump commands. Start run commands in file: %s", cfg.TF_TENSOR_DUMP_CMD)
-        for cmd in open(cfg.TF_TENSOR_DUMP_CMD):
-        '''
         pt_commands = self._make_pt_commands(cfg.TF_TENSOR_NAMES)
         self.log.info("Pt %d tensors." % len(pt_commands))
         for cmd in pt_commands:

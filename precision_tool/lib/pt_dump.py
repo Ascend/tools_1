@@ -16,6 +16,7 @@ class PtDump(object):
         self.log = util.get_log()
         self.npu = None
         self.gpu = None
+        self.data_dir = data_dir
 
     def prepare(self):
         util.create_dir(cfg.PT_NPU_DIR)
@@ -27,4 +28,5 @@ class PtDump(object):
 
     def get_dump_files_by_name(self, file_name):
         """Get dump files by name"""
+        print(file_name)
         return {}
