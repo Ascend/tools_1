@@ -281,6 +281,8 @@ class Util(object):
             data = source_data
         else:
             raise PrecisionToolException("Invalid source data:%s" % source_data)
+        if data.dtype == 'object':
+            raise PrecisionToolException("Invalid source data, data is object.")
         if np.size(data) == 0:
             raise PrecisionToolException("Empty source data:%s" % source_data)
         return data.shape, data.dtype, data.max(), data.min(), data.mean()
@@ -342,6 +344,8 @@ class Util(object):
             data = src_file
         else:
             raise PrecisionToolException("invalid src_file: %s", src_file)
+        if data.dtype == 'object':
+            raise PrecisionToolException("Invalid source data, data is object.")
         shape = data.shape
         data = data.flatten()
         if align == 0:
@@ -372,6 +376,13 @@ class Util(object):
     @staticmethod
     def print(content):
         rich_print(content)
+
+    @staticmethod
+    def render(content, rich=True):
+        if rich:
+            rich_print(content)
+        else:
+            print(content)
 
     @staticmethod
     def create_table(title, columns):

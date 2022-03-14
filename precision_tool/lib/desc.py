@@ -73,7 +73,7 @@ class Desc(object):
 
     def _get_attr_list(self, key, data_type):
         val = self._get_attr_base(key, DT_LIST)
-        return val[data_type] if val is not None else []
+        return val[data_type] if val is not None and data_type in val else []
 
     def _get_attr(self, key, data_type):
         val = self._get_attr_base(key, data_type)
@@ -83,7 +83,7 @@ class Desc(object):
         if ATTR in self.desc_json:
             for attr in self.desc_json[ATTR]:
                 if attr[ATTR_KEY] == key:
-                    if data_type in attr[ATTR_KEY]:
+                    if attr[ATTR_VALUE] is not None and data_type in attr[ATTR_VALUE]:
                         return attr[ATTR_VALUE][data_type]
         return None
 
@@ -118,13 +118,13 @@ class InputDesc(Desc):
         return self.peer_index == -1
 
     def summary(self, origin_txt=False):
-        """idx | dtype | format | shape | [blue]value_range | shape_range[/blue] | op_name | peer_idx"""
+        """idx | dtype | format | shape | [blue]value_range | shape_range| origin_shape[/blue] | op_name | peer_idx"""
         if origin_txt:
             return "[%d][%s][%s]%s %s:%d" % (self.idx(), self.dtype(), self.format(),
                                              self.shape(), self.name(), self.peer_idx())
-        return "[green][%d][/green][yellow][%s][%s]%s[/yellow][blue] %s %s [/blue] %s:%d" % (
+        return "[green][%d][/green][yellow][%s][%s]%s[/yellow][blue] %s %s %s[/blue] %s:%d" % (
             self.idx(), self.dtype(), self.format(), self.shape(),
-            self.value_range(), self.shape_range(), self.name(), self.peer_idx())
+            self.value_range(), self.shape_range(), self.origin_shape(), self.name(), self.peer_idx())
 
 
 class OutputDesc(Desc):
@@ -140,8 +140,9 @@ class OutputDesc(Desc):
     def summary(self, origin_txt=False):
         if origin_txt:
             return "[%d][%s][%s]%s %s" % (self.idx(), self.dtype(), self.format(), self.shape(), self.names())
-        return "[green][%d][/green][yellow][%s][%s]%s[/yellow] %s" % (
-            self.idx(), self.dtype(), self.format(), self.shape(), self.names())
+        return "[green][%d][/green][yellow][%s][%s]%s[/yellow][blue] %s %s %s[/blue] %s" % (
+            self.idx(), self.dtype(), self.format(), self.shape(),
+            self.value_range(), self.shape_range(), self.origin_shape(), self.names())
 
     def data_dump_origin_name(self):
         return self._get_attr(DATA_DUMP_ORIGIN_NAME, DT_STRING)

@@ -178,6 +178,7 @@ class NpuDump(object):
 
     def _get_file_by_op_name(self, op_name):
         """Get dump file info by op name"""
+        op_name = op_name.replace('/', '_')
         for file_info in self.dump_files.values():
             if file_info.op_name == op_name:
                 return file_info

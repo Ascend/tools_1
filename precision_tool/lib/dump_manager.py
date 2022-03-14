@@ -6,6 +6,7 @@ from lib.util import util
 from lib.constant import Constant
 from lib.npu_dump import NpuDump
 from lib.tf_dump import TfDump
+from lib.pt_dump import PtDump
 import config as cfg
 from lib.precision_tool_exception import catch_tool_exception
 from lib.precision_tool_exception import PrecisionToolException
@@ -14,11 +15,12 @@ from lib.precision_tool_exception import PrecisionToolException
 class DumpManager(object):
     def __init__(self):
         self.npu_dumps = collections.OrderedDict()
+        self.pt_dump = PtDump(cfg.PT_DIR)
         self.tf_dump = TfDump(cfg.TF_DUMP_DIR)
         self._init_dirs()
 
     def prepare(self):
-        # prepare npu
+        # 1. prepare npu dump
         sub_dirs = os.listdir(cfg.NPU_DIR)
         if len(sub_dirs) == 0:
             # create default
@@ -28,8 +30,10 @@ class DumpManager(object):
             npu_dump = NpuDump(sub_dir)
             npu_dump.prepare()
             self.npu_dumps[sub_dir] = npu_dump
-        # prepare tf
+        # 2. prepare tf dump
         self.tf_dump.prepare()
+        # 3. prepare pt dump
+        self.pt_dump.prepare()
 
     def get_dump_root_dir(self, debug_id):
         if debug_id in self.npu_dumps:
@@ -48,6 +52,10 @@ class DumpManager(object):
             tf_result = self.tf_dump.op_dump_summary(ops[Constant.DEFAULT_DEBUG_ID][0])
         return npu_result, tf_result
 
+    def convert_npu_dump(self, name, data_format=None, dst_path=None):
+        for _, npu_dump in enumerate(self.npu_dumps):
+            npu_dump.convert_npu_dump(name, data_format, dst_path)
+
     def print_tensor(self, file_name, is_convert):
         """Print numpy data file"""
         if os.path.isfile(file_name):
@@ -55,13 +63,14 @@ class DumpManager(object):
         # file_name = file_name.replace('/', '_')
         # npu decode file
         npu_convert_files = self.npu_dumps[Constant.DEFAULT_DEBUG_ID].get_npu_dump_decode_files_by_name(file_name)
+        self._print_tensors(npu_convert_files, is_convert)
         # util.list_npu_dump_convert_files(cfg.DECODE_DIR, file_name)
         # tf decode file
         tf_decode_files = self.tf_dump.get_dump_files_by_name(file_name, True)
-        # pt decode file
-        # pt_decode_files = self.pt_dump.get_dump_files_by_name(file_name)
-        self._print_tensors(npu_convert_files, is_convert)
         self._print_tensors(tf_decode_files, is_convert)
+        # pt decode file
+        pt_decode_files = self.pt_dump.get_dump_files_by_name(file_name)
+        self._print_tensors(pt_decode_files, is_convert)
 
     @staticmethod
     def _print_tensors(file_infos, is_convert):
@@ -76,3 +85,4 @@ class DumpManager(object):
         util.create_dir(cfg.NPU_OVERFLOW_DUMP_DIR)
         util.create_dir(cfg.OVERFLOW_DECODE_DIR)
         util.create_dir(cfg.TF_DUMP_DIR)
+        util.create_dir(cfg.PT_DIR)

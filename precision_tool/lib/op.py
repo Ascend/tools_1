@@ -12,15 +12,18 @@ NO_INPUT_NODES = ['Data', 'AtomicAddrClean', 'Recv', 'Constant']
 NO_OUTPUT_NODES = ['Send', 'Recv', 'NetOutput']
 
 JSON_KEY_NAME = 'name'
+JSON_KEY_ID = 'id'
 JSON_KEY_TYPE = 'type'
 JSON_KEY_ATTR = 'attr'
 JSON_KEY = 'key'
 JSON_VALUE = 'value'
 JSON_KEY_LIST = 'list'
 JSON_KEY_STR = 's'
+JSON_KEY_INT = 'i'
 JSON_KEY_PASS_NAME = 'pass_name'
 JSON_KEY_DATA_DUMP_ORIGINAL_OP_NAMES = '_datadump_original_op_names'
 JSON_KEY_GE_ATTR_OP_KERNEL_LIB_NAME = "_ge_attr_op_kernel_lib_name"
+JSON_KEY_PARENT_NODE_INDEX = "_parent_node_index"
 
 KERNEL_NAME_SHUFFIX = '_kernelname'
 
@@ -44,6 +47,10 @@ class Op(object):
     def name(self):
         """Get op name"""
         return self.op_json[JSON_KEY_NAME]
+
+    def id(self):
+        """Get op id"""
+        return self.op_json[JSON_KEY_ID] if JSON_KEY_ID in self.op_json else ''
 
     def json(self):
         return json.dumps(self.op_json, indent=2)
@@ -76,6 +83,9 @@ class Op(object):
     def data_dump_original_op_names(self):
         return self._attr(JSON_KEY_DATA_DUMP_ORIGINAL_OP_NAMES)
 
+    def parent_node_index(self):
+        return self._attr(JSON_KEY_PARENT_NODE_INDEX)
+
     def _attr(self, key):
         if JSON_KEY_ATTR in self.op_json:
             for attr in self.op_json[JSON_KEY_ATTR]:
@@ -85,6 +95,8 @@ class Op(object):
                     elif JSON_KEY_LIST in attr[JSON_VALUE]:
                         if JSON_KEY_STR in attr[JSON_VALUE][JSON_KEY_LIST]:
                             return attr[JSON_VALUE][JSON_KEY_LIST][JSON_KEY_STR]
+                    elif JSON_KEY_INT in attr[JSON_VALUE]:
+                        return attr[JSON_VALUE][JSON_KEY_INT]
                     else:
                         self.log.warning("Unknown attr format: %s", attr[JSON_VALUE])
         return ''
@@ -120,9 +132,17 @@ class Op(object):
                 similar = similar and output_similar
         return Constant.NEW_LINE.join(res_str), similar
 
-    def summary(self, origin_txt=False):
+    def _attr_detail(self):
+        """Gen attr details"""
+        res_str = []
+        if JSON_KEY_ATTR in self.op_json:
+            res_str = [' ' + str(i) for i in self.op_json[JSON_KEY_ATTR]]
+        return Constant.NEW_LINE.join(res_str)
+
+    def summary(self, origin_txt=False, attr_detail=False):
         """Summary of current op"""
         res_str = ['Op(Type/Name): [green][%s][/green] %s' % (self.type(), self.name()),
+                   'ID:    [yellow]%s[/yellow]' % self.id(),
                    'KernelName:    [yellow]%s[/yellow]' % self.kernel_name(),
                    'KernelLibName: [yellow]%s[/yellow]' % self.ge_attr_op_kernel_lib_name(),
                    'GraphName:     [yellow]%s[/yellow]' % self.graph_name]
@@ -132,6 +152,8 @@ class Op(object):
         origin_op = self.data_dump_original_op_names()
         if origin_op != '':
             res_str.append('OriginalOp: %s' % origin_op)
+        if attr_detail:
+            res_str.append(self._attr_detail())
         res_str.append('Input:%s' % InputDesc.summary.__doc__)
         for i in self.inputs():
             res_str.append(' -' + i.summary(origin_txt))

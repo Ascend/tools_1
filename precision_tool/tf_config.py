@@ -10,6 +10,7 @@ from . import config as cfg
 FLAG_DUMP_GE_GRAPH = 'DUMP_GE_GRAPH'
 FLAG_DUMP_GRAPH_LEVEL = 'DUMP_GRAPH_LEVEL'
 FLAG_DUMP_GRAPH_PATH = 'DUMP_GRAPH_PATH'
+FLAG_NPU_DUMP_GRAPH = 'NPU_DUMP_GRAPH'
 
 # Fusion switch file path
 FUSION_SWITCH_FILE = os.path.join(os.path.dirname(__file__), 'fusion_switch.cfg')
@@ -53,6 +54,33 @@ def estimator_dump():
     """
     _init()
     return tf_debug.DumpingDebugHook(cfg.TF_DEBUG_DUMP_DIR)
+
+
+def npu_device_dump_config(npu_device, action):
+    """For tf2.x
+    :param npu_device: npu_device
+    :param action: dump | overflow| fusion_off | fusion_switch
+    :return: npu_device
+    """
+    _init()
+    if _is_overflow(action):
+        npu_device.global_options().dump_config.enable_dump_debug = True
+        npu_device.global_options().dump_config.dump_path = cfg.NPU_OVERFLOW_DUMP_DIR
+        npu_device.global_options().dump_config.dump_debug_mode = "all"
+        npu_device.global_options().op_debug_level = cfg.OP_DEBUG_LEVEL
+    if _is_dump(action):
+        npu_device.global_options().dump_config.enable_dump = True
+        npu_device.global_options().dump_config.dump_path = cfg.DEFAULT_NPU_DUMP_DIR
+        npu_device.global_options().dump_config.dump_debug_mode = "all"
+        npu_device.global_options().op_debug_level = cfg.OP_DEBUG_LEVEL
+        npu_device.global_options().dump_config.dump_step = cfg.TF_DUMP_STEP
+    if _is_fusion_off(action):
+        npu_device.global_options().fusion_switch_file = FUSION_OFF_FILE
+        print("[PrecisionTool] Set fusion switch file: ", FUSION_OFF_FILE)
+    if _is_fusion_switch(action):
+        npu_device.global_options().fusion_switch_file = FUSION_SWITCH_FILE
+        print("[PrecisionTool] Set fusion switch file: ", FUSION_SWITCH_FILE)
+    return npu_device
 
 
 def estimator_dump_config(action=None):
@@ -160,6 +188,7 @@ def _set_dump_graph_flags():
     os.environ[FLAG_DUMP_GE_GRAPH] = str(cfg.DUMP_GE_GRAPH_VALUE)
     os.environ[FLAG_DUMP_GRAPH_LEVEL] = str(cfg.DUMP_GRAPH_LEVEL_VALUE)
     os.environ[FLAG_DUMP_GRAPH_PATH] = cfg.DEFAULT_NPU_GRAPH_DIR
+    os.environ[FLAG_NPU_DUMP_GRAPH] = 'true'
 
 
 def _is_dump(action):

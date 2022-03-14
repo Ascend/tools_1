@@ -71,7 +71,8 @@ TF_GRAPH_DIR = os.path.join(TF_DIR, 'graph')
 
 # pytroch dirs
 PT_DIR = os.path.join(DATA_ROOT_DIR, 'pt')
-PT_DUMP_DIR = os.path.join(PT_DIR, 'dump')
+PT_NPU_DIR = os.path.join(PT_DIR, 'npu')
+PT_GPU_DIR = os.path.join(PT_DIR, 'gpu')
 
 # tmp dirs
 TMP_DIR = os.path.join(DATA_ROOT_DIR, 'temp')
@@ -90,8 +91,9 @@ TF_TENSOR_DUMP_CMD = os.path.join(TMP_DIR, 'tf_tensor_cmd.txt')
 PRECISION_TOOL_OVERFLOW_FLAG = 'PRECISION_TOOL_OVERFLOW'
 PRECISION_TOOL_DUMP_FLAG = 'PRECISION_TOOL_DUMP'
 
+# for previous version, set 0
+OP_DEBUG_LEVEL = 4
 # DUMP CONFIG
-OP_DEBUG_LEVEL = 0
 DUMP_GE_GRAPH_VALUE = 2
 DUMP_GRAPH_LEVEL_VALUE = 3
 DUMP_SEED = 0

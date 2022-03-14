@@ -48,7 +48,8 @@ class TfDump(object):
             return ''
         cpu_dump_txt = ['TfDumpOutput:']
         cpu_dump_files = self.get_dump_files_by_op(op)
-        for cpu_dump_file in cpu_dump_files.values():
+        cpu_dump_file_list = sorted(cpu_dump_files.values(), key=lambda x: x.timestamp)
+        for cpu_dump_file in cpu_dump_file_list:
             cpu_dump_txt.append(' -[green][%s][/green] %s' % (cpu_dump_file.idx, cpu_dump_file.file_name))
             cpu_dump_txt.append('   └─ [yellow]%s[/yellow]' % util.gen_npy_info_txt(cpu_dump_file.path))
         return Constant.NEW_LINE.join(cpu_dump_txt)
@@ -78,6 +79,31 @@ class TfDump(object):
                 util.python, os.path.join(cfg.TF_DEBUG_DUMP_DIR, run_dir))
             self._do_run_tf_dbg_dump(command, 0)
 
+    @staticmethod
+    def _make_pt_commands(tensor_name_path):
+        pt_command_list = []
+        tensor_count = {}
+        with open(tensor_name_path) as tensor_name_file:
+            # skip 3 line
+            next(tensor_name_file)
+            next(tensor_name_file)
+            next(tensor_name_file)
+            # start to convert tensor to pt command
+            for line in tensor_name_file:
+                new_line = line.strip()
+                tensor_name = new_line[new_line.rfind(' ') + 1:]
+                if tensor_name not in tensor_count:
+                    tensor_count[tensor_name] = 0
+                else:
+                    tensor_count[tensor_name] += 1
+
+                npy_file_name = "%s.%s.npy" % (tensor_name.replace("/", "_").replace(":", "."),
+                                               str(round(time.time() * 1000000)))
+                pt_command_list.append("pt %s -n %d -w %s" %
+                                       (tensor_name, tensor_count[tensor_name],
+                                        os.path.join(cfg.TF_DUMP_DIR, npy_file_name)))
+        return pt_command_list
+
     def _do_run_tf_dbg_dump(self, cmd_line, run_times=2):
         """Run tf debug with pexpect, should set tf debug ui_type='readline'"""
         try:
@@ -105,16 +131,9 @@ class TfDump(object):
             self.log.error("Failed to get tensor name in tf_debug.")
             raise PrecisionToolException("Get tensor name in tf_debug failed.")
         self.log.info("Save tensor name success. Generate tf dump commands from file: %s", cfg.TF_TENSOR_NAMES)
-        convert_cmd = "timestamp=" + str(int(time.time())) + "; cat " + cfg.TF_TENSOR_NAMES + \
-                      " | awk '{print \"pt\",$4,$4}'| awk '{gsub(\"/\", \"_\", $3); gsub(\":\", \".\", $3);" \
-                      "print($1,$2,\"-n 0 -w " + cfg.TF_DUMP_DIR + "/" + \
-                      "\"$3\".\"\"'$timestamp'\"\".npy\")}' > " + cfg.TF_TENSOR_DUMP_CMD
-        util.execute_command(convert_cmd)
-        if not os.path.exists(cfg.TF_TENSOR_DUMP_CMD):
-            self.log.error("Save tf dump cmd failed")
-            raise PrecisionToolException("Failed to generate tf dump command.")
-        self.log.info("Generate tf dump commands. Start run commands in file: %s", cfg.TF_TENSOR_DUMP_CMD)
-        for cmd in open(cfg.TF_TENSOR_DUMP_CMD):
+        pt_commands = self._make_pt_commands(cfg.TF_TENSOR_NAMES)
+        self.log.info("Pt %d tensors." % len(pt_commands))
+        for cmd in pt_commands:
             self.log.debug(cmd.strip())
             tf_dbg.sendline(cmd.strip())
             tf_dbg.expect('tfdbg>', timeout=cfg.TF_DEBUG_TIMEOUT)
