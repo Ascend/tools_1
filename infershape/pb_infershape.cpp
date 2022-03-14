@@ -438,7 +438,8 @@ int main(int argc, char *argv[]) {
   }
 
   bool is_pb = false;
-  if (StringUtils::Split(pb_file, '.')[1] == "pb") {
+  std::string prefix = pb_file.substr(pb_file.find_last_of('.') + 1, pb_file.length());
+  if (prefix == "pb") {
     is_pb = true;
   }
 
