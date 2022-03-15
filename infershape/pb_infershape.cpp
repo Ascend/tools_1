@@ -72,6 +72,28 @@ std::map<int, std::string> g_tf_dtype_to_string = {
   {123, "DT_UINT64_REF"},
 };
 
+REGISTER_OP("GetNext")
+    .Output("components: output_types")
+    .Attr("output_types: list(type) >= 1")
+    .Attr("output_shapes: list(shape) >= 1")
+    .Attr("channel_name: string")
+    .SetIsStateful()
+    .SetShapeFn([](shape_inference::InferenceContext *c) {
+      std::vector<PartialTensorShape> output_shapes;
+      TF_RETURN_IF_ERROR(c->GetAttr("output_shapes", &output_shapes));
+      if (output_shapes.size() != c->num_outputs()) {
+        return errors::InvalidArgument(
+          "`output_shapes` must be the same length as `output_types` (",
+          output_shapes.size(), " vs. ", c->num_outputs());
+      }
+      for (size_t i = 0; i < output_shapes.size(); ++i) {
+        shape_inference::ShapeHandle output_shape_handle;
+        TF_RETURN_IF_ERROR(c->MakeShapeFromPartialTensorShape(
+          output_shapes[i], &output_shape_handle));
+        c->set_output(static_cast<int>(i), output_shape_handle);
+      }
+      return Status::OK();
+    });
 
 REGISTER_OP("DropOutDoMask")
     .Input("x: T")
