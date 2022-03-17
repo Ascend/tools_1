@@ -5,13 +5,12 @@ Compare
 import json
 import os
 import numpy as np
-from lib.tool_object import ToolObject
-from lib.util import util
-from lib.compare_result import CompareResult
-from lib.constant import Constant
-import config as cfg
-from lib.precision_tool_exception import PrecisionToolException
-from lib.precision_tool_exception import catch_tool_exception
+from .compare_result import CompareResult
+from ..util.constant import Constant
+from ..util.util import util
+from ..config import config as cfg
+from ..util.precision_tool_exception import PrecisionToolException
+from ..util.precision_tool_exception import catch_tool_exception
 
 
 class Compare(object):

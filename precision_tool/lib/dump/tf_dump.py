@@ -3,11 +3,11 @@ import os
 import re
 import time
 import sys
-from lib.util import util
-from lib.constant import Constant
-import config as cfg
-from lib.precision_tool_exception import catch_tool_exception
-from lib.precision_tool_exception import PrecisionToolException
+from ..util.util import util
+from ..util.constant import Constant
+from ..util.precision_tool_exception import catch_tool_exception
+from ..util.precision_tool_exception import PrecisionToolException
+from ..config import config as cfg
 
 
 class TfDump(object):

@@ -55,19 +55,22 @@ FUSION_DIR = os.path.join(DATA_ROOT_DIR, 'fusion')
 # npu dump/graph parent dir
 NPU_DIR = os.path.join(DATA_ROOT_DIR, 'npu')
 DEFAULT_NPU_DIR = os.path.join(NPU_DIR, 'debug_0')
-DEFAULT_NPU_DUMP_DIR = os.path.join(DEFAULT_NPU_DIR, 'dump')
-DEFAULT_NPU_GRAPH_DIR = os.path.join(DEFAULT_NPU_DIR, 'graph')
+DEFAULT_NPU_DUMP_DIR = os.path.join(DEFAULT_NPU_DIR, '../dump')
+DEFAULT_NPU_GRAPH_DIR = os.path.join(DEFAULT_NPU_DIR, '../graph')
 DEFAULT_OP_DEBUG_DIR = DEFAULT_NPU_DIR
 
 # npu overflow dir
 OVERFLOW_DIR = os.path.join(DATA_ROOT_DIR, 'overflow')
-NPU_OVERFLOW_DUMP_DIR = os.path.join(OVERFLOW_DIR, 'dump')
+NPU_OVERFLOW_DUMP_DIR = os.path.join(OVERFLOW_DIR, '../dump')
 
 # tf dirs
 TF_DIR = os.path.join(DATA_ROOT_DIR, 'tf')
 TF_DEBUG_DUMP_DIR = os.path.join(TF_DIR, 'tf_debug')
-TF_DUMP_DIR = os.path.join(TF_DIR, 'dump')
-TF_GRAPH_DIR = os.path.join(TF_DIR, 'graph')
+TF_DUMP_DIR = os.path.join(TF_DIR, '../dump')
+TF_GRAPH_DIR = os.path.join(TF_DIR, '../graph')
+# tf checkpoints
+TF_CKPT_DIR = os.path.join(TF_DIR, 'checkpoints')
+TF_CKPT_INPUT_DIR = os.path.join(TF_CKPT_DIR, 'input')
 
 # pytroch dirs
 PT_DIR = os.path.join(DATA_ROOT_DIR, 'pt')

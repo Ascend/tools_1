@@ -6,13 +6,12 @@ import json
 import os
 import collections
 import time
-
-import config as cfg
-from lib.op import Op
-from lib.util import util
-from lib.constant import Constant
-from lib.precision_tool_exception import catch_tool_exception
-from lib.precision_tool_exception import PrecisionToolException
+from .op import Op
+from ..util.util import util
+from ..util.constant import Constant
+from ..util.precision_tool_exception import catch_tool_exception
+from ..util.precision_tool_exception import PrecisionToolException
+from ..config import config as cfg
 
 DANGEROUS_CAST = {
     'DT_FLOAT': ['DT_INT32']

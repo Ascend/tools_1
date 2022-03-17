@@ -1,15 +1,12 @@
 # coding=utf-8
 import os
-import re
 import collections
-from lib.util import util
-from lib.constant import Constant
-from lib.npu_dump import NpuDump
-from lib.tf_dump import TfDump
-from lib.pt_dump import PtDump
-import config as cfg
-from lib.precision_tool_exception import catch_tool_exception
-from lib.precision_tool_exception import PrecisionToolException
+from ..util.util import util
+from ..util.constant import Constant
+from .npu_dump import NpuDump
+from .tf_dump import TfDump
+from .pt_dump import PtDump
+from ..config import config as cfg
 
 
 class DumpManager(object):

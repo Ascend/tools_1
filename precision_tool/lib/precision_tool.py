@@ -2,16 +2,16 @@ import argparse
 import os
 import time
 
-from lib.overflow import Overflow
-from lib.dump_manager import DumpManager
-from lib.graph_manager import GraphManager
-from lib.compare import Compare
-from lib.fusion import Fusion
-from lib.util import util
-from lib.constant import Constant
-import config as cfg
-from lib.precision_tool_exception import PrecisionToolException
-from lib.precision_tool_exception import catch_tool_exception
+from .adapter.overflow import Overflow
+from .dump.dump_manager import DumpManager
+from .graph.graph_manager import GraphManager
+from .compare.compare import Compare
+from .adapter.fusion import Fusion
+from .util.util import util
+from .util.constant import Constant
+from .config import config as cfg
+from .util.precision_tool_exception import PrecisionToolException
+from .util.precision_tool_exception import catch_tool_exception
 
 
 class PrecisionTool(object):

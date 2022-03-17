@@ -2,18 +2,15 @@
 """
 Graph Manager
 """
-import json
 import os
 import collections
-import time
-import config as cfg
-from lib.op import Op
-from lib.constant import Constant
-from lib.npu_graph import NpuGraph
-from lib.tf_graph import TfGraph
-from lib.util import util
-from lib.precision_tool_exception import catch_tool_exception
-from lib.precision_tool_exception import PrecisionToolException
+from ..util.constant import Constant
+from .npu_graph import NpuGraph
+from .tf_graph import TfGraph
+from ..util.util import util
+from ..util.precision_tool_exception import catch_tool_exception
+from ..util.precision_tool_exception import PrecisionToolException
+from ..config import config as cfg
 
 
 class GraphManager(object):
