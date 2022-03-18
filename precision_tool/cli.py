@@ -6,6 +6,7 @@ import os
 import sys
 
 from lib.precision_tool import PrecisionTool
+from lib.train.train_analysis import TrainAnalysis
 from lib.interactive_cli import InteractiveCli
 from lib.util.precision_tool_exception import PrecisionToolException
 from lib.util.util import util

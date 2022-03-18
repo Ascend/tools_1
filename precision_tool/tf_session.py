@@ -2,8 +2,9 @@
 import os
 import tensorflow as tf
 import numpy as np
-from precision_tool.lib.util.util import util
-from .lib import config as cfg
+from .lib.util.util import util
+from .lib.train.train_analysis import TrainAnalysis
+from .lib.config import config as cfg
 
 
 class WrapperSession(tf.Session):
@@ -26,8 +27,9 @@ class WrapperSession(tf.Session):
 
     def _save_data(self, feed, feed_val):
         self.log.info('Save: %s', feed)
-        feed_name = str(feed.name).replace(':', '_').replace('/', '_') + '.npy'
-        file_name = os.path.join(cfg.TF_CKPT_INPUT_DIR, feed_name)
+        file_name = TrainAnalysis.gen_feed_file_name(feed.name)
+        # str(feed.name).replace(':', '_').replace('/', '_') + '.npy'
+        # file_name = os.path.join(cfg.TF_CKPT_INPUT_DIR, feed_name)
         np.save(file_name, feed_val)
 
     def _before_run(self, feed_dict):

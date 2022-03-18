@@ -73,6 +73,10 @@ class InteractiveCli(cmd.Cmd):
         """Compare two data file """
         self.precision_tool.do_compare_data(self._parse_argv(line, '-n'))
 
+    def do_train(self, line=''):
+        """Train process:\n usage: train -d all -a dump"""
+        self.precision_tool.do_train_analysis(self._parse_argv(line))
+
     @staticmethod
     def _parse_argv(line, insert=None):
         argv = line.split() if line != '' else []
