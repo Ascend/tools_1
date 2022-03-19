@@ -1,13 +1,7 @@
 # coding=utf-8
 import os
-import tensorflow as tf
-from tensorflow.python import debug as tf_debug
-from tensorflow.core.protobuf import config_pb2
-from tensorflow.core.protobuf.rewriter_config_pb2 import RewriterConfig
 from ..util.util import util
 from ..config import config as cfg
-
-
 FLAG_DUMP_GE_GRAPH = 'DUMP_GE_GRAPH'
 FLAG_DUMP_GRAPH_LEVEL = 'DUMP_GRAPH_LEVEL'
 FLAG_DUMP_GRAPH_PATH = 'DUMP_GRAPH_PATH'
@@ -26,6 +20,7 @@ class TfAdapter(object):
         :param sess: origin session
         :return: Session
         """
+        from tensorflow.python import debug as tf_debug
         self._init()
         return tf_debug.DumpingDebugWrapperSession(sess, cfg.TF_DEBUG_DUMP_DIR)
 
@@ -33,6 +28,7 @@ class TfAdapter(object):
         """In estimator mode. estim_spec = tf.estimator.EstimatorSpec(traing_hooks=[estimator_dump()])
         :return:
         """
+        from tensorflow.python import debug as tf_debug
         self._init()
         return tf_debug.DumpingDebugHook(cfg.TF_DEBUG_DUMP_DIR)
 
@@ -48,6 +44,8 @@ class TfAdapter(object):
         :param action: if set action, no need to start app with cli wrapper
         :return: config_pb2.ConfigProto
         """
+        from tensorflow.core.protobuf import config_pb2
+        from tensorflow.core.protobuf.rewriter_config_pb2 import RewriterConfig
         if ((not isinstance(session_config, config_pb2.ConfigProto)) and
                 (not issubclass(type(session_config), config_pb2.ConfigProto))):
             session_config = config_pb2.ConfigProto()
@@ -112,6 +110,7 @@ class TfAdapter(object):
         :param action: dump | overflow | fusion_off | fusion_switch
         :return:
         """
+        import tensorflow as tf
         self._init()
         custom_op.parameter_map['debug_dir'].s = tf.compat.as_bytes(cfg.DEFAULT_OP_DEBUG_DIR)
         if self._is_overflow(action):

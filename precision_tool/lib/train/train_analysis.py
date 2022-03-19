@@ -1,13 +1,11 @@
 # coding=utf-8
 import os
 import numpy as np
-import tensorflow as tf
 from ..adapter.tf_adapter import TfAdapter
 from ..dump.tf_dump import TfDump
 from ..util.util import util
 from ..config import config as cfg
 from ..util.precision_tool_exception import PrecisionToolException
-from ..util.precision_tool_exception import catch_tool_exception
 
 
 class TrainAnalysis(object):
@@ -22,19 +20,41 @@ class TrainAnalysis(object):
 
     def _init_session(self, device='npu', action='dump'):
         """"""
+        import tensorflow as tf
         if device == 'npu':
-            return tf.Session(self.tf_adapter.session_dump_config(None, action=action))
-        sess = tf.Session(tf.ConfigProto())
+            util.execute_command('source %s', cfg.ASCEND_SET_ENV)
+            return tf.Session(config=self.tf_adapter.session_dump_config(None, action=action))
+        sess = tf.Session(config=tf.ConfigProto())
         return self.tf_adapter.sess_dump(sess)
 
-    @staticmethod
-    def _load_train_graph(sess):
-        if util.empty_dir(cfg.TF_CKPT_DIR):
-            raise PrecisionToolException('checkpoint dir [%s] is empty, can not run train analysis process.')
-        ckpt = tf.train.latest_checkpoint(cfg.TF_CKPT_DIR)
+    def _reset_dropout_rate(self, graph):
+        graph_def = graph.as_graph_def()
+        for op in graph.get_operations():
+            if 'dropout' in op.name and 'rate' in op.name:
+                self.log.debug("Find dropout rate node [%s][%s]" % (op.type, op.name))
+                op.outputs()
+                tensor = graph.get_tensor_by_name(op.name)
+                tensor.node_def.attr['value']
+                tf.AttrValue.CopyFrom()
+                import tensorflow as tf
+                tensor = tf.constant(1.0)
+
+    def _prepare_graph(self, graph):
+        graph.seed = cfg.DUMP_SEED
+        self._reset_dropout_rate(graph)
+        return graph
+
+    def _load_train_graph(self, sess):
+        import tensorflow as tf
+        if util.empty_dir(cfg.TF_CKPT_ROOT):
+            raise PrecisionToolException('checkpoint dir [%s] is empty, can not run train analysis process.' %
+                                         cfg.TF_CKPT_ROOT)
+        ckpt = tf.train.latest_checkpoint(cfg.TF_CKPT_ROOT)
+        if ckpt is None:
+            raise PrecisionToolException('Load ckpt failed from [%s].' % cfg.TF_CKPT_ROOT)
         meta_graph = tf.train.import_meta_graph(ckpt + '.meta')
         meta_graph.restore(sess, ckpt)
-        return tf.get_default_graph()
+        return self._prepare_graph(tf.get_default_graph())
 
     @staticmethod
     def _get_input_from_graph(graph):
@@ -66,10 +86,13 @@ class TrainAnalysis(object):
         return self._get_input_tensors(input_nodes)
 
     def _analysis(self, device, action='dump'):
+        import tensorflow as tf
         sess = self._init_session(device, action=action)
         graph = self._load_train_graph(sess)
         train_op = tf.get_collection(tf.GraphKeys.TRAIN_OP)
         feed_map = self._build_feed_map(graph)
+        if device in ['all', 'npu']:
+            import npu_bridge.npu_init
         sess.run(train_op, feed_dict=feed_map)
         if device == 'cpu':
             tf_dump = TfDump()
