@@ -6,7 +6,7 @@ from .lib.train.train_analysis import TrainAnalysis
 from .lib.config import config as cfg
 
 
-class WrapperSession(tf.Session):
+class PrecisionTfSession(tf.Session):
     def __init__(self, target='', graph=None, config=None):
         super().__init__(target, graph, config)
         self.log = util.get_log()
