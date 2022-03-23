@@ -3,11 +3,10 @@ import os
 import time
 import pathlib
 import shutil
-from lib.util import util
-from lib.constant import Constant
-import config as cfg
-from lib.precision_tool_exception import catch_tool_exception
-from lib.precision_tool_exception import PrecisionToolException
+from ..util.util import util
+from ..util.constant import Constant
+from ..config import config as cfg
+from ..util.precision_tool_exception import PrecisionToolException
 
 
 class MsQuickCmpAdapter(object):

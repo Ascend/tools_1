@@ -1,5 +1,5 @@
 # coding=utf-8
-from lib.util import util
+from ..util.util import util
 
 ATTR = 'attr'
 ATTR_KEY = 'key'

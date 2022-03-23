@@ -7,6 +7,8 @@ TF_DUMP_STEP = '0'
 # path to run package operator cmp compare
 # default may be /usr/local/Ascend/
 CMD_ROOT_PATH = '/usr/local/Ascend/'
+ASCEND_SET_ENV = os.path.join(CMD_ROOT_PATH, 'bin/setenv.bash')
+
 
 # ASCEND Log Path
 ASCEND_LOG_PATH = '/root/ascend/log/plog/'
@@ -16,7 +18,7 @@ LOG_LEVEL = "NOTSET"
 ROOT_DIR = ''
 
 # [train/infer] if adapt from msquickcmp result, set net type to infer
-NET_TYPE = 'train'
+NET_TYPE = 'infer'
 
 '''
 precision_data/
@@ -68,6 +70,10 @@ TF_DIR = os.path.join(DATA_ROOT_DIR, 'tf')
 TF_DEBUG_DUMP_DIR = os.path.join(TF_DIR, 'tf_debug')
 TF_DUMP_DIR = os.path.join(TF_DIR, 'dump')
 TF_GRAPH_DIR = os.path.join(TF_DIR, 'graph')
+# tf checkpoints
+TF_CKPT_ROOT = os.path.join(TF_DIR, 'checkpoints')
+TF_CKPT_FILE = os.path.join(TF_CKPT_ROOT, 'ckpt')
+TF_CKPT_INPUT_DIR = os.path.join(TF_CKPT_ROOT, 'input')
 
 # pytroch dirs
 PT_DIR = os.path.join(DATA_ROOT_DIR, 'pt')

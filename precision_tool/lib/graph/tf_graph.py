@@ -2,10 +2,10 @@
 import collections
 import logging
 import os
-import config as cfg
-from lib.util import util
-from lib.precision_tool_exception import catch_tool_exception
-from lib.precision_tool_exception import PrecisionToolException
+from ..util.util import util
+from ..util.precision_tool_exception import catch_tool_exception
+from ..util.precision_tool_exception import PrecisionToolException
+from ..config import config as cfg
 
 CKPT_META_SHUFFIX='.meta'
 

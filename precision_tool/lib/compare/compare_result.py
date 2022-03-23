@@ -1,10 +1,10 @@
 import collections
 import os
 import numpy as np
-from lib.util import util
-from lib.constant import Constant
-from lib.precision_tool_exception import PrecisionToolException
-from lib.precision_tool_exception import catch_tool_exception
+from ..util.util import util
+from ..util.constant import Constant
+from ..util.precision_tool_exception import PrecisionToolException
+from ..util.precision_tool_exception import catch_tool_exception
 
 
 class RowMap(object):

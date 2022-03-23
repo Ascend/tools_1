@@ -3,11 +3,11 @@ import os
 import re
 import time
 import sys
-from lib.util import util
-from lib.constant import Constant
-import config as cfg
-from lib.precision_tool_exception import catch_tool_exception
-from lib.precision_tool_exception import PrecisionToolException
+from ..util.util import util
+from ..util.constant import Constant
+from ..util.precision_tool_exception import catch_tool_exception
+from ..util.precision_tool_exception import PrecisionToolException
+from ..config import config as cfg
 
 
 class TfDump(object):
@@ -57,7 +57,7 @@ class TfDump(object):
     def _parse_dump_files(self):
         self.dump_files = util.list_cpu_dump_decode_files(self.dump_root)
 
-    def run_tf_dbg_dump(self, cmd_line):
+    def run_tf_dbg_dump(self, cmd_line=None):
         """Run tf train script to get dump data."""
         if os.path.exists(cfg.TF_DEBUG_DUMP_DIR) and len(os.listdir(cfg.TF_DEBUG_DUMP_DIR)) != 0:
             self.log.info("TF offline debug path [%s] is not empty, will analyze it directly." % cfg.TF_DEBUG_DUMP_DIR)

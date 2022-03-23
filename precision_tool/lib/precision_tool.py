@@ -2,16 +2,17 @@ import argparse
 import os
 import time
 
-from lib.overflow import Overflow
-from lib.dump_manager import DumpManager
-from lib.graph_manager import GraphManager
-from lib.compare import Compare
-from lib.fusion import Fusion
-from lib.util import util
-from lib.constant import Constant
-import config as cfg
-from lib.precision_tool_exception import PrecisionToolException
-from lib.precision_tool_exception import catch_tool_exception
+from .adapter.overflow import Overflow
+from .dump.dump_manager import DumpManager
+from .graph.graph_manager import GraphManager
+from .compare.compare import Compare
+from .adapter.fusion import Fusion
+from .train.train_analysis import TrainAnalysis
+from .util.util import util
+from .util.constant import Constant
+from .config import config as cfg
+from .util.precision_tool_exception import PrecisionToolException
+from .util.precision_tool_exception import catch_tool_exception
 
 
 class PrecisionTool(object):
@@ -22,6 +23,7 @@ class PrecisionTool(object):
         self.dump_manager = DumpManager()
         self.compare = Compare()
         self.fusion = Fusion()
+        self.train_analysis = TrainAnalysis()
         self.log = util.get_log()
 
     @catch_tool_exception
@@ -205,9 +207,20 @@ class PrecisionTool(object):
     def check_graph_similarity(self):
         """ Check graph similarity """
 
+    @catch_tool_exception
+    def do_train_analysis(self, argv):
+        parser = argparse.ArgumentParser()
+        parser.add_argument('-d', '--device', dest='device', default='all', required=False,
+                            help='train device, support cpu/npu/all')
+        parser.add_argument('-a', '--action', dest='action', default='dump', required=False,
+                            help='action, support dump(-d cpu/npu)[overflow]|fusion_off|fusion_switch(npu)')
+        args = parser.parse_args(argv)
+        self.train_analysis.run(args.device, args.action)
+
     def single_cmd(self, argv):
         cmd_func_map = {'compare': self.do_compare_data,
-                        'vector_compare': self.do_vector_compare}
+                        'vector_compare': self.do_vector_compare,
+                        'train': self.do_train_analysis}
         if argv[1] in cmd_func_map:
             func = cmd_func_map[argv[1]]
             return func(argv[2:])

@@ -2,11 +2,11 @@
 import json
 import re
 from typing import List
-from lib.desc import InputDesc
-from lib.desc import OutputDesc
-from lib.util import util
-from lib.constant import Constant
-from lib.precision_tool_exception import PrecisionToolException
+from .desc import InputDesc
+from .desc import OutputDesc
+from ..util.util import util
+from ..util.constant import Constant
+from ..util.precision_tool_exception import PrecisionToolException
 
 NO_INPUT_NODES = ['Data', 'AtomicAddrClean', 'Recv', 'Constant']
 NO_OUTPUT_NODES = ['Send', 'Recv', 'NetOutput']

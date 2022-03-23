@@ -1,14 +1,7 @@
 # coding=utf-8
-import os
-import re
-import time
-import sys
-from lib.util import util
-from lib.constant import Constant
-from lib.h5_util import H5Util
-import config as cfg
-from lib.precision_tool_exception import catch_tool_exception
-from lib.precision_tool_exception import PrecisionToolException
+from ..util.util import util
+from ..util.h5_util import H5Util
+from ..config import config as cfg
 
 
 class PtDump(object):

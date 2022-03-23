@@ -7,11 +7,11 @@ import shutil
 import numpy as np
 import logging
 import subprocess
-from lib.constant import Constant
-from lib.precision_tool_exception import PrecisionToolException
-from lib.precision_tool_exception import catch_tool_exception
-from lib.file_desc import *
-import config as cfg
+from .constant import Constant
+from .precision_tool_exception import PrecisionToolException
+from .precision_tool_exception import catch_tool_exception
+from .file_desc import *
+from ..config import config as cfg
 
 try:
     from rich.traceback import install

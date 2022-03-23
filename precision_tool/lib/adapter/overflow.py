@@ -2,11 +2,12 @@
 import json
 import os
 
-from lib.util import util
-import config as cfg
-from lib.precision_tool_exception import PrecisionToolException
-from lib.precision_tool_exception import catch_tool_exception
-from lib.constant import Constant
+from ..util.util import util
+from ..util.precision_tool_exception import PrecisionToolException
+from ..util.precision_tool_exception import catch_tool_exception
+from ..util.constant import Constant
+from ..config import config as cfg
+
 
 AI_CORE_OVERFLOW_STATUS = {
     '0x8': '符号证书最小附属NEG符号位取反溢出',

@@ -439,9 +439,22 @@ NET_TYPE = 'infer'
 #    只有第一次需要使用infer子命令导入，后续直接python3 precision_tool/cli.py
 python3 precision_tool/cli.py infer output-path/timestamp
 ```  
-  
 
+### 基于checkpoint进行训练精度分析
+#### 获取checkpoint和网络数据数据
+```python
+from precision_tool.tf_session import PrecisionTfSession
+with PrecisionTfSession() as sess:
+    sess.run()
+# 执行完成后，将在precision_data/tf/checkpoint 目录生成一个checkpoint
+# 在precision_data/tf/checkpoint/inputs目录保存[input_tensor_name].npy的输入数据
+```
 
+#### 使用【train】命令进行cpu和npu dump数据的获取
+```shell
+# train -d [all/npu/cpu] -a [dump|fusion_off|overflow]
+python3 precision_tool/cli.py train -d all -a dump
+```
 
 ### TF脚本修改参考
 

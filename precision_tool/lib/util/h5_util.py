@@ -8,9 +8,9 @@ except ImportError as import_err:
     print("Failed to import h5py. some function may disable. Run 'pip3 install h5py' to fix it.",
           import_err)
 
-from lib.util import util
-from lib.constant import Constant
-import config as cfg
+from ..util.util import util
+from ..util.constant import Constant
+from ..config import config as cfg
 
 
 class IdxType(object):

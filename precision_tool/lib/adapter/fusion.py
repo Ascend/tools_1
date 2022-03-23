@@ -2,10 +2,9 @@
 import json
 import os
 import shutil
+from ..util.util import util
+from ..config import config as cfg
 
-from lib.tool_object import ToolObject
-from lib.util import util
-import config as cfg
 
 FUSION_RESULT_FILE_NAME = 'fusion_result.json'
 EFFECT_TIMES_KEY = 'effect_times'
@@ -47,9 +46,8 @@ class FusionResult(object):
         return res
 
 
-class Fusion(ToolObject):
+class Fusion(object):
     def __init__(self):
-        super(Fusion, self).__init__()
         self.fusion_result = []
         self.log = util.get_log()
 
@@ -63,7 +61,7 @@ class Fusion(ToolObject):
         file_path_local = os.path.join(cfg.FUSION_DIR, FUSION_RESULT_FILE_NAME)
         if not os.path.isfile(file_path):
             if not os.path.isfile(file_path_local):
-                self.log.warning("Can not find fusion result json.")
+                self.log.debug("Can not find fusion result json.")
                 return
         else:
             shutil.copy(file_path, cfg.FUSION_DIR)
