@@ -2,8 +2,11 @@
 import os
 import random
 import tensorflow as tf
-from lib.adapter.tf_adapter import TfAdapter as adapter
-from lib.config import config as cfg
+from .lib.adapter.tf_adapter import TfAdapter
+from .lib.config import config as cfg
+
+
+adapter = TfAdapter()
 
 
 def seed_everything(seed=cfg.DUMP_SEED):
