@@ -164,7 +164,7 @@ class DumpDataParser:
                                           tensor.data_type))
                 npy_file_name = ".".join([self.kernel_name, tensor_type, str(index), "npy"])
                 np.save(os.path.join(dump_file_path, npy_file_name), array)
-                if np.isinf(array).any() or np.isnan(array).any():
+                if (np.isinf(array).any() or np.isnan(array).any()) and tensor_type == "input":
                     result_info += '%s[%d] NaN/INF\n' % (tensor_type, index)
                     utils.print_error_log('%s[%d] NaN/INF\n' % (tensor_type, index))
                     raise utils.AicErrException(
