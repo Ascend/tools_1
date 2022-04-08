@@ -313,7 +313,7 @@ class AicoreErrorParser:
         utils.print_info_log("shape_str is {}".format(shape_str))
         if shape_str == "":
             return 1
-        shape_str_list = shape_str.split(",")
+        shape_str_list = shape_str..replace("[", "").replace("]", "").split(",")
         return reduce(lambda x, y: int(x)* int(y), shape_str_list)
 
     def _check_addr_in_range(self, addr, ranges):
