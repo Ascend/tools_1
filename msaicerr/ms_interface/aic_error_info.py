@@ -128,8 +128,11 @@ current pc   : %s
       result_str = ""
       used_addrs = self.necessary_addr
       ava_addr = self.aval_addrs
-      input_params = used_addrs.get("input_addr")
-      output_params = used_addrs.get("output_addr")
+      if not used_addrs:
+          input_params, output_params = [], []
+      else:
+          input_params = used_addrs.get("input_addr")
+          output_params = used_addrs.get("output_addr")
       workspace = used_addrs.get("workspace")
       for input_param in input_params:
           index  = input_param.get("index")

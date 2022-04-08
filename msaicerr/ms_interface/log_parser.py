@@ -151,9 +151,9 @@ class HostLogParser(LogParser):
 
     def _get_node_and_kernel_name(self: any, dev_id: any, err_time: any) -> tuple:
         data = self._get_node_and_kernel_name_execute_command()
-        regexp = r"(\d+-\d+-\d+-\d+:\d+:\d+\.\d+\.\d+).+?device_id=%s\s*,\s*stream_id=" \
+        regexp = r"(\d+-\d+-\d+-\d+:\d+:\d+\.\d+\.\d+).+?device_id=\d+\s*,\s*stream_id=" \
                  r"(\d+)\s*.+?\s*task_id=(\d+)\s*,.*?fault kernel_name=" \
-                 r"[-\d_]{0,}(\S+?),\s*func_name=(\S+)__kernel\d+" % dev_id
+                 r"[-\d_]{0,}(\S+?),\s*func_name=(\S+)__kernel\d+"
         ret = re.findall(regexp, data, re.M | re.S)
         if len(ret) == 0:
             utils.print_error_log(
