@@ -78,8 +78,7 @@ export NPU_HOST_LIB=${install_path}/acllib/lib64/stub
       python3 main.py -m /home/HwHiAiUser/onnx_prouce_data/resnet_offical.onnx -om /home/HwHiAiUser/onnx_prouce_data/model/resnet50.om -i /home/HwHiAiUser/result/test/input_0.bin -c /usr/local/Ascend/ascend-toolkit/latest -o /home/HwHiAiUser/result/test
          ```
       2. **注意**：如果有多个输入，需要用**英文逗号**隔开，其他参数详情可使用--help查询，也可以不指定-c参数，详细内容请查看参数说明
-      
-      3. 多batch输入请将数据文件合并为一个文件作为模型的输入：
+      3. 多batch输入请将数据文件合并为一个文件作为模型的输入：  
         一键式全流程精度比对（推理）工具支持多batch，但对于多batch来说，若用户是逐个保存输入数据文件，那么需要将这些数据文件合并为一个文件作为模型的输入。如下提供一个具体操作样例：
     获取网络模型进行网络训练时，假设保存的模型输入数据文件为.bin，将逐个保存的输入数据文件保存在某一目录，例如：/home/HwHiAiUser/input_bin/。
     调用Python执行如下代码。
