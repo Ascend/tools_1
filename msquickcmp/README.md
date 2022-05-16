@@ -81,7 +81,8 @@ export NPU_HOST_LIB=${install_path}/acllib/lib64/stub
         一键式全流程精度比对（推理）工具支持多batch，但对于多batch，若用户是逐个保存输入数据文件，那么需要将这些数据文件合并为一个文件作为模型的输入。如下提供一个具体操作样例：
     获取网络模型进行网络训练时，假设保存的模型输入数据文件为.bin，将逐个保存的输入数据文件保存在某一目录，例如：/home/HwHiAiUser/input_bin/。
     调用Python执行如下代码。  
-    **请根据原始模型的属性填写以下代码的各个参数。**
+      **请根据原始模型的属性填写以下代码的各个参数。**  
+      
             ```
             import os
             import numpy as np
