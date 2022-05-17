@@ -133,14 +133,13 @@ python3.7.5 frontend/main.py --model ./resnet50_v1_bs1_fp32.om --acl_json_path .
 ### 结果sumary功能
 针对结果输出，本程序增加sumary.json文件打印参数值，便于汇总统计
 具体结果信息如下
-infer_time: 推理调用总时间
-infer_count: 推理调用成功总次数
-infer_error_time: 推理调用错误次数
-exec_time: 推理实际执行总时间  aclmdlExecute函数执行功能
-exec_count: 推理实际执行总次数
+NPU_compute_time: 推理调用总时间
+H2D_latency: 推理host到device延迟时间(ms)
+D2H_latency: 推理device到host延迟时间(ms)
+throughput: 吞吐率。吞吐率计算公式：1000/npu_compute_time.mean/batchsize
 
 打印如下:
-sumary:{'infer_time': 7993.564453125, 'infer_count': 1080, 'infer_error_time': 0, 'run_average_time': 7.401448567708333, 'exec_time': 7933.21142578125, 'exec_count': 1080, 'execute_average_time': 7.345566134982639}
+sumary:{'NPU_compute_time': {'min': 2.4385452270507812, 'max': 2.587556838989258, 'mean': 2.5239520602756076, 'median': 2.529621124267578, 'percentile(99%)': 2.585916519165039}, 'H2D_latency': {'min': 0.5118846893310547, 'max': 1.0373592376708984, 'mean': 0.6650818718804253, 'median': 0.6296634674072266, 'percentile(99%)': 1.0063838958740234}, 'D2H_latency': {'min': 0.027894973754882812, 'max': 0.05745887756347656, 'mean': 0.04508760240342882, 'median': 0.04744529724121094, 'percentile(99%)': 0.05671501159667969}, 'throughput': 396.2040387925606}
 
 ## 参数说明
 
@@ -159,4 +158,5 @@ sumary:{'infer_time': 7993.564453125, 'infer_count': 1080, 'infer_error_time': 0
 | --dymShape| 动态shape参数，指定模型输入的实际shape，可选参数。 <br>如atc模型转换时设置 --input_shape_range="input1:\[8\~20,3,5,-1\];input2:\[5,3\~9,10,-1\]" , dymShape参数可设置为：--dymShape "input1:8,3,5,10;input2:5,3,10,10"<br>设置此参数时，必须设置 --input 和 --outputSize。 |
 | --outputSize| 指定模型的输出size，有几个输出，就设几个值，可选参数。<br>动态shape场景下，获取模型的输出size可能为0，用户需根据输入的shape预估一个较合适的值去申请内存。<br>如 --outputSize "10000,10000,10000"|
 | --acl_json_path | acl json文件 profiling或者dump时设置      |
+| --batchsize | 模型batch size      |
 | --help| 工具使用帮助信息                  |
