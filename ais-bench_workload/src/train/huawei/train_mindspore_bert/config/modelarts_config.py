@@ -23,7 +23,7 @@ access_config = ed({
 
 session_config = ed({
     'hyperparameters': [
-        {'label': 'config_path', 'value': 'pretrain_config_Ascend_Boost.yaml'},
+        {'label': 'config_path', 'value': '../../pretrain_config_Ascend_Boost.yaml'},
         {'label': 'enable_modelarts', 'value': 'True'},
         {'label': 'distribute', 'value': 'true'},
         {'label': 'epoch_size', 'value': '2'},
