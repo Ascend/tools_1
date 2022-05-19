@@ -157,8 +157,12 @@ class modelarts_handler():
                             log_url=output_url[4:],
                             hyperparameters=session_config.hyperparameters,
                             output_path=output_url[4:],
+                            pool_id=session_config.pool_id,
                             train_instance_type=session_config.train_instance_type,
                             train_instance_count=session_config.train_instance_count,
+                            nas_type=session_config.nas_type,
+                            nas_share_addr=session_config.nas_share_addr,
+                            nas_mount_path=session_config.nas_mount_path,
                             job_description=jobdesc,
                             user_command = None)
 
