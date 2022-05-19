@@ -36,6 +36,8 @@ pip3.7 install easydict
 2. 安装modelarts sdk程序包,参考如下网页
 https://support.huaweicloud.com/sdkreference-modelarts/modelarts_04_0004.html#modelarts_04_0004__section16657165520146
 
+3. windows10环境运行modelarts时，需要开启WSL2，并安装Ubuntu 20.04.4 LTS。 实现过程，请参照[这里](https://blog.csdn.net/li1325169021/article/details/124285018)
+
 ### 配置文件详解
 
 配置文件用于配置该次训练任务所需的信息，路径位于Ais-Benchmark-Stubs-x86_64/code/config/modelarts_config.py，填写指导如下：
