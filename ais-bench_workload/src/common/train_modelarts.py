@@ -75,8 +75,10 @@ if __name__ == '__main__':
     handler.run_job(session_config, args.local_code_path)
 
     # handler.output_url = "s3://0923/00lcm/result_dump/res/V212/"
-    if args.single_server_mode == True:
-        report_result_singlesever_mode(handler, session_config.train_instance_count)
-    else:
-        report_result(handler)
-    
+    try:
+        if args.single_server_mode == True:
+            report_result_singlesever_mode(handler, session_config.train_instance_count)
+        else:
+            report_result(handler)
+    except:
+        print("error resport result failed")
