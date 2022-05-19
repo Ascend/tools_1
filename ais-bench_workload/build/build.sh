@@ -48,7 +48,7 @@ function get_and_check_args()
     shift
     shift
     shift
-    scripts_argss="$@"
+    scripts_args="$@"
 }
 
 function build_packet()
@@ -90,8 +90,7 @@ function build_packet()
     [ ! -f $OUTPUT_BASE_DIR/code/ais_utils.py ] && { cp ${ROOT_PATH}/src/ais_utils_adapter.py $OUTPUT_BASE_DIR/code/ais_utils.py; }
 
     PLATFORM=`uname -i`
-    #OUTPUT_PACKET_NAME="$STUBS_SUBNAME"_"$MANUFACTORY"_"$TARGETDIR"
-    OUTPUT_PACKET_NAME="$PACKET_TYPE"_"$MANUFACTORY"_"$TARGETDIR-Ais-Bench-$PLATFORM-${scripts_args// /_}"
+    # OUTPUT_PACKET_NAME="$PACKET_TYPE"_"$MANUFACTORY"_"$TARGETDIR-Ais-Bench-$PLATFORM-${scripts_args// /_}"
     OUTPUT_PACKET_NAME="$PACKET_TYPE"_"$MANUFACTORY"_"$TARGETDIR-$STUBS_SUBNAME-${scripts_args// /_}"
     rm -rf $OUTPUT_PATH/$OUTPUT_PACKET_NAME.tar.gz
     mv $OUTPUT_BASE_DIR $OUTPUT_PACKET_NAME
