@@ -62,7 +62,7 @@ function build_packet()
     mkdir -p $BUILD_TMP_PATH
 
     # untar packfile
-    tar xvf $OUTPUT_PATH/$STUBS_PACKETS -C $BUILD_TMP_PATH || { echo "tar file failed ret";return $ret_error; }
+    tar xvf $STUBS_PACKETS -C $BUILD_TMP_PATH || { echo "tar file failed ret";return $ret_error; }
 
     # exec build.sh and cp files
     TARGET_PATH=$ROOT_PATH/src/$PACKET_TYPE/$MANUFACTORY/$TARGETDIR
