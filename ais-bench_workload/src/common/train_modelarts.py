@@ -18,13 +18,13 @@ def report_result(handler):
         print("rankid:{} url:{} read throughput:{}".format(rankid, throughput_url, single_throughput_rate))
         total_throughput = total_throughput + single_throughput_rate
     print("report result total_throughput : {}".format(total_throughput))
+    ais_utils.set_result("training", "throughput_ratio", total_throughput)
 
-    accuracy_file_url = os.path.join(handler.output_url, 'accuracy_0.json')
+    accuracy_file_url = os.path.join(handler.output_url, 'accuracy.json')
     accuracy = float(handler.get_obs_url_content(accuracy_file_url))
     print("url:{} read accuracy:{}".format(accuracy_file_url, accuracy))
 
-    print("report result throughput:{} accuracy:{}".format(total_throughput, accuracy))
-    ais_utils.set_result("training", "throughput_ratio", total_throughput)
+    print("report result accuracy:{}".format(accuracy))
     ais_utils.set_result("training", "accuracy", accuracy)
 
 # 单设备运行模式
@@ -80,5 +80,5 @@ if __name__ == '__main__':
             report_result_singlesever_mode(handler, session_config.train_instance_count)
         else:
             report_result(handler)
-    except:
-        print("error resport result failed")
+    except FileNotFoundError as e:
+        print("error resport result failed. Exception:", e)

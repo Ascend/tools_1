@@ -39,7 +39,37 @@ https://support.huaweicloud.com/sdkreference-modelarts/modelarts_04_0004.html#mo
 3. windows10环境运行modelarts时，需要开启WSL2，并安装Ubuntu 20.04.4 LTS。 实现过程，请参照[这里](https://blog.csdn.net/li1325169021/article/details/124285018)
 
 4. 如果当前测试需要更新cann包，需要在程序包中增加ma_pre_start.sh脚本，并增加对应的run包文件。
+   ma_pre_start.sh内容类似以下内容：
+   ```BASH
+    #!/bin/bash
+    set -x
+    echo "Start to intall the run package"
+    LOCAL_DIR=$(cd "$(dirname "$0")";pwd)
+    echo $LOCAL_DIR
 
+    TRAIN_PY_PATH=$(readlink -f `find ./ -name train.py`)
+    BASE_PATH=`dirname $TRAIN_PY_PATH`
+
+    pip install $BASE_PATH/run/protobuf*.whl
+    pip install $BASE_PATH/run/mindspore_ascend*.whl
+    echo "replace origin mindspore packet!!! done ret:$? !!!"
+
+    sudo chmod +x $BASE_PATH/run/*.run
+    CANN_RUN_PACKET=`find $BASE_PATH/run/ -name Ascend-cann-nnae*.run`
+    sudo $CANN_RUN_PACKET --upgrade
+    echo "replace origin CANN_RUN_PACKET!!!: $CANN_RUN_PACKET done ret:$? !!!"
+
+    # env set
+    export GLOG_v=3
+    export ASCEND_GLOBAL_LOG_LEVEL=3
+    export ASCEND_GLOBAL_EVENT_ENABLE=0
+    export ASCEND_SLOG_PRINT_TO_STDOUT=0
+
+    set +x
+
+   ```
+
+5. 将modelarts相关域名映射添加到/etc/hosts中
 ### 配置文件详解
 
 配置文件用于配置该次训练任务所需的信息，路径位于Ais-Benchmark-Stubs-x86_64/code/config/modelarts_config.py，填写指导如下：
@@ -78,6 +108,6 @@ resnet 1.5
         {'label': 'train_steps', 'value': '100'},
     ],
 
-### 单服务器模式  
-    单服务器模式指运行n个设备。但是运行是各自设备进行单设备8卡进行业务训练，如果需要打开该模式，需要在config.sh中 增加如下宏设置  
-export SINGLESERVER_MODE=True  
+### 单服务器模式
+    单服务器模式指运行n个设备。但是运行是各自设备进行单设备8卡进行业务训练，如果需要打开该模式，需要在config.sh中 增加如下宏设置
+export SINGLESERVER_MODE=True
