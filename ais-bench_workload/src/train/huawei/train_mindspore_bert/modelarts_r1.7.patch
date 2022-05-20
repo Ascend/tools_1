@@ -1,6 +1,6 @@
 diff -Nur origin/pretrain_config_Ascend_Boost.yaml code/pretrain_config_Ascend_Boost.yaml
---- origin/pretrain_config_Ascend_Boost.yaml	2022-05-19 16:16:49.780000000 +0800
-+++ code/pretrain_config_Ascend_Boost.yaml	2022-05-19 16:16:49.820000000 +0800
+--- origin/pretrain_config_Ascend_Boost.yaml	2022-05-20 14:37:12.220000000 +0800
++++ code/pretrain_config_Ascend_Boost.yaml	2022-05-20 14:37:12.250000000 +0800
 @@ -34,7 +34,7 @@
  
  # ==============================================================================
@@ -11,9 +11,21 @@ diff -Nur origin/pretrain_config_Ascend_Boost.yaml code/pretrain_config_Ascend_B
  bert_network: 'large_boost'
  loss_scale_value: 65536
 diff -Nur origin/pretrain_eval.py code/pretrain_eval.py
---- origin/pretrain_eval.py	2022-05-19 16:16:49.780000000 +0800
-+++ code/pretrain_eval.py	2022-05-19 16:16:49.810000000 +0800
-@@ -53,6 +53,15 @@
+--- origin/pretrain_eval.py	2022-05-20 14:37:12.220000000 +0800
++++ code/pretrain_eval.py	2022-05-20 14:37:12.250000000 +0800
+@@ -32,7 +32,10 @@
+     Predict function
+     '''
+     devid = int(os.getenv('DEVICE_ID'))
+-    context.set_context(mode=context.GRAPH_MODE, device_target="Ascend", device_id=devid)
++    # for modelarts mode eval after traing, should set alone and no need set device_id
++    #context.set_context(mode=context.GRAPH_MODE, device_target="Ascend", device_id=devid)
++    from mindspore.context import ParallelMode
++    context.set_auto_parallel_context(parallel_mode=ParallelMode.STAND_ALONE)
+     dataset = create_eval_dataset(cfg.batch_size, 1, data_dir=cfg.eval_data_dir)
+     net_for_pretraining = BertPretrainEval(bert_net_cfg)
+     net_for_pretraining.set_train(False)
+@@ -53,6 +56,15 @@
      print("==============================================================")
      for _, v in res.items():
          print("Accuracy is: ", v)
@@ -30,8 +42,8 @@ diff -Nur origin/pretrain_eval.py code/pretrain_eval.py
  
  
 diff -Nur origin/run_pretrain.py code/run_pretrain.py
---- origin/run_pretrain.py	2022-05-19 16:16:49.770000000 +0800
-+++ code/run_pretrain.py	2022-05-19 16:16:49.800000000 +0800
+--- origin/run_pretrain.py	2022-05-20 14:37:12.210000000 +0800
++++ code/run_pretrain.py	2022-05-20 14:37:12.240000000 +0800
 @@ -17,6 +17,7 @@
  python run_pretrain.py
  """
@@ -70,7 +82,7 @@ diff -Nur origin/run_pretrain.py code/run_pretrain.py
  def run_pretrain():
      """pre-train bert_clue"""
      context.set_context(mode=context.GRAPH_MODE, device_target=cfg.device_target, device_id=cfg.device_id)
-@@ -262,10 +274,85 @@
+@@ -262,10 +274,89 @@
          callback.append(eval_callback)
  
      model = ConvertModelUtils().convert_to_thor_model(model, network=net_with_grads, optimizer=optimizer)
@@ -155,10 +167,14 @@ diff -Nur origin/run_pretrain.py code/run_pretrain.py
 +
 +    if get_rank() == 0:
 +        from pretrain_eval import MLM_eval
++        os.environ["RANK_SIZE"] = "1"
++        os.environ["RANK_ID"] = "0"
++        os.environ["DEVICE_ID"] = "0"
 +        MLM_eval()
++
 diff -Nur origin/src/model_utils/moxing_adapter.py code/src/model_utils/moxing_adapter.py
---- origin/src/model_utils/moxing_adapter.py	2022-05-19 16:16:49.770000000 +0800
-+++ code/src/model_utils/moxing_adapter.py	2022-05-19 16:16:49.800000000 +0800
+--- origin/src/model_utils/moxing_adapter.py	2022-05-20 14:37:12.210000000 +0800
++++ code/src/model_utils/moxing_adapter.py	2022-05-20 14:37:12.240000000 +0800
 @@ -100,6 +100,16 @@
                  if not os.path.exists(config.output_path):
                      os.makedirs(config.output_path)
