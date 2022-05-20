@@ -1,6 +1,6 @@
 diff -Nur origin/src/eval_callback.py code/src/eval_callback.py
---- origin/src/eval_callback.py	2022-05-18 17:35:01.270000000 +0800
-+++ code/src/eval_callback.py	2022-05-18 17:35:01.300000000 +0800
+--- origin/src/eval_callback.py	2022-05-20 16:15:23.948739259 +0800
++++ code/src/eval_callback.py	2022-05-20 16:15:23.960739403 +0800
 @@ -21,6 +21,9 @@
  from mindspore import log as logger
  from mindspore.train.callback import Callback
@@ -11,7 +11,7 @@ diff -Nur origin/src/eval_callback.py code/src/eval_callback.py
  
  class EvalCallBack(Callback):
      """
-@@ -93,3 +96,11 @@
+@@ -93,3 +96,14 @@
          print("End training, the best {0} is: {1}, the best {0} epoch is {2}".format(self.metrics_name,
                                                                                       self.best_res,
                                                                                       self.best_epoch), flush=True)
@@ -20,12 +20,15 @@ diff -Nur origin/src/eval_callback.py code/src/eval_callback.py
 +            server_id = os.getenv("BATCH_TASK_INDEX", 0)
 +            accuracy_file = os.path.join(config.train_url, "accuracy_{}.json".format(server_id))
 +            mox.file.write(accuracy_file, str(self.best_res))
++            accuracy_file1 = os.path.join(config.train_url, "accuracy.json")
++            with mox.file.File(accuracy_file1, 'w') as f:
++                f.write(str(self.best_res))            
 +            ranksize_file = os.path.join(config.train_url, "ranksize.json")
 +            if mox.file.exists(ranksize_file) == False:
 +                mox.file.write(ranksize_file, str(get_device_num()))
 diff -Nur origin/src/model_utils/config.py code/src/model_utils/config.py
---- origin/src/model_utils/config.py	2022-05-18 17:35:01.270000000 +0800
-+++ code/src/model_utils/config.py	2022-05-18 17:35:01.300000000 +0800
+--- origin/src/model_utils/config.py	2022-05-20 16:15:23.948739259 +0800
++++ code/src/model_utils/config.py	2022-05-20 16:15:23.960739403 +0800
 @@ -120,6 +120,8 @@
      parser.add_argument("--config_path", type=str, default=os.path.join(current_dir, \
          "../../config/resnet50_cifar10_config.yaml"), help="Config file path")
@@ -36,8 +39,8 @@ diff -Nur origin/src/model_utils/config.py code/src/model_utils/config.py
      args = parse_cli_to_yaml(parser=parser, cfg=default, helper=helper, choices=choices, cfg_path=path_args.config_path)
      final_config = merge(args, default)
 diff -Nur origin/src/model_utils/moxing_adapter.py code/src/model_utils/moxing_adapter.py
---- origin/src/model_utils/moxing_adapter.py	2022-05-18 17:35:01.270000000 +0800
-+++ code/src/model_utils/moxing_adapter.py	2022-05-18 17:35:01.300000000 +0800
+--- origin/src/model_utils/moxing_adapter.py	2022-05-20 16:15:23.948739259 +0800
++++ code/src/model_utils/moxing_adapter.py	2022-05-20 16:15:23.960739403 +0800
 @@ -97,6 +97,12 @@
                  config.device_id = get_device_id()
                  if not os.path.exists(config.output_path):
@@ -52,8 +55,8 @@ diff -Nur origin/src/model_utils/moxing_adapter.py code/src/model_utils/moxing_a
                  if pre_process:
                      pre_process()
 diff -Nur origin/train.py code/train.py
---- origin/train.py	2022-05-18 17:35:01.290000000 +0800
-+++ code/train.py	2022-05-18 17:35:01.320000000 +0800
+--- origin/train.py	2022-05-20 16:15:23.940739162 +0800
++++ code/train.py	2022-05-20 16:15:23.952739307 +0800
 @@ -17,6 +17,7 @@
  import glob
  import os

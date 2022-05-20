@@ -29,6 +29,8 @@ session_config = ed({
         {'label': 'epoch_size', 'value': '5'},
         {'label': 'device_num', 'value': '8'},
         {'label': 'run_eval', 'value': 'True'},
+        {'label': 'save_checkpoint', 'value': 'True'},
+        {'label': 'save_checkpoint_epochs', 'value': '5'},
     ],
     # 输入数据集目录
     'inputs': '/zgwtest/lcm_test/dataset/imagenet_small/',
