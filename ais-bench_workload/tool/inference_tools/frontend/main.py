@@ -4,6 +4,7 @@ import logging
 import os
 import sys
 import time
+import asyncio
 
 import aclruntime
 from tqdm import tqdm
@@ -93,6 +94,48 @@ def infer_fulltensors_run(session, args, intensors_desc, infileslist, outputs_na
         for i, outputs in enumerate(outtensors):
             save_tensors_to_file(outputs, output_prefix, infileslist[i], args.outfmt, i)
 
+async def in_task(inque, args, intensors_desc, infileslist):
+    logger.debug("in_task begin")
+    for i, infiles in enumerate(tqdm(infileslist, desc='Inference Processing task')):
+        intensors = []
+        for j, files in enumerate(infiles):
+            tensor = get_tensor_from_files_list(files, args.device_id, intensors_desc[j].realsize)
+            intensors.append(tensor)
+        await inque.put([intensors, infiles, i])
+    await inque.put([None, None, None])
+    logger.debug("in_task exit")
+
+async def infer_task(inque, session, outputs_names, args, outque):
+    logger.debug("infer_task begin")
+    while True:
+        intensors, infiles, i = await inque.get()
+        if intensors == None:
+            await outque.put([None, None, None])
+            logger.debug("infer_task exit")
+            break
+        outputs = run_inference(session, intensors, outputs_names, args.loop)
+        await outque.put([outputs, infiles, i])
+
+async def out_task(outque, output_prefix, args):
+    logger.debug("out_task begin")
+    while True:
+        outputs, infiles, i = await outque.get()
+        if outputs == None:
+            logger.debug("out_task exit")
+            break
+        if args.output != None:
+            save_tensors_to_file(outputs, output_prefix, infiles, args.outfmt, i)
+
+async def infer_pipeline_process_run(session, args, intensors_desc, infileslist, outputs_names, output_prefix):
+    inque = asyncio.Queue(maxsize=20)
+    outque = asyncio.Queue(maxsize=20)
+
+    await asyncio.gather(
+        in_task(inque, args, intensors_desc, infileslist),
+        infer_task(inque, session, outputs_names, args, outque),
+        out_task(outque, output_prefix, args),
+    )
+
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", "--om", required=True, help="the path of the om model")
@@ -143,7 +186,8 @@ if __name__ == "__main__":
         infileslist = create_infileslist_from_inputs_list(inputs_list, intensors_desc)
 
     #infer_fulltensors_run(session, args, intensors_desc, infileslist, outputs_names, output_prefix)
-    infer_loop_run(session, args, intensors_desc, infileslist, outputs_names, output_prefix)
+    #infer_loop_run(session, args, intensors_desc, infileslist, outputs_names, output_prefix)
+    asyncio.run(infer_pipeline_process_run(session, args, intensors_desc, infileslist, outputs_names, output_prefix))
 
     summary.add_args(sys.argv)
     summary.report(args.batchsize, output_prefix)
