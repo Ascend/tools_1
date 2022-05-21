@@ -4,6 +4,7 @@ import logging
 import os
 import sys
 import time
+import asyncio
 
 import aclruntime
 from tqdm import tqdm
@@ -49,12 +50,12 @@ def init_inference_session(args):
     logger.debug("session info:{}".format(session))
     return session
 
-def run_inference(session, inputs, outputs_names):
+def run_inference(session, inputs, outputs_names, loop=1):
     session.run_setinputs(inputs)
     starttime = time.time()
-    session.run_execute()
+    session.run_execute(loop)
     endtime = time.time()
-    summary.npu_compute_time_list.append(float(endtime - starttime) * 1000.0)  # millisecond
+    summary.npu_compute_time_list.append(float(endtime - starttime) * 1000.0/loop)  # millisecond
     outputs = session.run_getoutputs(outputs_names)
 
     return outputs
@@ -63,7 +64,7 @@ def warmup(session, intensors_desc, outputs_names):
     n_loop = 5
     inputs = create_intensors_zerodata(intensors_desc, args.device_id)
     for i in range(n_loop):
-        run_inference(session, inputs, outputs_names)
+        run_inference(session, inputs, outputs_names, 1)
     summary.reset()
     session.reset_sumaryinfo()
     logger.debug("warm up {} times done".format(n_loop))
@@ -75,7 +76,7 @@ def infer_loop_run(session, args, intensors_desc, infileslist, outputs_names, ou
         for j, files in enumerate(infiles):
             tensor = get_tensor_from_files_list(files, args.device_id, intensors_desc[j].realsize)
             intensors.append(tensor)
-        outputs = run_inference(session, intensors, outputs_names)
+        outputs = run_inference(session, intensors, outputs_names, args.loop)
         if args.output != None:
             save_tensors_to_file(outputs, output_prefix, infiles, args.outfmt, i)
 
@@ -86,12 +87,54 @@ def infer_fulltensors_run(session, args, intensors_desc, infileslist, outputs_na
 
     #for inputs in intensorslist:
     for inputs in tqdm(intensorslist, desc='Inference Processing full'):
-        outputs = run_inference(session, inputs, outputs_names)
+        outputs = run_inference(session, inputs, outputs_names, args.loop)
         outtensors.append(outputs)
 
     if args.output != None:
         for i, outputs in enumerate(outtensors):
             save_tensors_to_file(outputs, output_prefix, infileslist[i], args.outfmt, i)
+
+async def in_task(inque, args, intensors_desc, infileslist):
+    logger.debug("in_task begin")
+    for i, infiles in enumerate(tqdm(infileslist, desc='Inference Processing task')):
+        intensors = []
+        for j, files in enumerate(infiles):
+            tensor = get_tensor_from_files_list(files, args.device_id, intensors_desc[j].realsize)
+            intensors.append(tensor)
+        await inque.put([intensors, infiles, i])
+    await inque.put([None, None, None])
+    logger.debug("in_task exit")
+
+async def infer_task(inque, session, outputs_names, args, outque):
+    logger.debug("infer_task begin")
+    while True:
+        intensors, infiles, i = await inque.get()
+        if intensors == None:
+            await outque.put([None, None, None])
+            logger.debug("infer_task exit")
+            break
+        outputs = run_inference(session, intensors, outputs_names, args.loop)
+        await outque.put([outputs, infiles, i])
+
+async def out_task(outque, output_prefix, args):
+    logger.debug("out_task begin")
+    while True:
+        outputs, infiles, i = await outque.get()
+        if outputs == None:
+            logger.debug("out_task exit")
+            break
+        if args.output != None:
+            save_tensors_to_file(outputs, output_prefix, infiles, args.outfmt, i)
+
+async def infer_pipeline_process_run(session, args, intensors_desc, infileslist, outputs_names, output_prefix):
+    inque = asyncio.Queue(maxsize=20)
+    outque = asyncio.Queue(maxsize=20)
+
+    await asyncio.gather(
+        in_task(inque, args, intensors_desc, infileslist),
+        infer_task(inque, session, outputs_names, args, outque),
+        out_task(outque, output_prefix, args),
+    )
 
 def get_args():
     parser = argparse.ArgumentParser()
@@ -99,7 +142,7 @@ def get_args():
     parser.add_argument("--input", "-i", default=None, help="input file or dir")
     parser.add_argument("--output", "-o", default=None, help="output")
     parser.add_argument("--outfmt", default="BIN", choices=["NPY", "BIN"], help="Output file format (NPY or BIN)")
-    parser.add_argument("--loop", "-r", type=int, default=1, choices=range(1, 255), help="the round of the PrueInfer.")
+    parser.add_argument("--loop", "-r", type=int, default=1, help="the round of the PrueInfer.")
     parser.add_argument("--debug", action="store_true", help="Debug switch,print model information")
     parser.add_argument("--device_id", "--device", type=int, default=0, choices=range(0, 255), help="the NPU device ID to use")
     parser.add_argument("--dymBatch", type=int, default=0, help="dynamic batch size param，such as --dymBatch 2")
@@ -139,12 +182,14 @@ if __name__ == "__main__":
     if len(inputs_list) == 0:
         # 纯推理场景 创建输入zero数据
         infileslist = [[ [ pure_infer_dump_file ] for index in intensors_desc ]]
-        session.options().loop = args.loop
     else:
         infileslist = create_infileslist_from_inputs_list(inputs_list, intensors_desc)
 
     #infer_fulltensors_run(session, args, intensors_desc, infileslist, outputs_names, output_prefix)
-    infer_loop_run(session, args, intensors_desc, infileslist, outputs_names, output_prefix)
+    #infer_loop_run(session, args, intensors_desc, infileslist, outputs_names, output_prefix)
+    asyncio.run(infer_pipeline_process_run(session, args, intensors_desc, infileslist, outputs_names, output_prefix))
 
     summary.add_args(sys.argv)
     summary.report(args.batchsize, output_prefix)
+
+    #print(session.sumary())
