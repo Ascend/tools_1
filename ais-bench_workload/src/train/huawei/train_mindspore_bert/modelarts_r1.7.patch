@@ -35,7 +35,7 @@ diff -Nur origin/pretrain_eval.py code/pretrain_eval.py
 +        server_id = os.getenv("BATCH_TASK_INDEX", 0)
 +        accuracy_file = os.path.join(cfg.train_url, "accuracy_{}.json".format(server_id))
 +        mox.file.write(accuracy_file, str(v))
-+        accuracy_file1 = os.path.join(config.train_url, "accuracy.json")
++        accuracy_file1 = os.path.join(cfg.train_url, "accuracy.json")
 +        with mox.file.File(accuracy_file1, 'w') as f:
 +            f.write(str(v))
 +        ranksize_file = os.path.join(cfg.train_url, "ranksize.json")
