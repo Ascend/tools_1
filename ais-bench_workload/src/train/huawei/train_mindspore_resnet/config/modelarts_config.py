@@ -28,7 +28,6 @@ session_config = ed({
         {'label': 'run_distribute', 'value': 'True'},
         {'label': 'epoch_size', 'value': '5'},
         {'label': 'device_num', 'value': '8'},
-        {'label': 'run_eval', 'value': 'True'},
         {'label': 'save_checkpoint', 'value': 'True'},
         {'label': 'save_checkpoint_epochs', 'value': '5'},
     ],
