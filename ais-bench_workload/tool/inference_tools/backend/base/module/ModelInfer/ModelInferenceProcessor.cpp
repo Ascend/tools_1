@@ -384,12 +384,10 @@ APP_ERROR ModelInferenceProcessor::ModelInference_Inner(std::vector<BaseTensor> 
         return ret;
     }
 
-    for (size_t t = 0; t < options_->loop; ++t) {
-        ret = Inference_Execute();
-        if (ret != APP_ERR_OK){
-            ERROR_LOG("Execute Infer failed ret:%d\n", ret);
-            return ret;
-        }
+    ret = Inference_Execute(options_->loop);
+    if (ret != APP_ERR_OK){
+        ERROR_LOG("Execute Infer failed ret:%d\n", ret);
+        return ret;
     }
 
     ret = Inference_GetOutputs(outputNames, outputTensors);
@@ -400,16 +398,19 @@ APP_ERROR ModelInferenceProcessor::ModelInference_Inner(std::vector<BaseTensor> 
     return APP_ERR_OK;
 }
 
-APP_ERROR ModelInferenceProcessor::Inference_Execute()
+APP_ERROR ModelInferenceProcessor::Inference_Execute(int loop)
 {
     struct timeval start = { 0 };
     struct timeval end = { 0 };
     gettimeofday(&start, nullptr);
 
-    Result result = processModel.Execute();
-    if (result != SUCCESS){
-        ERROR_LOG("acl execute failed:%d\n", result);
-        return APP_ERR_ACL_FAILURE;
+    Result result;
+    for (size_t t = 0; t < loop; ++t) {
+        result = processModel.Execute();
+        if (result != SUCCESS) {
+            ERROR_LOG("acl execute failed:%d\n", result);
+            return APP_ERR_ACL_FAILURE;
+        }
     }
 
     gettimeofday(&end, nullptr);
@@ -417,7 +418,7 @@ APP_ERROR ModelInferenceProcessor::Inference_Execute()
     //printf("model aclExec const : %f\n", time_cost);
 
     sumaryInfo_.execTime += time_cost;
-    sumaryInfo_.execCount += 1;
+    sumaryInfo_.execCount += loop;
     return APP_ERR_OK;
 }
 

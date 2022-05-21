@@ -95,10 +95,10 @@ int PyInferenceSession::InferVector_SetInputs(std::vector<TensorBase>& feeds)
     return APP_ERR_OK;
 }
 
-int PyInferenceSession::Infer_Execute()
+int PyInferenceSession::Infer_Execute(int loop)
 {
-    DEBUG_LOG("start to ModelInference Execute");
-    APP_ERROR ret = modelInfer_.Inference_Execute();
+    DEBUG_LOG("start to ModelInference Execute loop:%d", loop);
+    APP_ERROR ret = modelInfer_.Inference_Execute(loop);
     if (ret != APP_ERR_OK) {
         throw std::runtime_error(GetError(ret));
     }
@@ -267,6 +267,8 @@ std::shared_ptr<Base::PyInferenceSession> CreateModelInstance(const std::string 
 
 void RegistInferenceSession(py::module &m)
 {
+    using namespace pybind11::literals;
+
     py::class_<Base::SessionOptions, std::shared_ptr<Base::SessionOptions>>(m, "session_options")
     .def(py::init([]() { return std::make_shared<Base::SessionOptions>(); }))
     .def_readwrite("loop", &Base::SessionOptions::loop)
@@ -294,12 +296,12 @@ void RegistInferenceSession(py::module &m)
     model.def("run", &Base::PyInferenceSession::InferMap);
     model.def("run_setinputs", &Base::PyInferenceSession::InferVector_SetInputs);
     model.def("run_setinputs", &Base::PyInferenceSession::InferMap_SetInputs);
-    model.def("run_execute", &Base::PyInferenceSession::Infer_Execute);
+    model.def("run_execute", &Base::PyInferenceSession::Infer_Execute, "loop"_a = 1);
     model.def("run_getoutputs", &Base::PyInferenceSession::Infer_GetOutputs);
     model.def("__str__", &Base::PyInferenceSession::GetDesc);
     model.def("__repr__", &Base::PyInferenceSession::GetDesc);
 
-    model.def("options", &Base::PyInferenceSession::GetOptions);
+    model.def("options", &Base::PyInferenceSession::GetOptions, py::return_value_policy::reference);
 
     model.def("sumary", &Base::PyInferenceSession::GetSumaryInfo, py::return_value_policy::reference);
     model.def("get_inputs", &Base::PyInferenceSession::GetInputs, py::return_value_policy::reference);
@@ -313,6 +315,5 @@ void RegistInferenceSession(py::module &m)
     model.def("set_dynamic_shape", &Base::PyInferenceSession::SetDynamicShape);
     model.def("set_custom_outsize", &Base::PyInferenceSession::SetCustomOutTensorsSize);
 
-    using namespace pybind11::literals;
     m.def("model", &CreateModelInstance, "modelPath"_a, "deviceId"_a = 0, "options"_a=py::none());
 }

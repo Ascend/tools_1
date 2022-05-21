@@ -49,12 +49,12 @@ def init_inference_session(args):
     logger.debug("session info:{}".format(session))
     return session
 
-def run_inference(session, inputs, outputs_names):
+def run_inference(session, inputs, outputs_names, loop=1):
     session.run_setinputs(inputs)
     starttime = time.time()
-    session.run_execute()
+    session.run_execute(loop)
     endtime = time.time()
-    summary.npu_compute_time_list.append(float(endtime - starttime) * 1000.0)  # millisecond
+    summary.npu_compute_time_list.append(float(endtime - starttime) * 1000.0/loop)  # millisecond
     outputs = session.run_getoutputs(outputs_names)
 
     return outputs
@@ -63,7 +63,7 @@ def warmup(session, intensors_desc, outputs_names):
     n_loop = 5
     inputs = create_intensors_zerodata(intensors_desc, args.device_id)
     for i in range(n_loop):
-        run_inference(session, inputs, outputs_names)
+        run_inference(session, inputs, outputs_names, 1)
     summary.reset()
     session.reset_sumaryinfo()
     logger.debug("warm up {} times done".format(n_loop))
@@ -75,7 +75,7 @@ def infer_loop_run(session, args, intensors_desc, infileslist, outputs_names, ou
         for j, files in enumerate(infiles):
             tensor = get_tensor_from_files_list(files, args.device_id, intensors_desc[j].realsize)
             intensors.append(tensor)
-        outputs = run_inference(session, intensors, outputs_names)
+        outputs = run_inference(session, intensors, outputs_names, args.loop)
         if args.output != None:
             save_tensors_to_file(outputs, output_prefix, infiles, args.outfmt, i)
 
@@ -86,7 +86,7 @@ def infer_fulltensors_run(session, args, intensors_desc, infileslist, outputs_na
 
     #for inputs in intensorslist:
     for inputs in tqdm(intensorslist, desc='Inference Processing full'):
-        outputs = run_inference(session, inputs, outputs_names)
+        outputs = run_inference(session, inputs, outputs_names, args.loop)
         outtensors.append(outputs)
 
     if args.output != None:
@@ -99,7 +99,7 @@ def get_args():
     parser.add_argument("--input", "-i", default=None, help="input file or dir")
     parser.add_argument("--output", "-o", default=None, help="output")
     parser.add_argument("--outfmt", default="BIN", choices=["NPY", "BIN"], help="Output file format (NPY or BIN)")
-    parser.add_argument("--loop", "-r", type=int, default=1, choices=range(1, 255), help="the round of the PrueInfer.")
+    parser.add_argument("--loop", "-r", type=int, default=1, help="the round of the PrueInfer.")
     parser.add_argument("--debug", action="store_true", help="Debug switch,print model information")
     parser.add_argument("--device_id", "--device", type=int, default=0, choices=range(0, 255), help="the NPU device ID to use")
     parser.add_argument("--dymBatch", type=int, default=0, help="dynamic batch size param，such as --dymBatch 2")
@@ -139,7 +139,6 @@ if __name__ == "__main__":
     if len(inputs_list) == 0:
         # 纯推理场景 创建输入zero数据
         infileslist = [[ [ pure_infer_dump_file ] for index in intensors_desc ]]
-        session.options().loop = args.loop
     else:
         infileslist = create_infileslist_from_inputs_list(inputs_list, intensors_desc)
 
@@ -148,3 +147,5 @@ if __name__ == "__main__":
 
     summary.add_args(sys.argv)
     summary.report(args.batchsize, output_prefix)
+
+    #print(session.sumary())

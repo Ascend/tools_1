@@ -181,7 +181,7 @@ public:
 
     APP_ERROR Inference_SetInputs(const std::vector<TensorBase>& feeds);
     APP_ERROR Inference_SetInputs(const std::map<std::string, TensorBase>& feeds);
-    APP_ERROR Inference_Execute();
+    APP_ERROR Inference_Execute(int loop);
     APP_ERROR Inference_GetOutputs(std::vector<std::string> outputNames, std::vector<TensorBase> &outputTensors);
 
 private:
