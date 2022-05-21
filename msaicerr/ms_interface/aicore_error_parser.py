@@ -152,8 +152,8 @@ class AicoreErrorParser:
                              'view README.txt first.' % self.output_path)
 
     def _get_alloc_addr(self: any) -> list:
-        #  DevMalloc: Device memory alloc ok, size=512, type=2, ptr=0x108040014000
-        cmd = ['grep', 'Device memory alloc ok', '-nr',
+        #  DevMalloc: Succ, size=512, type=2, ptr=0x108040014000
+        cmd = ['grep', 'DevMalloc: Succ,', '-nr',
                self.collection.collect_applog_path]
         _, data = utils.execute_command(cmd)
         regexp = r"(\d+-\d+-\d+-\d+:\d+:\d+\.\d+\.\d+).+?size\s*=\s*([" \
@@ -180,14 +180,14 @@ class AicoreErrorParser:
         :param occur_time: aicore error发生的时间
         :return: 可用空间的list
         '''
-        alloc_cmd = ['grep', 'Device memory alloc ok', '-nr',
+        alloc_cmd = ['grep', 'DevMalloc: Succ,', '-nr',
                      self.collection.collect_applog_path]
         _, alloc_data = utils.execute_command(alloc_cmd)
         alloc_regexp = r"(\d+-\d+-\d+-\d+:\d+:\d+\.\d+\.\d+).+?size\s*=\s*([" \
                        r"\d]+).+?ptr\s*=\s*([\da-zA-Z]+)"
         alloc_ret = re.findall(alloc_regexp, alloc_data, re.M)
 
-        free_cmd = ['grep', 'Device memory free', '-nr',
+        free_cmd = ['grep', 'DevFree: mem', '-nr',
                     self.collection.collect_applog_path]
         _, free_data = utils.execute_command(free_cmd)
         free_regexp = r"(\d+-\d+-\d+-\d+:\d+:\d+\.\d+\.\d+).+?mem\s*=\s*([\da-zA-Z]+)"
@@ -847,10 +847,10 @@ class AicoreErrorParser:
             if not cce_dump:
                 # guess where is cce-objdump
                 parent_path = "aarch64-linux" if "aarch64" in platform.machine() else "x86_64-linux"
-                cce_dump_guess = os.path.join("usr", "local", "Ascend", parent_path, 
-                                              "cce_compiler", "bin", "cce-objdump")
+                cce_dump_guess = os.path.join("usr/local/Ascend/latest", parent_path, "ccec_compiler/bin/cce-objdump")
                 if os.path.exists(cce_dump_guess):
                     cce_dump = cce_dump_guess
+                
             if not cce_dump:
                  utils.print_error_log('Cannot find  cce-objdump! please add cce-objdump path in env PATH.')
                  raise utils.AicErrException(Constant.MS_AICERR_EXECUTE_COMMAND_ERROR)
