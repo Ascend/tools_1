@@ -1,6 +1,6 @@
 diff -Nur origin/src/model_utils/config.py code/src/model_utils/config.py
---- origin/src/model_utils/config.py	2022-05-21 21:22:06.690000000 +0800
-+++ code/src/model_utils/config.py	2022-05-21 21:22:06.720000000 +0800
+--- origin/src/model_utils/config.py	2022-05-22 20:29:23.680000000 +0800
++++ code/src/model_utils/config.py	2022-05-22 20:29:23.710000000 +0800
 @@ -120,6 +120,8 @@
      parser.add_argument("--config_path", type=str, default=os.path.join(current_dir, \
          "../../config/resnet50_cifar10_config.yaml"), help="Config file path")
@@ -11,8 +11,8 @@ diff -Nur origin/src/model_utils/config.py code/src/model_utils/config.py
      args = parse_cli_to_yaml(parser=parser, cfg=default, helper=helper, choices=choices, cfg_path=path_args.config_path)
      final_config = merge(args, default)
 diff -Nur origin/src/model_utils/moxing_adapter.py code/src/model_utils/moxing_adapter.py
---- origin/src/model_utils/moxing_adapter.py	2022-05-21 21:22:06.690000000 +0800
-+++ code/src/model_utils/moxing_adapter.py	2022-05-21 21:22:06.720000000 +0800
+--- origin/src/model_utils/moxing_adapter.py	2022-05-22 20:29:23.680000000 +0800
++++ code/src/model_utils/moxing_adapter.py	2022-05-22 20:29:23.710000000 +0800
 @@ -97,6 +97,12 @@
                  config.device_id = get_device_id()
                  if not os.path.exists(config.output_path):
@@ -21,14 +21,14 @@ diff -Nur origin/src/model_utils/moxing_adapter.py code/src/model_utils/moxing_a
 +                base_path = config.data_path
 +                if os.path.exists(os.path.join(base_path, "train")):
 +                    config.data_path = os.path.join(base_path, "train")
-+                if config.run_eval and os.path.exists(os.path.join(base_path, "val")):
++                if os.path.exists(os.path.join(base_path, "val")):
 +                    config.eval_dataset_path = os.path.join(os.path.join(base_path, "val"))
  
                  if pre_process:
                      pre_process()
 diff -Nur origin/train.py code/train.py
---- origin/train.py	2022-05-21 21:22:06.720000000 +0800
-+++ code/train.py	2022-05-21 21:22:06.750000000 +0800
+--- origin/train.py	2022-05-22 20:29:23.710000000 +0800
++++ code/train.py	2022-05-22 20:29:23.740000000 +0800
 @@ -17,6 +17,7 @@
  import glob
  import os
