@@ -114,7 +114,7 @@ class AicoreErrorParser:
         try:
             with open(graph_file, 'r') as graph:
                 text = graph.read()
-                regexp = r'(op\s+\{\s+name:\s+"%s".+?%s__kernel.+?\})\s+' \
+                regexp = r'(op\s+\{\s+name:\s+"%s".+?%s.+?\})\s+' \
                          r'op\s+\{' % (info.node_name, info.kernel_name)
                 ret = re.findall(regexp, text, re.M | re.S)
                 if len(ret) == 0:
@@ -661,10 +661,9 @@ class AicoreErrorParser:
         # decompile .o file
         cce_file = os.path.join(kernel_meta_path, kernel_name + ".cce")
         if os.path.exists(cce_file) is False:
-            utils.print_error_log(".cce file %s not exist" % cce_file)
-            return False
-
-        utils.copy_file(cce_file, os.path.join(dir_path, kernel_name + ".cce"))
+            utils.print_warn_log(".cce file %s not exist" % cce_file)
+        else:
+            utils.copy_file(cce_file, os.path.join(dir_path, kernel_name + ".cce"))
 
         # decompile .o file
         o_file = os.path.join(kernel_meta_path, kernel_name + ".o")
