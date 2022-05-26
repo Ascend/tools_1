@@ -1,0 +1,1 @@
+/usr/bin/g++ CMakeFiles/main.dir/utils.cpp.o CMakeFiles/main.dir/model_process.cpp.o CMakeFiles/main.dir/sample_process.cpp.o CMakeFiles/main.dir/main.cpp.o -o /home/HwHiAiUser/arx/test/tools/msame/out/main   -L/usr/local/Ascend/ascend-toolkit/latest/acllib/lib64/stub  -lascendcl -lacl_cblas -lacl_dvpp -lstdc++ 
