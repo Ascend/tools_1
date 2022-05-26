@@ -1,7 +1,0 @@
-/home/HwHiAiUser/arx/test/tools/msame/build/intermediates/host/CMakeFiles/install/strip.dir
-/home/HwHiAiUser/arx/test/tools/msame/build/intermediates/host/CMakeFiles/install/local.dir
-/home/HwHiAiUser/arx/test/tools/msame/build/intermediates/host/CMakeFiles/main.dir
-/home/HwHiAiUser/arx/test/tools/msame/build/intermediates/host/CMakeFiles/edit_cache.dir
-/home/HwHiAiUser/arx/test/tools/msame/build/intermediates/host/CMakeFiles/rebuild_cache.dir
-/home/HwHiAiUser/arx/test/tools/msame/build/intermediates/host/CMakeFiles/install.dir
-/home/HwHiAiUser/arx/test/tools/msame/build/intermediates/host/CMakeFiles/list_install_components.dir
