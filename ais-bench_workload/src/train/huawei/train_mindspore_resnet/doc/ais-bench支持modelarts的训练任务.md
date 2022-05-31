@@ -42,8 +42,8 @@ https://support.huaweicloud.com/sdkreference-modelarts/modelarts_04_0004.html#mo
 
 3. windows10环境运行modelarts时，需要开启WSL2，并安装Ubuntu 20.04.4 LTS。 实现过程，请参照[这里](https://blog.csdn.net/li1325169021/article/details/124285018)
 
-4. 如果当前测试需要更新cann包，需要在程序包中增加ma_pre_start.sh脚本，并增加对应的run包文件。
-   ma_pre_start.sh内容类似以下内容：
+4. 如果当前测试需要更新cann包，需要在程序包中增加ma-pre-start.sh脚本，并增加对应的run包文件。
+   ma-pre-start.sh内容类似以下内容：
    ```BASH
     #!/bin/bash
     set -x
