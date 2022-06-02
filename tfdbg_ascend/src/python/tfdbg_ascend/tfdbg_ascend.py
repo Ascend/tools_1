@@ -17,12 +17,16 @@
 """
 
 # Description: Common depends and micro defines for and only for data preprocess module
+import sys
 import os
 import absl.logging as logging
 import tensorflow as tf
-import tfdbg_ascend
 import threading
+import tfdbg_ascend
+sys.path.append(os.path.dirname(tfdbg_ascend.__file__))
+import _tfdbg_ascend as dbg_cfg
 
+dump_config = dbg_cfg.cfg(1, "")
 try:
     __handle = tf.load_op_library(os.path.dirname(tfdbg_ascend.__file__) + "/_tfdbg_ascend.so")
 except Exception as e:
@@ -68,11 +72,32 @@ tf.function = never_nested_function
 
 def enable():
     """enable."""
-    logging.info("tensorflow debug dump provide by npu enabled")
-    pass
+    dump_config.Enable()
+    get_dump_switch()
 
 
 def disable():
     """disable."""
-    logging.info("tensorflow debug dump provide by npu disabled")
-    pass
+    dump_config.Disable()
+
+
+def get_dump_switch():
+    """dump_switch."""
+    if dump_config.GetDumpSwitch() != 0:
+        print("The dump function is enabled.")
+    else:
+        print("The dump function is disabled.")
+
+
+def set_dump_path(dump_path):
+    dump_config.SetDumpPath(dump_path)
+    print("The current dump Path is: %s" % (dump_config.GetDumpPath()))
+
+
+def get_dump_path():
+    curr_path = dump_config.GetDumpPath()
+    if curr_path:
+        print('The current dump Path is: %s' % curr_path)
+    else:
+        print('The dump path is not set. It is the default path.')
+    return curr_path
