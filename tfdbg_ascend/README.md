@@ -72,7 +72,7 @@ make -j8
 编译结束后，安装包会生成在
 
 ```
-./dist/tfdbg_ascend/dist/tfdbg_ascend-0.1-py3-none-any.whl
+./dist/tfdbg_ascend/dist/tfdbg_ascend-0.2-py3-none-any.whl
 ```
 
 #### 安装
@@ -86,7 +86,29 @@ make install
 将tfdbg_ascend安装到配置时指定的 python 解释器包目录下，或者使用 pip3 安装 tfdbg_ascend 到您期望的位置。
 
 ```
-pip3 install ./dist/tfdbg_ascend/dist/tfdbg_ascend-0.1-py3-none-any.whl --upgrade
+pip3 install ./dist/tfdbg_ascend/dist/tfdbg_ascend-0.2-py3-none-any.whl --upgrade --force-reinstall
+```
+
+#### 接口函数
+
+接口函数用于dump过程的配置，如下：
+
+| 函数                      | 描述                                       |
+| ------------------------  | ---------------------------------------- |
+|enable                     | 打开dump功能，无参数.                                                            |
+|disable                    | 关闭dump功能，无参数.                                                            |
+|get_dump_switch            | 获取dump使能开关的状态，无参数.                                                  |
+|set_dump_path              | 用于设置dump文件的存放路径，函数参数为配置的路径名称，例如“/var/log/dump”.        |
+|get_dump_path              | 获取当前配置的dump文件存放路径，返回值为该路径名称字符串.                         |
+
+#### 使用示例
+
+以训练场景为例，在你需要dump数据的step启动之前，设置使能开关和dump路径。
+```
+import tfdbg_ascend as tfdbg
+
+tfdbg.enable()
+tfdbg.set_dump_path('/var/log/dump/')
 ```
 
 ## 贡献
