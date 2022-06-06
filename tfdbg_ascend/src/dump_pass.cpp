@@ -131,7 +131,7 @@ Status AnalyzeNode(Node *node, FunctionLibraryDefinition *funcLib, std::string f
       }
     }
     if (!match) {
-      LOG(ERROR)<<"the subGraph funcName is not valid!";
+      LOG(ERROR) << "the subGraph funcName is not valid!";
     }
 
     std::string NamePrefix = absl::StrCat(node->name(), "/", attrName, "/");
@@ -141,7 +141,7 @@ Status AnalyzeNode(Node *node, FunctionLibraryDefinition *funcLib, std::string f
     if (PrefixTmp == PrefixInfos.end()) {
         PrefixInfos[subGraphFuncName] = PrefixInfo;
     } else {
-      LOG(ERROR)<<"This node is analyzed repeatedly!, Node name is " << node->name();
+      LOG(ERROR) << "This node is analyzed repeatedly!, Node name is " << node->name();
     }
   }
 
@@ -155,6 +155,7 @@ Status DbgDumpPass::AnalyzeSubGraph(Graph *graph, FunctionLibraryDefinition *fun
 
   for (auto node : graph->op_nodes()) {
     if (node->type_string() == "AscendDump") {
+      LOG(ERROR) << "The dump node should not appear in the subgraph analysis phase.";
       return Status::OK();
     }
   }
@@ -175,13 +176,11 @@ Status DbgDumpPass::GetPrefixName(const std::string &currFuncName, std::string &
 
   NamePrefix = "";
   preFuncNameTmp = currFuncName;
-  int count = 0;
   while (!preFuncNameTmp.empty()) {
     auto PrefixInfo = PrefixInfos.find(preFuncNameTmp);
     if (PrefixInfo == PrefixInfos.end()) {
       break;
     } else {
-      count++;
       if (NamePrefix.empty()) {
         NamePrefix = PrefixInfo->second.prefixOneHierarchy;
       } else {
