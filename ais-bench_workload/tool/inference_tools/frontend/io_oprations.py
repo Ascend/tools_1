@@ -14,9 +14,10 @@ pure_infer_dump_file = "pure_infer_data"
 def get_pure_infer_data(size, pure_data_type):
     lst = []
     if pure_data_type == "random":
-        for _ in range(size):
-            lst.append(random.randrange(0, 256))  # [0, 255]
-    else:  # default "zero"
+        # random value from [0, 255]
+        lst = [random.randrange(0, 256) for _ in range(size)]
+    else:
+        # zero value, default
         lst = [0 for _ in range(size)]
 
     barray = bytearray(lst)
