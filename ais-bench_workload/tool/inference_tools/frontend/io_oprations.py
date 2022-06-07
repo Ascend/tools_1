@@ -9,15 +9,17 @@ from summary import summary
 from utils import (get_files_datasize, get_fileslist_from_dir, list_split,
                    logger, save_data_to_files)
 
-pure_infer_dump_file = "pure_infer_zerodata"
+pure_infer_dump_file = "pure_infer_data"
 
-def get_zero_ndata(size, pure_data_type):
-    list = [0 for _ in range(size)]
+def get_pure_infer_data(size, pure_data_type):
+    lst = []
     if pure_data_type == "random":
-        for i in range(size):
-            list[i] = random.randrange(1, 255)  # (0, 255)
+        for _ in range(size):
+            lst.append(random.randrange(0, 256))  # [0, 255]
+    else:  # default "zero"
+        lst = [0 for _ in range(size)]
 
-    barray = bytearray(list)
+    barray = bytearray(lst)
     ndata = np.frombuffer(barray, dtype=np.uint8)
     return ndata
 
@@ -27,11 +29,11 @@ def get_tensor_from_files_list(files_list, device_id, size, pure_data_type):
     for i, file_path in enumerate(files_list):
         logger.debug("get tensor from filepath:{} i:{} of all:{}".format(file_path, i, len(files_list)))
         if file_path == pure_infer_dump_file:
-            ndata = get_zero_ndata(size, pure_data_type)
+            ndata = get_pure_infer_data(size, pure_data_type)
         elif file_path == None or os.path.exists(file_path) == False:
             logger.error('filepath:{} not valid'.format(file_path))
             raise RuntimeError()
-            #ndata = get_zero_ndata(size)
+            #ndata = get_pure_infer_data(size)
         elif file_path.endswith(".npy"):
             ndata = np.load(file_path)
         else:
@@ -73,7 +75,7 @@ def create_intensors_zerodata(intensors_desc, device_id, pure_data_type):
     intensors = []
     for info in intensors_desc:
         logger.debug("info shape:{} type:{} val:{} realsize:{} size:{}".format(info.shape, info.datatype, int(info.datatype), info.realsize, info.size))
-        ndata = get_zero_ndata(info.realsize, pure_data_type)
+        ndata = get_pure_infer_data(info.realsize, pure_data_type)
         tensor = aclruntime.Tensor(ndata)
         starttime = time.time()
         tensor.to_device(device_id)
