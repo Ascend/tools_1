@@ -22,7 +22,9 @@ ais-bench-workload
 ```
 export GLOG_v=3
 ```
-
+备注：
++ GLOG日志级别 INFO、 WARNING、 ERROR、FATAL对应的值分别为0、1、2、3.
++ ASCEND_GLOBAL_LOG_LEVEL日志级别DEBUG、INFO、WARNING、ERROR、NULL对应的值分别为0、1、2、3、4.
 
 2.下载ais-bench stubs测试工具
 

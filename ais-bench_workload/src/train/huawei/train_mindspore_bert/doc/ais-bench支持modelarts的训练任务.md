@@ -75,7 +75,10 @@ https://support.huaweicloud.com/sdkreference-modelarts/modelarts_04_0004.html#mo
 
    ```
 
-   备注：通过修改ma-pre-start.sh文件中“GLOG_v”和“ASCEND_GLOBAL_LOG_LEVEL”的变量值，可以更新日志的级别。
+   备注：
+   通过修改ma-pre-start.sh文件中“GLOG_v”和“ASCEND_GLOBAL_LOG_LEVEL”的变量值，可以更新日志的级别。
+   + GLOG日志级别 INFO、 WARNING、 ERROR、FATAL对应的值分别为0、1、2、3.
+   + ASCEND_GLOBAL_LOG_LEVEL日志级别DEBUG、INFO、WARNING、ERROR、NULL对应的值分别为0、1、2、3、4.
 
 5. 请咨询modelarts所在云环境的运维，获取该云相关服务（obs、modelarts、swr）域名和IP的映射关系并写入/etc/hosts
 
@@ -132,7 +135,6 @@ resnet 1.5
         {'label': 'train_steps', 'value': '100'},
     ],
 ```
-备注：对于配置文件中的"job_name"配置项的值jobname, 如果云环境Modelarts服务训练作业job队列中没有，则会新建一个job；若和已有job同名，则会在该job中，新建测试实例. 云环境modelarts“训练作业”界面查看时，建议关闭“只看自己”开关，避免找不到job。
 
 ### 单服务器模式
 
