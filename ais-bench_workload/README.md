@@ -12,6 +12,20 @@ ais-bench-workload
 ```
     git clone https://gitee.com/ascend/tools.git
 ```
+设置训练日志级别
+对于modelarts训练，根据各个模型的文档--doc/ais-bench支持modelartgs的训练任务.md, 修改ma-pre-start.sh中日志级别
+```
+    export GLOG_v=3
+    export ASCEND_GLOBAL_LOG_LEVEL=3
+```
+对于非modelarts训练，修改common/mindspore_env.sh中日志级别
+```
+export GLOG_v=3
+```
+备注：
++ GLOG日志级别 INFO、 WARNING、 ERROR、FATAL对应的值分别为0、1、2、3.
++ ASCEND_GLOBAL_LOG_LEVEL日志级别DEBUG、INFO、WARNING、ERROR、NULL对应的值分别为0、1、2、3、4.
+
 2.下载ais-bench stubs测试工具
 
 点击[面向人工智能基础技术及应用的检验检测基础服务平台](http://www.aipubservice.com/#/show/compliance/detail/127)网址, 通过“成果展示”->“标准符合性测试”->“人工智能服务器系统性能测试”， 进入“人工智能服务器系统性能测试”页面，在“测试工具”章节下载Stubs压缩包到本地备用。
