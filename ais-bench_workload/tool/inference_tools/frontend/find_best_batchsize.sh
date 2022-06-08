@@ -68,7 +68,7 @@ convert_and_run_model()
         mkdir -p $CACHE_PATH/$batchsize
         om_path="$om_path_pre.om"
         if [ ! -f $om_path ];then
-            cmd="atc --model=$MODEL_PATH --output=$om_path_pre --framework=$FRAMEWORK --input_shape=$input_shape --soc_version=Ascend310"
+            cmd="atc --model=$MODEL_PATH --output=$om_path_pre --framework=$FRAMEWORK --input_shape=$input_shape --soc_version=$SOC_VERSION"
             $cmd || { echo "atc run $cmd failed"; return 1; }
         fi
 
