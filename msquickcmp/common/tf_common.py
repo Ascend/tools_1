@@ -4,7 +4,7 @@
 Function:
 This class mainly involves tf common function.
 Copyright Information:
-HuaWei Technologies Co.,Ltd. All Rights Reserved © 2021
+HuaWei Technologies Co.,Ltd. All Rights Reserved © 2022
 """
 import os
 import numpy as np

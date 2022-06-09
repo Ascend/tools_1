@@ -4,7 +4,7 @@
 Function:
 This class is used to generate GUP dump data of the TensorFlow model.
 Copyright Information:
-Huawei Technologies Co., Ltd. All Rights Reserved © 2021
+Huawei Technologies Co., Ltd. All Rights Reserved © 2022
 """
 import argparse
 import sys
