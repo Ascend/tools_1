@@ -37,7 +37,7 @@ get_framework()
 {
     local _model_path=$1
     extension="${_model_path##*.}"
-    [ $extension == "prototxt" ] && { FRAMEWORK=5;return 0; }
+    [ $extension == "prototxt" ] && { FRAMEWORK=0;return 0; }
     [ $extension == "pb" ] && { FRAMEWORK=3;return 0; }
     [ $extension == "onnx" ] && { FRAMEWORK=5;return 0; }
     echo "find no valid framework extension:$extension"
@@ -48,11 +48,13 @@ check_args_valid()
 {
     [ -f "$MODEL_PATH" ] || { echo "model_path:$MODEL_PATH not valid"; return 1; }
     get_framework "$MODEL_PATH" || { echo "find no valid framework model_path:$MODEL_PATH"; return 1; }
+    [[ $FRAMEWORK == 0 && ! -f "$WEIGHT_PATH" ]] && { echo "caffe wight_path:$WEIGHT_PATH not valid"; return 1; }
     [[ $MAX_BATCH_NUM -gt 0 && $MAX_BATCH_NUM -le 100 ]] || { echo "max_batch_num:$MAX_BATCH_NUM not valid"; }
     [ "$INPUT_SHAPE_STR" != "" ] || { echo "input_shape_str:$INPUT_SHAPE_STR not valid"; return 1; }
     [[ "$SOC_VERSION" == "Ascend310" || "$SOC_VERSION" == "Ascend710" || "$SOC_VERSION" == "Ascend910" ]] || { echo "soc_version:$SOC_VERSION not valid"; return 1; }
     return 0
 }
+
 check_env_valid()
 {
     check_command_exist atc || { echo "atc cmd not valid"; return $ret_run_failed; }
@@ -69,6 +71,7 @@ convert_and_run_model()
         om_path="$om_path_pre.om"
         if [ ! -f $om_path ];then
             cmd="atc --model=$MODEL_PATH --output=$om_path_pre --framework=$FRAMEWORK --input_shape=$input_shape --soc_version=$SOC_VERSION"
+            [ $FRAMEWORK == 0 ] && cmd="$cmd --weight=$WEIGHT_PATH"
             $cmd || { echo "atc run $cmd failed"; return 1; }
         fi
 
@@ -103,6 +106,11 @@ do
   case "$1" in
     -m|--model_path)
         MODEL_PATH=$2
+        shift
+        ;;
+    # only caffe model need
+    -w|--weight_path)
+        WEIGHT_PATH=$2
         shift
         ;;
     -n|--max_batch_num)
