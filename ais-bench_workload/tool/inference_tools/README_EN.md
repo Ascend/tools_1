@@ -143,7 +143,7 @@ The specific results are as follows:
 NPU_compute_time: total referencing call time
 H2D_latency: delay time from host to device during referencing
 D2H_latency: delay time from device to host during referencing
-throughput: throughput. Calculation formula：1000/npu_compute_time.mean/batchsize
+throughput: throughput. Calculation formula：1000 * batchsize/npu_compute_time.mean
 
 
 Print as follows:
