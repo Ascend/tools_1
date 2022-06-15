@@ -1,7 +1,7 @@
-# find_best_batchsize最优batch搜索工具介绍
+# find_best_batchsize推理介绍
 
 ## 介绍
-本文介绍AisBench推理工具中find_best_batchsize最优batch搜索工具
+本文介绍AisBench推理工具中find_best_batchsize专项功能
 
 输入：原始模型文件，支持onnx、pb、prototx格式
 
@@ -11,7 +11,7 @@
 已安装开发运行环境的昇腾AI推理设备。
 
 ## 构建与安装
-本工具包含在推理工具中，构建和安装遵从推理工具的构建和安装。详细过程请参见推理工具的README.md
+本专项功能包含在推理工具中，构建和安装遵从推理工具的构建和安装。详细过程请参见推理工具的README.md
 
 ## 运行说明
 在安装好推理whl包后，即可按照如下流程进行搜索命令执行
@@ -51,7 +51,7 @@ bash  ./frontend/find_best_batchsize.sh --model_path /home/lhb/model/resnet50.pr
 | --weight_path  | 推理模型权因子文件路径。可选。只针对 caffe模型           |
 | --max_batch_num | 最大搜索batch范围。值越大，搜索时间越长。默认值64      |
 | --input_shape_str  | 推理模型输入节点 用于传入atc模型转换工具input_shape参数，格式为 name:shape;name1:shape1，同时需要将bath维度修改为 batchsize常量，以便用于工具进行遍历搜寻最佳batch。举例  输入节点信息为 actual_input_1:1,3,224,224  那么需要设置为 actual_input_1:batchsize,3,224,224        |
-| --soc_version | 推理卡类型。支持昇腾310卡和710卡，可取值“Ascend310”、“Ascend310P3”、“Ascend710”                |
+| --soc_version | 推理卡类型。支持昇腾310卡和710卡，可取值“Ascend310”、“Ascend710”                |
 | --python_command | 搜索支持的python版本。默认取值python3.7      |
 | --loop_count   | 推理次数。可选参数。默认1000 |
 | --device_id   | 指定运行设备 [0,255]，可选参数，默认0 |
@@ -64,3 +64,6 @@ bash  ./frontend/find_best_batchsize.sh --model_path /home/lhb/model/resnet50.pr
 ```
 best_batchsize:8 best_throughput:3716.05793807153
 ```
+
+
+
