@@ -66,7 +66,7 @@ convert_and_run_model()
 {
     for batchsize in `seq $MAX_BATCH_NUM`; do
         input_shape=${INPUT_SHAPE_STR//batchsize/$batchsize}
-        om_path_pre="$CACHE_PATH/resnet50_v1_bs${batchsize}_fp32"
+        om_path_pre="$CACHE_PATH/model_bs${batchsize}"
         mkdir -p $CACHE_PATH/$batchsize
         om_path="$om_path_pre.om"
         if [ ! -f $om_path ];then
