@@ -9,11 +9,14 @@ from PIL import Image
 import core.dataset as dataset
 
 class ImagenetSet(dataset.DataSet):
-    def __init__(self, dataset_path, image_list=None, image_size=[224, 224], data_format=None,
+    def __init__(self, dataset_path, image_list=None, image_size=None, data_format=None,
                     pre_process=None, count=0,cache_path=os.getcwd(), normalize=True, tag=None):
         super(ImagenetSet, self).__init__(cache_path)
         self.dataset_path = dataset_path
-        self.image_size = image_size
+        if image_size is None:
+            self.image_size = [224, 224]
+        else:
+            self.image_size = image_size
         if data_format is None:
             self.data_format = "NHWC"
         else:
@@ -195,5 +198,3 @@ class PostProcess:
 
     def set_datasets(self, datasets):
         self.datasets = datasets
-
-
