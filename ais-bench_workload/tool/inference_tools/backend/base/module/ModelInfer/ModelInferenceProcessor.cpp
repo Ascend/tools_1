@@ -140,7 +140,7 @@ APP_ERROR ModelInferenceProcessor::CreateOutMemoryData(std::vector<MemoryData>& 
         auto ret = MemoryHelper::MxbsMalloc(memorydata);
         if (ret != APP_ERR_OK) {
             ERROR_LOG("MemoryHelper::MxbsMalloc failed.i:%d name:%s size:%d ret:%d", \
-                    i, modelDesc_.outTensorsDesc[i],name.c_str(), size, ret);
+                    i, modelDesc_.outTensorsDesc[i].name.c_str(), size, ret);
             return ret;
         }
         outputs.push_back(std::move(memorydata));
