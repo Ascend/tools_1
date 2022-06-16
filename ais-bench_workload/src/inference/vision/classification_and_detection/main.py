@@ -53,6 +53,7 @@ SUPPORTED_PROFILES = {
         "normalize": True,
         "inputs": None,
         "outputs": None,
+        "tag": None
     },
 
     "resnet50_pytorch": {
@@ -133,7 +134,7 @@ def get_args():
         profile = SUPPORTED_PROFILES[args.profile]
         defaults.update(profile)
     for k, v in defaults.items():
-        if hasattr(args, k) == False or getattr(args, k) is None:
+        if hasattr(args, k) is False or getattr(args, k) is None:
             setattr(args, k, v)
     return args
 
