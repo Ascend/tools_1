@@ -44,7 +44,7 @@ exec_inference()
 
     cd ${WORK_PATH}
     infer_run_cmd="$PYTHON_COMMAND -u $WORK_PATH/main.py --profile=$PROFILE --dataset_path=$DATASET_PATH \
-        --model $MODEL_PATH --query_arrival_mode=$QUERY_ARRIVAL_MODE --batchsize=$BATCH_SIZE"
+        --model $MODEL_PATH --query_arrival_mode=$QUERY_ARRIVAL_MODE --batchsize=$BATCH_SIZE --device_id=$DEVICE_ID"
     [ "$SAMPLE_COUNT" != "" ] && infer_run_cmd="${infer_run_cmd} --count=$SAMPLE_COUNT"
     [ "$MAX_LOADSAMPLES_COUNT" != "" ] && infer_run_cmd="${infer_run_cmd} --maxloadsamples_count=$MAX_LOADSAMPLES_COUNT"
     [ "$CACHE_PATH" != "" ] && infer_run_cmd="${infer_run_cmd} --cache_path=$CACHE_PATH"

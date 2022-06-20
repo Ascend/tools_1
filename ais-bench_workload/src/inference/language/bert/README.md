@@ -4,7 +4,7 @@
 ## 依赖与安装
 1. 调用如下命令安装依赖包，主要包括transformers, tensorflow, tokenization等
 ```
-pip3 install -r requirements.txt 
+pip3 install -r requirements.txt
 ```
 2. 安装loadgenerator模块，即负载生成器。该部分以whl包方式提供，需要通过如下命令安装，要注意python版本与包的对应关系
 ```
@@ -20,20 +20,21 @@ pip3 install aclruntime-0.0.1-cp37-cp37m-linux_aarch64.whl
 ```
 source /usr/local/Ascend/ascend-toolkit/set_env.sh
 ```
-## 运行  
+## 运行
 1. 修改配置文件 config/config.sh
 
 ```
-PYTHON_COMMAND  设置运行的python命令  
-PROFILE         支持的场景  
-MODEL_PATH      om模型路径  
-BATCH_SIZE      om模型对应的batchsize  
-DATASET_PATH    数据集路径  
-VOCAB_FILE      vocab.txt文件路径  
+PYTHON_COMMAND  设置运行的python命令
+PROFILE         支持的场景
+MODEL_PATH      om模型路径
+BATCH_SIZE      om模型对应的batchsize
+DATASET_PATH    数据集路径
+VOCAB_FILE      vocab.txt文件路径
+DEVICE_ID       推理执行卡序号
 ```
 
-2. 执行 ./ais-bench-stubs test命令用于离线测试。  
-3. 如果需要联机Tester测试，请配置好config.json后，然后运行 ./ais-bench-stubs  
+2. 执行 ./ais-bench-stubs test命令用于离线测试。test参数表示本地测试
+3. 如果需要联机Tester测试，请配置好config.json后，然后运行 ./ais-bench-stubs
 
 ## 模型获取与转换指南
 本样例使用的bert原始模型路径如下：
