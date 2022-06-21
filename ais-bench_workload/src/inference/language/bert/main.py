@@ -1,6 +1,7 @@
 import argparse
 import logging
 import os
+import sys
 
 from backendbase import create_backend_instance
 from loadgen_interface import run_loadgen
@@ -56,8 +57,8 @@ def get_args():
     parser.add_argument("--query_arrival_mode",
         choices=["continuous", "periodic", "poison_distribute", "offline", "mixed"],
         default="offline", help="query_arrival_mode")
-    parser.add_argument("--maxloadsamples_count", type=int, default=None, choices=xrange(1, sys.maxsize), help="dataset items to use")
-    parser.add_argument('--count', type=int, default=None, choices=xrange(1, sys.maxsize), help="positive integer, select dataset items count, default full data.")
+    parser.add_argument("--maxloadsamples_count", type=int, default=None, choices=range(1, sys.maxsize), help="dataset items to use")
+    parser.add_argument('--count', type=int, default=None, choices=range(1, sys.maxsize), help="positive integer, select dataset items count, default full data.")
     parser.add_argument("--vocab_path", required=True, help="vocab file")
 
     args = parser.parse_args()
