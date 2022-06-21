@@ -11,7 +11,6 @@ QueryArrivalMode_map = {
 }
 
 def run_loadgen(datasets, backend, postproc, args):
-
     if args.maxloadsamples_count == None:
         maxloadsamples_count = datasets.get_samples_count
     else:

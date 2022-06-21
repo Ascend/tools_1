@@ -39,9 +39,11 @@ SUPPORTED_PROFILES = {
 }
 
 
-def check_args_valid(args):
-    if isinstance(args.count, int) is False or args.count <= 0:
-        raise RuntimeError("bad count parameter")
+def check_positive(value):
+    ivalue = int(value)
+    if ivalue <= 0:
+        raise argparse.ArgumentTypeError("%s is an invalid positive int value" % value)
+    return ivalue
 
 
 def get_args():
@@ -57,8 +59,8 @@ def get_args():
     parser.add_argument("--query_arrival_mode",
         choices=["continuous", "periodic", "poison_distribute", "offline", "mixed"],
         default="offline", help="query_arrival_mode")
-    parser.add_argument("--maxloadsamples_count", type=int, default=None, choices=range(1, sys.maxsize), help="dataset items to use")
-    parser.add_argument('--count', type=int, default=None, choices=range(1, sys.maxsize), help="positive integer, select dataset items count, default full data.")
+    parser.add_argument("--maxloadsamples_count", type=check_positive, default=None, help="dataset items to use")
+    parser.add_argument('--count', type=check_positive, default=None,  help="positive integer, select dataset items count, default full data.")
     parser.add_argument("--vocab_path", required=True, help="vocab file")
 
     args = parser.parse_args()
@@ -73,7 +75,7 @@ def get_args():
 
 if __name__ == "__main__":
     args = get_args()
-    check_args_valid(args)
+
     print("begin args:", args)
 
     # dataset to use

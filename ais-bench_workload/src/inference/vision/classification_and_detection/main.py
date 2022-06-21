@@ -111,6 +111,14 @@ SUPPORTED_PROFILES = {
 
 }
 
+
+def check_positive(value):
+    ivalue = int(value)
+    if ivalue <= 0:
+        raise argparse.ArgumentTypeError("%s is an invalid positive int value" % value)
+    return ivalue
+
+
 def get_args():
     """Parse commandline."""
     parser = argparse.ArgumentParser()
@@ -125,8 +133,8 @@ def get_args():
     parser.add_argument("--query_arrival_mode",
         choices=["continuous", "periodic", "poison_distribute", "offline", "mixed"],
         default="offline", help="query_arrival_mode")
-    parser.add_argument("--maxloadsamples_count", type=int, default=None, choices=range(1, sys.maxsize), help="dataset items to use")
-    parser.add_argument('--count', type=int, default=None, choices=range(1, sys.maxsize), help="positive integer, select dataset items count, default full data.")
+    parser.add_argument("--maxloadsamples_count", type=check_positive, default=None, help="dataset items to use")
+    parser.add_argument('--count', type=check_positive, default=None,  help="positive integer, select dataset items count, default full data.")
     parser.add_argument("--dataset_list", help="path to the dataset list")
 
     args = parser.parse_args()
