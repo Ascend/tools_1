@@ -33,8 +33,10 @@ VOCAB_FILE      vocab.txt文件路径
 DEVICE_ID       推理执行卡序号
 ```
 
-2. 执行 ./ais-bench-stubs test命令用于离线测试。test参数表示本地测试
-3. 如果需要联机Tester测试，请配置好config.json后，然后运行 ./ais-bench-stubs
+2. ais-bench-stubs运行有两种方式。 实际测试中执行离线测试即可
+
++ 联机测试：直接执行，不带参数，会连接远程服务器
++ 离线测试：增加test参数，执行 ./ais-bench-stubs test命令，本地运行。不联机
 
 ## 模型获取与转换指南
 本样例使用的bert原始模型路径如下：
