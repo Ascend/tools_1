@@ -42,5 +42,5 @@ DEVICE_ID       推理执行卡序号
 本样例使用的bert原始模型路径如下：
 https://github.com/google-research/bert
 
-更改原始模型的输入batchsize，需要使用ATC转换工具，参考文档：
+ATC转换工具，参考文档：
 https://support.huaweicloud.com/adevg-A800_3000_3010/atlasdevelopment_01_0034.html
