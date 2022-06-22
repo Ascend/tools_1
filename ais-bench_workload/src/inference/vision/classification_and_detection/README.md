@@ -20,11 +20,11 @@ source /usr/local/Ascend/ascend-toolkit/set_env.sh
 ```
 
 ## 运行
-1. 修改配置文件 config/config.sh
+1. 修改配置文件 code/config/config.sh
 
 ```
 PYTHON_COMMAND  设置运行的python命令
-PROFILE         支持的场景
+PROFILE         支持的场景。目前支持：resnet50_onnx、resnet101_onnx、inceptionv3_onnx、yolov3-caffe_voc2012、deeplabv3-tf_voc2012
 MODEL_PATH      om模型路径
 BATCH_SIZE      om模型对应的batchsize
 DATASET_PATH    数据集路径
@@ -37,12 +37,13 @@ DEVICE_ID       推理执行卡序号
 + 联机测试：直接执行，不带参数，会连接远程服务器
 + 离线测试：增加test参数，执行 ./ais-bench-stubs test命令，本地运行。不联机
 
+注意：在不同操作系统上，对路径大小写敏感程度不同，所以需要确保val_map.txt中的文件名称，要与数据集实际文件名称一致，避免因大小写导致训练或推理阻塞。
 
 ## 配置文件介绍
 resnet50
 
 ```
-export PROFILE=resnet50_pytorch
+export PROFILE=resnet50_onnx
 export MODEL_PATH=/home/lcm/tool/inference_tools/test/resnet/resource/resnet50_v1_bs1_fp32.om
 export BATCH_SIZE=1
 export DATASET_PATH=/home/datasets/imagenet/val/
