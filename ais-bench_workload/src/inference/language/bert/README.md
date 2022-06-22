@@ -21,7 +21,8 @@ pip3 install aclruntime-0.0.1-cp37-cp37m-linux_aarch64.whl
 source /usr/local/Ascend/ascend-toolkit/set_env.sh
 ```
 ## 运行
-1. 修改配置文件 config/config.sh
+1. 修改配置文件
++ 修改config/config.sh
 
 ```
 PYTHON_COMMAND  设置运行的python命令
@@ -32,6 +33,10 @@ DATASET_PATH    数据集路径
 VOCAB_FILE      vocab.txt文件路径
 DEVICE_ID       推理执行卡序号
 ```
+说明：PROFILE目前支持的场景有：defaults()、bert_large_squad、bert_large_masked_lm
+
++ 修改code/config.json
+将“Mode”字段为“inference"
 
 2. ais-bench-stubs运行有两种方式。 实际测试中执行离线测试即可
 

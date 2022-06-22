@@ -42,7 +42,7 @@ DEVICE_ID       推理执行卡序号
 + 联机测试：直接执行，不带参数，会连接远程服务器
 + 离线测试：增加test参数，执行 ./ais-bench-stubs test命令，本地运行。不联机
 
-注意：在不同操作系统上，对路径大小写敏感程度不同，所以需要确保val_map.txt中的文件名称，要与数据集实际文件名称一致，避免因大小写导致训练或推理阻塞。
+注意：在不同操作系统上，对路径大小写敏感程度不同，所以需要确保val_map.txt中的文件名称，要与数据集实际文件名称一致，避免因大小写导致推理阻塞。
 
 ## 配置文件介绍
 resnet50
@@ -89,6 +89,6 @@ https://download.pytorch.org/models/resnet50-19c8e357.pth
 本样例使用的deeplav3原始模型路径如下：
 https://www.hiascend.com/zh/software/modelzoo/detail/1/7557284c9c14418bb22403ac32e4f960
 
-更改原始模型的输入batchsize，需要使用ATC转换工具，参考文档：
+ATC转换工具，参考文档：
 https://support.huaweicloud.com/adevg-A800_3000_3010/atlasdevelopment_01_0034.html
 
