@@ -32,7 +32,7 @@ OBS侧->>本地侧: 下载数据
 https://gitee.com/mindspore/mindspore/tree/r1.3/model_zoo/official/nlp/bert
 
 ### 环境依赖
-1. 本程序运行需依赖联网的linux环境，如无linux设备环境，可以在windows上开启wsl linux子系统。安装说明请参考[官网链接](https://docs.microsoft.com/zh-cn/windows/wsl/install)  
+1. 本程序运行需依赖联网的linux环境，如无linux设备环境，可以在windows上开启wsl linux子系统。安装说明请参考[官网链接](https://docs.microsoft.com/zh-cn/windows/wsl/install)，同时本程序也可以选择modelarts中的notebook作为运行系统来运行程序。  
 2. windows10以上环境WSL2中运行modelarts时，请更新config.sh中环境变量PYTHON_COMMAND为WSL2中的实际python版本
 3. 本程序需要安装 easydict程序包
     ```
@@ -80,8 +80,7 @@ https://support.huaweicloud.com/sdkreference-modelarts/modelarts_04_0004.html#mo
    + GLOG日志级别 INFO、 WARNING、 ERROR、FATAL对应的值分别为0、1、2、3.
    + ASCEND_GLOBAL_LOG_LEVEL日志级别DEBUG、INFO、WARNING、ERROR、NULL对应的值分别为0、1、2、3、4.
 
-5. 请咨询modelarts所在云环境的运维，获取该云相关服务（obs、modelarts、swr）域名和IP的映射关系并写入/etc/hosts
-
+5. 请咨询modelarts所在云环境的运维，获取该云相关服务（obs、modelarts、swr）域名和IP的映射关系并写入/etc/hosts, 注意如果在notebook中运行，不需要设置该项
    比如武汉云相关服务obs、modelarts、swr域名映射关系如下：
    ```bash
    58.48.42.19 obs.cn-central-221.ovaijisuan.com
