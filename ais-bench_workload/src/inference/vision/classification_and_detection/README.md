@@ -20,17 +20,22 @@ source /usr/local/Ascend/ascend-toolkit/set_env.sh
 ```
 
 ## 运行
-1. 修改配置文件 code/config/config.sh
+1. 修改配置文件
++  修改code/config/config.sh
 
 ```
 PYTHON_COMMAND  设置运行的python命令
-PROFILE         支持的场景。目前支持：resnet50_onnx、resnet101_onnx、inceptionv3_onnx、yolov3-caffe_voc2012、deeplabv3-tf_voc2012
+PROFILE         支持的场景
 MODEL_PATH      om模型路径
 BATCH_SIZE      om模型对应的batchsize
 DATASET_PATH    数据集路径
 VOCAB_FILE      vocab.txt文件路径
 DEVICE_ID       推理执行卡序号
 ```
+说明：PROFILE目前支持的场景有：resnet50_onnx、resnet101_onnx、inceptionv3_onnx、yolov3-caffe_voc2012、deeplabv3-tf_voc2012
+
++ 修改code/config.json
+将“Mode”字段为“inference"
 
 2. ais-bench-stubs运行有两种方式。 实际测试中执行离线测试即可
 
@@ -86,3 +91,4 @@ https://www.hiascend.com/zh/software/modelzoo/detail/1/7557284c9c14418bb22403ac3
 
 更改原始模型的输入batchsize，需要使用ATC转换工具，参考文档：
 https://support.huaweicloud.com/adevg-A800_3000_3010/atlasdevelopment_01_0034.html
+

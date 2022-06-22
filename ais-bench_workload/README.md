@@ -46,40 +46,54 @@ tools
 
 构建指令示例：
 
-+ ./build.sh  ./Ais-Benchmark-Stubs-aarch64-1.0.tar.gz train huawei train_mindspore_resnet r1.7
-+ ./build.sh  ./Ais-Benchmark-Stubs-aarch64-1.0.tar.gz train huawei train_mindspore_resnet r1.7 modelarts
-+ ./build.sh  ./Ais-Benchmark-Stubs-x86_64-1.0.tar.gz train huawei train_mindspore_resnet r1.7
-+ ./build.sh  ./Ais-Benchmark-Stubs-x86_64-1.0.tar.gz train huawei train_mindspore_resnet r1.7 modelarts
-+ ./build.sh  ./Ais-Benchmark-Stubs-aarch64-1.0.tar.gz train huawei train_mindspore_bert r1.7
-+ ./build.sh  ./Ais-Benchmark-Stubs-aarch64-1.0.tar.gz train huawei train_mindspore_bert r1.7 modelarts
-+ ./build.sh  ./Ais-Benchmark-Stubs-x86_64-1.0.tar.gz train huawei train_mindspore_bert r1.7
-+ ./build.sh  ./Ais-Benchmark-Stubs-x86_64-1.0.tar.gz train huawei train_mindspore_bert r1.7 modelarts
++ 构建mindspore框架resnet模型 r1.7版本 aarch64架构的程序包
 
-output目录生成以下构建测试包：
+  ./build.sh  ./Ais-Benchmark-Stubs-aarch64-1.0.tar.gz train huawei train_mindspore_resnet r1.7
++ 构建mindspore框架resnet模型 r1.7版本 aarch64架构 modelarts运行的程序包
 
-+ train_huawei_train_mindspore_resnet-Ais-Benchmark-Stubs-aarch64-1.0-r1.7.tar.gz
-+ train_huawei_train_mindspore_resnet-Ais-Benchmark-Stubs-aarch64-1.0-r1.7_modelarts.tar.gz
-+ train_huawei_train_mindspore_bert-Ais-Benchmark-Stubs-aarch64-1.0-r1.7.tar.gz
-+ train_huawei_train_mindspore_bert-Ais-Benchmark-Stubs-aarch64-1.0-r1.7_modelarts.tar.gz
-+ train_huawei_train_mindspore_resnet-Ais-Benchmark-Stubs-x86_64-1.0-r1.7.tar.gz
-+ train_huawei_train_mindspore_resnet-Ais-Benchmark-Stubs-x86_64-1.0-r1.7_modelarts.tar.gz
-+ train_huawei_train_mindspore_bert-Ais-Benchmark-Stubs-x86_64-1.0-r1.7.tar.gz
-+ train_huawei_train_mindspore_bert-Ais-Benchmark-Stubs-x86_64-1.0-r1.7_modelarts.tar.gz
+  ./build.sh  ./Ais-Benchmark-Stubs-aarch64-1.0.tar.gz train huawei train_mindspore_resnet r1.7 modelarts
++ 构建mindspore框架resnet模型 r1.7版本 x86_64架构的程序包
+
+  ./build.sh  ./Ais-Benchmark-Stubs-x86_64-1.0.tar.gz train huawei train_mindspore_resnet r1.7
++ 构建mindspore框架resnet模型 r1.7版本  x86_64架构 modelarts运行的程序包
+
+  ./build.sh  ./Ais-Benchmark-Stubs-x86_64-1.0.tar.gz train huawei train_mindspore_resnet r1.7 modelarts
++ 构建mindspore框架bert模型 r1.7版本 aarch64架构的程序包
+
+  ./build.sh  ./Ais-Benchmark-Stubs-aarch64-1.0.tar.gz train huawei train_mindspore_bert r1.7
++ 构建mindspore框架bert模型 r1.7版本 aarch64架构 modelarts运行的程序包
+
+  ./build.sh  ./Ais-Benchmark-Stubs-aarch64-1.0.tar.gz train huawei train_mindspore_bert r1.7 modelarts
++ 构建mindspore框架bert模型 r1.7版本 x86_64架构的程序包
+
+  ./build.sh  ./Ais-Benchmark-Stubs-x86_64-1.0.tar.gz train huawei train_mindspore_bert r1.7
++ 构建mindspore框架bert模型 r1.7版本  x86_64架构 modelarts运行的程序包
+
+  ./build.sh  ./Ais-Benchmark-Stubs-x86_64-1.0.tar.gz train huawei train_mindspore_bert r1.7 modelarts
+
+在output目录会生成相应框架、模型、版本、架构的程序包。
+
 #### 4.2 构建推理测试包
-构建命令：
-```bash
-./build.sh $stubs_file inference vision classification_and_detection
-./build/build.sh $stubs_file inference language bert
-```
-说明：
- + 目前支持language类的bert模型、vision类的classification_and_detection推理
-+ $stubs_file是指步骤3中Ais-Benchmark-Stubs-aarch64-1.0.tar.gz或Ais-Benchmark-Stubs-x86_64-1.0.tar.gz的路径
 
-output目录生成以下构建测试包：
-inference_language_bert-Ais-Benchmark-Stubs-aarch64-1.0.tar.gz
-inference_language_bert-Ais-Benchmark-Stubs-x86_64-1.0.tar.gz
-inference_vision_classification_and_detection-Ais-Benchmark-Stubs-aarch64-1.0.tar.gz
-inference_vision_classification_and_detection-Ais-Benchmark-Stubs-x86_64-1.0.tar.gz
+目前支持language类的bert模型、vision类的classification_and_detection推理
+
+构建命令：
++ 构建vision分类classification_and_detection类型，aarch64架构的推理程序包
+
+  ./build.sh ../output/Ais-Benchmark-Stubs-aarch64-1.0.tar.gz inference vision classification_and_detection
++ 构建vision分类classification_and_detection类型，x86_64架构的推理程序包
+
+  ./build.sh ../output/Ais-Benchmark-Stubs-x86_64-1.0.tar.gz inference vision classification_and_detection
++ 构建language分类bert模型, aarch64架构的推理程序包
+
+  ./build/build.sh ../output/Ais-Benchmark-Stubs-aarch64-1.0.tar.gz inference language bert
++ 构建language分类bert模型, x86_64架构的推理程序包
+
+  ./build/build.sh ../output/Ais-Benchmark-Stubs-x86_64-1.0.tar.gz inference language bert
+
+
+在output目录会生成相应分类、模型、架构的程序包。
+
 
 ## 执行
 ### 解压测试包
@@ -88,8 +102,7 @@ tar -xzvf XXX.tar.gz
 ### 执行配置
 训练和推理执行之前，请根据相应的指导文档"code/README.md"进行相关配置。
 对于训练，还有"code/doc"目录的指导文档可以参考。
-#### 配置code/config.json
-注意，对于推理，需要更新code/config.json文件中“Mode”字段为“inference",否则推理结果上报信息中会出现文字不匹配字样，比如“train_result_info”。
+
 #### 设置日志级别
 
 日志级别说明：
