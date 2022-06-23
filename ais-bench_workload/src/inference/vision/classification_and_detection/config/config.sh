@@ -8,7 +8,7 @@ export QUERY_ARRIVAL_MODE=offline
 #export CACHE_PATH=XXX
 
 # resnet
-export PROFILE=resnet50_pytorch
+export PROFILE=resnet50_onnx
 export MODEL_PATH=/home/lcm/tool/inference_tools/test/resnet/resource/resnet50_v1_bs1_fp32.om
 export BATCH_SIZE=1
 export DATASET_PATH=/home/datasets/imagenet/val/
