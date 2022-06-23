@@ -116,13 +116,12 @@ python3 frontend/main.py --model ./resnet50_v1_dynamichw_fp32.om --input=./data/
 
 #### 动态Dims场景 设置档位为1,3,224,224 本程序将获取实际模型输入组batch
 ```
-python3 frontend/main.py --model resnet50_v1_dynamicshape_fp32.om --input=./data/ --dymShape actual_input_1:1,3,224,224 --outputSize 10000
+python3 frontend/main.py --model resnet50_v1_dynamicshape_fp32.om --input=./data/ --dymDims actual_input_1:1,3,224,224 --outputSize 10000
 ```
 
 ### 动态shape场景 atc设置为[1~8,3,200~300,200~300]，设置档位为1,3,224,224 本程序将获取实际模型输入组batch 注意动态shape的输出大小经常为0需要通过outputSize参数设置对应参数的内存大小
-注意 动态shape场景当前无法获取tensor的shape 当前默认填写一维 所以输出numpy文件请注意下
 ```
-python3 frontend/main.py --model resnet50_v1_dynamicshape_fp32.om --input=./data/ --dymShape actual_input_1:1,3,224,224 --outputSize 10000
+python3 frontend/main.py --model resnet50_v1_dynamicshape_fp32.om --dymShape actual_input_1:1,3,224,224 --outputSize 10000
 ```
 
 ### profiling或者dump场景
