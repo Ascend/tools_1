@@ -35,7 +35,7 @@ tools
 + mode  执行模式。取值：train--训练模式，inference--推理模式。ais-bench_workload\src目录下一级子目录名称，不包含common。
 + company 二级子目录名称。ais-bench_workload\src目录下二级子目录名称
 + model_name三级子目录名称，ais-bench_workload\src目录下三级子目录名称
-+ version  框架版本号。训练模式专用参数。取值从1.1开始，以0.1递增
++ version  框架版本号。训练模式专用参数。版本取值，对应模型子目录中的适配版本信息
 + environment 线上还是线下环境。训练模式专用参数。默认不取值为线下环境。取值为"modelarts"时，表示云上执行训练
 ##### 4.1.1 训练构建指令示例  
 + 构建mindspore框架resnet模型 r1.7版本 aarch64架构的程序包  
