@@ -153,14 +153,16 @@ def save_tensors_to_file(outputs, output_prefix, infiles_paths, outfmt, index):
         endtime = time.time()
         summary.d2h_latency_list.append(float(endtime - starttime) * 1000.0)  # millisecond
         ndata = np.array(out)
-        if files_count_perbatch == 1 or ndata.shape[0] == files_count_perbatch:
+        if files_count_perbatch == 1 or ndata.shape[0] % files_count_perbatch == 0:
+            subdata = np.array_split(ndata, files_count_perbatch)
             for j in range(files_count_perbatch):
                 sample_id = index*files_count_perbatch+j
                 file_path = os.path.join(output_prefix, "sample_id_{}_output_{}.{}".format(sample_id, i, outfmt.lower()))
                 summary.add_sample_id_infiles(sample_id, infiles_perbatch[j])
                 logger.debug("save func: sampleid:{} infiles:{} out_{} file:{} fmt:{}".format(sample_id, i, infiles_perbatch[j], file_path, outfmt))
                 summary.append_sample_id_outfile(sample_id, file_path)
-                save_data_to_files(file_path, ndata[j])
+                save_data_to_files(file_path, subdata[j])
         else:
-            logger.error('save out files error array shape:{} filesinfo:{}'.format(ndata.shape, infiles_paths))
+            logger.error('save out files error array shape:{} filesinfo:{} files_count_perbatch:{} ndata.shape0:{}'.format(
+                ndata.shape, infiles_paths, files_count_perbatch, ndata.shape[0]))
             raise RuntimeError()
