@@ -2,13 +2,13 @@
 本程序为ais-bench针对图像分类与检测任务的推理python语言样例实现，对应的软件包为inference_vision_classification_and_detection-Ais-Bench-aarch64-.tar.gz
 
 ## 依赖与安装
-1. 调用如下命令安装依赖包，主要包括opencv numpy等
+1. 调用如下命令安装依赖包，主要包括opencv numpy等。请确保能连接公开网络
 pip3 install -r requirements.txt
 2. 安装loadgenerator模块，即负载生成器。该部分以whl包方式提供，需要通过如下命令安装，要注意python版本与包的对应关系
 ```
-pip3 install loadgen-0.0.1-cp36-cp36m-linux_x86_64.whl
+pip3 install loadgen-0.0.1-cp36-cp36m-linux_aarch64.whl
 或
-pip3 install loadgen-0.0.1-cp37-cp37m-linux_x86_64.whl
+pip3 install loadgen-0.0.1-cp37-cp37m-linux_aarch64.whl
 ```
 3. 安装aclruntime模块。
 ```
@@ -18,7 +18,7 @@ pip3 install aclruntime-0.0.1-cp37-cp37m-linux_aarch64.whl
 ```
 source /usr/local/Ascend/ascend-toolkit/set_env.sh
 ```
-
+注意在不提供环境Ascend环境变量文件位置不同。A500环境请执行source /opt/ascend/nnrt/set_env.sh
 ## 运行
 1. 修改配置文件
 +  修改code/config/config.sh
@@ -40,9 +40,9 @@ DEVICE_ID       推理执行卡序号
 2. ais-bench-stubs运行有两种方式。 实际测试中执行离线测试即可
 
 + 联机测试：直接执行，不带参数，会连接远程服务器
-+ 离线测试：增加test参数，执行 ./ais-bench-stubs test命令，本地运行。不联机
++ 离线测试：增加test参数，执行 ./ais-bench-stubs test命令，本地运行，不联机
 
-注意：在不同操作系统上，对路径大小写敏感程度不同，所以需要确保val_map.txt中的文件名称，要与数据集实际文件名称一致，避免因大小写导致推理阻塞。
+注意：在不同操作系统上，对路径大小写敏感程度不同，所以需要确保val_map.txt中的文件名称，要与数据集实际文件名称一致，避免因大小写导致推理阻塞
 
 ## 配置文件介绍
 resnet50
@@ -54,7 +54,7 @@ export BATCH_SIZE=1
 export DATASET_PATH=/home/datasets/imagenet/val/
 
 ```
-/home/datasets/imagenet/val/ 包含 50000张图片和val_map.txt文件。其中val_map.txt存储了图片与标签对应关系，原始数据集中不包含改文件，需要用户自行下载并添加到与图片同级的目录下。
+/home/datasets/imagenet/val/ 包含 50000张图片和val_map.txt文件。其中val_map.txt存储了图片与标签对应关系，原始数据集中不包含该文件，需要用户自行下载并添加到与图片同级的目录下。
 ```
 yolo v3
 

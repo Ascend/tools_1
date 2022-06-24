@@ -33,8 +33,8 @@ tools
 参数说明：  
 + stubs_file 下载的stubs.rar中适用构建平台要求的stubs二进制压缩包。
 + mode  执行模式。取值：train--训练模式，inference--推理模式。ais-bench_workload\src目录下一级子目录名称，不包含common。
-+ company 二级子目录名称。ais-bench_workload\src目录下二级子目录名称
-+ model_name三级子目录名称，ais-bench_workload\src目录下三级子目录名称
++ secondary-folder-name 二级子目录名称。ais-bench_workload\src目录下二级子目录名称
++ third-folder-name 三级子目录名称。ais-bench_workload\src目录下三级子目录名称
 + version  框架版本号。训练模式专用参数。版本取值，对应模型子目录中的适配版本信息
 + environment 线上还是线下环境。训练模式专用参数。默认不取值为线下环境。取值为"modelarts"时，表示云上执行训练
 ##### 4.1.1 训练构建指令示例  
@@ -61,14 +61,14 @@ tools
 + 构建vision分类classification_and_detection类型，x86_64架构的推理程序包  
   ./build.sh ../output/Ais-Benchmark-Stubs-x86_64-1.0.tar.gz inference vision classification_and_detection
 + 构建language分类bert模型, aarch64架构的推理程序包  
-  ./build/build.sh ../output/Ais-Benchmark-Stubs-aarch64-1.0.tar.gz inference language bert
+  ./build.sh ../output/Ais-Benchmark-Stubs-aarch64-1.0.tar.gz inference language bert
 + 构建language分类bert模型, x86_64架构的推理程序包  
-  ./build/build.sh ../output/Ais-Benchmark-Stubs-x86_64-1.0.tar.gz inference language bert
+  ./build.sh ../output/Ais-Benchmark-Stubs-x86_64-1.0.tar.gz inference language bert
 
 ## 执行
 ### 解压测试包
-tar -xzvf XXX.tar.gz
-说明： XXX.tar.gz是测试包的压缩包
+tar -xzvf XXX.tar.gz  
+说明： XXX.tar.gz是构建教程步骤4构建的测试包  
 ### 执行配置
 训练和推理执行之前，请根据相应的指导文档"code/README.md"进行相关配置。  
 对于训练，还有"code/doc"目录的指导文档可以参考。
