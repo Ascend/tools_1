@@ -43,6 +43,6 @@ def get_files_datasize(file_path):
 
 def save_data_to_files(file_path, ndata):
     if file_path.endswith(".NPY") or file_path.endswith(".npy"):
-        np.save(file_path+".npy", ndata)
+        np.save(file_path, ndata)
     else:
         ndata.tofile(file_path)
