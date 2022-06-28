@@ -1,9 +1,10 @@
 import os
+import sys
 from pickle import NONE
 import numpy as np
 
 import logging
-logging.basicConfig(level = logging.INFO,format = '[%(levelname)s] %(message)s')
+logging.basicConfig(stream=sys.stdout, level = logging.INFO,format = '[%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
 
 # Split a List Into Even Chunks of N Elements
