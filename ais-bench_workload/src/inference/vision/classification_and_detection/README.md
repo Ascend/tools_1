@@ -14,11 +14,11 @@ pip3 install loadgen-0.0.1-cp37-cp37m-linux_aarch64.whl
 ```
 pip3 install aclruntime-0.0.1-cp37-cp37m-linux_aarch64.whl
 ```
-4. 设置ascend-toolkit环境变量。
+4. 设置ascend-toolkit环境变量。对于不同的设备，请设置对应的路径的set_env.sh
 ```
 source /usr/local/Ascend/ascend-toolkit/set_env.sh
 ```
-注意在不提供环境Ascend环境变量文件位置不同。A500环境请执行source /opt/ascend/nnrt/set_env.sh
+A500环境请执行source /opt/ascend/nnrt/set_env.sh
 ## 运行
 1. 修改配置文件
 +  修改code/config/config.sh
