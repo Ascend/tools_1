@@ -5,8 +5,8 @@ import time
 import aclruntime
 import numpy as np
 
-from summary import summary
-from utils import (get_files_datasize, get_fileslist_from_dir, list_split,
+from frontend.summary import summary
+from frontend.utils import (get_files_datasize, get_fileslist_from_dir, list_split,
                    logger, save_data_to_files)
 
 pure_infer_dump_file = "pure_infer_data"

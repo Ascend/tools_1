@@ -9,7 +9,7 @@ export QUERY_ARRIVAL_MODE=offline
 
 # resnet
 export PROFILE=resnet50_onnx
-export MODEL_PATH=/home/lcm/tool/inference_tools/test/resnet/resource/resnet50_v1_bs1_fp32.om
+export MODEL_PATH=/home/lcm/tool/ais_infer/test/resnet/resource/resnet50_v1_bs1_fp32.om
 export BATCH_SIZE=1
 export DATASET_PATH=/home/datasets/imagenet/val/
 export DEVICE_ID=0
