@@ -2,15 +2,15 @@
 本程序为ais-bench针对bert任务的推理python语言样例实现。对应的软件包为inference_language_bert-Ais-Benchmark-Stubs-aarch64-1.0-.tar
 
 ## 依赖与安装
-1. 调用如下命令安装依赖包，主要包括transformers, tensorflow, tokenization等
+1. 调用如下命令安装依赖包，主要包括transformers, tensorflow, tokenization等.请确保能连接公开网络
 ```
 pip3 install -r requirements.txt
 ```
 2. 安装loadgenerator模块，即负载生成器。该部分以whl包方式提供，需要通过如下命令安装，要注意python版本与包的对应关系
 ```
-pip3 install loadgen-0.0.1-cp36-cp36m-linux_x86_64.whl
+pip3 install loadgen-0.0.1-cp36-cp36m-linux_aarch64.whl
 或
-pip3 install loadgen-0.0.1-cp37-cp37m-linux_x86_64.whl
+pip3 install loadgen-0.0.1-cp37-cp37m-linux_aarch64.whl
 ```
 3. 安装aclruntime模块。
 ```
@@ -20,6 +20,11 @@ pip3 install aclruntime-0.0.1-cp37-cp37m-linux_aarch64.whl
 ```
 source /usr/local/Ascend/ascend-toolkit/set_env.sh
 ```
+对于A500环境，请执行
+```
+source /opt/ascend/nnrt/set_env.sh
+```
+
 ## 运行
 1. 修改配置文件
 + 修改config/config.sh
@@ -33,7 +38,7 @@ DATASET_PATH    数据集路径
 VOCAB_FILE      vocab.txt文件路径
 DEVICE_ID       推理执行卡序号
 ```
-说明：PROFILE目前支持的场景有：defaults()、bert_large_squad、bert_large_masked_lm
+说明：PROFILE目前支持的场景有：defaults、bert_large_squad、bert_large_masked_lm
 
 + 修改code/config.json
 将“Mode”字段为“inference"
@@ -41,7 +46,7 @@ DEVICE_ID       推理执行卡序号
 2. ais-bench-stubs运行有两种方式。 实际测试中执行离线测试即可
 
 + 联机测试：直接执行，不带参数，会连接远程服务器
-+ 离线测试：增加test参数，执行 ./ais-bench-stubs test命令，本地运行。不联机
++ 离线测试：增加test参数，执行 ./ais-bench-stubs test命令，本地运行, 不联机
 
 ## 模型获取与转换指南
 本样例使用的bert原始模型路径如下：
