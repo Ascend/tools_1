@@ -9,13 +9,13 @@ import time
 import aclruntime
 from tqdm import tqdm
 
-from io_oprations import (create_infileslist_from_inputs_list,
+from frontend.io_oprations import (create_infileslist_from_inputs_list,
                           create_intensors_from_infileslist,
                           create_intensors_zerodata,
                           get_tensor_from_files_list, pure_infer_dump_file,
                           save_tensors_to_file)
-from summary import summary
-from utils import logger
+from frontend.summary import summary
+from frontend.utils import logger
 
 
 def set_session_options(session, args):
