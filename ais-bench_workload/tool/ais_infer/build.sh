@@ -11,8 +11,9 @@ main()
 
     cd $OUTPUT_PATH
     rm -rf $CURDIR/backend/*.egg-info $CURDIR/backend/build
-    which pip3.7 && pip3.7 wheel -v $CURDIR/backend/ || { echo "pip run failed"; return 1; }
-    which pip3.8 && pip3.8 wheel -v $CURDIR/backend/ || { echo "pip run failed"; return 1; }
+    which pip3.7 && { pip3.7 wheel -v $CURDIR/backend/ || { echo "pip run failed"; return 1; } }
+    which pip3.8 && { pip3.8 wheel -v $CURDIR/backend/ || { echo "pip run failed"; return 1; } }
+    which pip3.9 && { pip3.9 wheel -v $CURDIR/backend/ || { echo "pip run failed"; return 1; } }
 
     cp $CURDIR/frontend -rf $OUTPUT_PATH/
     cp $CURDIR/requirements.txt $OUTPUT_PATH/
