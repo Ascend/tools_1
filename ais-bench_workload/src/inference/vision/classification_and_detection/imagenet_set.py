@@ -34,7 +34,7 @@ class ImagenetSet(dataset.DataSet):
         self.model_config = {
             'resnet': {
                 'resize': 256,
-                'centercrop': 224,
+                'centercrop': 256,
                 'mean': [0.485, 0.456, 0.406],
                 'std': [0.229, 0.224, 0.225],
             },
@@ -109,11 +109,7 @@ class ImagenetSet(dataset.DataSet):
             image = image.convert('RGB')
             image = ImagenetSet.resize(image, self.model_config[mode_type]['resize']) # Resize
             image = ImagenetSet.center_crop(image, self.model_config[mode_type]['centercrop']) # CenterCrop
-            img = np.array(image, dtype=np.float32)
-            img = img.transpose(2, 0, 1) # ToTensor: HWC -> CHW
-            img = img / 255. # ToTensor: div 255
-            img -= np.array(self.model_config[mode_type]['mean'], dtype=np.float32)[:, None, None] # Normalize: mean
-            img /= np.array(self.model_config[mode_type]['std'], dtype=np.float32)[:, None, None] # Normalize: std
+            img = np.array(image, dtype=np.int8)
             img.tofile(os.path.join(self.prepro_bin_path, file.split('.')[0] + ".bin"))
 
     def pre_proc_func(self, sample_list):
