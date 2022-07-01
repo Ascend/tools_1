@@ -1,8 +1,9 @@
+
 export PYTHON_COMMAND=python3.7.5
 export QUERY_ARRIVAL_MODE=offline
 # 加载到内存中最大样本个数
 #export MAX_LOADSAMPLES_COUNT=1000
-# 只处理如下变量个数的样本，而不是全部样本，用于定制
+# 只处理如下变量个数的样本，而不是全部样本，用于定制。对于A500，建议用1000张图片
 #export SAMPLE_COUNT=100
 # 设置cache缓存地址，可以省略前处理过程 快速进行推理验证
 #export CACHE_PATH=XXX
