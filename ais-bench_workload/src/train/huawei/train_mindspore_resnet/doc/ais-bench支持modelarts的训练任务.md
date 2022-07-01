@@ -33,25 +33,25 @@ https://gitee.com/mindspore/models.git   目录： models/official/cv/resnet
 同时进行了一定的适配修改，主要适配点是适配ModelArts、数据统计上传
 
 ### 环境依赖
-
-1. 本程序运行需依赖联网的linux环境。
+1. modelarts版本 >= 21.9.0  
+2. 本程序运行需依赖联网的linux环境。
 
     如无linux设备环境，可以在windows上开启wsl linux子系统。安装说明请参考[官网链接](https://docs.microsoft.com/zh-cn/windows/wsl/install)，
 
     同时本程序也可以选择modelarts中的notebook作为运行系统来运行程序。  请参考官网链接  [创建Notebook实例](https://support.huaweicloud.com/devtool-modelarts/devtool-modelarts_0004.html ) 和 [打开Notebook实例](https://support.huaweicloud.com/devtool-modelarts/devtool-modelarts_0005.html  )
 
-2. windows10以上环境WSL2中运行modelarts时，请更新config.sh中环境变量PYTHON_COMMAND为WSL2中的实际python版本
+3. windows10以上环境WSL2中运行modelarts时，请更新config.sh中环境变量PYTHON_COMMAND为WSL2中的实际python版本
 
-3. 本程序需要安装 easydict程序包
+4. 本程序需要安装 easydict程序包
     ```
     pip3 install easydict
     ```
 
-4. 安装modelarts sdk程序包,参考如下网页
+5. 安装modelarts sdk程序包,参考如下网页
 https://support.huaweicloud.com/sdkreference-modelarts/modelarts_04_0004.html#modelarts_04_0004__section16657165520146
 
 
-5. 如果当前测试需要更新cann包，需要在训练主程序py文件同级目录（code/code）增加ma-pre-start.sh脚本，并增加对应的run包文件。
+6. 如果当前测试需要更新cann包，需要在训练主程序py文件同级目录（code/code）增加ma-pre-start.sh脚本，并增加对应的run包文件。
 
    ma-pre-start.sh内容类似以下内容：
    ```BASH
@@ -89,7 +89,7 @@ https://support.huaweicloud.com/sdkreference-modelarts/modelarts_04_0004.html#mo
    + GLOG日志级别 INFO、 WARNING、 ERROR、FATAL对应的值分别为0、1、2、3.
    + ASCEND_GLOBAL_LOG_LEVEL日志级别DEBUG、INFO、WARNING、ERROR、NULL对应的值分别为0、1、2、3、4.
 
-5. 请咨询modelarts所在云环境的运维，获取该云相关服务（obs、modelarts、swr）域名和IP的映射关系并写入/etc/hosts, 
+7. 请咨询modelarts所在云环境的运维，获取该云相关服务（obs、modelarts、swr）域名和IP的映射关系并写入/etc/hosts, 
    
    比如武汉云相关服务obs、modelarts、swr域名映射关系如下：
    
