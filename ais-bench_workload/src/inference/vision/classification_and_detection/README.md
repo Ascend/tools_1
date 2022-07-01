@@ -1,6 +1,8 @@
 # 图像分类与检测任务推理样例程序
 本程序为ais-bench针对图像分类与检测任务的推理python语言样例实现，对应的软件包为inference_vision_classification_and_detection-Ais-Bench-aarch64-.tar.gz
 
+如果在容器中推理，请参照[这里](https://gitee.com/ascend/tools/tree/master/ais-bench_workload/doc/ais-bench_workload推理执行容器环境搭建指导.md)
+
 ## 依赖与安装
 1. 调用如下命令安装依赖包，主要包括opencv numpy等。请确保能连接公开网络
 pip3 install -r requirements.txt
@@ -18,7 +20,12 @@ pip3 install aclruntime-0.0.1-cp37-cp37m-linux_aarch64.whl
 ```
 source /usr/local/Ascend/ascend-toolkit/set_env.sh
 ```
-A500环境请执行source /opt/ascend/nnrt/set_env.sh
+A500环境请执行source /opt/ascend/nnrt/set_env.sh  
+另外，ubuntu平台推理时可能会遇到以下问题，请安装相应的依赖：
++ 推理时可能报错：ImportError:libgthread-2.0.so.0:cannot open shared object file:No such file or directory  
+解决方法： apt-get install libglib2.0-dev  -y
++ 推理时可能报错：libGL.so.1:cannot open shard object file:No such file or directory  
+解决方法：apt-get install libgl1-mesa-glx -y
 ## 运行
 1. 修改配置文件
 +  修改code/config/config.sh
@@ -81,14 +88,22 @@ Annotations  ImageSets  JPEGImages  SegmentationClass  SegmentationObject  coco.
 ```
 
 ## 模型获取与转换指南
-本样例使用的resnet50原始模型路径如下：
+本样例使用的resnet50原始模型路径如下：  
 https://download.pytorch.org/models/resnet50-19c8e357.pth
 
-本样例使用的yolov3模型源于darknet转成caffe模型后再用ATC转换成om模型
+本样例使用的yolov3模型源于darknet转成caffe模型后再用ATC转换成om模型  
 
-本样例使用的deeplav3原始模型路径如下：
+本样例使用的deeplav3原始模型路径如下：  
 https://www.hiascend.com/zh/software/modelzoo/detail/1/7557284c9c14418bb22403ac32e4f960
 
-ATC转换工具，参考文档：
-https://support.huaweicloud.com/adevg-A800_3000_3010/atlasdevelopment_01_0034.html
+本样例使用resnet101原始模型路径如下：  
+https://download.pytorch.org/models/resnet101-63fe2227.pth
+
+本样例使用InceptionV3原始模型路径如下：  
+https://download.pytorch.org/models/inception_v3_google-0cc3c7bd.pth
+
+ATC转换工具，参考文档：  
+https://support.huaweicloud.com/adevg-A800_3000_3010/atlasdevelopment_01_0034.html  
+或：  
+https://gitee.com/ascend/ModelZoo-PyTorch/tree/master/ACL_PyTorch/built-in/cv
 
