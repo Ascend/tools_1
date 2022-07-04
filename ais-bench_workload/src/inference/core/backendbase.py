@@ -25,6 +25,9 @@ class BackendBase():
     def predict(self, feed):
         raise NotImplementedError("Backend:predict")
 
+    def set_options(self, args):
+        print("backend set_iptions null impl")
+
     def set_datasets(self, datasets):
         self.datasets = datasets
 

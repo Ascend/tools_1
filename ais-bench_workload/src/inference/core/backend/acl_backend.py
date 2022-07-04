@@ -58,6 +58,25 @@ class BackendAcl(BackendBase):
             self.outputs = outputs
         warmup(self.session, self.session.get_inputs(), self.session.get_outputs(), device_id)
 
+    def set_options(self, args):
+        # 增加校验
+        if args.dymBatch != 0:
+            self.session.set_dynamic_batchsize(args.dymBatch)
+        elif args.dymHW !=None:
+            hwstr = args.dymHW.split(",")
+            self.session.set_dynamic_hw((int)(hwstr[0]), (int)(hwstr[1]))
+        elif args.dymDims !=None:
+            self.session.set_dynamic_dims(args.dymDims)
+        elif args.dymShape !=None:
+            self.session.set_dynamic_shape(args.dymShape)
+        else:
+            self.session.set_staticbatch()
+
+        # 设置custom out tensors size
+        if args.outputSize != None:
+            customsizes = [int(n) for n in args.outputSize.split(',')]
+            self.session.set_custom_outsize(customsizes)
+
     def predict(self, inputs):
         intensors = []
         for array in inputs:
