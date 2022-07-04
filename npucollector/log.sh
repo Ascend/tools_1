@@ -36,6 +36,10 @@ running_process_once()
     if [ -d $base_path/tmp/plog/ ];then
         \cp -f $base_path/tmp/plog/* $base_path$host_cann_log_path
     fi
+    #adapter new log dir
+    if [ -d $base_path/tmp/debug/plog/ ];then
+        \cp -rf $base_path/tmp/* $base_path$host_cann_log_path
+    fi
     #process device aicpu
     if [ -d $base_path/tmp/device-*/ ];then
         \cp -rf $base_path/tmp/device* $base_path$device_aicpu_path
