@@ -48,11 +48,11 @@ DEVICE_ID       推理执行卡序号
 + 联机测试：直接执行，不带参数，会连接远程服务器
 + 离线测试：增加test参数，执行 ./ais-bench-stubs test命令，本地运行, 不联机
 
-3. 动态分档和动态shape配置  
-针对动态分档类模型和动态shape类模型，需要在配置文件中config/config.sh中修改  
-注意BATCH_SIZE必须要设置的,默认为1
+3. 动态分档和动态shape配置
+针对动态分档类模型和动态shape类模型，需要在配置文件中config/config.sh中修改
+注意BATCH_SIZE必须要设置的，默认为1
 + 动态batch
-增加 export DYM_BATCH=1 设置指定的batchsize  
+增加 export DYM_BATCH=1 设置指定的batchsize
 + 动态宽高
 增加 export DYM_HW="224,224" 设置指定的宽高
 + 动态Dims

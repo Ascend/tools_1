@@ -42,12 +42,15 @@ class BackendAcl(BackendBase):
     def name(self):
         return "BackendAcl"
 
-    def load(self, model_path, inputs=None, outputs=None, device_id=0):
+    def load(self, model_path, inputs=None, outputs=None, device_id=0, args=None):
         self.device_id = device_id
         self.model_path = model_path
         options = aclruntime.session_options()
         #options.log_level = 1
         self.session = aclruntime.InferenceSession(model_path, device_id, options)
+
+        self.set_options(args)
+
         if not inputs:
             self.inputs = [meta.name for meta in self.session.get_inputs()]
         else:

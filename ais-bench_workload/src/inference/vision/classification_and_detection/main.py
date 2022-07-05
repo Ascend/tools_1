@@ -172,7 +172,6 @@ if __name__ == "__main__":
     backend = create_backend_instance(args.backend, args)
 
     backend.set_datasets(datasets)
-    backend.set_options(args)
     if hasattr(postproc, "set_datasets"):
         postproc.set_datasets(datasets)
     if hasattr(postproc, "set_backend"):
