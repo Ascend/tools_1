@@ -73,7 +73,7 @@ def create_backend_instance(backend_type, args):
     elif backend_type == "acl":
         from backend.acl_backend import BackendAcl
         backend = BackendAcl(args.batchsize)
-        backend.load(args.model, inputs=args.inputs, outputs=args.outputs, device_id=args.device_id, args)
+        backend.load(args.model, inputs=args.inputs, outputs=args.outputs, device_id=args.device_id, args=args)
     else:
         raise ValueError("unknown backend: ", backend_type)
     return backend
