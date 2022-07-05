@@ -57,10 +57,7 @@ exec_inference()
     [ "$DYM_SHAPE" != "" ] && infer_run_cmd="${infer_run_cmd} --dymShape=$DYM_SHAPE"
     [ "$OUTPUT_SIZE" != "" ] && infer_run_cmd="${infer_run_cmd} --outputSize=$OUTPUT_SIZE"
 
-    ${infer_run_cmd} || {
-        logger_Warn "inference run failed"
-        return $ret_inference_failed
-    }
+    ${infer_run_cmd} || { logger_Warn "inference run failed"; return $ret_inference_failed; }
 
     $PYTHON_COMMAND $WORK_PATH/ais_utils.py set_result "inference" "result" "OK"
 

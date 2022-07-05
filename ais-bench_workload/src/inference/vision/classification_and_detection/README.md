@@ -20,11 +20,11 @@ pip3 install aclruntime-0.0.1-cp37-cp37m-linux_aarch64.whl
 ```
 source /usr/local/Ascend/ascend-toolkit/set_env.sh
 ```
-A500环境请执行source /opt/ascend/nnrt/set_env.sh  
+A500环境请执行source /opt/ascend/nnrt/set_env.sh
 另外，ubuntu平台推理时可能会遇到以下问题，请安装相应的依赖：
-+ 推理时可能报错：ImportError:libgthread-2.0.so.0:cannot open shared object file:No such file or directory  
++ 推理时可能报错：ImportError:libgthread-2.0.so.0:cannot open shared object file:No such file or directory
 解决方法： apt-get install libglib2.0-dev  -y
-+ 推理时可能报错：libGL.so.1:cannot open shard object file:No such file or directory  
++ 推理时可能报错：libGL.so.1:cannot open shard object file:No such file or directory
 解决方法：apt-get install libgl1-mesa-glx -y
 ## 运行
 1. 修改配置文件
@@ -87,33 +87,33 @@ export DATASET_PATH=/home/zhou/code/DeepLabv3_for_TensorFlow/scripts/PascalVoc20
 Annotations  ImageSets  JPEGImages  SegmentationClass  SegmentationObject  coco.names
 ```
 
-1. 动态分档和动态shape配置  
-针对动态分档类模型和动态shape类模型，需要在配置文件中config/config.sh中修改  
-注意BATCH_SIZE必须要设置的
+1. 动态分档和动态shape配置
+针对动态分档类模型和动态shape类模型，需要在配置文件中config/config.sh中修改
+注意BATCH_SIZE必须要设置的，默认为1
 + 动态batch
-增加 export DYM_BATCH=1 设置指定的batchsize  
+增加 export DYM_BATCH=1 设置指定的batchsize
 + 动态宽高
 增加 export DYM_HW="224,224" 设置指定的宽高
 + 动态Dims
 增加 export DYM_DIMS="actual_input_1:1,3,224,224" 设置指定的dims 该设置格式跟atc命令转换一致
 
 ## 模型获取与转换指南
-本样例使用的resnet50原始模型路径如下：  
+本样例使用的resnet50原始模型路径如下：
 https://download.pytorch.org/models/resnet50-19c8e357.pth
 
-本样例使用的yolov3模型源于darknet转成caffe模型后再用ATC转换成om模型  
+本样例使用的yolov3模型源于darknet转成caffe模型后再用ATC转换成om模型
 
-本样例使用的deeplav3原始模型路径如下：  
+本样例使用的deeplav3原始模型路径如下：
 https://www.hiascend.com/zh/software/modelzoo/detail/1/7557284c9c14418bb22403ac32e4f960
 
-本样例使用resnet101原始模型路径如下：  
+本样例使用resnet101原始模型路径如下：
 https://download.pytorch.org/models/resnet101-63fe2227.pth
 
-本样例使用InceptionV3原始模型路径如下：  
+本样例使用InceptionV3原始模型路径如下：
 https://download.pytorch.org/models/inception_v3_google-0cc3c7bd.pth
 
-ATC转换工具，参考文档：  
-https://support.huaweicloud.com/adevg-A800_3000_3010/atlasdevelopment_01_0034.html  
-或：  
+ATC转换工具，参考文档：
+https://support.huaweicloud.com/adevg-A800_3000_3010/atlasdevelopment_01_0034.html
+或：
 https://gitee.com/ascend/ModelZoo-PyTorch/tree/master/ACL_PyTorch/built-in/cv
 
