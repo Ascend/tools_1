@@ -1,62 +1,46 @@
 #!/bin/bash
 
-export CUR_PATH=$(
-    cd "$(dirname "$0")"
-    pwd
-)
+export CUR_PATH=$(cd "$(dirname "$0")";pwd)
 export CODE_PATH=$CUR_PATH
-export BASE_PATH=$(
-    cd "$CUR_PATH/../"
-    pwd
-)
+export BASE_PATH=$(cd "$CUR_PATH/../";pwd)
 
 . $CUR_PATH/common/log_util.sh
 . $CUR_PATH/common/common.sh
 
 # 设置配置文件中的环境变量
-set_config_env() {
+set_config_env()
+{
     export SET_RESULT_PATH=$CUR_PATH/ais_utils.py
     export PYTHONPATH=$PYTHONPATH:$CUR_PATH/core
     source $CUR_PATH/config/config.sh
 }
 
 # 文件路径和环境依赖检查
-check_sys() {
+check_sys()
+{
     : "${PYTHON_COMMAND?PYTHON_COMMAND not set}"
     : "${PROFILE?PROFILE not set}"
 
-    check_path_valid "${DATASET_PATH}" || {
-        logger_Warn "DATASET_PATH:${DATASET_PATH} not valid path"
-        return 1
-    }
+    check_path_valid "${DATASET_PATH}" || { logger_Warn "DATASET_PATH:${DATASET_PATH} not valid path" ; return 1; }
     logger_Debug "DATASET_PATH is valid"
 
-    check_file_valid ${MODEL_PATH} || {
-        logger_Warn "MODEL_PATH:${MODEL_PATH} not valid"
-        return 1
-    }
+    check_file_valid ${MODEL_PATH} || { logger_Warn "MODEL_PATH:${MODEL_PATH} not valid" ; return 1; }
     logger_Debug "MODEL_PATH file valid"
 
-    check_python_package_is_install $PYTHON_COMMAND "aclruntime" || {
-        logger_Warn "aclruntime package install failed please install or source set_env.sh"
-        return $ret_invalid_args
-    }
+    check_python_package_is_install $PYTHON_COMMAND "aclruntime" || { logger_Warn "aclruntime package install failed please install or source set_env.sh" ; return $ret_invalid_args;}
     logger_Debug "python packet aclruntime valid"
 
-    check_python_package_is_install $PYTHON_COMMAND "loadgen" || {
-        logger_Warn "loadgen package install failed please install"
-        return $ret_invalid_args
-    }
+    check_python_package_is_install $PYTHON_COMMAND "loadgen" || { logger_Warn "loadgen package install failed please install" ; return $ret_invalid_args;}
     logger_Debug "python packet loadgen valid"
 }
 
-exec_inference() {
+exec_inference()
+{
     logger_Debug "python begin run"
 
     export WORK_PATH=${BASE_PATH}/work
-    rm -rf ${WORK_PATH}
-    mkdir -p ${WORK_PATH}
-    cp -rf $CODE_PATH/* ${WORK_PATH}
+    rm -rf ${WORK_PATH};mkdir -p ${WORK_PATH}
+    cp -rf $CODE_PATH/*  ${WORK_PATH}
 
     cd ${WORK_PATH}
     infer_run_cmd="$PYTHON_COMMAND -u $WORK_PATH/main.py --profile=$PROFILE --dataset_path=$DATASET_PATH \
@@ -83,13 +67,11 @@ exec_inference() {
     logger_Debug "python end run"
 }
 
-main() {
+main()
+{
     set_config_env
 
-    check_sys || {
-        logger_Warn "check sys failed"
-        return 1
-    }
+    check_sys || { logger_Warn "check sys failed";return 1; }
 
     exec_inference
 }
