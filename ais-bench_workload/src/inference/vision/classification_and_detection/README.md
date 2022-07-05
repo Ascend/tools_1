@@ -4,7 +4,7 @@
 如果在容器中推理，请参照[这里](https://gitee.com/ascend/tools/tree/master/ais-bench_workload/doc/ais-bench_workload推理执行容器环境搭建指导.md)
 
 ## 依赖与安装
-1. 调用如下命令安装依赖包，主要包括opencv numpy等。请确保能连接公开网络
+1. 调用如下命令安装依赖包，主要包括opencv numpy等。请确保能连接公开网络  
 pip3 install -r requirements.txt
 2. 安装loadgenerator模块，即负载生成器。该部分以whl包方式提供，需要通过如下命令安装，要注意python版本与包的对应关系
 ```
@@ -86,6 +86,16 @@ export DATASET_PATH=/home/zhou/code/DeepLabv3_for_TensorFlow/scripts/PascalVoc20
 [root@b8ae28fb8da5 dataset]# ls /home/datasets/VOC2012/VOCdevkit/VOC2012/
 Annotations  ImageSets  JPEGImages  SegmentationClass  SegmentationObject  coco.names
 ```
+
+1. 动态分档和动态shape配置
+针对动态分档类模型和动态shape类模型，需要在配置文件中config/config.sh中修改
+注意BATCH_SIZE必须要设置的，默认为1
++ 动态batch
+增加 export DYM_BATCH=1 设置指定的batchsize
++ 动态宽高
+增加 export DYM_HW="224,224" 设置指定的宽高
++ 动态Dims
+增加 export DYM_DIMS="actual_input_1:1,3,224,224" 设置指定的dims 该设置格式跟atc命令转换一致
 
 ## 模型获取与转换指南
 本样例使用的resnet50原始模型路径如下：  
