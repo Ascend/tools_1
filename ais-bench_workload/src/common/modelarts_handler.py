@@ -1,16 +1,10 @@
 from re import S
-from sqlite3 import paramstyle
 from urllib.parse import urlparse
 from obs import ObsClient, model
 from modelarts.session import Session
 from modelarts.estimator import JOB_STATE, Estimator
 import time
 import os
-
-from modelarts.train_params import TrainingFiles
-from modelarts.train_params import OutputData
-from modelarts.train_params import InputData
-from modelarts.estimatorV2 import EstimatorV2
 
 import logging
 logging.basicConfig(level = logging.DEBUG,format = '[%(levelname)s] %(message)s')
@@ -194,52 +188,24 @@ class modelarts_handler():
                 localpath, session_config.code_dir, bucket_name, sub_dir))
             resp = self.obsClient.putFile(bucket_name, sub_dir, localpath)
 
-    def convert_hyperparameters_V2_to_V1_format(self, hyperparameters):
-        params = []
-        for info in hyperparameters:
-            params.append({"label": info.get("name", None), "value": info.get("value", None)})
-        return params
-
     def create_modelarts_job(self, session_config, output_url):
         jobdesc = session_config.job_description_prefix + "_jobname_" + session_config.job_name + "_" + str(session_config.train_instance_type) + "_"  + str(session_config.train_instance_count)
-        if session_config.get("version") == "V2":
-            outputs = [ OutputData(obs_path=out.obs_path, name=out.name) for out in session_config.outputs ]
-            inputs = [ InputData(obs_path=in.obs_path, name=in.name) for in in session_config.inputs ]
-            estimator = EstimatorV2(modelarts_session=self.session,
-                    training_files=TrainingFiles(code_dir=session_config.code_dir, boot_file=session_config.boot_file),
-                    outputs=outputs,
-                    parameters=parameters,
-                    framework_type=session_config.framework_type,
-                    framework_version=session_config.framework_version,
-                    log_url=output_url[4:],
-                    parameters=session_config.parameters,
-                    output_path=output_url[4:],
-                    pool_id = get_config_value(session_config, "pool_id"),
-                    train_instance_type = get_config_value(session_config, "train_instance_type"),
-                    train_instance_count=session_config.train_instance_count,
-                    nas_type = get_config_value(session_config, "nas_type"),
-                    nas_share_addr = get_config_value(session_config, "nas_share_addr"),
-                    nas_mount_path = get_config_value(session_config, "nas_mount_path"),
-                    job_description=jobdesc,
-                    user_command = None)
-        else:
-            parameters = self.convert_hyperparameters_V2_to_V1_format(session_config.parameters)
-            estimator = Estimator(modelarts_session=self.session,
-                                framework_type=session_config.framework_type,
-                                framework_version=session_config.framework_version,
-                                code_dir=session_config.code_dir,
-                                boot_file=session_config.boot_file,
-                                log_url=output_url[4:],
-                                hyperparameters=session_config.hyperparameters,
-                                output_path=output_url[4:],
-                                pool_id = get_config_value(session_config, "pool_id"),
-                                train_instance_type = get_config_value(session_config, "train_instance_type"),
-                                train_instance_count=session_config.train_instance_count,
-                                nas_type = get_config_value(session_config, "nas_type"),
-                                nas_share_addr = get_config_value(session_config, "nas_share_addr"),
-                                nas_mount_path = get_config_value(session_config, "nas_mount_path"),
-                                job_description=jobdesc,
-                                user_command = None)
+        estimator = Estimator(modelarts_session=self.session,
+                            framework_type=session_config.framework_type,
+                            framework_version=session_config.framework_version,
+                            code_dir=session_config.code_dir,
+                            boot_file=session_config.boot_file,
+                            log_url=output_url[4:],
+                            hyperparameters=session_config.hyperparameters,
+                            output_path=output_url[4:],
+                            pool_id = get_config_value(session_config, "pool_id"),
+                            train_instance_type = get_config_value(session_config, "train_instance_type"),
+                            train_instance_count=session_config.train_instance_count,
+                            nas_type = get_config_value(session_config, "nas_type"),
+                            nas_share_addr = get_config_value(session_config, "nas_share_addr"),
+                            nas_mount_path = get_config_value(session_config, "nas_mount_path"),
+                            job_description=jobdesc,
+                            user_command = None)
 
         base_job_list_info = Estimator.get_job_list(modelarts_session=self.session, per_page=10, page=1, order="asc", search_content=session_config.job_name)
         if base_job_list_info == None or base_job_list_info.get("job_total_count", 0) == 0:
