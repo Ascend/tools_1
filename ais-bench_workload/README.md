@@ -48,7 +48,7 @@ tools
 ```
 
 #### 3.3. 构建测试包  
-工作目录：ais-bench_workload/build
+工作目录：ais-bench_workload/build  
 
 #### 3.4 构建指令
 格式：./build.sh  {$stubs_file} {mode} {secondary-folder-name} {third-folder-name} {version} {type}
@@ -90,7 +90,7 @@ tools
 
 ## 执行
 ### 解压测试包  
-tar -xzvf XXX.tar.gz
+tar -xzvf XXX.tar.gz  
 说明： XXX.tar.gz是构建教程步骤4构建的测试包  
 ### 执行配置
 训练和推理执行之前，请根据相应的指导文档"code/README.md"进行相关配置。  
