@@ -59,15 +59,10 @@ main()
     arm_stubs="$tmp_dir/Ais-Benchmark-Stubs-aarch64-1.0.tar.gz"
     check_file_valid "$arm_stubs" || { echo "arm_stubs:${arm_stubs} not valid path" ; return 1; }
 
-    echo "lcm debug 111"
-	bash -x $CURDIR/build.sh  $x86_stubs train huawei train_mindspore_resnet $version $type
-	echo "lcm debug 222"
+    bash -x $CURDIR/build.sh  $x86_stubs train huawei train_mindspore_resnet $version $type
     bash -x $CURDIR/build.sh  $x86_stubs train huawei train_mindspore_bert $version $type
-	echo "lcm debug 333"
     bash -x $CURDIR/build.sh  $arm_stubs train huawei train_mindspore_resnet $version $type
-	echo "lcm debug 444"
     bash -x $CURDIR/build.sh  $arm_stubs train huawei train_mindspore_bert $version $type
-	echo "lcm debug 555"
 }
 
 main "$@"

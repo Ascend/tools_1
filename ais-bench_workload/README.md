@@ -14,10 +14,11 @@ ais-bench-workload
 打开仓库网页链接，https://gitee.com/ascend/tools， 点击”克隆/下载“，在
 弹出的窗口中点击”下载ZIP“，进行下载
 
-### 2. 快速构建
+### 2. Windows快速构建
+快速构建，依赖winrar、git，请确认并安装 
 如果下载的是ZIP压缩包，请通过winrar等解压缩工具，解压ZIP包。注意ZIP解压后目录名字是tools-master  
-如果是在windows环境快速构建，需要本地安装winrar、git。  
-进入代码工程快速构建目录：ais-bench_workload/build, 进行构建。  
+ 
+在ais-bench_workload/build目录，点击鼠标上下文菜单"git bash here", 进入构建工作目录。鼠标右键没有git相关菜单命令时，请在windows右下角的搜索窗口输入"git" ，找到git  bash，并点击进入。  
 构建指令格式：bash ./download_and_build.sh {version} {type}  
 参数说明：
 + version 框架版本号。训练模式专用参数。版本取值，对应模型子目录中的适配版本信息
