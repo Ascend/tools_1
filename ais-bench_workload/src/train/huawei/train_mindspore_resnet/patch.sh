@@ -55,7 +55,7 @@ get_git_info(){
     elif [ "$branch_args" == "r1.8" ];then
         branch="master"
         patch_file_name="r1.8"
-        commitid="7ed6af318b1a31563fce0b37f0a3cd4000c6e638"
+        commitid="b68b6bfa919465567d89bc7fdcf6d0e63967d5aa"
         git_url="https://gitee.com/mindspore/models.git"
         modelzoo_sub_dir="models/official/cv/resnet"
     else
