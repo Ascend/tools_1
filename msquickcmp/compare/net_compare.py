@@ -167,7 +167,7 @@ class NetCompare(object):
         table_header_info = next(fp_read)
         header_list = table_header_info.strip().split(',')
         writer.writerow(header_list)
-        dump_name_index = header_list.index(NPU_DUMP_TAG)
+        npu_dump_index = header_list.index(NPU_DUMP_TAG)
         ground_truth_index = header_list.index(GROUND_TRUTH_TAG)
 
         result_reader = csv.reader(fp_read)
@@ -177,7 +177,7 @@ class NetCompare(object):
             if len(line) < MIN_ELEMENT_NUM:
                 utils.print_warn_log('The content of line is {}'.format(line))
                 continue
-            if line[dump_name_index] != "Node_Output":
+            if line[npu_dump_index] != "Node_Output":
                 writer.writerow(line)
             else:
                 new_content = [line[0], "Node_Output", "NaN", "NaN",
