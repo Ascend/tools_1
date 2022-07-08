@@ -69,7 +69,7 @@ function build_packet()
     if [ -f $TARGET_PATH/build.sh ];then
         bash $TARGET_PATH/build.sh $scripts_args || { echo "warn build target failed"; return $ret_error; }
     fi
-    
+
     if [ ! -d $TARGET_PATH/output ];then
         echo "targetdir:$TARGET_PATH not find output return"
         return $ret_error
@@ -88,7 +88,7 @@ function build_packet()
 
     # for stubs old versions add adapter new ais_utils.py file
     [ ! -f $OUTPUT_BASE_DIR/code/ais_utils.py ] && { cp ${ROOT_PATH}/src/ais_utils_adapter.py $OUTPUT_BASE_DIR/code/ais_utils.py; }
-
+    cp $ROOT_PATH/doc/* $OUTPUT_BASE_DIR/code/doc/
     PLATFORM=`uname -i`
     # OUTPUT_PACKET_NAME="$PACKET_TYPE"_"$MANUFACTORY"_"$TARGETDIR-Ais-Bench-$PLATFORM-${scripts_args// /_}"
     OUTPUT_PACKET_NAME="$PACKET_TYPE"_"$MANUFACTORY"_"$TARGETDIR-$STUBS_SUBNAME-${scripts_args// /_}"
@@ -111,13 +111,13 @@ function main()
         echo "target not valid in:[$1] not match [train inference]"
         return $ret_error
     fi
-    
+
     [ -d $OUTPUT_PATH ] || { mkdir -p $OUTPUT_PATH; }
 
     target=$2
     echo "target:$target now building"
     check_env || { ret=$?;echo "check env failed ret:$ret";return $ret; }
-    
+
     if [ "$target" == "inference" -o "$target" == "train" ];then
         build_packet "$@" || { echo "build build_inference failed:$?";return 1; }
     else
