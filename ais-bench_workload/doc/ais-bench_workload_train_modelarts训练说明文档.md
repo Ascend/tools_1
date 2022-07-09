@@ -123,7 +123,7 @@ obs_url  --> train目录
 obs_url  --> val目录
 ```
 
-bert模型数据集imagenet。obs存储上约定的文件夹格式如下。train目录存放训练数据集，val存放eval数据集，ms_bert_large.ckpt是预训练ckpt文件，可以加速训练速度。
+bert模型数据集imagenet。obs存储上约定的文件夹格式如下。train目录存放训练数据集，val存放eval数据集，ms_bert_large.ckpt是预训练ckpt文件。
 
 如下图，数据输出传递的路径为 obs_url
 
