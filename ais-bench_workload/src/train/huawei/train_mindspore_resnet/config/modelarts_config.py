@@ -1,5 +1,6 @@
 from easydict import EasyDict as ed
 
+# 该部分为认证信息，请向相关运维同事咨询并填写
 access_config = ed({
     # 登录需要的ak sk信息
     'access_key': '',
@@ -22,20 +23,28 @@ access_config = ed({
 })
 
 session_config = ed({
+    # 运行模型的传入超参
     'hyperparameters': [
+        # 模型配置文件，默认boost模式，不需要更改
         {'label': 'config_path', 'value': 'resnet50_imagenet2012_Boost_config.yaml'},
+        # 是否使能modelarts 必须设置为True，不需要修改
         {'label': 'enable_modelarts', 'value': 'True'},
+        # 是否开启分布式，如果1卡以上的话都是True 一般不需要修改
         {'label': 'run_distribute', 'value': 'True'},
+        # epoch次数 必须关注 当前默认设置为5
         {'label': 'epoch_size', 'value': '5'},
+        # device数量 云上场景一般不需要修改
         {'label': 'device_num', 'value': '8'},
+        # 是否保存ckpt文件 默认为True 保存ckpt
         {'label': 'save_checkpoint', 'value': 'True'},
+        # 保存ckpt的epoch数 必须修改并注意 该值必须要跟epoch数一致 这样提高性能
         {'label': 'save_checkpoint_epochs', 'value': '5'},
     ],
-    # 输入数据集目录
+    # 输入数据集obs目录,请按样例格式填写
     'inputs': '/zgwtest/lcm_test/dataset/imagenet_small/',
     # obs代码路径 程序会自动拷贝到该路径
     'code_dir': '/zgwtest/lcm_test/resnet/',
-    # 启动文件 必须要在code_dir路径下
+    # 启动文件 必须要在code_dir路径下，请按样例格式填写
     'boot_file': '/zgwtest/lcm_test/resnet/train.py',
 
     # 如下为运行相关参数

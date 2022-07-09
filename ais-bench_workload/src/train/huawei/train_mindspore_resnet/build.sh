@@ -21,9 +21,16 @@ function main()
     cp -rf ${CURDIR}/patchcode ${CURDIR}//output/code
     cp -rf ${CURDIR}/scripts/* ${CURDIR}//output/
     cp ${CURDIR}/../../../common -r ${CURDIR}//output/
-    cp ${CURDIR}/config -r ${CURDIR}//output/
+    
     cp ${CURDIR}/../common/*  -r ${CURDIR}//output/config/
-    cp ${CURDIR}/doc -r ${CURDIR}/output/
+    
+    mkdir -p ${CURDIR}/output/config
+    cp ${CURDIR}/config/config.sh -r ${CURDIR}//output/
+    cp ${CURDIR}/config/modelarts_config.py -r ${CURDIR}//output/
+    [ "$1" == "r1.3" ] && { cp ${CURDIR}/config/modelarts_config.py.r1.3 -r ${CURDIR}//output/; }
+
+    [ -d ${CURDIR}/doc ] && cp ${CURDIR}/doc -r ${CURDIR}/output/
+
     file_change "$2" || { echo "file change failed"; return 1; }
 }
 
