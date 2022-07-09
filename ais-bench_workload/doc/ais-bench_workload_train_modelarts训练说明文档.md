@@ -101,11 +101,38 @@ OBS存储->>本地运行设备: 下载数据
 
 3. modelarts-sdk程序包。请根据[官网教程](https://support.huaweicloud.com/sdkreference-modelarts/modelarts_04_0004.html)执行安装。
 
+
+
 #### 数据集准备
 
 举例resnet模型需要imagenet数据集，bert模型需要wiki数据集，该数据集需要提前上传到OBS存储中。所以用户必须提前上传到指定的路径中。
 
 注意imagenet数据集图片非常多，上传数据很慢，需要提前进行下载数据集和上传OBS存储。
+
+训练作业的数据输入当前限定为一个，所以train和eval的数据集以及其它必要文件都要保存一个obs目录。
+
+resnet模型数据集imagenet。obs存储上约定的文件夹格式如下。train目录存放训练数据集，val存放eval数据集。
+
+如下图，数据输出传递的路径为 obs_url
+
+```mermaid
+graph LR
+obs_url  --> train目录
+obs_url  --> val目录
+```
+
+bert模型数据集imagenet。obs存储上约定的文件夹格式如下。train目录存放训练数据集，val存放eval数据集，ms_bert_large.ckpt是预训练ckpt文件。
+
+如下图，数据输出传递的路径为 obs_url
+
+```mermaid
+graph LR
+obs_url  --> train目录
+obs_url  --> val目录
+obs_url  --> ms_bert_large.ckpt文件
+```
+
+
 
 ### 负载测试包准备：
 
