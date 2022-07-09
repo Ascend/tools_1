@@ -31,8 +31,8 @@ session_config = ed({
         {'label': 'enable_modelarts', 'value': 'True'},
         # 是否开启分布式，如果1卡以上的话都是True 一般不需要修改
         {'label': 'run_distribute', 'value': 'True'},
-        # epoch次数 必须关注 当前默认设置为5
-        {'label': 'epoch_size', 'value': '5'},
+        # epoch次数 必须关注 当前默认设置为90
+        {'label': 'epoch_size', 'value': '90'},
         # device数量 云上场景一般不需要修改
         {'label': 'device_num', 'value': '8'},
         # 是否执行eval 不需要修改

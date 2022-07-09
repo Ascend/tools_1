@@ -31,11 +31,11 @@ session_config = ed({
         {'label': 'enable_modelarts', 'value': 'True'},
         # 是否开启分布式，如果1卡以上的话都是True 一般不需要修改
         {'label': 'distribute', 'value': 'true'},
-        # epoch次数 必须关注 当前默认设置为2 训练的epoch数
+        # epoch次数 必须关注 当前默认设置为5 训练的epoch数
         # 优先级低于train_steps，如果存在train_steps以此为准，否则以epoch_size为准
-        {'label': 'epoch_size', 'value': '2'},
+        {'label': 'epoch_size', 'value': '5'},
         # 训练step数 必须填写并审视 该值优先级高于train_steps数
-        {'label': 'train_steps', 'value': '100'},
+        {'label': 'train_steps', 'value': '12000'},
         # 是否保存ckpt文件 默认为True 保存ckpt
         {'label': 'enable_save_ckpt', 'value': 'true'},
         # 不需要修改
@@ -49,7 +49,7 @@ session_config = ed({
         # 不需要修改
         {'label': 'accumulation_steps', 'value': '1'},
         # 保存ckpt的step数 注意 该值必须要跟step数保存一致 这样提高性能
-        {'label': 'save_checkpoint_steps', 'value': '99'},
+        {'label': 'save_checkpoint_steps', 'value': '12000'},
         # 保存ckpt的个数 默认为1 不需要修改
         {'label': 'save_checkpoint_num', 'value': '1'},
     ],
