@@ -31,14 +31,14 @@ session_config = ed({
         {'label': 'enable_modelarts', 'value': 'True'},
         # 是否开启分布式，如果1卡以上的话都是True 一般不需要修改
         {'label': 'run_distribute', 'value': 'True'},
-        # epoch次数 必须关注 当前默认设置为5
-        {'label': 'epoch_size', 'value': '5'},
+        # epoch次数 必须关注 当前默认设置为90
+        {'label': 'epoch_size', 'value': '90'},
         # device数量 云上场景一般不需要修改
         {'label': 'device_num', 'value': '8'},
         # 是否保存ckpt文件 默认为True 保存ckpt
         {'label': 'save_checkpoint', 'value': 'True'},
         # 保存ckpt的epoch数 必须修改并注意 该值必须要跟epoch数一致 这样提高性能
-        {'label': 'save_checkpoint_epochs', 'value': '5'},
+        {'label': 'save_checkpoint_epochs', 'value': '90'},
     ],
     # 输入数据集obs目录,请按样例格式填写
     'inputs': '/zgwtest/lcm_test/dataset/imagenet_small/',
@@ -53,7 +53,7 @@ session_config = ed({
 
     # 使用容器类型与镜像版本
     'framework_type': 'Ascend-Powered-Engine',
-    'framework_version': 'MindSpore-1.2.0-c77-python3.7-euleros2.8-aarch64',
+    'framework_version': 'MindSpore-1.3.0-c78-python3.7-euleros2.8-aarch64',
 
     # 资源参数类型主要包括如下2个值 train_instance_type和pool_id
     # 不设置pool_id 默认是公共池 设置了就是专属资源池
