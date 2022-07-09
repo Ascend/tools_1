@@ -29,7 +29,8 @@ function main()
     cp ${CURDIR}/config/modelarts_config.py -r ${CURDIR}//output/
     [ "$1" == "r1.3" ] && { cp ${CURDIR}/config/modelarts_config.py.r1.3 -r ${CURDIR}//output/; }
 
-    cp ${CURDIR}/doc -r ${CURDIR}/output/
+    [ -d ${CURDIR}/doc ] && cp ${CURDIR}/doc -r ${CURDIR}/output/
+
     file_change "$2" || { echo "file change failed"; return 1; }
 }
 

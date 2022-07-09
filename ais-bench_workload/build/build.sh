@@ -57,6 +57,7 @@ copy_doc_files()
     local branch_args="$1"
     local run_type="$2"
 
+    [ -d $OUTPUT_BASE_DIR/code/doc/ ] || mkdir -p $OUTPUT_BASE_DIR/code/doc/
     cp $ROOT_PATH/doc/* $OUTPUT_BASE_DIR/code/doc/
 
     # train modelarts mode
