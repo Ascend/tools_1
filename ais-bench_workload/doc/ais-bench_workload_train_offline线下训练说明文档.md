@@ -20,7 +20,10 @@ ais-bench标准化性能测试软件,又称AI Server Benchmark软件，是根据
 
 1. Atals训练设备
 2. 安装好CANN软件包和Mindspore框架等软件，并能正常运行测试程序。
-3. 下载数据集到运行设备中。
+
+### 数据集准备
+
+举例resnet模型需要imagenet数据集，bert模型需要wiki数据集，该数据集需要提前下载到运行设备中。
 
 ### 负载测试包准备：
 

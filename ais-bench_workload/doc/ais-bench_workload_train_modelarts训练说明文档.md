@@ -1,4 +1,4 @@
-# 基于ModelArts集群训练的ais-bench负载程序包构建与运行说明
+# ais-bench_workload_train_modelarts训练说明文档
 
 
 
@@ -10,12 +10,6 @@ ais-bench标准化性能测试软件，又称AI Server Benchmark软件，是根�
 [Modelarts](https://support.huaweicloud.com/productdesc-modelarts/modelarts_01_0001.html)是面向AI开发者的一站式开发平台，提供海量数据预处理及半自动化标注、大规模分布式训练、自动化模型生成及端-边-云模型按需部署能力，帮助用户快速创建和部署模型，管理全周期AI工作流。
 
 本文主要介绍基于ais-bench软件，适配ModelArts平台，实现集群训练业务性能测试的方法。包含程序包构建、配置、运行等流程。
-
-## 构建
-
-请参考doc/ais-bench_workload构建教程.md。
-
-## 测试
 
 ### 流程介绍
 
@@ -70,7 +64,11 @@ OBS存储->>本地运行设备: 下载数据
 2. 填写配置信息。
 3. 用户在本地运行设备中启动ais-bench-stubs程序，执行完成后获取性能数据结果。
 
+## 构建
 
+请参考doc/ais-bench_workload构建教程.md。
+
+## 测试
 
 ### 环境准备
 
@@ -103,15 +101,11 @@ OBS存储->>本地运行设备: 下载数据
 
 3. modelarts-sdk程序包。请根据[官网教程](https://support.huaweicloud.com/sdkreference-modelarts/modelarts_04_0004.html)执行安装。
 
-
-
 #### 数据集准备
 
 举例resnet模型需要imagenet数据集，bert模型需要wiki数据集，该数据集需要提前上传到OBS存储中。所以用户必须提前上传到指定的路径中。
 
 注意imagenet数据集图片非常多，上传数据很慢，需要提前进行下载数据集和上传OBS存储。
-
-
 
 ### 负载测试包准备：
 
