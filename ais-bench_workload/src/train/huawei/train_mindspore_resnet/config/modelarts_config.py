@@ -36,7 +36,7 @@ session_config = ed({
         # device数量 云上场景一般不需要修改
         {'label': 'device_num', 'value': '8'},
         # 是否保存ckpt文件 默认为True 保存ckpt
-        {'label': 'save_checkpoint', 'value': 'True'},
+        {'label': 'save_checkpoint', 'value': 'False'},
         # 保存ckpt的epoch数 必须修改并注意 该值必须要跟epoch数一致 这样提高性能
         {'label': 'save_checkpoint_epochs', 'value': '90'},
     ],
