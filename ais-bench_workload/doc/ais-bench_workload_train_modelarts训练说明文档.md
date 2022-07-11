@@ -42,7 +42,7 @@ modelarts-api --> Modelarts服务
 graph LR
     subgraph 本地运行设备
 	ais-bench-stubs --本地拉起 --> modelarts-sdk
-    end   
+    end
     subgraph Modelarts服务
 	modelarts-sdk --网络启动训练作业 --> 训练作业
     end
@@ -76,7 +76,7 @@ OBS存储->>本地运行设备: 下载数据
 
 #### 本地运行设备
 
-本地运行设备是需要运行ais-bench软件的stubs程序，当前只能是linux设备。该设备要求如下
+本地运行设备是需要运行ais-bench软件的stubs程序，当前只能在linux系统运行。该设备要求如下
 
 1. 运行为linux系统，linux虚拟机也可以。
 2. 能够连接网络。
@@ -170,7 +170,7 @@ ais-bench-stubs  code  log  result  tmp
 
 配置信息是比较重要的，需要用户仔细审视。
 
-#### config.json  ais-bench工具配置文件 
+#### config.json  ais-bench工具配置文件
 
 位于基准目录/code/config.json 主要填写ais-bench测试的具体参数与tester服务器具体信息，**本地测试模式下不需要填写，只要网络测试模式下才需要填写。**
 
@@ -227,7 +227,7 @@ export PYTHON_COMMAND=python3.7
 
 ### 中断和停止训练
 
-+ 云上modelarts界面操作  
++ 云上modelarts界面操作
   在云环境modelarts服务“训练管理”->“训练作业”界面，点击正在运行的job链接并进入。在执行job界面，点击“更多操作”按钮，激活下拉菜单，在上下文菜单中点击“停止”，即可终止运行的job。
 + 本地停止方法，如下操作即可。该操作可以停止掉配置文件中job_name指示的最新一个作业版本
 
@@ -298,7 +298,7 @@ run目录文件结果示例：
 
 ### 域名解析地址增加
 
-请咨询modelarts所在云环境的运维，获取该云相关服务（obs、modelarts、swr）域名和IP的映射关系并写入/etc/hosts, 
+请咨询modelarts所在云环境的运维，获取该云相关服务（obs、modelarts、swr）域名和IP的映射关系并写入/etc/hosts,
 
 比如武汉云相关服务obs、modelarts、swr域名映射关系如下：
 
@@ -310,7 +310,7 @@ run目录文件结果示例：
 
 注意：
 
-- 如果在notebook中运行，不需要设置该项 
+- 如果在notebook中运行，不需要设置该项
 - 华为云不需要
 
 
