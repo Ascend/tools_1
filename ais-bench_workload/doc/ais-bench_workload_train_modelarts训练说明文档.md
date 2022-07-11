@@ -84,7 +84,7 @@ OBS存储->>本地运行设备: 下载数据
 本文建议可通过以下三种方式
 
 1. ECS云主机，可以咨询计算中心运维同事搭建启动ECS云主机。
-2. Modelarts的notebook开发环境。 请参考官网链接  [创建Notebook实例](https://support.huaweicloud.com/devtool-modelarts/devtool-modelarts_0004.html ) 和 [打开Notebook实例](https://support.huaweicloud.com/devtool-modelarts/devtool-modelarts_0005.html  )。
+2. Modelarts的notebook开发环境。 请参考附录”Notebook进行modelarts训练配置”小节。
 3. 在windows上开启WSL linux子系统。按照说明强参考[官方链接。](https://docs.microsoft.com/zh-cn/windows/wsl/install)
 
 #### Modelarts版本依赖
@@ -286,6 +286,10 @@ run目录文件结果示例：
 ├── mindspore_ascend-1.3.0-cp37-cp37m-linux_aarch64.whl
 └── protobuf-3.20.1-cp37-cp37m-linux_aarch64.whl
 ```
+
+### Notebook进行modelarts训练配置
+
+请参照《modelarts_notebook使用入门指导》进行配置
 
 ### 日志级别设置
 
