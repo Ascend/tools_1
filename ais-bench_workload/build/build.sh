@@ -58,12 +58,14 @@ copy_doc_files()
     local run_type="$2"
 
     [ -d $OUTPUT_BASE_DIR/code/doc/ ] || mkdir -p $OUTPUT_BASE_DIR/code/doc/
-    cp $ROOT_PATH/doc/* $OUTPUT_BASE_DIR/code/doc/
+    cp $ROOT_PATH/doc/*.md $OUTPUT_BASE_DIR/code/doc/
+
+    [[ "$PACKET_TYPE" == "inference" ]] && { cp $OUTPUT_BASE_DIR/code/doc/ais-bench_workload_inference*.md $OUTPUT_BASE_DIR/README.md;return; }
 
     # train modelarts mode
-    [[ "$PACKET_TYPE" == "train" && "$run_type" == "modelarts" ]] && { mv $OUTPUT_BASE_DIR/code/doc/ais-bench_workload_train_modelarts*.md $OUTPUT_BASE_DIR/README.md;return; }
+    [[ "$PACKET_TYPE" == "train" && "$run_type" == "modelarts" ]] && { cp $OUTPUT_BASE_DIR/code/doc/ais-bench_workload_train_modelarts*.md $OUTPUT_BASE_DIR/README.md;return; }
     # default as train offline mode
-    mv $OUTPUT_BASE_DIR/code/doc/ais-bench_workload_train_offline*.md $OUTPUT_BASE_DIR/README.md
+    cp $OUTPUT_BASE_DIR/code/doc/ais-bench_workload_train_offline*.md $OUTPUT_BASE_DIR/README.md
 }
 
 function build_packet()

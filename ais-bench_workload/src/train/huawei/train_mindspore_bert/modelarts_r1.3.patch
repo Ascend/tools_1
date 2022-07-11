@@ -1,6 +1,6 @@
 diff -Nur origin/pretrain_eval.py code/pretrain_eval.py
---- origin/pretrain_eval.py	2022-07-09 12:40:05.976000000 +0800
-+++ code/pretrain_eval.py	2022-07-09 12:40:05.988000000 +0800
+--- origin/pretrain_eval.py	2022-07-11 14:30:06.510000000 +0800
++++ code/pretrain_eval.py	2022-07-11 14:30:06.530000000 +0800
 @@ -151,7 +151,19 @@
      print("==============================================================")
      for _, v in res.items():
@@ -23,8 +23,8 @@ diff -Nur origin/pretrain_eval.py code/pretrain_eval.py
  
  
 diff -Nur origin/run_pretrain.py code/run_pretrain.py
---- origin/run_pretrain.py	2022-07-09 12:40:05.976000000 +0800
-+++ code/run_pretrain.py	2022-07-09 12:40:05.988000000 +0800
+--- origin/run_pretrain.py	2022-07-11 14:30:06.510000000 +0800
++++ code/run_pretrain.py	2022-07-11 14:30:06.520000000 +0800
 @@ -39,9 +39,37 @@
  from src.utils import LossCallBack, BertLearningRate
  from src.model_utils.config import config as cfg, bert_net_cfg
@@ -64,12 +64,10 @@ diff -Nur origin/run_pretrain.py code/run_pretrain.py
  
  def _set_bert_all_reduce_split():
      """set bert all_reduce fusion split, support num_hidden_layers is 12 and 24."""
-@@ -157,8 +185,20 @@
+@@ -157,8 +185,18 @@
      cfg.data_dir = cfg.data_path
      cfg.save_checkpoint_path = os.path.join(cfg.output_path, cfg.save_checkpoint_path)
  
--
- @moxing_wrapper(pre_process=modelarts_pre_process)
 +def modelarts_post_process():
 +    def is_ckpt(name):
 +        if name.endswith('ckpt'):
@@ -80,13 +78,13 @@ diff -Nur origin/run_pretrain.py code/run_pretrain.py
 +        ckpts = list(filter(is_ckpt, os.listdir(ckpt_save_dir)))
 +        ckpts.sort(key=lambda x: int(''.join(filter(str.isdigit, x))))
 +        cfg.finetune_ckpt = os.path.join(ckpt_save_dir, ckpts[-1])
-+
-+
+ 
+-@moxing_wrapper(pre_process=modelarts_pre_process)
 +@moxing_wrapper(pre_process=modelarts_pre_process, post_process=modelarts_post_process)
  def run_pretrain():
      """pre-train bert_clue"""
      context.set_context(mode=context.GRAPH_MODE, device_target=cfg.device_target, device_id=cfg.device_id)
-@@ -209,6 +249,7 @@
+@@ -209,6 +247,7 @@
  
      optimizer = _get_optimizer(cfg, net_with_loss)
      callback = [TimeMonitor(cfg.data_sink_steps), LossCallBack(ds.get_dataset_size())]
@@ -94,7 +92,7 @@ diff -Nur origin/run_pretrain.py code/run_pretrain.py
      if cfg.enable_save_ckpt == "true" and cfg.device_id % min(8, device_num) == 0:
          config_ck = CheckpointConfig(save_checkpoint_steps=cfg.save_checkpoint_steps,
                                       keep_checkpoint_max=cfg.save_checkpoint_num)
-@@ -250,10 +291,83 @@
+@@ -250,10 +289,83 @@
  
      model = Model(net_with_grads)
      model = ConvertModelUtils().convert_to_thor_model(model, network=net_with_grads, optimizer=optimizer)
@@ -180,8 +178,8 @@ diff -Nur origin/run_pretrain.py code/run_pretrain.py
 +        from pretrain_eval import MLM_eval
 +        MLM_eval()
 diff -Nur origin/src/model_utils/moxing_adapter.py code/src/model_utils/moxing_adapter.py
---- origin/src/model_utils/moxing_adapter.py	2022-07-09 12:40:05.984000000 +0800
-+++ code/src/model_utils/moxing_adapter.py	2022-07-09 12:40:05.988000000 +0800
+--- origin/src/model_utils/moxing_adapter.py	2022-07-11 14:30:06.510000000 +0800
++++ code/src/model_utils/moxing_adapter.py	2022-07-11 14:30:06.530000000 +0800
 @@ -100,6 +100,16 @@
                  if not os.path.exists(config.output_path):
                      os.makedirs(config.output_path)
