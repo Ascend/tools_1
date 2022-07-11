@@ -42,7 +42,7 @@ modelarts-api --> Modelarts服务
 graph LR
     subgraph 本地运行设备
 	ais-bench-stubs --本地拉起 --> modelarts-sdk
-    end   
+    end
     subgraph Modelarts服务
 	modelarts-sdk --网络启动训练作业 --> 训练作业
     end
@@ -76,7 +76,7 @@ OBS存储->>本地运行设备: 下载数据
 
 #### 本地运行设备
 
-本地运行设备是需要运行ais-bench软件的stubs程序，当前只能是linux设备。该设备要求如下
+本地运行设备是需要运行ais-bench软件的stubs程序。该设备要求如下
 
 1. 运行为linux系统，linux虚拟机也可以。
 2. 能够连接网络。
@@ -84,7 +84,7 @@ OBS存储->>本地运行设备: 下载数据
 本文建议可通过以下三种方式
 
 1. ECS云主机，可以咨询计算中心运维同事搭建启动ECS云主机。
-2. Modelarts的notebook开发环境。 请参考官网链接  [创建Notebook实例](https://support.huaweicloud.com/devtool-modelarts/devtool-modelarts_0004.html ) 和 [打开Notebook实例](https://support.huaweicloud.com/devtool-modelarts/devtool-modelarts_0005.html  )。
+2. Modelarts的notebook开发环境。 请参考附录”Notebook进行modelarts训练配置”小节。
 3. 在windows上开启WSL linux子系统。按照说明强参考[官方链接。](https://docs.microsoft.com/zh-cn/windows/wsl/install)
 
 #### Modelarts版本依赖
@@ -170,7 +170,7 @@ ais-bench-stubs  code  log  result  tmp
 
 配置信息是比较重要的，需要用户仔细审视。
 
-#### config.json  ais-bench工具配置文件 
+#### config.json  ais-bench工具配置文件
 
 位于基准目录/code/config.json 主要填写ais-bench测试的具体参数与tester服务器具体信息，**本地测试模式下不需要填写，只要网络测试模式下才需要填写。**
 
@@ -227,7 +227,7 @@ export PYTHON_COMMAND=python3.7
 
 ### 中断和停止训练
 
-+ 云上modelarts界面操作  
++ 云上modelarts界面操作
   在云环境modelarts服务“训练管理”->“训练作业”界面，点击正在运行的job链接并进入。在执行job界面，点击“更多操作”按钮，激活下拉菜单，在上下文菜单中点击“停止”，即可终止运行的job。
 + 本地停止方法，如下操作即可。该操作可以停止掉配置文件中job_name指示的最新一个作业版本
 
@@ -287,6 +287,10 @@ run目录文件结果示例：
 └── protobuf-3.20.1-cp37-cp37m-linux_aarch64.whl
 ```
 
+### Notebook进行modelarts训练配置
+
+请参照《modelarts_notebook使用入门指导》进行配置
+
 ### 日志级别设置
 
 通过修改ma-pre-start.sh文件中“GLOG_v”和“ASCEND_GLOBAL_LOG_LEVEL”的变量值，可以更新日志的级别。
@@ -298,7 +302,7 @@ run目录文件结果示例：
 
 ### 域名解析地址增加
 
-请咨询modelarts所在云环境的运维，获取该云相关服务（obs、modelarts、swr）域名和IP的映射关系并写入/etc/hosts, 
+请咨询modelarts所在云环境的运维，获取该云相关服务（obs、modelarts、swr）域名和IP的映射关系并写入/etc/hosts,
 
 比如武汉云相关服务obs、modelarts、swr域名映射关系如下：
 
@@ -310,7 +314,7 @@ run目录文件结果示例：
 
 注意：
 
-- 如果在notebook中运行，不需要设置该项 
+- 如果在notebook中运行，不需要设置该项
 - 华为云不需要
 
 
