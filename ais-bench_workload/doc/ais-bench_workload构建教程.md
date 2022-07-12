@@ -7,7 +7,7 @@
 
 ## 1. 构建准备
 Windows系统可以使用Windows7以上版本，Linux无发行版本限制。  
-构建环境要求安装git, 无版本限制。 Windows还要求安装Winrar，版本不限。
+构建环境要求安装git, 无版本限制。 Windows还要求安装Winrar，版本不限。Linux系统要求确认安装unrar，版本不限。
 
 ## 2. 源码下载
 源码下载有2种方式：  
@@ -20,25 +20,43 @@ Windows系统可以使用Windows7以上版本，Linux无发行版本限制。
 
 ## 3. 构建
 工作目录：ais-bench_workload/build  
-### 3.1 Windows快速构建bert&resnet训练软件包
+### 3.1 快速构建
 快速构建要求网络通畅，能自动下载相关构建依赖。可以一键构建bert&resnet2个典型模型， aarch64和x86_64平台共4个训练软件包。对于其它模型的训练软件包以及所有模型的推理软件包的构建，请选择标准构建      
-构建环境：git bash-- Mircrosoft Windows git命令的模拟终端  
-#### 3.1.1 启动构建环境  
-在工作目录中，点击鼠标上下文菜单"git bash here", 进入构建终端环境。鼠标右键没有git相关菜单命令时，请在windows右下角的搜索窗口输入"git" ，找到git  bash，并点击进入。 
-#### 3.1.2 执行构建指令  
+支持构建环境：
+
+- git bash-- Mircrosoft Windows git命令的模拟终端
+- Window 10 wsl子系统  
+- Linux系统
+
+#### 3.1.1 构建指令  
+
 构建指令格式：bash ./download_and_build.sh {version} {type}  
 参数说明：
+
 + version 框架版本号。必选。版本取值，对应模型子目录中的适配版本信息
 + type 线上还是线下环境。可选。默认不取值为线下环境。取值为"modelarts"时，表示云上执行训练
 
-#### 3.1.3 构建结果  
-构建指令成功执行后，在ais-bench_workload子目录output中输出构建结果。  
-构建结果示例说明：  
-构建基于mindspore 1.7框架云上执行bert&resnet训练软件包指令：
+示例，构建基于mindspore 1.7框架云上执行bert&resnet训练软件包指令：
+
 ```
 bash ./download_and_build.sh r1.7 modelarts
 ```
-构建输出目录为ais-bench_workload/output，有4个测试包生成，aarch64和x86_64平台各2个：
+
+#### 3.1.2 Windows构建  
+
+在工作目录中，点击鼠标上下文菜单"git bash here", 进入构建终端环境。鼠标右键没有git相关菜单命令时，请在windows右下角的搜索窗口输入"git" ，找到git  bash，并点击进入，执行构建指令。 
+
+也可以在windows右下角搜索窗口输入“wsl”， 找到wsl，并点击进入wsl子系统ubuntu，执行构建指令。
+
+#### 3.1.3 Linux构建
+
+直接在工作目录执行脚本download_and_build.sh
+
+#### 3.1.4 构建结果  
+构建指令成功执行后，在ais-bench_workload子目录output中输出构建结果。  
+构建结果示例说明：  
+构建基于mindspore 1.7框架云上执行bert&resnet训练软件包，构建输出目录为ais-bench_workload/output，有4个测试包生成，aarch64和x86_64平台各2个：
+
 ```
 root@DESKTOP-L64O580: MINGW64 /d/codes/C++/huawei.com/tools-lhb/ais-bench_workload/output# tree -L 1
 .

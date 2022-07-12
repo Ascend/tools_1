@@ -34,13 +34,22 @@ function try_download_stubs_packet(){
     fi
 }
 
+unrar_files()
+{
+	local target_file_=$1
+	local tmp_dir_=$2
+	check_command_exist start && { start winrar e $target_file_ $tmp_dir_;return 0; }
+	check_command_exist unrar && { unrar e $target_file_ $tmp_dir_ ;return 0; }
+	return 1;
+}
+
 main()
 {
     local version="$1"
     local type="$2"
     [ "$2" != "modelarts" ] && type=""
 
-    stubs_packet_url="http://www.aipubservice.com/airesource/tools/20210903%20Stubs%E7%A8%8B%E5%BA%8F.rar"
+    stubs_packet_url="https://www.aipubservice.com/airesource/tools/20210903%20Stubs%E7%A8%8B%E5%BA%8F.rar"
     tmp_dir="$CURDIR/buildtmpstubs"
     [ -d $tmp_dir ] && rm -rf $tmp_dir
     mkdir -p $tmp_dir
@@ -51,7 +60,8 @@ main()
     target_file="$tmp_dir/stubs.rar"
     try_download_stubs_packet $stubs_packet_url $target_file || { echo "donwload stubs failed";return 1; }
 
-    start winrar e $target_file $tmp_dir
+    unrar_files $target_file $tmp_dir || { echo "unrar failed"; return 1; }
+
     sleep 5
     x86_stubs="$tmp_dir/Ais-Benchmark-Stubs-x86_64-1.0.tar.gz"
     check_file_valid "$x86_stubs" || { echo "x86_stubs:${x86_stubs} not valid path" ; return 1; }
