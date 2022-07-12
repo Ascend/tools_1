@@ -21,11 +21,12 @@ Windows系统可以使用Windows7以上版本，Linux无发行版本限制。
 ## 3. 构建
 工作目录：ais-bench_workload/build  
 ### 3.1 快速构建
-快速构建要求网络通畅，能自动下载相关构建依赖。可以一键构建bert&resnet2个典型模型， aarch64和x86_64平台共4个训练软件包。对于其它模型的训练软件包以及所有模型的推理软件包的构建，请选择标准构建      
+快速构建要求网络通畅，能自动下载相关构建依赖。可以一键构建bert&resnet2个典型模型， aarch64和x86_64平台共4个训练软件包。对于其它模型的训练软件包以及所有模型的推理软件包的构建，请选择标准构建。
+
+通过适配该脚本支持其它模型、其它构建类型（比如线上）, 快速构建脚本也能达到标准构建的强大构建能力。请自行对比build.sh来扩展。      
 支持构建环境：
 
 - git bash-- Mircrosoft Windows git命令的模拟终端
-- Window 10 wsl子系统  
 - Linux系统
 
 #### 3.1.1 构建指令  
@@ -46,11 +47,9 @@ bash ./download_and_build.sh r1.7 modelarts
 
 在工作目录中，点击鼠标上下文菜单"git bash here", 进入构建终端环境。鼠标右键没有git相关菜单命令时，请在windows右下角的搜索窗口输入"git" ，找到git  bash，并点击进入，执行构建指令。 
 
-也可以在windows右下角搜索窗口输入“wsl”， 找到wsl，并点击进入wsl子系统ubuntu，执行构建指令。
-
 #### 3.1.3 Linux构建
 
-直接在工作目录执行脚本download_and_build.sh
+Linux系统中直接在工作目录执行脚本download_and_build.sh
 
 #### 3.1.4 构建结果  
 构建指令成功执行后，在ais-bench_workload子目录output中输出构建结果。  
