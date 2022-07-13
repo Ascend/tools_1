@@ -223,6 +223,20 @@ export PYTHON_COMMAND=python3.7
 
 整个训练过程，需要保持网络通畅。
 
+#### 训练作业日志查看：
+
+modlearts训练作业日志可以查看 云上modelarts界面，也可以通过obs输出日志路径查看日志信息。
+
+同时本程序提供了本地定时同步日志操作。在运行过程中，在《基准目录/log》中会定时更新训练作业的日志信息文件。如下job3be1f0e5-job-aisbench-debug-0.log和job3be1f0e5-job-aisbench-debug-1.log文件为modelarts训练作业日志。
+
+```bash
+[root@node66 ]# ls
+ais-bench-stubs  code  log  result
+[root@node66 ]# ls log/
+benchmark.log  job3be1f0e5-job-aisbench-debug-0.log  job3be1f0e5-job-aisbench-debug-1.log  stub.log
+
+```
+
 ### 中断和停止训练
 
 + 云上modelarts界面操作
