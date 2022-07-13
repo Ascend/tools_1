@@ -215,7 +215,10 @@ export PYTHON_COMMAND=python3.7
    华为云服务不需要设置。只有计算中心才需要设置。
 
 2. 当前选择的容器镜像版本是默认modelarts自带的，如果需要更新为指定的mindspore和cann版本。请参考 附录-cann包和mindspore软件更新章节
+
 3. session_config.hyperparameters 请参考对应的模型说明文档。路径位于xxxx
+
+3. 注意节点配置不能跨资源池。要么使用某个资源池，要么使用公共节点，不能一起使用
 
 ### 启动运行
 
@@ -250,7 +253,83 @@ ais-bench-stubs  code  log  result
 jobname:aisbench-debug jobid:3043 preversionid:13231 jobstatus:JOBSTAT_RUNNING stop status:{'is_success': True}
 ```
 
+### 结果呈现和展示
 
+- 2个实例（train_instance_count为2）的bert r1.3 modelarts训练结果为例展示训练结果：
+
+```bash
+report >> throughput_list:[450.77798444604605, 450.38567065252664] average:450.58182754928634
+report >> accuracy_list:[0.7138142585754395, 0.7139078378677368] average:0.7138610482215881
+2022-07-13T13:24:43 -Ais-Bench-Stubs- INFO run_eval(modelarts_run.sh:32) - run_eval called
+2022-07-13T13:24:43 -Ais-Bench-Stubs- INFO get_result(modelarts_run.sh:37) - get_result called
+[2022-7-13 11:27:19][INFO]get ConfigInfo testid:20210126-ljp0IY, Mode:training, Model:resnet50_v1.5, Divsion:close, Scenario:generic, test_object_type:single, tester_server_ip:127.0.0.1, tester_server_port:9527
+[2022-7-13 11:27:19][INFO]ais bench stubs begin run
+[2022-7-13 11:27:19][INFO]workpath:/home/lhb/test6/train_huawei_train_mindspore_bert-Ais-Benchmark-Stubs-aarch64-1.0-r1.3_modelarts-single-0711 go testcase.
+[2022-7-13 11:27:19][INFO]Benchmanager::Init() enter
+[2022-7-13 11:27:19][INFO]Transmit_server start listen 0.0.0.0 : 9990
+[2022-7-13 11:27:19][INFO]get ConfigInfo testid:20210126-ljp0IY, Mode:training, Model:resnet50_v1.5, Divsion:close, Scenario:generic, test_object_type:single, tester_server_ip:127.0.0.1, tester_server_port:9527
+[2022-7-13 11:27:19][INFO]ais bench stubs begin run
+[2022-7-13 11:27:19][INFO]workpath:/home/lhb/test6/train_huawei_train_mindspore_bert-Ais-Benchmark-Stubs-aarch64-1.0-r1.3_modelarts-single-0711 go testcase.
+[2022-7-13 11:27:19][INFO]Benchmanager::Init() enter
+[2022-7-13 11:27:19][INFO]Transmit_server start listen 0.0.0.0 : 9990
+[2022-7-13 13:24:48][INFO]train_result_info: {
+   "accuracy" : "0.7138610482215881",
+   "average_power" : 0,
+   "dataload_end_time" : "2020-01-30 14:16:00",
+   "dataload_start_time" : "2020-01-30 14:16:00",
+   "efficientcy" : 0,
+   "energy_consumption" : 0,
+   "max_power" : 0,
+   "prepare_end_time" : "2020-01-30 14:16:00",
+   "prepare_start_time" : "2020-01-30 14:16:00",
+   "proc_end_time" : "2020-01-30 14:16:00",
+   "proc_start_time" : "2020-01-30 14:16:00",
+   "resource_util_ratio" : 0,
+   "throughput_ratio" : "450.58182754928634",
+   "total_end_time" : "2022-07-13 13:24:43",
+   "total_start_time" : "2022-07-13 11:27:19"
+}
+
+[2022-7-13 13:24:48][INFO]Transmit_server resource is released!
+[2022-7-13 13:24:51][INFO]BenchManager stop done
+```
+
+- 2个实例（train_instance_count为2）的resnet r1.3 modelarts训练结果为例展示训练结果：
+
+report >> throughput_list:[14147.314993295107, 14155.048461692913] average:14151.181727494011
+report >> accuracy_list:[0.7705078125, 0.7707316080729166] average:0.7706197102864583
+2022-07-12T15:29:13 -Ais-Bench-Stubs- INFO run_eval(modelarts_run.sh:32) - run_eval called
+2022-07-12T15:29:13 -Ais-Bench-Stubs- INFO get_result(modelarts_run.sh:37) - get_result called
+[2022-7-12 12:19:43][INFO]get ConfigInfo testid:20210126-ljp0IY, Mode:training, Model:resnet50_v1.5, Divsion:close, Scenario:generic, test_object_type:single, tester_server_ip:127.0.0.1, tester_server_port:9527
+[2022-7-12 12:19:43][INFO]ais bench stubs begin run
+[2022-7-12 12:19:43][INFO]workpath:/home/lhb/test6/train_huawei_train_mindspore_resnet-Ais-Benchmark-Stubs-aarch64-1.0-r1.3_modelarts-single-0712 go testcase.
+[2022-7-12 12:19:43][INFO]Benchmanager::Init() enter
+2022-7-12 12:19:43][INFO]Transmit_server start listen 0.0.0.0 : 9990
+2022-7-12 12:19:43][INFO]get ConfigInfo testid:20210126-ljp0IY, Mode:training, Model:resnet50_v1.5, Divsion:close, Scenario:generic, test_object_type:single, tester_server_ip:127.0.0.1, tester_server_port:9527
+[2022-7-12 12:19:43][INFO]ais bench stubs begin run
+[2022-7-12 12:19:43][INFO]workpath:/home/lhb/test6/train_huawei_train_mindspore_resnet-Ais-Benchmark-Stubs-aarch64-1.0-r1.3_modelarts-single-0712 go testcase.
+2022-7-12 12:19:43][INFO]Benchmanager::Init() enter
+[2022-7-12 12:19:43][INFO]Transmit_server start listen 0.0.0.0 : 9990
+[2022-7-12 15:29:18][INFO]train_result_info: {
+   "accuracy" : "0.7706197102864583",
+   "average_power" : 0,
+   "dataload_end_time" : "2020-01-30 14:16:00",
+   "dataload_start_time" : "2020-01-30 14:16:00",
+   "efficientcy" : 0,
+   "energy_consumption" : 0,
+   "max_power" : 0,
+   "prepare_end_time" : "2020-01-30 14:16:00",
+   "prepare_start_time" : "2020-01-30 14:16:00",
+   "proc_end_time" : "2020-01-30 14:16:00",
+   "proc_start_time" : "2020-01-30 14:16:00",
+   "resource_util_ratio" : 0,
+   "throughput_ratio" : "14151.181727494011",
+   "total_end_time" : "2022-07-12 15:29:13",
+   "total_start_time" : "2022-07-12 12:19:43"
+}
+
+[2022-7-12 15:29:18][INFO]Transmit_server resource is released!
+2022-7-12 15:29:21][INFO]BenchManager stop done
 
 ## 附录
 
