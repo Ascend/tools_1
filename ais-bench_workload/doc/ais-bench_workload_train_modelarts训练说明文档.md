@@ -236,6 +236,47 @@ ais-bench-stubs  code  log  result
 jobname:aisbench-debug jobid:3043 preversionid:13231 jobstatus:JOBSTAT_RUNNING stop status:{'is_success': True}
 ```
 
+### 结果呈现和展示
+
+以下以2个实例（train_instance_count为2）的bert r1.3 modelarts训练结果为例展示训练结果：
+
+```bash
+report >> throughput_list:[450.77798444604605, 450.38567065252664] average:450.58182754928634
+report >> accuracy_list:[0.7138142585754395, 0.7139078378677368] average:0.7138610482215881
+2022-07-13T13:24:43 -Ais-Bench-Stubs- INFO run_eval(modelarts_run.sh:32) - run_eval called
+2022-07-13T13:24:43 -Ais-Bench-Stubs- INFO get_result(modelarts_run.sh:37) - get_result called
+[2022-7-13 11:27:19][INFO]get ConfigInfo testid:20210126-ljp0IY, Mode:training, Model:resnet50_v1.5, Divsion:close, Scenario:generic, test_object_type:single, tester_server_ip:127.0.0.1, tester_server_port:9527
+[2022-7-13 11:27:19][INFO]ais bench stubs begin run
+[2022-7-13 11:27:19][INFO]workpath:/home/lhb/test6/train_huawei_train_mindspore_bert-Ais-Benchmark-Stubs-aarch64-1.0-r1.3_modelarts-single-0711 go testcase.
+[2022-7-13 11:27:19][INFO]Benchmanager::Init() enter
+[2022-7-13 11:27:19][INFO]Transmit_server start listen 0.0.0.0 : 9990
+[2022-7-13 11:27:19][INFO]get ConfigInfo testid:20210126-ljp0IY, Mode:training, Model:resnet50_v1.5, Divsion:close, Scenario:generic, test_object_type:single, tester_server_ip:127.0.0.1, tester_server_port:9527
+[2022-7-13 11:27:19][INFO]ais bench stubs begin run
+[2022-7-13 11:27:19][INFO]workpath:/home/lhb/test6/train_huawei_train_mindspore_bert-Ais-Benchmark-Stubs-aarch64-1.0-r1.3_modelarts-single-0711 go testcase.
+[2022-7-13 11:27:19][INFO]Benchmanager::Init() enter
+[2022-7-13 11:27:19][INFO]Transmit_server start listen 0.0.0.0 : 9990
+[2022-7-13 13:24:48][INFO]train_result_info: {
+   "accuracy" : "0.7138610482215881",
+   "average_power" : 0,
+   "dataload_end_time" : "2020-01-30 14:16:00",
+   "dataload_start_time" : "2020-01-30 14:16:00",
+   "efficientcy" : 0,
+   "energy_consumption" : 0,
+   "max_power" : 0,
+   "prepare_end_time" : "2020-01-30 14:16:00",
+   "prepare_start_time" : "2020-01-30 14:16:00",
+   "proc_end_time" : "2020-01-30 14:16:00",
+   "proc_start_time" : "2020-01-30 14:16:00",
+   "resource_util_ratio" : 0,
+   "throughput_ratio" : "450.58182754928634",
+   "total_end_time" : "2022-07-13 13:24:43",
+   "total_start_time" : "2022-07-13 11:27:19"
+}
+
+[2022-7-13 13:24:48][INFO]Transmit_server resource is released!
+[2022-7-13 13:24:51][INFO]BenchManager stop done
+```
+
 
 
 ## 附录
