@@ -16,7 +16,7 @@ Windows系统可以使用Windows7以上版本，Linux无发行版本限制。
     git clone https://gitee.com/ascend/tools.git
 ```
 + 在线下载源码压缩包  
-浏览器输入tools仓库网页链接，https://gitee.com/ascend/tools， 点击“克隆/下载”，在弹出的窗口中点击“下载ZIP”，进行下载。默认下载后的压缩包名字是tools-master.zip。请通过winrar等解压缩工具，解压ZIP包。注意ZIP解压后目录名字是tools-master      
+浏览器输入tools仓库网页链接，https://gitee.com/ascend/tools  ， 点击“克隆/下载”，在弹出的窗口中点击“下载ZIP”，进行下载。默认下载后的压缩包名字是tools-master.zip。请通过winrar等解压缩工具，解压ZIP包。注意ZIP解压后目录名字是tools-master      
 
 ## 3. 构建
 工作目录：ais-bench_workload/build  

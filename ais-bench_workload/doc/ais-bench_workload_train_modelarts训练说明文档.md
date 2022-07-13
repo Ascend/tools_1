@@ -215,7 +215,10 @@ export PYTHON_COMMAND=python3.7
    华为云服务不需要设置。只有计算中心才需要设置。
 
 2. 当前选择的容器镜像版本是默认modelarts自带的，如果需要更新为指定的mindspore和cann版本。请参考 附录-cann包和mindspore软件更新章节
+
 3. session_config.hyperparameters 请参考对应的模型说明文档。路径位于xxxx
+
+3. 注意节点配置不能跨资源池。要么使用某个资源池，要么使用公共节点，不能一起使用
 
 ### 启动运行
 
