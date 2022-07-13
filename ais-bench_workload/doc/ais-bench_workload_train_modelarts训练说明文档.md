@@ -305,7 +305,7 @@ run目录文件结果示例：
 比如武汉云相关服务obs、modelarts、swr域名映射关系如下：
 
 ```bash
-58.48.42.19 obs.cn-central-221.ovaijisuan.com
+58.48.42.196 obs.cn-central-221.ovaijisuan.com
 58.48.42.193 modelarts.cn-central-221.ovaijisuan.com
 58.48.42.198 swr.cn-central-221.ovaijisuan.com
 ```
