@@ -87,7 +87,7 @@ class modelarts_handler():
             logpath = os.path.join(dstpath, logname)
             if self.session.obs.is_obs_path_exists(logurl):
                 self.session.obs.download_file(logurl, logpath)
-                print("logurl:{} sync log to dstpath:{}".format(logurl, logpath))
+                #print("logurl:{} sync log to dstpath:{}".format(logurl, logpath))
 
     def wait_for_job(self, job_instance, session_config):
         count = 0
