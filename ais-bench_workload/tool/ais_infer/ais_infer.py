@@ -147,6 +147,56 @@ def str2bool(v):
     else:
         raise argparse.ArgumentTypeError('Boolean value expected.')
 
+def del_folder(folder_path):
+    """
+    delete the folder and all of the subfolder and files
+    """
+    file_list = os.listdir(folder_path)
+    for f in file_list:
+        file_path = os.path.join(folder_path, f)
+        if os.path.isfile(file_path):
+            os.remove(file_path)
+        elif os.path.isdir(file_path):
+            shutil.rmtree(file_path, True)
+    if os.path.exists(folder_path) is True:
+        os.removedirs(folder_path)
+
+def create_acl_json(args, out_path):
+    """
+    As args.acl_json_path is None , when args.profiler is true or args.dump is True, create relative acl.json , default current folder
+    """
+    if args.acl_json_path is not None:
+        return None
+    if args.profiler is False and args.dump is False:
+        return None
+
+    out_json_file_path = "./acl.json"
+    output_json_dict = {}
+    if args.profiler is True:
+        output_json_dict = {"profiler": {"switch": "on", "aicpu": "on", "output": "", "aic_metrics": ""}}
+        out_profiler_path = os.path.join(out_path, "profiler")
+
+        if os.path.exists(out_profiler_path) is True:
+            del_folder(out_profiler_path)
+        os.makedirs(out_profiler_path)
+        output_json_dict["profiler"]["output"] = out_profiler_path
+
+    if args.dump is True:
+        output_json_dict = {"dump": {"dump_path": "", "dump_mode": "output", "dump_list": [{"model_name": ""}]}}
+        out_dump_path = os.path.join(out_path, "dump")
+
+        if os.path.exists(out_dump_path) is True:
+            del_folder(out_dump_path)
+        os.makedirs(out_dump_path)
+
+        model_name = args.model.split("/")[-1]
+        output_json_dict["dump"]["dump_path"] = out_dump_path
+        output_json_dict["dump"]["dump_list"][0]["model_name"] = model_name.split('.')[0]
+
+    with open(out_json_file_path, "w") as f:
+        json.dump(output_json_dict, f, indent=4, separators=(", ", ": "), sort_keys=True)
+    return out_json_file_path
+
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", "--om", required=True, help="the path of the om model")
@@ -163,9 +213,29 @@ def get_args():
     parser.add_argument("--outputSize", type=str, default=None, help="output size for dynamic shape mode")
     parser.add_argument("--acl_json_path", type=str, default=None, help="acl json path for profiling or dump")
     parser.add_argument("--batchsize", type=int, default=1, help="batch size of input tensor")
-    parser.add_argument("--pure_data_type", type=str, default="zero", choices=["zero", "random"], help="null data type for pure inference(zero or random")
+    parser.add_argument("--pure_data_type", type=str, default="zero", choices=["zero", "random"], help="null data type for pure inference(zero or random)")
+    parser.add_argument("--profiler", action="store_true", default=False, help="profiler switch")
+    parser.add_argument("--dump", action="store_true", default=False, help="dump switch")
 
     args = parser.parse_args()
+
+    if args.profiler is True and args.dump is True:
+        logger.error("parameter --profiler cannot be true at the same time as parameter --dump, please check them!\n")
+        raise RuntimeError('error bad parameters --profiler and --dump')
+
+    if args.output is not None:
+        output = args.output
+    else:
+        output = "./"
+    tmp_acl_json_path = create_acl_json(args, output)
+    if tmp_acl_json_path is not None:
+        parser.set_defaults(acl_json_path=tmp_acl_json_path)
+        if args.dump is True:
+            parser.set_defaults(dump=False)
+        if args.profiler is True:
+            parser.set_defaults(profiler=False)
+        args = parser.parse_args()
+
     return args
 
 if __name__ == "__main__":

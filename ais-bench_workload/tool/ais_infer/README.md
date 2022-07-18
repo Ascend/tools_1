@@ -158,5 +158,7 @@ sumary:{'NPU_compute_time': {'min': 2.4385452270507812, 'max': 2.587556838989258
 | --outputSize| 指定模型的输出size，有几个输出，就设几个值，可选参数。<br>动态shape场景下，获取模型的输出size可能为0，用户需根据输入的shape预估一个较合适的值去申请内存。<br>如 --outputSize "10000,10000,10000"|
 | --acl_json_path | acl json文件 profiling或者dump时设置      |
 | --batchsize | 模型batch size      |
-| --pure_data_type | 纯推理数据类型。可选参数，默认"zero",可取值"zero"或"random"。<br>设置为zero时，纯推理数据全部是0；设置为random时，每一个图例数据是[0,255]之间的随机整数      |
+| --pure_data_type | 纯推理数据类型。可选参数，默认"zero",可取值"zero"或"random"。<br>设置为zero时，纯推理数据全部是0；设置为random时，每一个图例数据是[0,255]之间的随机整数|
+| --profiler | profiler开关，true或者false, 可选参数，默认false。<br>profiler数据在--output参数指定的目录下的profiler文件夹内。不能与--dump同时为true。|
+| --dump |dump开关，true或者false, 可选参数，默认false。<br>dump数据在--output参数指定的目录下的dump文件夹内。不能与--profiler同时为true。|
 | --help| 工具使用帮助信息                  |

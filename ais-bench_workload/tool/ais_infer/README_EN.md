@@ -168,4 +168,6 @@ sumary:{'NPU_compute_time': {'min': 2.4385452270507812, 'max': 2.587556838989258
 | --acl_json_path | Acl json file. For profiling or dump scenarios.      |
 | --batchsize | model batch size.            |
 | --pure_data_type | (Optional)Pure inference data type。Default "zero", can be set to "zero" or "random"。<br>When set to zero, all pure reasoning data are 0; When set to random, each legend data is a random integer between [0, 255]      |
+| --profiler | (Optional)profiler switch。either true or false. Defaults to false.<br>The profiler data is in the profiler folder under the directory specified by the --output parameter. Cannot be true at the same time as --dump      |
+| --dump | (Optional)dump switch。either true or false. Defaults to false.<br>Dump data is in the dump folder under the directory specified by the --output parameter. Cannot be true at the same time as --profiler      |
 | --help| Help information.                  |
