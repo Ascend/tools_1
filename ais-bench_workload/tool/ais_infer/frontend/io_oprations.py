@@ -157,7 +157,9 @@ def save_tensors_to_file(outputs, output_prefix, infiles_paths, outfmt, index):
             subdata = np.array_split(ndata, files_count_perbatch)
             for j in range(files_count_perbatch):
                 sample_id = index*files_count_perbatch+j
-                file_path = os.path.join(output_prefix, "input{}_output_{}.{}".format(sample_id, i, outfmt.lower()))
+                #file_path = os.path.join(output_prefix, "input{}_output_{}.{}".format(sample_id, i, outfmt.lower()))
+                file_path = os.path.join(output_prefix, "{}_{}.{}".format(
+                    os.path.basename(infiles_perbatch[j][0]).split('.')[0], i, outfmt.lower()))
                 summary.add_sample_id_infiles(sample_id, infiles_perbatch[j])
                 logger.debug("save func: sampleid:{} infiles:{} out_{} file:{} fmt:{}".format(sample_id, i, infiles_perbatch[j], file_path, outfmt))
                 summary.append_sample_id_outfile(sample_id, file_path)
