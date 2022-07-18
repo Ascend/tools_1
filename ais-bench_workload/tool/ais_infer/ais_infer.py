@@ -3,6 +3,7 @@ import asyncio
 import json
 import logging
 import os
+import shutil
 import sys
 import time
 
@@ -270,7 +271,8 @@ if __name__ == "__main__":
     #infer_fulltensors_run(session, args, intensors_desc, infileslist, outputs_names, output_prefix)
     #infer_loop_run(session, args, intensors_desc, infileslist, outputs_names, output_prefix)
     asyncio.run(infer_pipeline_process_run(session, args, intensors_desc, infileslist, outputs_names, output_prefix))
-
+    if os.path.exists("./acl.json"):
+        os.remove("acl.json")
     summary.add_args(sys.argv)
     summary.report(args.batchsize, output_prefix)
 
