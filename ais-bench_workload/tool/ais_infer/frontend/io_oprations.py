@@ -1,15 +1,17 @@
 import os
 import random
 import time
+import math
 
 import aclruntime
 import numpy as np
 
 from frontend.summary import summary
-from frontend.utils import (get_files_datasize, get_fileslist_from_dir, list_split,
+from frontend.utils import (get_file_datasize, get_file_content, get_fileslist_from_dir, list_split,
                    logger, save_data_to_files)
 
-pure_infer_dump_file = "pure_infer_data"
+pure_infer_fake_file = "pure_infer_data"
+padding_infer_fake_file = "padding_infer_fake_file"
 
 def get_pure_infer_data(size, pure_data_type):
     lst = []
@@ -29,18 +31,16 @@ def get_tensor_from_files_list(files_list, device, size, pure_data_type):
     ndatalist = []
     for i, file_path in enumerate(files_list):
         logger.debug("get tensor from filepath:{} i:{} of all:{}".format(file_path, i, len(files_list)))
-        if file_path == pure_infer_dump_file:
+        if file_path == pure_infer_fake_file:
             ndata = get_pure_infer_data(size, pure_data_type)
+        elif file_path == padding_infer_fake_file:
+            logger.debug("padding file use fileslist[0]:{}".format(files_list[0]))
+            ndata = get_file_content(files_list[0])
         elif file_path == None or os.path.exists(file_path) == False:
             logger.error('filepath:{} not valid'.format(file_path))
             raise RuntimeError()
-            #ndata = get_pure_infer_data(size)
-        elif file_path.endswith(".npy"):
-            ndata = np.load(file_path)
         else:
-            with open(file_path, 'rb') as fd:
-                barray = fd.read()
-                ndata = np.frombuffer(barray, dtype=np.int8)
+            ndata = get_file_content(file_path)
         ndatalist.append(ndata)
     ndata = np.concatenate(ndatalist)
     if ndata.nbytes != size:
@@ -58,15 +58,15 @@ def get_tensor_from_files_list(files_list, device, size, pure_data_type):
 # 策略如下  根据输入0的realsize和文件大小判断 如果判断失败，需要强制设置想要的值
 def get_files_count_per_batch(intensors_desc, fileslist):
     # get filesperbatch
-    filesize = get_files_datasize(fileslist[0][0])
+    filesize = get_file_datasize(fileslist[0][0])
     tensorsize = intensors_desc[0].realsize
     if filesize == 0 or tensorsize%filesize != 0:
         logger.error('arg0 tensorsize: {} filesize: {} not match'.format(tensorsize, filesize))
         raise RuntimeError()
     files_count_per_batch = (int)(tensorsize/filesize)
 
-    #runcount = math.ceil(len(fileslist) / files_count_per_batch)
-    runcount = len(fileslist[0]) // files_count_per_batch
+    runcount = math.ceil(len(fileslist[0]) / files_count_per_batch)
+    #runcount = len(fileslist[0]) // files_count_per_batch
     logger.info("get filesperbatch files0 size:{} tensor0size:{} filesperbatch:{} runcount:{}".format(
         filesize, tensorsize, files_count_per_batch, runcount))
     return files_count_per_batch, runcount
@@ -93,7 +93,7 @@ def create_infileslist_from_fileslist(fileslist, intensors_desc):
         raise RuntimeError()
     files_count_per_batch, runcount = get_files_count_per_batch(intensors_desc, fileslist)
 
-    files_perbatch_list = [ list(list_split(fileslist[j], files_count_per_batch)) for j in range(len(intensors_desc)) ]
+    files_perbatch_list = [ list(list_split(fileslist[j], files_count_per_batch, padding_infer_fake_file)) for j in range(len(intensors_desc)) ]
 
     infileslist = []
     for i in range(runcount):
@@ -125,7 +125,7 @@ def create_infileslist_from_inputs_list(inputs_list, intensors_desc):
     intensorcount = len(intensors_desc)
     if os.path.isfile(inputs_list[0]) == True:
         chunks = inputlistcount // intensorcount
-        fileslist = list(list_split(inputs_list, chunks))
+        fileslist = list(list_split(inputs_list, chunks, padding_infer_fake_file))
         logger.debug("create intensors list file type inlistcount:{} intensorcont:{} chunks:{} files_size:{}".format(
             inputlistcount, intensorcount, chunks, len(fileslist)))
     elif os.path.isdir(inputs_list[0]) and inputlistcount == intensorcount:

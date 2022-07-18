@@ -103,6 +103,7 @@ void TensorToDvpp(TensorBase &tensor, const int32_t deviceId)
 
 TensorBase FromNumpy(py::buffer b)
 {
+    py::gil_scoped_release release;
     py::buffer_info info = b.request();
     auto dataType = Base::TENSOR_DTYPE_UINT8;
     if (FORMAT_TO_DATA_TYPE_MAP.find(info.format) != FORMAT_TO_DATA_TYPE_MAP.end()) {
@@ -134,6 +135,7 @@ TensorBase FromNumpy(py::buffer b)
 
 py::buffer_info ToNumpy(const TensorBase &tensor)
 {
+    py::gil_scoped_release release;
     int32_t dims = tensor.GetShape().size();
     auto shape = tensor.GetShape();
     auto dtype = tensor.GetDataType();
@@ -200,8 +202,8 @@ void RegistPyTensorModule(py::module &m)
     auto tensor = py::class_<Base::TensorBase>(m, "Tensor", py::buffer_protocol());
     tensor.def(py::init(&Base::FromNumpy));
     tensor.def_buffer(&Base::ToNumpy);
-    tensor.def("to_device", &Base::TensorToDevice);
-    tensor.def("to_host", &Base::TensorToHost);
+    tensor.def("to_device", &Base::TensorToDevice, py::call_guard<py::gil_scoped_release>());
+    tensor.def("to_host", &Base::TensorToHost, py::call_guard<py::gil_scoped_release>());
     tensor.def("to_dvpp", &Base::TensorToDvpp);
     tensor.def("__str__", &Base::TensorBase::GetDesc);
     tensor.def("__repr__", &Base::TensorBase::GetDesc);
