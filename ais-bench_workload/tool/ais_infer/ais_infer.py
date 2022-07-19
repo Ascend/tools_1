@@ -40,16 +40,15 @@ def set_session_options(session, args):
         session.set_custom_outsize(customsizes)
 
 
-def create_acl_json(args):
+def get_acl_json_path(args):
     """
-    As args.acl_json_path is None , when args.profiler is true or args.dump is True, create relative acl.json , default current folder
+    get acl json path. when args.profiler is true or args.dump is True, create relative acl.json , default current folder
     """
     if args.acl_json_path is not None:
-        return None
+        return args.acl_json_path
     if args.profiler is False and args.dump is False:
         return None
 
-    out_json_file_path = os.path.join(args.output, "acl.json")
     output_json_dict = {}
     if args.profiler is True:
         output_json_dict = {"profiler": {"switch": "on", "aicpu": "on", "output": "", "aic_metrics": ""}}
@@ -58,8 +57,7 @@ def create_acl_json(args):
         if not os.path.exists(out_profiler_path):
             os.mkdir(out_profiler_path)
         output_json_dict["profiler"]["output"] = out_profiler_path
-
-    if args.dump is True:
+    elif args.dump is True:
         output_json_dict = {"dump": {"dump_path": "", "dump_mode": "output", "dump_list": [{"model_name": ""}]}}
         out_dump_path = os.path.join(args.output, "dump")
 
@@ -70,17 +68,16 @@ def create_acl_json(args):
         output_json_dict["dump"]["dump_path"] = out_dump_path
         output_json_dict["dump"]["dump_list"][0]["model_name"] = model_name.split('.')[0]
 
+    out_json_file_path = os.path.join(args.output, "acl.json")
     with open(out_json_file_path, "w") as f:
         json.dump(output_json_dict, f, indent=4, separators=(", ", ": "), sort_keys=True)
     return out_json_file_path
 
 def init_inference_session(args):
     options = aclruntime.session_options()
-    tmp_acl_json_path = create_acl_json(args)
-    if args.acl_json_path != None:
-        options.acl_json_path = args.acl_json_path
-    elif tmp_acl_json_path is not None:
-        options.acl_json_path = tmp_acl_json_path
+    acl_json_path = get_acl_json_path(args)
+    if acl_json_path is not None:
+        options.acl_json_path = acl_json_path
     if args.debug == True:
         logger.setLevel(logging.DEBUG)
         options.log_level = 1
@@ -213,7 +210,7 @@ def get_args():
         raise RuntimeError('error bad parameters --profiler and --dump')
 
     if (args.profiler is True or args.dump is True) and (args.output is None):
-        logger.error("when dukmp or profiler, miss output path, please check them!")
+        logger.error("when dump or profiler, miss output path, please check them!")
         raise RuntimeError('miss output parameter!')
 
     return args
