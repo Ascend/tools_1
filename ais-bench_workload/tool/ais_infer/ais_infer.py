@@ -46,18 +46,18 @@ def get_acl_json_path(args):
     """
     if args.acl_json_path is not None:
         return args.acl_json_path
-    if args.profiler is False and args.dump is False:
+    if not args.profiler and not args.dump:
         return None
 
     output_json_dict = {}
-    if args.profiler is True:
+    if args.profiler:
         output_json_dict = {"profiler": {"switch": "on", "aicpu": "on", "output": "", "aic_metrics": ""}}
         out_profiler_path = os.path.join(args.output, "profiler")
 
         if not os.path.exists(out_profiler_path):
             os.mkdir(out_profiler_path)
         output_json_dict["profiler"]["output"] = out_profiler_path
-    elif args.dump is True:
+    elif args.dump:
         output_json_dict = {"dump": {"dump_path": "", "dump_mode": "output", "dump_list": [{"model_name": ""}]}}
         out_dump_path = os.path.join(args.output, "dump")
 
@@ -197,11 +197,11 @@ def get_args():
     parser.add_argument("--dymDims", type=str, default=None, help="dynamic dims param, such as --dymDims \"data:1,600;img_info:1,600\"")
     parser.add_argument("--dymShape", type=str, help="dynamic hape param, such as --dymShape \"data:1,600;img_info:1,600\"")
     parser.add_argument("--outputSize", type=str, default=None, help="output size for dynamic shape mode")
-    parser.add_argument("--acl_json_path", type=str, default=None, help="acl json path for profiling or dump")
     parser.add_argument("--batchsize", type=int, default=1, help="batch size of input tensor")
     parser.add_argument("--pure_data_type", type=str, default="zero", choices=["zero", "random"], help="null data type for pure inference(zero or random)")
     parser.add_argument("--profiler", action="store_true", default=False, help="profiler switch")
     parser.add_argument("--dump", action="store_true", default=False, help="dump switch")
+    parser.add_argument("--acl_json_path", type=str, default=None, help="acl json path for profiling or dump")
 
     args = parser.parse_args()
 

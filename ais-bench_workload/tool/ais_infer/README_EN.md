@@ -132,10 +132,17 @@ Note that the dynamic shape scene cannot obtain the shape of the tensor at prese
 python3 ais_infer.py --model resnet50_v1_dynamicshape_fp32.om --input=./data/ --dymShape actual_input_1:1,3,224,224 --outputSize 10000
 ```
 
-### Profiling or dump scenarios
-```
-python3.7.5 ais_infer.py --model ./resnet50_v1_bs1_fp32.om --acl_json_path ./acl.json
+### Profiler or dump scenarios
+- acl_ json_path is the JSON file with the specified path, and the corresponding parameter information can be modified in this file
+- profiler is a set of acl_json configuration solidified into the program, and the generated profiling data is saved in the profiler folder of the output path
+- dump is a group of acl_json configuration solidified into the program, and the generated dump data is saved in the profiler folder of the output path
+- acl_ json_path has a higher priority than profiler and dump. when set together,  with acl_ json_path shall prevail
+- the output parameter must be used with the profiler parameter or dump parameter. It indicates the output path. Profiler and dump can be used separately, but cannot be enabled at the same time
 
+```bash
+python3.7.5 ais_infer.py --model ./resnet50_v1_bs1_fp32.om --acl_json_path ./acl.json
+python3.7.5 ais_infer.py  --model /home/model/resnet50_v1.om --output ./ --dump
+python3.7.5 ais_infer.py  --model /home/model/resnet50_v1.om --output ./ --profiler
 ```
 ### Result sumary function
 For the result output, this program adds sumary JSON file prints parameter values to facilitate summary statistics.
@@ -167,7 +174,7 @@ sumary:{'NPU_compute_time': {'min': 2.4385452270507812, 'max': 2.587556838989258
 | --outputSize| (Optional)Specify the output size of the model. If there are several outputs, set several values. <br>In the dynamic shape scenario, the output size of the acquired model may be 0. The user needs to estimate an appropriate value according to the input shape to apply for memory.<br>Example： --outputSize "10000,10000,10000".|
 | --batchsize | model batch size.            |
 | --pure_data_type | (Optional)Pure inference data type。Default "zero", can be set to "zero" or "random"。<br>When set to zero, all pure reasoning data are 0; When set to random, each legend data is a random integer between [0, 255]      |
-| --acl_json_path | Acl json file. For profiling or dump scenarios.When this parameter is set, -dump and --profiler parameters are invalid. |
 | --profiler | (Optional)profiler switch。either true or false. Defaults to false.<br>--Output parameter must be provided. The profiler data is in the profiler folder under the directory specified by the --output parameter. Cannot be true at the same time as --dump      |
 | --dump | (Optional)dump switch。either true or false. Defaults to false.<br>--Output parameter must be provided. Dump data is in the dump folder under the directory specified by the --output parameter. Cannot be true at the same time as --profiler      |
+| --acl_json_path | Acl json file. For profiling or dump scenarios.When this parameter is set, -dump and --profiler parameters are invalid. |
 | --help| Help information.                  |
