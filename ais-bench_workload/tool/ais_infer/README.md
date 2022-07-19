@@ -131,7 +131,8 @@ python3 ais_infer.py --model resnet50_v1_dynamicshape_fp32.om --dymShape actual_
 + profiler 为固化到程序中的一组acl_json配置，生成的profiling数据保存在 output路径的profiler文件夹中
 + dump 为固化到程序中的一组acl_json配置，生成的dump数据保存在 output路径的profiler文件夹中
 + acl_json_path 优先级高于 profiler dump。 同时设置时以acl_json_path为准
-+ profiler参数和dump参数 必须要增加output参数。指示输出路径。profiler和dump可以分别使用，但不能同时启用
++ profiler参数和dump参数 必须要增加output参数。指示输出路径。
++ profiler和dump可以分别使用，但不能同时启用
 
 指令示例:
 

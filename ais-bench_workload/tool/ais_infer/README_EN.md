@@ -137,7 +137,8 @@ python3 ais_infer.py --model resnet50_v1_dynamicshape_fp32.om --input=./data/ --
 - profiler is a set of acl_json configuration solidified into the program, and the generated profiling data is saved in the profiler folder of the output path
 - dump is a group of acl_json configuration solidified into the program, and the generated dump data is saved in the profiler folder of the output path
 - acl_ json_path has a higher priority than profiler and dump. when set together,  with acl_ json_path shall prevail
-- the output parameter must be used with the profiler parameter or dump parameter. It indicates the output path. Profiler and dump can be used separately, but cannot be enabled at the same time
+- the output parameter must be used with the profiler parameter or dump parameter. It indicates the output path
+- profiler and dump can be used separately, but cannot be enabled at the same time
 
 ```bash
 python3.7.5 ais_infer.py --model ./resnet50_v1_bs1_fp32.om --acl_json_path ./acl.json
