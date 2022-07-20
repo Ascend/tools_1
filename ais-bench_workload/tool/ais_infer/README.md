@@ -124,12 +124,26 @@ python3 ais_infer.py --model resnet50_v1_dynamicshape_fp32.om --input=./data/ --
 python3 ais_infer.py --model resnet50_v1_dynamicshape_fp32.om --dymShape actual_input_1:1,3,224,224 --outputSize 10000
 ```
 
-### profiling或者dump场景
-```
-python3.7.5 ais_infer.py --model ./resnet50_v1_bs1_fp32.om --acl_json_path ./acl.json
+### profiler或者dump场景
 
+支持以--acl_json_path、--profiler、--dump参数形式实现：
++ acl_json_path 为指定路径的json文件，可以在该文件中修改对应的参数信息。
++ profiler 为固化到程序中的一组acl_json配置，生成的profiling数据保存在 output路径的profiler文件夹中
++ dump 为固化到程序中的一组acl_json配置，生成的dump数据保存在 output路径的profiler文件夹中
++ acl_json_path 优先级高于 profiler dump。 同时设置时以acl_json_path为准
++ profiler参数和dump参数 必须要增加output参数。指示输出路径。
++ profiler和dump可以分别使用，但不能同时启用
+
+指令示例:
+
+```bash
+python3.7.5 ais_infer.py --model ./resnet50_v1_bs1_fp32.om --acl_json_path ./acl.json
+python3.7.5 ais_infer.py  --model /home/model/resnet50_v1.om --output ./ --dump
+python3.7.5 ais_infer.py  --model /home/model/resnet50_v1.om --output ./ --profiler
 ```
+
 ### 结果sumary功能
+
 针对结果输出，本程序增加sumary.json文件打印参数值，便于汇总统计
 具体结果信息如下
 NPU_compute_time: 推理调用总时间  
@@ -155,7 +169,9 @@ sumary:{'NPU_compute_time': {'min': 2.4385452270507812, 'max': 2.587556838989258
 | --dymDims| 动态维度参数，指定模型输入的实际shape，可选参数。 <br>如atc模型转换时设置 --input_shape="data:1,-1;img_info:1,-1" --dynamic_dims="224,224;600,600" , dymDims参数可设置为：--dymDims "data:1,600;img_info:1,600"|
 | --dymShape| 动态shape参数，指定模型输入的实际shape，可选参数。 <br>如atc模型转换时设置 --input_shape_range="input1:\[8\~20,3,5,-1\];input2:\[5,3\~9,10,-1\]" , dymShape参数可设置为：--dymShape "input1:8,3,5,10;input2:5,3,10,10"<br>设置此参数时，必须设置 --input 和 --outputSize。 |
 | --outputSize| 指定模型的输出size，有几个输出，就设几个值，可选参数。<br>动态shape场景下，获取模型的输出size可能为0，用户需根据输入的shape预估一个较合适的值去申请内存。<br>如 --outputSize "10000,10000,10000"|
-| --acl_json_path | acl json文件 profiling或者dump时设置      |
 | --batchsize | 模型batch size 默认为1 。当前推理模块根据模型输入和文件输出自动进行组batch。参数传递的batchszie有且只用于结果吞吐率计算。请务必注意需要传入该值，以获取计算正确的吞吐率      |
-| --pure_data_type | 纯推理数据类型。可选参数，默认"zero",可取值"zero"或"random"。<br>设置为zero时，纯推理数据全部是0；设置为random时，每一个图例数据是[0,255]之间的随机整数      |
+| --pure_data_type | 纯推理数据类型。可选参数，默认"zero",可取值"zero"或"random"。<br>设置为zero时，纯推理数据全部是0；设置为random时，每一个图例数据是[0,255]之间的随机整数|
+| --profiler | profiler开关，true或者false, 可选参数，默认false。<br>--output参数必须提供。profiler数据在--output参数指定的目录下的profiler文件夹内。不能与--dump同时为true。|
+| --dump |dump开关，true或者false, 可选参数，默认false。<br>--output参数必须提供。dump数据在--output参数指定的目录下的dump文件夹内。不能与--profiler同时为true。|
+| --acl_json_path | acl json文件 profiling或者dump时设置。当该参数设置时，--dump和--profiler参数无效。      |
 | --help| 工具使用帮助信息                  |
