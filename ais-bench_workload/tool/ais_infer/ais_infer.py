@@ -14,7 +14,7 @@ from frontend.io_oprations import (create_infileslist_from_inputs_list,
                                    create_intensors_from_infileslist,
                                    create_intensors_zerodata,
                                    get_tensor_from_files_list,
-                                   pure_infer_dump_file, save_tensors_to_file)
+                                   pure_infer_fake_file, save_tensors_to_file)
 from frontend.summary import summary
 from frontend.utils import logger
 
@@ -81,30 +81,33 @@ def init_inference_session(args):
     if args.debug == True:
         logger.setLevel(logging.DEBUG)
         options.log_level = 1
+    options.loop = args.loop
     session = aclruntime.InferenceSession(args.model, args.device, options)
 
     set_session_options(session, args)
     logger.debug("session info:{}".format(session))
     return session
 
-def run_inference(session, inputs, outputs_names, loop=1):
+def run_inference_step(session, inputs, outputs_names, loop=1):
     session.run_setinputs(inputs)
     starttime = time.time()
     session.run_execute(loop)
     endtime = time.time()
     summary.npu_compute_time_list.append(float(endtime - starttime) * 1000.0/loop)  # millisecond
     outputs = session.run_getoutputs(outputs_names)
+    return outputs
 
+def run_inference(session, inputs, outputs_names):
+    outputs = session.run(outputs_names, inputs)
     return outputs
 
 def warmup(session, args, intensors_desc, outputs_names):
     n_loop = 5
     inputs = create_intensors_zerodata(intensors_desc, args.device, args.pure_data_type)
-    for i in range(n_loop):
-        run_inference(session, inputs, outputs_names, 1)
+    run_inference_step(session, inputs, outputs_names, n_loop)
     summary.reset()
     session.reset_sumaryinfo()
-    logger.debug("warm up {} times done".format(n_loop))
+    logger.info("warm up {} times done".format(n_loop))
 
 # 轮训运行推理
 def infer_loop_run(session, args, intensors_desc, infileslist, outputs_names, output_prefix):
@@ -113,7 +116,7 @@ def infer_loop_run(session, args, intensors_desc, infileslist, outputs_names, ou
         for j, files in enumerate(infiles):
             tensor = get_tensor_from_files_list(files, args.device, intensors_desc[j].realsize, args.pure_data_type)
             intensors.append(tensor)
-        outputs = run_inference(session, intensors, outputs_names, args.loop)
+        outputs = run_inference(session, intensors, outputs_names)
         if args.output != None:
             save_tensors_to_file(outputs, output_prefix, infiles, args.outfmt, i)
 
@@ -124,7 +127,7 @@ def infer_fulltensors_run(session, args, intensors_desc, infileslist, outputs_na
 
     #for inputs in intensorslist:
     for inputs in tqdm(intensorslist, file=sys.stdout, desc='Inference Processing full'):
-        outputs = run_inference(session, inputs, outputs_names, args.loop)
+        outputs = run_inference(session, inputs, outputs_names)
         outtensors.append(outputs)
 
     if args.output != None:
@@ -150,7 +153,7 @@ async def infer_task(inque, session, outputs_names, args, outque):
             await outque.put([None, None, None])
             logger.debug("infer_task exit")
             break
-        outputs = run_inference(session, intensors, outputs_names, args.loop)
+        outputs = run_inference(session, intensors, outputs_names)
         await outque.put([outputs, infiles, i])
 
 async def out_task(outque, output_prefix, args):
@@ -240,7 +243,7 @@ if __name__ == "__main__":
     # create infiles list accord inputs list
     if len(inputs_list) == 0:
         # 纯推理场景 创建输入zero数据
-        infileslist = [[ [ pure_infer_dump_file ] for index in intensors_desc ]]
+        infileslist = [[ [ pure_infer_fake_file ] for index in intensors_desc ]]
     else:
         infileslist = create_infileslist_from_inputs_list(inputs_list, intensors_desc)
 
@@ -249,6 +252,6 @@ if __name__ == "__main__":
     asyncio.run(infer_pipeline_process_run(session, args, intensors_desc, infileslist, outputs_names, output_prefix))
 
     summary.add_args(sys.argv)
+    s = session.sumary()
+    summary.npu_compute_time_list = s.exec_time_list
     summary.report(args.batchsize, output_prefix)
-
-    #print(session.sumary())
