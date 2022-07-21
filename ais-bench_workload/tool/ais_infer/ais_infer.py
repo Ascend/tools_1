@@ -13,7 +13,9 @@ from frontend.io_oprations import (create_infileslist_from_inputs_list,
                                    create_intensors_from_infileslist,
                                    create_intensors_zerodata,
                                    get_tensor_from_files_list,
-                                   outtensors_to_host, save_tensors_to_file)
+                                   outtensors_to_host, 
+								   pure_infer_fake_file,
+								   save_tensors_to_file)
 from frontend.summary import summary
 from frontend.utils import logger
 
