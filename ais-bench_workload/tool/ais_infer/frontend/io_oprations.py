@@ -1,14 +1,15 @@
+import math
 import os
 import random
 import time
-import math
 
 import aclruntime
 import numpy as np
 
 from frontend.summary import summary
-from frontend.utils import (get_file_datasize, get_file_content, get_fileslist_from_dir, list_split,
-                   logger, save_data_to_files)
+from frontend.utils import (get_file_content, get_file_datasize,
+                            get_fileslist_from_dir, list_split, logger,
+                            save_data_to_files)
 
 pure_infer_fake_file = "pure_infer_data"
 padding_infer_fake_file = "padding_infer_fake_file"
@@ -143,15 +144,20 @@ def create_infileslist_from_inputs_list(inputs_list, intensors_desc):
 
     return infileslist
 
+def outtensors_to_host(outputs):
+    totle_laency = 0.0
+    for i, out in enumerate(outputs):
+        starttime = time.time()
+        out.to_host()
+        endtime = time.time()
+        totle_laency += float(endtime - starttime) * 1000.0  # millisecond
+    summary.d2h_latency_list.append(totle_laency)
+
 def save_tensors_to_file(outputs, output_prefix, infiles_paths, outfmt, index):
     files_count_perbatch = len(infiles_paths[0])
     infiles_perbatch = np.transpose(infiles_paths)
     logger.debug("files_count_perbatch:{} outputs count:{}".format(files_count_perbatch, len(outputs)))
     for i, out in enumerate(outputs):
-        starttime = time.time()
-        out.to_host()
-        endtime = time.time()
-        summary.d2h_latency_list.append(float(endtime - starttime) * 1000.0)  # millisecond
         ndata = np.array(out)
         if files_count_perbatch == 1 or ndata.shape[0] % files_count_perbatch == 0:
             subdata = np.array_split(ndata, files_count_perbatch)

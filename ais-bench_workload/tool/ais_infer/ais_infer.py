@@ -3,7 +3,6 @@ import asyncio
 import json
 import logging
 import os
-import shutil
 import sys
 import time
 
@@ -14,7 +13,9 @@ from frontend.io_oprations import (create_infileslist_from_inputs_list,
                                    create_intensors_from_infileslist,
                                    create_intensors_zerodata,
                                    get_tensor_from_files_list,
-                                   pure_infer_fake_file, save_tensors_to_file)
+                                   outtensors_to_host, 
+								   pure_infer_fake_file,
+								   save_tensors_to_file)
 from frontend.summary import summary
 from frontend.utils import logger
 
@@ -117,7 +118,8 @@ def infer_loop_run(session, args, intensors_desc, infileslist, outputs_names, ou
             tensor = get_tensor_from_files_list(files, args.device, intensors_desc[j].realsize, args.pure_data_type)
             intensors.append(tensor)
         outputs = run_inference(session, intensors, outputs_names)
-        if args.output != None:
+        outtensors_to_host(outputs)
+        if output_prefix != None:
             save_tensors_to_file(outputs, output_prefix, infiles, args.outfmt, i)
 
 # 先准备好数据 然后执行推理 然后统一写文件
@@ -130,8 +132,9 @@ def infer_fulltensors_run(session, args, intensors_desc, infileslist, outputs_na
         outputs = run_inference(session, inputs, outputs_names)
         outtensors.append(outputs)
 
-    if args.output != None:
-        for i, outputs in enumerate(outtensors):
+    for i, outputs in enumerate(outtensors):
+        outtensors_to_host(outputs)
+        if output_prefix != None:
             save_tensors_to_file(outputs, output_prefix, infileslist[i], args.outfmt, i)
 
 async def in_task(inque, args, intensors_desc, infileslist):
@@ -163,7 +166,9 @@ async def out_task(outque, output_prefix, args):
         if outputs == None:
             logger.debug("out_task exit")
             break
-        if args.output != None:
+
+        outtensors_to_host(outputs)
+        if output_prefix != None:
             save_tensors_to_file(outputs, output_prefix, infiles, args.outfmt, i)
 
 async def infer_pipeline_process_run(session, args, intensors_desc, infileslist, outputs_names, output_prefix):
