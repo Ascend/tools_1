@@ -164,6 +164,10 @@ def save_tensors_to_file(outputs, output_prefix, infiles_paths, outfmt, index):
             for j in range(files_count_perbatch):
                 sample_id = index*files_count_perbatch+j
                 #file_path = os.path.join(output_prefix, "input{}_output_{}.{}".format(sample_id, i, outfmt.lower()))
+                if infiles_perbatch[j][0] == padding_infer_fake_file:
+                    logger.debug("sampleid:{} i:{} infiles:{} is padding fake file so continue".format(
+                        sample_id, i, infiles_perbatch[j]))
+                    continue
                 file_path = os.path.join(output_prefix, "{}_{}.{}".format(
                     os.path.basename(infiles_perbatch[j][0]).split('.')[0], i, outfmt.lower()))
                 summary.add_sample_id_infiles(sample_id, infiles_perbatch[j])
