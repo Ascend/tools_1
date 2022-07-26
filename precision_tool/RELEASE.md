@@ -1,3 +1,7 @@
+# Release 0.1.2
+## Update
+* 适配部分dump数据格式
+
 # Release 0.1.1
 ## Features
 * 新增NpuPrintLossScaleCallBack，用于TF2.x下打印scale值
