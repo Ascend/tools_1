@@ -2,11 +2,16 @@
 declare -i ret_ok=0
 declare -i ret_invalid_args=1
 CUR_PATH=$(dirname $(readlink -f "$0"))
-. $CUR_PATH/../../../src/common/common.sh
+. $CUR_PATH/utils.sh
 set -x
 set -e
 
 main() {
+    if [ $# -lt 1 ]; then
+        echo "at least one parameter. for example: bash test.sh python3.7.5"
+        return $ret_invalid_args
+    fi
+
     PYTHON_COMMAND=$1
     MODEL_TYPE=$2
     MODEL_PATH=$3
