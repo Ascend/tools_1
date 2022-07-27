@@ -10,23 +10,23 @@ class TestClass:
 
     def get_resnet_static_om_path(self, batchsize):
         _current_dir = os.path.dirname(os.path.realpath(__file__))
-        return os.path.join(_current_dir, "../testdata/resnet50_bs{}.om".format(batchsize))
+        return os.path.join(_current_dir, "../testdata/pth_resnet50_bs{}.om".format(batchsize))
 
     def get_resnet_dymbatch_om_path(self):
         _current_dir = os.path.dirname(os.path.realpath(__file__))
-        return os.path.join(_current_dir, "../testdata/resnet50_dymbatch.om")
+        return os.path.join(_current_dir, "../testdata/pth_resnet50_dymbatch.om")
 
     def get_resnet_dymhw_om_path(self):
         _current_dir = os.path.dirname(os.path.realpath(__file__))
-        return os.path.join(_current_dir, "../testdata/resnet50_dymhw.om")
+        return os.path.join(_current_dir, "../testdata/pth_resnet50_dymwh.om")
 
     def get_resnet_dymdims_om_path(self):
         _current_dir = os.path.dirname(os.path.realpath(__file__))
-        return os.path.join(_current_dir, "../testdata/resnet50_dymdims.om")
+        return os.path.join(_current_dir, "../testdata/pth_resnet50_dymdim..om")
 
     def get_resnet_dymshape_om_path(self):
         _current_dir = os.path.dirname(os.path.realpath(__file__))
-        return os.path.join(_current_dir, "../testdata/resnet50_dymshape.om")
+        return os.path.join(_current_dir, "../testdata/pth_resnet50_dymshape.om")
 
     def test_infer_runcase_dict(self):
         device_id = 0

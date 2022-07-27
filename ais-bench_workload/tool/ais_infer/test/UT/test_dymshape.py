@@ -10,7 +10,7 @@ class TestClass:
 
     def get_resnet_dymshape_om_path(self):
         _current_dir = os.path.dirname(os.path.realpath(__file__))
-        return os.path.join(_current_dir, "../testdata/resnet50_dymshape.om")
+        return os.path.join(_current_dir, "../testdata/pth_resnet50_dymshape.om")
 
     def test_infer_dynamicshape(self):
         device_id = 0
@@ -30,8 +30,8 @@ class TestClass:
         tensor = aclruntime.Tensor(ndata)
         tensor.to_device(device_id)
 
-        outnames = [ session.get_outputs()[0].name ]
-        feeds = { session.get_inputs()[0].name : tensor}
+        outnames = [session.get_outputs()[0].name]
+        feeds = {session.get_inputs()[0].name : tensor}
 
         outputs = session.run(outnames, feeds)
         print("outputs:", outputs)

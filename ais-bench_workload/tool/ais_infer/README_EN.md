@@ -164,7 +164,7 @@ sumary:{'NPU_compute_time': {'min': 2.4385452270507812, 'max': 2.587556838989258
 | --model  | Offline model.            |
 | --input  | Model input, either binary files or directories. If this option is not included, all-0s data is generated as the model input.                  |
 | --output | Inference output directory                |
-| --outfmt | Inference output format, either TXT or BIN.      |
+| --outfmt | Inference output format. Default BIN. can be set to "NPY", "BIN" or "TXT" |
 | --loop   | (Optional) Number of inferences. Must be in the range of \[1, 255]. Defaults to 1. When profiler is set to true, you are advised to set this option to 1. |
 | --debug  | (Optional) Debug switch for printing the model description, either true or false. Defaults to false. |
 | --device --device_id   | (Optional)Specify operating equipment. Value range is [0,255]. Default 0 |

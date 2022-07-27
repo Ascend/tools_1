@@ -160,7 +160,7 @@ sumary:{'NPU_compute_time': {'min': 2.4385452270507812, 'max': 2.587556838989258
 | --model  | 需要进行推理的om模型            |
 | --input  | 模型需要的输入，支持bin文件和目录，若不加该参数，会自动生成都为0的数据                  |
 | --output | 推理数据输出路径                |
-| --outfmt | 输出数据的格式，NPY或者BIN      |
+| --outfmt | 输出数据的格式，默认”BIN“，可取值“NPY”、“BIN”、“TXT” |
 | --loop   | 推理次数，可选参数，默认1，profiler为true时，推荐为1 |
 | --debug  | 调试开关，可打印model的desc信息，true或者false，可选参数，默认false |
 | --device | 指定运行设备 [0,255]，可选参数，默认0 |
