@@ -1,12 +1,12 @@
 #!/bin/bash
 CUR_PATH=$(dirname $(readlink -f "$0"))
-try_download_url(){
+try_download_url() {
     local _url=$1
     local _packet=$2
     cmd="wget $_url --no-check-certificate -O $_packet"
     $cmd #>/dev/null 2>&1
     ret=$?
-    if [ "$ret" == 0 -a -s "$_packet" ];then
+    if [ "$ret" == 0 -a -s "$_packet" ]; then
         echo "download cmd:$cmd targetfile:$ OK"
     else
         echo "downlaod targetfile by $cmd Failed please check network or manual download to target file"
@@ -41,7 +41,7 @@ convert_staticbatch_om()
         local _pre_name=${_input_file%.*}
         local _om_path_pre="${_pre_name}_bs${batchsize}"
         local _om_path="$_om_path_pre.om"
-        if [ ! -f $_om_path ];then
+        if [ ! -f $_om_path ]; then
             local _cmd="atc --model=$_input_file --output=$_om_path_pre --framework=$_framework \
                 --input_shape=$_input_shape --soc_version=$_soc_version \
                 --input_format=NCHW --enable_small_channel=1"
@@ -66,7 +66,7 @@ convert_dymbatch_om()
     local _om_path_pre="${_pre_name}_dymbatch"
     local _om_path="$_om_path_pre.om"
 
-    if [ ! -f $_om_path ];then
+    if [ ! -f $_om_path ]; then
         local _cmd="atc --model=$_input_file --output=$_om_path_pre --framework=$_framework \
         --input_shape=$_input_shape -soc_version=$_soc_version --dynamic_batch_size=$_dymbatch \
         --input_format=NCHW --enable_small_channel=1"
@@ -90,7 +90,7 @@ convert_dymhw_om()
     local _om_path_pre="${_pre_name}_dymwh"
     local _om_path="$_om_path_pre.om"
 
-    if [ ! -f $_om_path ];then
+    if [ ! -f $_om_path ]; then
         local _cmd="atc --model=$_input_file --output=$_om_path_pre --framework=$_framework \
         --input_shape=$_input_shape -soc_version=$_soc_version --dynamic_image_size=$_dymhw
         --input_format=NCHW --enable_small_channel=1"
@@ -114,7 +114,7 @@ convert_dymdim_om()
     local _om_path_pre="${_pre_name}_dymdim"
     local _om_path="$_om_path_pre.om"
 
-    if [ ! -f $_om_path ];then
+    if [ ! -f $_om_path ]; then
         local _cmd="atc --model=$_input_file --output=$_om_path_pre --framework=$_framework \
             --input_shape=$_input_shape -soc_version=$_soc_version --input_format=ND --dynamic_dims=$_dymdim \
             --enable_small_channel=1"
@@ -137,7 +137,7 @@ convert_dymshape_om()
     local _om_path_pre="${_pre_name}_dymshape"
     local _om_path="$_om_path_pre.om"
 
-    if [ ! -f $_om_path ];then
+    if [ ! -f $_om_path ]; then
         local _cmd="atc --model=$_input_file --output=$_om_path_pre --framework=$_framework \
             --input_shape_range=$_input_tensor_name:$_dymshapes --soc_version=$_soc_version \
             --input_format=NCHW --enable_small_channel=1"

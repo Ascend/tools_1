@@ -13,8 +13,6 @@ main() {
     fi
 
     PYTHON_COMMAND=$1
-    MODEL_TYPE=$2
-    MODEL_PATH=$3
     DATA_PATH=$4
 
     if [ -f /usr/local/Ascend/nnae/set_env.sh ]; then
