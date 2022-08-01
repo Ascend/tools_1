@@ -21,6 +21,8 @@ pre_process()
     mkdir -p $base_path$device_stackcore_path
 
     mkdir -p $base_path$host_cann_log_path
+    mkdir -p $base_path$host_cann_debug_log_path
+    mkdir -p $base_path$host_cann_run_log_path
     mkdir -p $base_path$host_driver_log_path
     mkdir -p $base_path$device_aicpu_path
     mkdir -p $base_path$device_driver_path
