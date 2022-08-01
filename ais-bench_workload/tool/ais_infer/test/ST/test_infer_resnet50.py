@@ -21,7 +21,6 @@ class TestClass():
         print('\n ---class level teardown_class')
 
     def init(self):
-        self.default_device_id = 0
         self.model_name = self.get_model_name(self)
         self.cmd_prefix = TestCommonClass.get_cmd_prefix()
         self.base_path = TestCommonClass.get_basepath()
@@ -102,10 +101,9 @@ class TestClass():
         return os.path.join(self.model_base_path, "model", "pth_resnet50_dymshape.om")
 
     def get_om_size(self, model_path):
+        device_id = 0
         options = aclruntime.session_options()
-        options.log_level = 1
-        session = aclruntime.InferenceSession(model_path, self.default_device_id, options)
-
+        session = aclruntime.InferenceSession(model_path, device_id, options)
         intensors_desc = session.get_inputs()
         return intensors_desc[0].realsize
 
@@ -113,58 +111,57 @@ class TestClass():
         """
         batch size 1,2,4,8
         """
+        device_id = 0
         batch_list = [1, 2, 4, 8]
-        ret = 0
+
         for _, batchsize in enumerate(batch_list):
             model_path = self.get_static_om_path(batchsize)
-            cmd = "{} --model {} --device {}".format(self.cmd_prefix, model_path, self.default_device_id)
+            cmd = "{} --model {} --device {}".format(self.cmd_prefix, model_path, device_id)
             cmd = "{} --output {}".format(cmd, self.output_path)
-            ret += os.system(cmd)
-        assert ret == 0
+            ret = os.system(cmd)
+            assert ret == 0
 
     def test_pure_inference_normal_dynamic_batch(self):
+        device_id = 0
         batch_list = [1, 2, 4, 8]
-        ret = 0
         model_path = self.get_dynamic_batch_om_path()
         for _, dys_batch_size in enumerate(batch_list):
-            cmd = "{} --model {} --device {} --dymBatch {}".format(self.cmd_prefix, model_path, self.default_device_id, dys_batch_size)
+            cmd = "{} --model {} --device {} --dymBatch {}".format(self.cmd_prefix, model_path, device_id,
+                                                                   dys_batch_size)
             cmd = "{} --output {}".format(cmd, self.output_path)
-            ret += os.system(cmd)
-
-        assert ret == 0
+            ret = os.system(cmd)
+            assert ret == 0
 
     def test_pure_inference_normal_dynamic_hw(self):
+        device_id = 0
         batch_list = ["224,224", "448,448"]
-        ret = 0
         model_path = self.get_dynamic_hw_om_path()
         for _, dym_hw in enumerate(batch_list):
-            cmd = "{} --model {} --device {} --dymHW {}".format(self.cmd_prefix, model_path, self.default_device_id, dym_hw)
+            cmd = "{} --model {} --device {} --dymHW {}".format(self.cmd_prefix, model_path, device_id, dym_hw)
             cmd = "{} --output {}".format(cmd, self.output_path)
-            ret += os.system(cmd)
-
-        assert ret == 0
+            ret = os.system(cmd)
+            assert ret == 0
 
     def test_pure_inference_normal_dynamic_dims(self):
+        device_id = 0
         batch_list = ["actual_input_1:1,3,224,224", "actual_input_1:8,3,448,448"]
-        ret = 0
+
         model_path = self.get_dynamic_dim_om_path()
         for _, dym_dims in enumerate(batch_list):
-            cmd = "{} --model {} --device {} --dymDims {}".format(self.cmd_prefix, model_path, self.default_device_id, dym_dims)
+            cmd = "{} --model {} --device {} --dymDims {}".format(self.cmd_prefix, model_path, device_id, dym_dims)
             cmd = "{} --output {}".format(cmd, self.output_path)
-            ret += os.system(cmd)
-
-        assert ret == 0
+            ret = os.system(cmd)
+            assert ret == 0
 
     def test_pure_inference_normal_dynamic_shape(self):
+        device_id = 0
         dym_shape = "actual_input_1:1,3,224,224"
         output_size = 10000
         model_path = self.get_dynamic_shape_om_path()
         cmd = "{} --model {} --device {} --outputSize {} --dymShape {} ".format(self.cmd_prefix, model_path,
-                                                                                self.default_device_id, output_size,
-                                                                                dym_shape)
+                                                                                device_id, output_size, dym_shape)
         cmd = "{} --output {}".format(cmd, self.output_path)
         ret = os.system(cmd)
-
         assert ret == 0
 
     def test_general_inference_normal_static_batch(self):
@@ -172,28 +169,30 @@ class TestClass():
         input_size = self.get_om_size(static_model_path)
         input_path = self.get_inputs_path(input_size, self.output_file_num)
         batch_list = [1, 2, 4, 8]
-        ret = 0
+        device_id = 0
+
         for _, batchsize in enumerate(batch_list):
             model_path = self.get_static_om_path(batchsize)
-            cmd = "{} --model {} --device {} --input {}".format(self.cmd_prefix, model_path, self.default_device_id, input_path)
+            cmd = "{} --model {} --device {} --input {}".format(self.cmd_prefix, model_path, device_id, input_path)
             cmd = "{} --output {}".format(cmd, self.output_path)
-            ret += os.system(cmd)
-
-        assert ret == 0
+            ret = os.system(cmd)
+            assert ret == 0
 
     def test_general_inference_normal_dynamic_batch(self):
         static_model_path = self.get_static_om_path(self.static_batch_size)
         input_size = self.get_om_size(static_model_path)
         input_path = self.get_inputs_path(input_size, self.output_file_num)
         batch_list = [1, 2, 4, 8]
-        ret = 0
+        device_id = 0
+
         for _, dys_batch_size in enumerate(batch_list):
             model_path = self.get_dynamic_batch_om_path()
-            cmd = "{} --model {} --device {} --dymBatch {} --input {}".format(self.cmd_prefix, model_path, self.default_device_id, dys_batch_size, input_path)
+            cmd = "{} --model {} --device {} --dymBatch {} --input {}".format(self.cmd_prefix, model_path,
+                                                                              device_id, dys_batch_size,
+                                                                              input_path)
             cmd = "{} --output {}".format(cmd, self.output_path)
-            ret += os.system(cmd)
-
-        assert ret == 0
+            ret = os.system(cmd)
+            assert ret == 0
 
 
 if __name__ == '__main__':
