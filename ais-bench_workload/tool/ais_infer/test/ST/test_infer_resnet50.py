@@ -22,7 +22,6 @@ class TestClass():
 
     def init(self):
         self.default_device_id = 0
-        self._current_dir = os.path.dirname(os.path.realpath(__file__))
         self.model_name = self.get_model_name(self)
         self.cmd_prefix = TestCommonClass.get_cmd_prefix()
         self.base_path = TestCommonClass.get_basepath()
