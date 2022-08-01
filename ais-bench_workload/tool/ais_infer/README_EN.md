@@ -75,7 +75,7 @@ root@root:/home/aclruntime-aarch64# source  /usr/local/Ascend/ascend-toolkit/set
 
 ## Usage Examples
 
- ### Pure referencing scenario. Fake data (all 0s) is constructed and fed to the model for inference.
+ ### Pure inference scenario. Fake data (all 0s) is constructed and fed to the model for inference.
 ```
 python3.7.5 ais_infer.py  --model /home/model/resnet50_v1.om --output ./ --outfmt BIN --loop 5
 ```
