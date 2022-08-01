@@ -51,6 +51,7 @@ OP_DEBUG_DECODE_PATTERN = r"Opdebug\.Node_OpDebug\.([0-9]+)(\.[0-9]+)?\.([0-9]{1
 VECTOR_COMPARE_RESULT_PATTERN = r"result_([0-9]{1,255})\.csv"
 TIMESTAMP_DIR_PATTERN = '[0-9]{1,255}'
 NUMPY_PATTERN = r".*\.npy$"
+H5_PATTERN = r".*\.h5$"
 CSV_SHUFFIX = '.csv'
 NUMPY_SHUFFIX = '.npy'
 CKPT_META_SHUFFIX = r".*.meta$"
@@ -232,6 +233,10 @@ class Util(object):
     def list_numpy_files(self, path, extern_pattern=''):
         return self._list_file_with_pattern(path, NUMPY_PATTERN, extern_pattern,
                                             self._gen_numpy_file_info)
+
+    def list_h5_files(self, path, extern_pattern=''):
+        return self._list_file_with_pattern(path, H5_PATTERN, extern_pattern,
+                                            self._gen_file_info)
 
     def create_dir(self, path):
         """Create dir if not exist
@@ -478,6 +483,10 @@ class Util(object):
 
     @staticmethod
     def _gen_numpy_file_info(name, math, dir_path):
+        return FileDesc(name, dir_path)
+
+    @staticmethod
+    def _gen_file_info(name, math, dir_path):
         return FileDesc(name, dir_path)
 
     @staticmethod

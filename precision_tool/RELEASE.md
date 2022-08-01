@@ -1,3 +1,7 @@
+# Release 0.1.3
+## Update
+* 支持解析Torch Dump的H5数据
+
 # Release 0.1.2
 ## Update
 * 适配部分dump数据格式
