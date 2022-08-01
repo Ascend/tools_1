@@ -1,5 +1,7 @@
 #!/bin/bash
 CUR_PATH=$(dirname $(readlink -f "$0"))
+MODEL_PATH=$CUR_PATH/testdata/resnet50/model
+
 try_download_url() {
     local _url=$1
     local _packet=$2
@@ -48,6 +50,7 @@ convert_staticbatch_om()
             [ "$_aippconfig" != "" ] && _cmd="$_cmd --insert_op_conf=$_aippconfig"
             $_cmd || { echo "atc run $_cmd failed"; return 1; }
         fi
+        cp $_om_path $MODEL_PATH
     done
 }
 
@@ -73,6 +76,7 @@ convert_dymbatch_om()
         [ "$_aippconfig" != "" ] && _cmd="$_cmd --insert_op_conf=$_aippconfig"
         $_cmd || { echo "atc run $_cmd failed"; return 1; }
     fi
+    cp $_om_path $MODEL_PATH
 }
 
 # 动态宽高 转换
@@ -97,6 +101,7 @@ convert_dymhw_om()
         [ "$_aippconfig" != "" ] && _cmd="$_cmd --insert_op_conf=$_aippconfig"
         $_cmd || { echo "atc run $_cmd failed"; return 1; }
     fi
+    cp $_om_path $MODEL_PATH
 }
 
 # 动态dims转换
@@ -121,6 +126,7 @@ convert_dymdim_om()
         [ "$_aippconfig" != "" ] && _cmd="$_cmd --insert_op_conf=$_aippconfig"
         $_cmd || { echo "atc run $_cmd failed"; return 1; }
     fi
+    cp $_om_path $MODEL_PATH
 }
 
 # 动态shape转换
@@ -144,6 +150,7 @@ convert_dymshape_om()
         [ "$_aippconfig" != "" ] && _cmd="$_cmd --insert_op_conf=$_aippconfig"
         $_cmd || { echo "atc run $_cmd failed"; return 1; }
     fi
+    cp $_om_path $MODEL_PATH
 }
 
 main()
@@ -152,6 +159,7 @@ main()
     PYTHON_COMMAND="python3.7.5"
     TESTDATA_PATH=$CUR_PATH/testdata/
     [ -d $TESTDATA_PATH ] || mkdir $TESTDATA_PATH
+    [ -d $MODEL_PATH ] || mkdir -p $MODEL_PATH
 
     model_url="https://download.pytorch.org/models/resnet50-0676ba61.pth"
     resnet_pth_file="$TESTDATA_PATH/pth_resnet50.pth"
