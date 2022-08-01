@@ -2,6 +2,7 @@ import os
 import sys
 import pytest
 import random
+import shutil
 import numpy as np
 import aclruntime
 from test_common import TestCommonClass
@@ -24,11 +25,8 @@ class TestClass():
         self._current_dir = os.path.dirname(os.path.realpath(__file__))
         self.model_name = self.get_model_name(self)
         self.cmd_prefix = TestCommonClass.get_cmd_prefix()
-        self.basepath = TestCommonClass.get_basepath()
-        self.model_test_path = self.get_model_test_path(self)
-        self.model_base_path = os.path.join(self.model_test_path, "model")
-        self.aipp_model_base_size = self.get_aipp_model_basesize(self)
-        self.no_aipp_model_base_size = self.get_no_aipp_model_basesize(self)
+        self.base_path = TestCommonClass.get_basepath()
+        self.model_base_path = self.get_model_base_path(self)
         self.output_path = self.get_output_path(self)
         self.output_file_num = 5
         self.static_batch_size = 1
@@ -36,35 +34,25 @@ class TestClass():
     def get_model_name(self):
         return "resnet50"
 
-    def get_model_test_path(self):
+    def get_model_base_path(self):
         """
         supported model names as resnet50, resnet101,...。folder struct as follows
         testdata
-        ├── resnet101
-        │   ├── input
-        │   ├── model
-        │   └── output
-        ├── resnet50
+         └── resnet50   # model base
             ├── input
             ├── model
             └── output
         """
-        return os.path.join(self.basepath, self.model_name)
+        return os.path.join(self.base_path, self.model_name)
 
     def get_output_path(self):
-        return os.path.join(self.model_test_path, "output")
-
-    def get_aipp_model_basesize(self):
-        return ""
-
-    def get_no_aipp_model_basesize(self):
-        return ""
+        return os.path.join(self.model_base_path, "output")
 
     def get_static_om_path(self, batchsize):
-        return os.path.join(self.model_base_path, "pth_resnet50_bs{}.om".format(batchsize))
+        return os.path.join(self.model_base_path, "model", "pth_resnet50_bs{}.om".format(batchsize))
 
-    def get_inputs_file(self, input_path, size):
-        # 如果文件存在 就返回
+    def create_inputs_file(self, input_path, size):
+        # create
         file_path = os.path.join(input_path, "{}.bin".format(size))
         lst = [random.randrange(0, 256) for _ in range(size)]
         barray = bytearray(lst)
@@ -73,36 +61,46 @@ class TestClass():
         return file_path
 
     def get_inputs_path(self, size, input_file_num):
-        _current_dir = os.path.dirname(os.path.realpath(__file__))
-        input_path = os.path.join(_current_dir, "../testdata/resnet50", "{}".format(size))
+        input_path = os.path.join(self.model_base_path, "input", str(size))
         if not os.path.exists(input_path):
             os.makedirs(input_path)
 
-        # first create and other soft link
-        self.get_inputs_file(input_path, size)
+        base_size_file_path = os.path.join(input_path, "{}.bin".format(size))
+        if not os.path.exists(base_size_file_path):
+            self.create_inputs_file(input_path, size)
 
-        base_file_path = os.path.join(input_path, "{}.bin".format(size))
-        if input_file_num > 1:
-            for i in range(input_file_num - 1):
-                file_name = "{}-{}.bin".format(size, i + 1)
-                file_path = os.path.join(input_path, file_name)
-                if not os.path.exists(file_path):
-                    cmd = "cd {}; ln -s {} {}".format(input_path, base_file_path, file_name)
-                    os.system(cmd)
+        size_folder_path = os.path.join(input_path, str(input_file_num))
 
-        return input_path
+        if os.path.exists(size_folder_path):
+            if len(os.listdir(size_folder_path)) == input_file_num:
+                return size_folder_path
+            else:
+                shutil.rmtree(size_folder_path)
+
+        # create soft link to base_size_file
+        os.mkdir(size_folder_path)
+        strs = ["cd {}".format(size_folder_path)]
+        for i in range(input_file_num):
+            file_name = "{}-{}.bin".format(size, i)
+            file_path = os.path.join(size_folder_path, file_name)
+            strs.append("ln -s {} {}".format(base_size_file_path, file_path))
+
+        cmd = ';'.join(strs)
+        os.system(cmd)
+
+        return size_folder_path
 
     def get_dynamic_batch_om_path(self):
-        return os.path.join(self.model_base_path, "pth_resnet50_dymbatch.om")
+        return os.path.join(self.model_base_path, "model", "pth_resnet50_dymbatch.om")
 
     def get_dynamic_hw_om_path(self):
-        return os.path.join(self.model_base_path, "pth_resnet50_dymwh.om")
+        return os.path.join(self.model_base_path, "model", "pth_resnet50_dymwh.om")
 
     def get_dynamic_dim_om_path(self):
-        return os.path.join(self.model_base_path, "pth_resnet50_dymdim.om")
+        return os.path.join(self.model_base_path, "model", "pth_resnet50_dymdim.om")
 
     def get_dynamic_shape_om_path(self):
-        return os.path.join(self.model_base_path, "pth_resnet50_dymshape.om")
+        return os.path.join(self.model_base_path, "model", "pth_resnet50_dymshape.om")
 
     def get_om_size(self, model_path):
         options = aclruntime.session_options()
@@ -162,7 +160,9 @@ class TestClass():
         dym_shape = "actual_input_1:1,3,224,224"
         output_size = 10000
         model_path = self.get_dynamic_shape_om_path()
-        cmd = "{} --model {} --device {} --outputSize {} --dymShape {} ".format(self.cmd_prefix, model_path, self.default_device_id, output_size, dym_shape)
+        cmd = "{} --model {} --device {} --outputSize {} --dymShape {} ".format(self.cmd_prefix, model_path,
+                                                                                self.default_device_id, output_size,
+                                                                                dym_shape)
         cmd = "{} --output {}".format(cmd, self.output_path)
         ret = os.system(cmd)
 
