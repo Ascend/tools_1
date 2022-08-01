@@ -28,7 +28,6 @@ class TestClass():
         self.model_base_path = self.get_model_base_path(self)
         self.output_path = self.get_output_path(self)
         self.output_file_num = 5
-        self.static_batch_size = 1
 
     def get_model_name(self):
         return "resnet50"
@@ -156,7 +155,8 @@ class TestClass():
         assert ret == 0
 
     def test_general_inference_normal_static_batch(self):
-        static_model_path = self.get_static_om_path(self.static_batch_size)
+        batch_size = 1
+        static_model_path = self.get_static_om_path(batch_size)
         input_size = self.get_om_size(static_model_path)
         input_path = self.get_inputs_path(input_size, self.output_file_num)
         batch_list = [1, 2, 4, 8]
@@ -169,7 +169,8 @@ class TestClass():
             assert ret == 0
 
     def test_general_inference_normal_dynamic_batch(self):
-        static_model_path = self.get_static_om_path(self.static_batch_size)
+        batch_size = 1
+        static_model_path = self.get_static_om_path(batch_size)
         input_size = self.get_om_size(static_model_path)
         input_path = self.get_inputs_path(input_size, self.output_file_num)
         batch_list = [1, 2, 4, 8]
