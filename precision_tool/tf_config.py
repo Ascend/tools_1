@@ -16,7 +16,10 @@ def seed_everything(seed=cfg.DUMP_SEED):
     """
     os.environ['PYTHONHASHSEED'] = str(seed)
     random.seed(seed)
-    tf.compact.v1.random.set_random_seed(seed)
+    if hasattr(tf.random, 'set_seed'):
+        tf.random.set_seed(seed)
+    elif hasattr(tf.random, 'set_random_seed'):
+        tf.random.set_random_seed(seed)
     print("[PrecisionTool] Set Tensorflow random seed to %d success." % seed)
     try:
         import numpy as np
