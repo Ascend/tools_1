@@ -1,9 +1,5 @@
 import os
-import sys
 import pytest
-import random
-import shutil
-import numpy as np
 import aclruntime
 from test_common import TestCommonClass
 
@@ -46,48 +42,6 @@ class TestClass():
     def get_output_path(self):
         return os.path.join(self.model_base_path, "output")
 
-    def get_static_om_path(self, batchsize):
-        return os.path.join(self.model_base_path, "model", "pth_resnet50_bs{}.om".format(batchsize))
-
-    def create_inputs_file(self, input_path, size):
-        # create
-        file_path = os.path.join(input_path, "{}.bin".format(size))
-        lst = [random.randrange(0, 256) for _ in range(size)]
-        barray = bytearray(lst)
-        ndata = np.frombuffer(barray, dtype=np.uint8)
-        ndata.tofile(file_path)
-        return file_path
-
-    def get_inputs_path(self, size, input_file_num):
-        input_path = os.path.join(self.model_base_path, "input", str(size))
-        if not os.path.exists(input_path):
-            os.makedirs(input_path)
-
-        base_size_file_path = os.path.join(input_path, "{}.bin".format(size))
-        if not os.path.exists(base_size_file_path):
-            self.create_inputs_file(input_path, size)
-
-        size_folder_path = os.path.join(input_path, str(input_file_num))
-
-        if os.path.exists(size_folder_path):
-            if len(os.listdir(size_folder_path)) == input_file_num:
-                return size_folder_path
-            else:
-                shutil.rmtree(size_folder_path)
-
-        # create soft link to base_size_file
-        os.mkdir(size_folder_path)
-        strs = ["cd {}".format(size_folder_path)]
-        for i in range(input_file_num):
-            file_name = "{}-{}.bin".format(size, i)
-            file_path = os.path.join(size_folder_path, file_name)
-            strs.append("ln -s {} {}".format(base_size_file_path, file_path))
-
-        cmd = ';'.join(strs)
-        os.system(cmd)
-
-        return size_folder_path
-
     def get_dynamic_batch_om_path(self):
         return os.path.join(self.model_base_path, "model", "pth_resnet50_dymbatch.om")
 
@@ -113,7 +67,7 @@ class TestClass():
         batch_list = [1, 2, 4, 8]
 
         for _, batchsize in enumerate(batch_list):
-            model_path = self.get_static_om_path(batchsize)
+            model_path = TestCommonClass.get_resnet_static_om_path(batchsize)
             cmd = "{} --model {} --device {}".format(self.cmd_prefix, model_path, self.default_device_id)
             ret = os.system(cmd)
             assert ret == 0
@@ -156,13 +110,14 @@ class TestClass():
 
     def test_general_inference_normal_static_batch(self):
         batch_size = 1
-        static_model_path = self.get_static_om_path(batch_size)
+        static_model_path = TestCommonClass.get_resnet_static_om_path(batch_size)
         input_size = self.get_om_size(static_model_path)
-        input_path = self.get_inputs_path(input_size, self.output_file_num)
+        input_path = TestCommonClass.get_inputs_path(input_size, os.path.join(self.model_base_path, "input"),
+                                                     self.output_file_num)
         batch_list = [1, 2, 4, 8]
 
         for _, batchsize in enumerate(batch_list):
-            model_path = self.get_static_om_path(batchsize)
+            model_path = TestCommonClass.get_resnet_static_om_path(batchsize)
             cmd = "{} --model {} --device {} --input {}".format(self.cmd_prefix, model_path, self.default_device_id,
                                                                 input_path)
             ret = os.system(cmd)
@@ -170,9 +125,10 @@ class TestClass():
 
     def test_general_inference_normal_dynamic_batch(self):
         batch_size = 1
-        static_model_path = self.get_static_om_path(batch_size)
+        static_model_path = TestCommonClass.get_resnet_static_om_path(batch_size)
         input_size = self.get_om_size(static_model_path)
-        input_path = self.get_inputs_path(input_size, self.output_file_num)
+        input_path = TestCommonClass.get_inputs_path(input_size, os.path.join(self.model_base_path, "input"),
+                                                     self.output_file_num)
         batch_list = [1, 2, 4, 8]
 
         for _, dys_batch_size in enumerate(batch_list):
@@ -185,4 +141,4 @@ class TestClass():
 
 
 if __name__ == '__main__':
-    pytest.main(['test_infer.py'])
+    pytest.main(['test_infer_resnet50.py', '-vs'])

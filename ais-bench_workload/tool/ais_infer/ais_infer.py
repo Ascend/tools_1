@@ -212,6 +212,10 @@ def get_args():
 
     args = parser.parse_args()
 
+    if args.loop < 1:
+        logger.error("parameter --loopMust be a positive integer, please check it!\n")
+        raise RuntimeError('error bad parameters --loop')
+
     if args.profiler is True and args.dump is True:
         logger.error("parameter --profiler cannot be true at the same time as parameter --dump, please check them!\n")
         raise RuntimeError('error bad parameters --profiler and --dump')

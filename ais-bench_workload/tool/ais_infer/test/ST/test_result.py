@@ -1,22 +1,36 @@
 import os
 import sys
-import os
+
 import pytest
+from test_common import TestCommonClass
+
 
 class TestClass:
-    def get_cmd_prefix(self):
-        _current_dir = os.path.dirname(os.path.realpath(__file__))
-        return sys.executable + " " + os.path.join(_current_dir, "../../ais_infer.py")
+    @classmethod
+    def setup_class(cls):
+        """
+        class level setup_class
+        """
+        cls.init(TestClass)
 
-    def get_resnet_static_om_path(self, batchsize):
-        _current_dir = os.path.dirname(os.path.realpath(__file__))
-        return os.path.join(_current_dir, "../testdata/pth_resnet50_bs{}.om".format(batchsize))
+    @classmethod
+    def teardown_class(cls):
+        print('\n ---class level teardown_class')
+
+    def init(self):
+        self.default_device_id = 0
+        self._current_dir = os.path.dirname(os.path.realpath(__file__))
+        self.cmd_prefix = TestCommonClass.get_cmd_prefix()
+        self.base_path = TestCommonClass.get_basepath()
 
     def test_args_ok(self):
-        device_id = 0
-        model_path = self.get_resnet_static_om_path(1)
-        cmd = "{} --model {} --device {}".format(self.get_cmd_prefix(), model_path, device_id)
-        _current_dir = os.path.dirname(os.path.realpath(__file__))
-        cmd = "{} --output {}".format(cmd, _current_dir)
+        batchsize = 1
+        model_path = TestCommonClass.get_resnet_static_om_path(batchsize)
+        cmd = "{} --model {} --device {}".format(self.cmd_prefix, model_path, self.default_device_id)
+        cmd = "{} --output {}".format(cmd, self._current_dir)
         ret = os.system(cmd)
         assert ret == 0
+
+
+if __name__ == '__main__':
+    pytest.main(['test_result.py', '-vs'])
