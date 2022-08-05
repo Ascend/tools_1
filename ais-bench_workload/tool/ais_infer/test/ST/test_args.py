@@ -73,8 +73,7 @@ class TestClass:
         loops = [-3, 0]
         for _, loop_num in enumerate(loops):
             cmd = "{} --model {} --device {} --loop {}".format(TestCommonClass.cmd_prefix, model_path,
-                                                                                 TestCommonClass.default_device_id,
-                                                                                 loop_num)
+                                                               TestCommonClass.default_device_id, loop_num)
             ret = os.system(cmd)
             assert ret != 0
 
@@ -182,8 +181,8 @@ class TestClass:
         assert ret == 0
 
         paths = os.listdir(output_path)
-        sumary_path = os.path.join(output_path, paths[0], "sumary.json")
-        assert os.path.exists(sumary_path)
+        bin_path = os.path.join(output_path, paths[0], "pure_infer_data_0.bin")
+        assert os.path.exists(bin_path)
 
     def test_args_acljson_ok(self):
         model_path = TestCommonClass.get_model_static_om_path(1, self.model_name)
@@ -224,10 +223,16 @@ class TestClass:
                                                              output_path)
         ret = os.system(cmd)
         assert ret == 0
+        paths = os.listdir(output_path)
+        bin_path = os.path.join(output_path, paths[0], "pure_infer_data_0.bin")
+        assert os.path.exists(bin_path)
 
     def test_args_outfmt_ok(self):
         """test supported output file suffix cases
         there are two output files and one file with given suffix in output folder path.
+        2022_08_05-10_37_41
+        |-- pure_infer_data_0.bin
+        `-- sumary.json
         """
         model_path = TestCommonClass.get_model_static_om_path(1, self.model_name)
 
@@ -244,8 +249,9 @@ class TestClass:
             assert ret == 0
 
             paths = os.listdir(output_path)
-            sumary_path = os.path.join(output_path, paths[0], "sumary.json")
-            assert os.path.exists(sumary_path)
+            suffix_file_path = os.path.join(output_path, paths[0],
+                                            "pure_infer_data_0.{}".format(output_file_suffix.lower()))
+            assert os.path.exists(suffix_file_path)
 
 
 if __name__ == '__main__':
