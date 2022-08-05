@@ -18,16 +18,15 @@ class TestClass:
         print('\n ---class level teardown_class')
 
     def init(self):
-        self.default_device_id = 0
-        self._current_dir = os.path.dirname(os.path.realpath(__file__))
-        self.cmd_prefix = TestCommonClass.get_cmd_prefix()
-        self.base_path = TestCommonClass.get_basepath()
+        self.model_name = "resnet50"
 
     def test_args_ok(self):
-        batchsize = 1
-        model_path = TestCommonClass.get_resnet_static_om_path(batchsize)
-        cmd = "{} --model {} --device {}".format(self.cmd_prefix, model_path, self.default_device_id)
-        cmd = "{} --output {}".format(cmd, self._current_dir)
+        output_path = os.path.join(TestCommonClass.base_path, "tmp")
+        TestCommonClass.prepare_dir(output_path)
+        model_path = TestCommonClass.get_model_static_om_path(2, self.model_name)
+        cmd = "{} --model {} --device {}".format(TestCommonClass.cmd_prefix, model_path,
+                                                 TestCommonClass.default_device_id)
+        cmd = "{} --output {}".format(cmd, output_path)
         ret = os.system(cmd)
         assert ret == 0
 

@@ -7,6 +7,10 @@ import numpy as np
 
 
 class TestCommonClass:
+    default_device_id = 0
+    cmd_prefix = sys.executable + " " + os.path.join(os.path.dirname(os.path.realpath(__file__)), "../ais_infer.py")
+    base_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../test/testdata")
+
     @staticmethod
     def get_cmd_prefix():
         _current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -56,7 +60,7 @@ class TestCommonClass:
 
         # create soft link to base_size_file
         os.mkdir(size_folder_path)
-        strs = ["cd {}".format(size_folder_path)]
+        strs = []
         for i in range(input_file_num):
             file_name = "{}-{}.bin".format(size, i)
             file_path = os.path.join(size_folder_path, file_name)
@@ -68,6 +72,12 @@ class TestCommonClass:
         return size_folder_path
 
     @classmethod
-    def get_resnet_static_om_path(cls, batchsize):
+    def get_model_static_om_path(cls, batchsize, modelname):
         base_path = cls.get_basepath()
-        return os.path.join(base_path, "resnet50/model", "pth_resnet50_bs{}.om".format(batchsize))
+        return os.path.join(base_path, "{}/model".format(modelname), "pth_{}_bs{}.om".format(modelname, batchsize))
+
+    @staticmethod
+    def prepare_dir(target_folder_path):
+        if os.path.exists(target_folder_path):
+            shutil.rmtree(target_folder_path)
+        os.makedirs(target_folder_path)
