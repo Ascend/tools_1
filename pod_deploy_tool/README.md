@@ -16,7 +16,7 @@
 ## 目录文件说明
 1. pod_deploy.sh: 命令执行执行入口脚本
 2. pod_deploy.py: 解析pod配置文件信息，建立mqtt客户端将操作信息发送给edge_core进行处理
-3. pod.yaml: pod示例配置文件 
+3. pod.yaml: pod示例配置文件，用户根据需要自行修改
 4. README.md: 帮助指导
 
 
