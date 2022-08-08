@@ -190,13 +190,21 @@ def str2bool(v):
     else:
         raise argparse.ArgumentTypeError('Boolean value expected.')
 
+
+def check_positive_integer(value):
+    ivalue = int(value)
+    if ivalue <= 0:
+        raise argparse.ArgumentTypeError("%s is an invalid positive int value" % value)
+    return ivalue
+
+
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", "--om", required=True, help="the path of the om model")
     parser.add_argument("--input", "-i", default=None, help="input file or dir")
     parser.add_argument("--output", "-o", default=None, help="output")
     parser.add_argument("--outfmt", default="BIN", choices=["NPY", "BIN", "TXT"], help="Output file format (NPY or BIN or TXT)")
-    parser.add_argument("--loop", "-r", type=int, default=1, help="the round of the PrueInfer.")
+    parser.add_argument("--loop", "-r", type=check_positive_integer, default=1, help="the round of the PrueInfer.")
     parser.add_argument("--debug", type=str2bool, default=False, help="Debug switch,print model information")
     parser.add_argument("--device", "--device", type=int, default=0, choices=range(0, 255), help="the NPU device ID to use")
     parser.add_argument("--dymBatch", type=int, default=0, help="dynamic batch size param，such as --dymBatch 2")
