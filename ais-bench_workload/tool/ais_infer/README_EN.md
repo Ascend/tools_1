@@ -163,7 +163,8 @@ sumary:{'NPU_compute_time': {'min': 2.4385452270507812, 'max': 2.587556838989258
 | -------- | ------------------------------- |
 | --model  | Offline model.            |
 | --input  | Model input, either binary files or directories. If this option is not included, all-0s data is generated as the model input.                  |
-| --output | Inference output directory                |
+| --output | Inference output directory. The inference results are output to the subdirectory named current date under given output path                |
+| --output_dirname | (Optional) Actual output directory name.  Used with parameter output, cannot be used alone. The inference result is output to  subdirectory named by output_dirname under  output path. such as --output_dirname 'tmp', the final inference results are output to the folder of  {$output}/tmp"              |
 | --outfmt | Inference output format. Default BIN. can be set to "NPY", "BIN" or "TXT" |
 | --loop   | (Optional) Number of inferences. Must be in the range of \[1, 255]. Defaults to 1. When profiler is set to true, you are advised to set this option to 1. |
 | --debug  | (Optional) Debug switch for printing the model description, either true or false. Defaults to false. |
@@ -178,5 +179,5 @@ sumary:{'NPU_compute_time': {'min': 2.4385452270507812, 'max': 2.587556838989258
 | --profiler | (Optional)profiler switch。either true or false. Defaults to false.<br>--Output parameter must be provided. The profiler data is in the profiler folder under the directory specified by the --output parameter. Cannot be true at the same time as --dump      |
 | --dump | (Optional)dump switch。either true or false. Defaults to false.<br>--Output parameter must be provided. Dump data is in the dump folder under the directory specified by the --output parameter. Cannot be true at the same time as --profiler      |
 | --acl_json_path | Acl json file. For profiling or dump scenarios.When this parameter is set, -dump and --profiler parameters are invalid. |
-| --maxqueue | maximum number of reference queues. Default 20 |
+| --maxqueue | Maximum number of data in inference queue. Default 20 |
 | --help| Help information.                  |

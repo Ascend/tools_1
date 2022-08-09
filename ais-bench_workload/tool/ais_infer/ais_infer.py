@@ -202,7 +202,8 @@ def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", "--om", required=True, help="the path of the om model")
     parser.add_argument("--input", "-i", default=None, help="input file or dir")
-    parser.add_argument("--output", "-o", default=None, help="output")
+    parser.add_argument("--output", "-o", default=None, help="Inference data output path. The inference results are output to the subdirectory named current date under given output path")
+    parser.add_argument("--output_dirname", type=str, default=None, help="actual output directory name. Used with parameter output, cannot be used alone. The inference result is output to  subdirectory named by output_dirname under  output path. such as --output_dirname 'tmp', the final inference results are output to the folder of  {$output}/tmp")
     parser.add_argument("--outfmt", default="BIN", choices=["NPY", "BIN", "TXT"], help="Output file format (NPY or BIN or TXT)")
     parser.add_argument("--loop", "-r", type=check_positive_integer, default=1, help="the round of the PrueInfer.")
     parser.add_argument("--debug", type=str2bool, default=False, help="Debug switch,print model information")
@@ -217,10 +218,13 @@ def get_args():
     parser.add_argument("--profiler", action="store_true", default=False, help="profiler switch")
     parser.add_argument("--dump", action="store_true", default=False, help="dump switch")
     parser.add_argument("--acl_json_path", type=str, default=None, help="acl json path for profiling or dump")
-    parser.add_argument("--output_dirname", type=str, default=None, help="actual output directory name, such as --output_dirname \'tmp\'")
-    parser.add_argument("--maxqueue",  type=check_positive_integer, default=20, help="maximum number of reference queues, such as --maxqueue 15")
+    parser.add_argument("--maxqueue",  type=check_positive_integer, default=20, help="Maximum number of data in inference queue, such as --maxqueue 15")
 
     args = parser.parse_args()
+
+    if args.output_dirname is not None and args.output is None:
+        logger.error("Parameter --output is None. Parameter --output_dirname cannot be used alone. Please check them!\n")
+        raise RuntimeError('error bad parameters --output is None when --output_dirname ia valid')
 
     if args.profiler is True and args.dump is True:
         logger.error("parameter --profiler cannot be true at the same time as parameter --dump, please check them!\n")

@@ -159,7 +159,8 @@ sumary:{'NPU_compute_time': {'min': 2.4385452270507812, 'max': 2.587556838989258
 | -------- | ------------------------------- |
 | --model  | 需要进行推理的om模型            |
 | --input  | 模型需要的输入，支持bin文件和目录，若不加该参数，会自动生成都为0的数据                  |
-| --output | 推理数据输出路径                |
+| --output | 推理数据输出路径。推理结果输出到指定路径下以日期为名称的子目录中                |
+| --output_dirname | 推理输出实际目录名称。可选参数。与参数output搭配使用，不能单独使用。使用时，推理结果输出到参数output指定路径下以output_dirname为名的子目录中                |
 | --outfmt | 输出数据的格式，默认”BIN“，可取值“NPY”、“BIN”、“TXT” |
 | --loop   | 推理次数，可选参数，默认1，profiler为true时，推荐为1 |
 | --debug  | 调试开关，可打印model的desc信息，true或者false，可选参数，默认false |
@@ -174,5 +175,5 @@ sumary:{'NPU_compute_time': {'min': 2.4385452270507812, 'max': 2.587556838989258
 | --profiler | profiler开关，true或者false, 可选参数，默认false。<br>--output参数必须提供。profiler数据在--output参数指定的目录下的profiler文件夹内。不能与--dump同时为true。|
 | --dump |dump开关，true或者false, 可选参数，默认false。<br>--output参数必须提供。dump数据在--output参数指定的目录下的dump文件夹内。不能与--profiler同时为true。|
 | --acl_json_path | acl json文件 profiling或者dump时设置。当该参数设置时，--dump和--profiler参数无效。      |
-| --maxqueue | 最大推理队列数，可选参数，默认值20。      |
+| --maxqueue | 推理队列的数据最大数 可选参数，默认20。如果推理输入输出数据内存比较大，可能超过内存容量时，需要调小该值。      |
 | --help| 工具使用帮助信息                  |
