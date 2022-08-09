@@ -109,7 +109,7 @@ def warmup(session, args, intensors_desc, outputs_names):
     session.reset_sumaryinfo()
     logger.info("warm up {} times done".format(n_loop))
 
-# 轮训运行推理
+# Rotation training operation reference
 def infer_loop_run(session, args, intensors_desc, infileslist, outputs_names, output_prefix):
     for i, infiles in enumerate(tqdm(infileslist, file=sys.stdout, desc='Inference Processing')):
         intensors = []
@@ -121,7 +121,7 @@ def infer_loop_run(session, args, intensors_desc, infileslist, outputs_names, ou
         if output_prefix != None:
             save_tensors_to_file(outputs, output_prefix, infiles, args.outfmt, i)
 
-# 先准备好数据 然后执行推理 然后统一写文件
+# First prepare the data, then execute the reference, and then write the file uniformly
 def infer_fulltensors_run(session, args, intensors_desc, infileslist, outputs_names, output_prefix):
     outtensors = []
     intensorslist = create_intensors_from_infileslist(infileslist, intensors_desc, args.device, args.pure_data_type)
@@ -217,6 +217,7 @@ def get_args():
     parser.add_argument("--profiler", action="store_true", default=False, help="profiler switch")
     parser.add_argument("--dump", action="store_true", default=False, help="dump switch")
     parser.add_argument("--acl_json_path", type=str, default=None, help="acl json path for profiling or dump")
+    parser.add_argument("--output_dirname", type=str, default=None, help="actual output directory name, such as --output_dirname \'tmp\'")
 
     args = parser.parse_args()
 
@@ -239,14 +240,17 @@ if __name__ == "__main__":
     outtensors_desc = session.get_outputs()
 
     if args.output != None:
-        timestr = time.strftime("%Y_%m_%d-%H_%M_%S")
-        output_prefix = os.path.join(args.output, timestr)
+        if args.output_dirname is None:
+            timestr = time.strftime("%Y_%m_%d-%H_%M_%S")
+            output_prefix = os.path.join(args.output, timestr)
+        else:
+            output_prefix = os.path.join(args.output, args.output_dirname)
         os.mkdir(output_prefix, 0o755)
         logger.info("output path:{}".format(output_prefix))
     else:
         output_prefix = None
 
-    outputs_names = [desc.name for desc in outtensors_desc ]
+    outputs_names = [desc.name for desc in outtensors_desc]
 
     warmup(session, args, intensors_desc, outputs_names)
 
@@ -254,7 +258,7 @@ if __name__ == "__main__":
 
     # create infiles list accord inputs list
     if len(inputs_list) == 0:
-        # 纯推理场景 创建输入zero数据
+        # Pure reference scenario. Create input zero data
         infileslist = [[ [ pure_infer_fake_file ] for index in intensors_desc ]]
     else:
         infileslist = create_infileslist_from_inputs_list(inputs_list, intensors_desc)
