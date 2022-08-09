@@ -171,8 +171,8 @@ async def out_task(outque, output_prefix, args):
             save_tensors_to_file(outputs, output_prefix, infiles, args.outfmt, i)
 
 async def infer_pipeline_process_run(session, args, intensors_desc, infileslist, outputs_names, output_prefix):
-    inque = asyncio.Queue(maxsize=args.maxqueue)
-    outque = asyncio.Queue(maxsize=args.maxqueue)
+    inque = asyncio.Queue(maxsize=args.infer_queue_count)
+    outque = asyncio.Queue(maxsize=args.infer_queue_count)
 
     await asyncio.gather(
         in_task(inque, args, intensors_desc, infileslist),
@@ -218,13 +218,9 @@ def get_args():
     parser.add_argument("--profiler", action="store_true", default=False, help="profiler switch")
     parser.add_argument("--dump", action="store_true", default=False, help="dump switch")
     parser.add_argument("--acl_json_path", type=str, default=None, help="acl json path for profiling or dump")
-    parser.add_argument("--maxqueue",  type=check_positive_integer, default=20, help="Maximum number of data in inference queue, such as --maxqueue 15")
+    parser.add_argument("--infer_queue_count",  type=check_positive_integer, default=20, help="Maximum number of data in inference queue, such as --maxqueue 15")
 
     args = parser.parse_args()
-
-    if args.output_dirname is not None and args.output is None:
-        logger.error("Parameter --output is None. Parameter --output_dirname cannot be used alone. Please check them!\n")
-        raise RuntimeError('error bad parameters --output is None when --output_dirname ia valid')
 
     if args.profiler is True and args.dump is True:
         logger.error("parameter --profiler cannot be true at the same time as parameter --dump, please check them!\n")
