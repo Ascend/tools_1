@@ -1,5 +1,5 @@
 import os
-
+import math
 import pytest
 from test_common import TestCommonClass
 
@@ -46,7 +46,7 @@ class TestClass:
         result_paths = []
         batch_size = 1
         static_model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
-        input_size = TestCommonClass.get_om_size(static_model_path)
+        input_size = TestCommonClass.get_model_inputs_size(static_model_path)[0]
         input_path = TestCommonClass.get_inputs_path(input_size, os.path.join(os.path.join(TestCommonClass.base_path,
                                                                                            self.model_name), "input"),
                                                      output_file_num)
@@ -60,16 +60,9 @@ class TestClass:
             assert ret == 0
 
             # inference times should be  fit to given rule
-            try:
-                cmd = "cat {} |grep 'aclExec const' | wc -l".format(log_path)
-                outval = os.popen(cmd).read()
-            except Exception as e:
-                raise Exception("grep action raises raise an exception: {}".format(e))
-
-            # get bin file output path
-            exacute_num = output_file_num//batch_size \
-                if output_file_num % batch_size == 0 else output_file_num//batch_size + 1
-            assert int(outval.replace('\n', '')) == warmup_num + exacute_num
+            real_execute_num = TestCommonClass.get_inference_execute_num(log_path)
+            exacute_num = math.ceil(output_file_num/batch_size)
+            assert real_execute_num == warmup_num + exacute_num
 
             # bin file num is equal to output_file_num
             try:
@@ -97,7 +90,7 @@ class TestClass:
         TestCommonClass.prepare_dir(output_path)
         log_path = os.path.join(output_path, "log.txt")
         static_model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
-        input_size = TestCommonClass.get_om_size(static_model_path)
+        input_size = TestCommonClass.get_model_inputs_size(static_model_path)[0]
         input_path = TestCommonClass.get_inputs_path(input_size, os.path.join(os.path.join(TestCommonClass.base_path,
                                                                                            self.model_name), "input"),
                                                      output_file_num)
@@ -112,16 +105,9 @@ class TestClass:
             assert ret == 0
 
             # inference times should be  fit to given rule
-            try:
-                cmd = "cat {} |grep 'aclExec const' | wc -l".format(log_path)
-                outval = os.popen(cmd).read()
-            except Exception as e:
-                raise Exception("grep action raises raise an exception: {}".format(e))
-
-            # get bin file output path
-            exacute_num = output_file_num//dys_batch_size \
-                if output_file_num % dys_batch_size == 0 else output_file_num//dys_batch_size + 1
-            assert int(outval.replace('\n', '')) == warmup_num + exacute_num
+            real_execute_num = TestCommonClass.get_inference_execute_num(log_path)
+            exacute_num = math.ceil(output_file_num/dys_batch_size)
+            assert real_execute_num == warmup_num + exacute_num
 
             # bin file num is equal to output_file_num
             try:

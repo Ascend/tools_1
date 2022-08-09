@@ -99,7 +99,7 @@ class TestClass():
     def test_general_inference_normal_static_batch(self):
         batch_size = 1
         static_model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
-        input_size = TestCommonClass.get_om_size(static_model_path)
+        input_size = TestCommonClass.get_model_inputs_size(static_model_path)[0]
         input_path = TestCommonClass.get_inputs_path(input_size, os.path.join(self.model_base_path, "input"),
                                                      self.output_file_num)
         batch_list = [1, 2, 4, 8]
@@ -114,7 +114,7 @@ class TestClass():
     def test_general_inference_normal_dynamic_batch(self):
         batch_size = 1
         static_model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
-        input_size = TestCommonClass.get_om_size(static_model_path)
+        input_size = TestCommonClass.get_model_inputs_size(static_model_path)[0]
         input_path = TestCommonClass.get_inputs_path(input_size, os.path.join(self.model_base_path, "input"),
                                                      self.output_file_num)
         batch_list = [1, 2, 4, 8]

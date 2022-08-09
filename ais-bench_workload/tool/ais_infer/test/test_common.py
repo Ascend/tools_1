@@ -1,3 +1,4 @@
+import math
 import os
 import random
 import shutil
@@ -84,37 +85,21 @@ class TestCommonClass:
         os.makedirs(target_folder_path)
 
     @staticmethod
-    def format_size(bytes, unit='K'):
-        try:
-            byte_size = float(bytes)
-            kb = byte_size / 1024
-        except (TypeError, ValueError) as err:
-            print("bad byte format, err: {}".format(err))
-            return -1
-
-        if unit == 'K':
-            return kb
-        elif unit == 'M':
-            return kb / 1024
-        elif unit == 'G':
-            return kb/(1024*1024)
-        else:
-            return byte_size
-
-    @classmethod
-    def get_file_size(cls, file_path, unit):
-        """get file size with unit of KB, MB, GB, B. Default KB.
-        """
-        try:
-            size = os.path.getsize(file_path)
-            return cls.format_size(size, unit)
-        except (TypeError, ValueError) as err:
-            print(err)
-            return -1
-
-    @staticmethod
-    def get_om_size(model_path):
+    def get_model_inputs_size(model_path):
         options = aclruntime.session_options()
         session = aclruntime.InferenceSession(model_path, TestCommonClass.default_device_id, options)
-        intensors_desc = session.get_inputs()
-        return intensors_desc[0].realsize
+        return [meta.realsize for meta in session.get_inputs()]
+
+    @staticmethod
+    def get_inference_execute_num(log_path):
+        if not os.path.exists(log_path) and not os.path.isfile(log_path):
+            return 0
+
+        try:
+            cmd = "cat {} |grep 'aclExec const' | wc -l".format(log_path)
+            outval = os.popen(cmd).read()
+        except Exception as e:
+            raise Exception("grep action raises raise an exception: {}".format(e))
+            return 0
+
+        return int(outval.replace('\n', ''))
