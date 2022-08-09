@@ -6,7 +6,7 @@
 前端基于python开发，实现用户界面功能。
 
 ## 使用环境与依赖
-已安装开发运行环境的昇腾AI推理设备。
+已安装开发运行环境的昇腾AI推理设备。需要安装python3,  不支持python2.
 
 ## 源代码构建与安装
 1. 本推理工具编译需要安装好CANN环境。用户可以设置CANN_PATH环境变量指定安装的CANN版本路径，比如export CANN_PATH=/xxx/nnae/latest/.
@@ -159,7 +159,8 @@ sumary:{'NPU_compute_time': {'min': 2.4385452270507812, 'max': 2.587556838989258
 | -------- | ------------------------------- |
 | --model  | 需要进行推理的om模型            |
 | --input  | 模型需要的输入，支持bin文件和目录，若不加该参数，会自动生成都为0的数据                  |
-| --output | 推理数据输出路径                |
+| --output | 推理结果输出路径。默认会建立日期+时间的子文件夹保存输出结果 如果指定output_dirname 将保存到output_dirname的子文件夹下。|
+| --output_dirname | 推理结果输出子文件夹。可选参数。与参数output搭配使用，单独使用无效。设置该值时输出结果将保存到 output/output_dirname文件夹中              |
 | --outfmt | 输出数据的格式，默认”BIN“，可取值“NPY”、“BIN”、“TXT” |
 | --loop   | 推理次数，可选参数，默认1，profiler为true时，推荐为1 |
 | --debug  | 调试开关，可打印model的desc信息，true或者false，可选参数，默认false |
@@ -174,4 +175,5 @@ sumary:{'NPU_compute_time': {'min': 2.4385452270507812, 'max': 2.587556838989258
 | --profiler | profiler开关，true或者false, 可选参数，默认false。<br>--output参数必须提供。profiler数据在--output参数指定的目录下的profiler文件夹内。不能与--dump同时为true。|
 | --dump |dump开关，true或者false, 可选参数，默认false。<br>--output参数必须提供。dump数据在--output参数指定的目录下的dump文件夹内。不能与--profiler同时为true。|
 | --acl_json_path | acl json文件 profiling或者dump时设置。当该参数设置时，--dump和--profiler参数无效。      |
+| --infer_queue_count | 推理队列的数据最大数 可选参数，默认20。如果推理输入输出数据内存比较大，可能超过内存容量时，需要调小该值。      |
 | --help| 工具使用帮助信息                  |

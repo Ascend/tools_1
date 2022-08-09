@@ -1,8 +1,10 @@
+import math
 import os
 import random
 import shutil
 import sys
 
+import aclruntime
 import numpy as np
 
 
@@ -81,3 +83,23 @@ class TestCommonClass:
         if os.path.exists(target_folder_path):
             shutil.rmtree(target_folder_path)
         os.makedirs(target_folder_path)
+
+    @staticmethod
+    def get_model_inputs_size(model_path):
+        options = aclruntime.session_options()
+        session = aclruntime.InferenceSession(model_path, TestCommonClass.default_device_id, options)
+        return [meta.realsize for meta in session.get_inputs()]
+
+    @staticmethod
+    def get_inference_execute_num(log_path):
+        if not os.path.exists(log_path) and not os.path.isfile(log_path):
+            return 0
+
+        try:
+            cmd = "cat {} |grep 'aclExec const' | wc -l".format(log_path)
+            outval = os.popen(cmd).read()
+        except Exception as e:
+            raise Exception("grep action raises raise an exception: {}".format(e))
+            return 0
+
+        return int(outval.replace('\n', ''))

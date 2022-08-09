@@ -55,8 +55,9 @@ def get_tensor_from_files_list(files_list, device, size, pure_data_type):
     summary.h2d_latency_list.append(float(endtime - starttime) * 1000.0)  # millisecond
     return tensor
 
-# 根据文件信息和输入描述信息获取filesperbatch runcount信息
-# 策略如下  根据输入0的realsize和文件大小判断 如果判断失败，需要强制设置想要的值
+# Obtain filesperbatch runcount information according to file information and input description information
+# The strategy is as follows:  Judge according to the realsize and file size of input 0. If the judgment fails,
+# you need to force the desired value to be set
 def get_files_count_per_batch(intensors_desc, fileslist):
     # get filesperbatch
     filesize = get_file_datasize(fileslist[0][0])
@@ -72,7 +73,7 @@ def get_files_count_per_batch(intensors_desc, fileslist):
         filesize, tensorsize, files_count_per_batch, runcount))
     return files_count_per_batch, runcount
 
-# out api 创建空数据
+# out api create empty data
 def create_intensors_zerodata(intensors_desc, device, pure_data_type):
     intensors = []
     for info in intensors_desc:
@@ -86,7 +87,7 @@ def create_intensors_zerodata(intensors_desc, device, pure_data_type):
         intensors.append(tensor)
     return intensors
 
-# 根据输入filelist获取tensor信息和files信息 create intensor form files list
+# Obtain tensor information and files information according to the input filelist. Create intensor form files list
 # len(files_list) should equal len(intensors_desc)
 def create_infileslist_from_fileslist(fileslist, intensors_desc):
     if len(intensors_desc) != len(fileslist):
@@ -108,7 +109,7 @@ def create_infileslist_from_fileslist(fileslist, intensors_desc):
 def check_and_get_fileslist(inputs_list, intensors_desc):
     return fileslist
 
-#  outapi 根据输入filelist获取tensor信息和files信息 create intensor form files list
+#  outapi. Obtain tensor information and files information according to the input filelist. Create intensor form files list
 def create_intensors_from_infileslist(infileslist, intensors_desc, device, pure_data_type):
     intensorslist = []
     for i, infiles in enumerate(infileslist):
@@ -119,7 +120,7 @@ def create_intensors_from_infileslist(infileslist, intensors_desc, device, pure_
         intensorslist.append(intensors)
     return intensorslist
 
-# outapi 根据inputs_list输入列表获取 文件列表
+# outapi. get by input parameters of  inputs_List.
 def create_infileslist_from_inputs_list(inputs_list, intensors_desc):
     fileslist = []
     inputlistcount = len(inputs_list)

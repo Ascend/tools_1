@@ -109,7 +109,7 @@ def warmup(session, args, intensors_desc, outputs_names):
     session.reset_sumaryinfo()
     logger.info("warm up {} times done".format(n_loop))
 
-# 轮训运行推理
+# Rotation training operation reference
 def infer_loop_run(session, args, intensors_desc, infileslist, outputs_names, output_prefix):
     for i, infiles in enumerate(tqdm(infileslist, file=sys.stdout, desc='Inference Processing')):
         intensors = []
@@ -121,7 +121,7 @@ def infer_loop_run(session, args, intensors_desc, infileslist, outputs_names, ou
         if output_prefix != None:
             save_tensors_to_file(outputs, output_prefix, infiles, args.outfmt, i)
 
-# 先准备好数据 然后执行推理 然后统一写文件
+# First prepare the data, then execute the reference, and then write the file uniformly
 def infer_fulltensors_run(session, args, intensors_desc, infileslist, outputs_names, output_prefix):
     outtensors = []
     intensorslist = create_intensors_from_infileslist(infileslist, intensors_desc, args.device, args.pure_data_type)
@@ -171,8 +171,8 @@ async def out_task(outque, output_prefix, args):
             save_tensors_to_file(outputs, output_prefix, infiles, args.outfmt, i)
 
 async def infer_pipeline_process_run(session, args, intensors_desc, infileslist, outputs_names, output_prefix):
-    inque = asyncio.Queue(maxsize=20)
-    outque = asyncio.Queue(maxsize=20)
+    inque = asyncio.Queue(maxsize=args.infer_queue_count)
+    outque = asyncio.Queue(maxsize=args.infer_queue_count)
 
     await asyncio.gather(
         in_task(inque, args, intensors_desc, infileslist),
@@ -202,7 +202,8 @@ def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", "--om", required=True, help="the path of the om model")
     parser.add_argument("--input", "-i", default=None, help="input file or dir")
-    parser.add_argument("--output", "-o", default=None, help="output")
+    parser.add_argument("--output", "-o", default=None, help="Inference data output path. The inference results are output to the subdirectory named current date under given output path")
+    parser.add_argument("--output_dirname", type=str, default=None, help="actual output directory name. Used with parameter output, cannot be used alone. The inference result is output to  subdirectory named by output_dirname under  output path. such as --output_dirname 'tmp', the final inference results are output to the folder of  {$output}/tmp")
     parser.add_argument("--outfmt", default="BIN", choices=["NPY", "BIN", "TXT"], help="Output file format (NPY or BIN or TXT)")
     parser.add_argument("--loop", "-r", type=check_positive_integer, default=1, help="the round of the PrueInfer.")
     parser.add_argument("--debug", type=str2bool, default=False, help="Debug switch,print model information")
@@ -217,6 +218,7 @@ def get_args():
     parser.add_argument("--profiler", action="store_true", default=False, help="profiler switch")
     parser.add_argument("--dump", action="store_true", default=False, help="dump switch")
     parser.add_argument("--acl_json_path", type=str, default=None, help="acl json path for profiling or dump")
+    parser.add_argument("--infer_queue_count",  type=check_positive_integer, default=20, help="Maximum number of data in inference queue, such as --maxqueue 15")
 
     args = parser.parse_args()
 
@@ -239,14 +241,17 @@ if __name__ == "__main__":
     outtensors_desc = session.get_outputs()
 
     if args.output != None:
-        timestr = time.strftime("%Y_%m_%d-%H_%M_%S")
-        output_prefix = os.path.join(args.output, timestr)
+        if args.output_dirname is None:
+            timestr = time.strftime("%Y_%m_%d-%H_%M_%S")
+            output_prefix = os.path.join(args.output, timestr)
+        else:
+            output_prefix = os.path.join(args.output, args.output_dirname)
         os.mkdir(output_prefix, 0o755)
         logger.info("output path:{}".format(output_prefix))
     else:
         output_prefix = None
 
-    outputs_names = [desc.name for desc in outtensors_desc ]
+    outputs_names = [desc.name for desc in outtensors_desc]
 
     warmup(session, args, intensors_desc, outputs_names)
 
@@ -254,7 +259,7 @@ if __name__ == "__main__":
 
     # create infiles list accord inputs list
     if len(inputs_list) == 0:
-        # 纯推理场景 创建输入zero数据
+        # Pure reference scenario. Create input zero data
         infileslist = [[ [ pure_infer_fake_file ] for index in intensors_desc ]]
     else:
         infileslist = create_infileslist_from_inputs_list(inputs_list, intensors_desc)
