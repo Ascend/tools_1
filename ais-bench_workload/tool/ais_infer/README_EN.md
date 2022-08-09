@@ -8,7 +8,7 @@ The back-end is developed based on C + to realize the general referencing functi
 The front end is developed based on Python to realize the function of user interface.
 
 ## Environment Setup
-Ascend AI referencing equipment of development and operation environment should be installed.Python3 needs to be installed. Python3.7.5 is recommended. Python2 is not supported.
+Ascend AI referencing equipment of development and operation environment should be installed.Python3 needs to be installed. Python2 is not supported.
 
 ## Tool Preparation
 The cann environment needs to be installed for the compilation of this referencing tool. Users can set CANN_PATH environment variable specifies the path of the installed cann version, such as export CANN_PATH=/xxx/nnae/latest/.
