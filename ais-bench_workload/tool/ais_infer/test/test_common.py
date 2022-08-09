@@ -3,6 +3,7 @@ import random
 import shutil
 import sys
 
+import aclruntime
 import numpy as np
 
 
@@ -81,3 +82,39 @@ class TestCommonClass:
         if os.path.exists(target_folder_path):
             shutil.rmtree(target_folder_path)
         os.makedirs(target_folder_path)
+
+    @staticmethod
+    def format_size(bytes, unit='K'):
+        try:
+            byte_size = float(bytes)
+            kb = byte_size / 1024
+        except (TypeError, ValueError) as err:
+            print("bad byte format, err: {}".format(err))
+            return -1
+
+        if unit == 'K':
+            return kb
+        elif unit == 'M':
+            return kb / 1024
+        elif unit == 'G':
+            return kb/(1024*1024)
+        else:
+            return byte_size
+
+    @classmethod
+    def get_file_size(cls, file_path, unit):
+        """get file size with unit of KB, MB, GB, B. Default KB.
+        """
+        try:
+            size = os.path.getsize(file_path)
+            return cls.format_size(size, unit)
+        except (TypeError, ValueError) as err:
+            print(err)
+            return -1
+
+    @staticmethod
+    def get_om_size(model_path):
+        options = aclruntime.session_options()
+        session = aclruntime.InferenceSession(model_path, TestCommonClass.default_device_id, options)
+        intensors_desc = session.get_inputs()
+        return intensors_desc[0].realsize

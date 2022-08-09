@@ -46,12 +46,6 @@ class TestClass():
     def get_dynamic_shape_om_path(self):
         return os.path.join(self.model_base_path, "model", "pth_resnet50_dymshape.om")
 
-    def get_om_size(self, model_path):
-        options = aclruntime.session_options()
-        session = aclruntime.InferenceSession(model_path, TestCommonClass.default_device_id, options)
-        intensors_desc = session.get_inputs()
-        return intensors_desc[0].realsize
-
     def test_pure_inference_normal_static_batch(self):
         """
         batch size 1,2,4,8
@@ -105,7 +99,7 @@ class TestClass():
     def test_general_inference_normal_static_batch(self):
         batch_size = 1
         static_model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
-        input_size = self.get_om_size(static_model_path)
+        input_size = TestCommonClass.get_om_size(static_model_path)
         input_path = TestCommonClass.get_inputs_path(input_size, os.path.join(self.model_base_path, "input"),
                                                      self.output_file_num)
         batch_list = [1, 2, 4, 8]
@@ -120,7 +114,7 @@ class TestClass():
     def test_general_inference_normal_dynamic_batch(self):
         batch_size = 1
         static_model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
-        input_size = self.get_om_size(static_model_path)
+        input_size = TestCommonClass.get_om_size(static_model_path)
         input_path = TestCommonClass.get_inputs_path(input_size, os.path.join(self.model_base_path, "input"),
                                                      self.output_file_num)
         batch_list = [1, 2, 4, 8]
