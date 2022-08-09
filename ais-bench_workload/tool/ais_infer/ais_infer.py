@@ -171,8 +171,8 @@ async def out_task(outque, output_prefix, args):
             save_tensors_to_file(outputs, output_prefix, infiles, args.outfmt, i)
 
 async def infer_pipeline_process_run(session, args, intensors_desc, infileslist, outputs_names, output_prefix):
-    inque = asyncio.Queue(maxsize=20)
-    outque = asyncio.Queue(maxsize=20)
+    inque = asyncio.Queue(maxsize=args.maxqueue)
+    outque = asyncio.Queue(maxsize=args.maxqueue)
 
     await asyncio.gather(
         in_task(inque, args, intensors_desc, infileslist),
@@ -218,6 +218,7 @@ def get_args():
     parser.add_argument("--dump", action="store_true", default=False, help="dump switch")
     parser.add_argument("--acl_json_path", type=str, default=None, help="acl json path for profiling or dump")
     parser.add_argument("--output_dirname", type=str, default=None, help="actual output directory name, such as --output_dirname \'tmp\'")
+    parser.add_argument("--maxqueue",  type=check_positive_integer, default=20, help="maximum number of reference queues, such as --maxqueue 15")
 
     args = parser.parse_args()
 
