@@ -106,9 +106,6 @@ def create_infileslist_from_fileslist(fileslist, intensors_desc):
         infileslist.append(infiles)
     return infileslist
 
-def check_and_get_fileslist(inputs_list, intensors_desc):
-    return fileslist
-
 #  outapi. Obtain tensor information and files information according to the input filelist. Create intensor form files list
 def create_intensors_from_infileslist(infileslist, intensors_desc, device, pure_data_type):
     intensorslist = []
@@ -120,8 +117,30 @@ def create_intensors_from_infileslist(infileslist, intensors_desc, device, pure_
         intensorslist.append(intensors)
     return intensorslist
 
+def check_input_parameter(inputs_list, intensors_desc):
+    if len(inputs_list) == 0:
+        logger.error("Invalid input parameters. Parameter inputs_list is empty")
+        raise RuntimeError()
+    if os.path.isfile(inputs_list[0]):
+        for file_path in inputs_list:
+            if not os.path.isfile(file_path):
+                logger.error("Invalid input parameters. Parameter inputs_list contains non-file path: {}".format(file_path))
+                raise RuntimeError()
+    elif os.path.isdir(inputs_list[0]):
+        for dir_path in inputs_list:
+            if not os.path.isdir(dir_path):
+                logger.error("Invalid input parameters. Parameter inputs_List contains non-folder path:{}".format(dir_path))
+                raise RuntimeError()
+        if len(inputs_list) != len(intensors_desc):
+            logger.error("Invalid input parameters. The length of  inputs_list is invalid")
+            raise RuntimeError()
+    else:
+        logger.error("Invalid input parameters. Parameter inputs_list[0] is not file or folder {}".format(inputs_list[0]))
+        raise RuntimeError()
+
 # outapi. get by input parameters of  inputs_List.
 def create_infileslist_from_inputs_list(inputs_list, intensors_desc):
+    check_input_parameter(inputs_list, intensors_desc)
     fileslist = []
     inputlistcount = len(inputs_list)
     intensorcount = len(intensors_desc)
