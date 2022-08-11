@@ -106,9 +106,6 @@ def create_infileslist_from_fileslist(fileslist, intensors_desc):
         infileslist.append(infiles)
     return infileslist
 
-def check_and_get_fileslist(inputs_list, intensors_desc):
-    return fileslist
-
 #  outapi. Obtain tensor information and files information according to the input filelist. Create intensor form files list
 def create_intensors_from_infileslist(infileslist, intensors_desc, device, pure_data_type):
     intensorslist = []
@@ -120,8 +117,34 @@ def create_intensors_from_infileslist(infileslist, intensors_desc, device, pure_
         intensorslist.append(intensors)
     return intensorslist
 
+def check_input_parameter(inputs_list, intensors_desc):
+    if len(inputs_list) == 0:
+        logger.error("Invalid input parameters. Parameter inputs_list is empty")
+        raise RuntimeError()
+    if os.path.isfile(inputs_list[0]):
+        for file_path in inputs_list:
+            realpath = os.readlink(file_path) if os.path.islink(file_path) else file_path
+            if not os.path.isfile(realpath):
+                logger.error("Invalid input parameters. file_path:{} realpath:{} not exist".format(file_path, realpath))
+                raise RuntimeError()
+    elif os.path.isdir(inputs_list[0]):
+        if len(inputs_list) != len(intensors_desc):
+            logger.error("Invalid input parameters. The length of  inputs_list is invalid")
+            raise RuntimeError()
+
+        for dir_path in inputs_list:
+            real_dir_path = os.readlink(dir_path) if os.path.islink(dir_path) else dir_path
+            if not os.path.isdir(real_dir_path):
+                logger.error("Invalid input parameters. dir_path:{} real_dir_path:{} not exist".format(dir_path, real_dir_path))
+                raise RuntimeError()
+    else:
+        logger.error("Invalid input parameters. --input[0] is not file or folder {}".format(inputs_list[0]))
+        raise RuntimeError()
+
+
 # outapi. get by input parameters of  inputs_List.
 def create_infileslist_from_inputs_list(inputs_list, intensors_desc):
+    check_input_parameter(inputs_list, intensors_desc)
     fileslist = []
     inputlistcount = len(inputs_list)
     intensorcount = len(intensors_desc)
