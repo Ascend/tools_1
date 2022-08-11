@@ -123,30 +123,24 @@ def check_input_parameter(inputs_list, intensors_desc):
         raise RuntimeError()
     if os.path.isfile(inputs_list[0]):
         for file_path in inputs_list:
-            if os.path.islink(file_path):
-                if not os.path.isfile(os.readlink(file_path)):
-                    logger.error("Invalid input parameters. Parameter inputs_list contains invalid soft link file path: {}".format(file_path))
-                    raise RuntimeError()
-            else:
-                if not os.path.isfile(file_path):
-                    logger.error("Invalid input parameters. Parameter inputs_list contains non-file path: {}".format(file_path))
-                    raise RuntimeError()
+            realpath = os.readlink(file_path) if os.path.islink(file_path) else file_path
+            if not os.path.isfile(realpath):
+                logger.error("Invalid input parameters. file_path:{} realpath:{} not exist".format(file_path, realpath))
+                raise RuntimeError()
     elif os.path.isdir(inputs_list[0]):
-        for dir_path in inputs_list:
-            if os.path.islink(dir_path):
-                if not os.path.isdir(os.readlink(dir_path)):
-                    logger.error("Invalid input parameters. Parameter inputs_List contains invalid soft link folder path:{}".format(dir_path))
-                    raise RuntimeError()
-            else:
-                if not os.path.isdir(dir_path):
-                    logger.error("Invalid input parameters. Parameter inputs_List contains non-folder path:{}".format(dir_path))
-                    raise RuntimeError()
         if len(inputs_list) != len(intensors_desc):
             logger.error("Invalid input parameters. The length of  inputs_list is invalid")
             raise RuntimeError()
+
+        for dir_path in inputs_list:
+            real_dir_path = os.readlink(dir_path) if os.path.islink(dir_path) else dir_path
+            if not os.path.isdir(real_dir_path):
+                logger.error("Invalid input parameters. dir_path:{} real_dir_path:{}".format(dir_path, real_dir_path))
+                raise RuntimeError()
     else:
-        logger.error("Invalid input parameters. Parameter inputs_list[0] is not file or folder {}".format(inputs_list[0]))
+        logger.error("Invalid input parameters. --input[0] is not file or folder {}".format(inputs_list[0]))
         raise RuntimeError()
+
 
 # outapi. get by input parameters of  inputs_List.
 def create_infileslist_from_inputs_list(inputs_list, intensors_desc):
