@@ -135,7 +135,7 @@ def check_input_parameter(inputs_list, intensors_desc):
         for dir_path in inputs_list:
             real_dir_path = os.readlink(dir_path) if os.path.islink(dir_path) else dir_path
             if not os.path.isdir(real_dir_path):
-                logger.error("Invalid input parameters. dir_path:{} real_dir_path:{}".format(dir_path, real_dir_path))
+                logger.error("Invalid input parameters. dir_path:{} real_dir_path:{} not exist".format(dir_path, real_dir_path))
                 raise RuntimeError()
     else:
         logger.error("Invalid input parameters. --input[0] is not file or folder {}".format(inputs_list[0]))
