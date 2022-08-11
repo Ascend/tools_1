@@ -1,9 +1,9 @@
-import os
-import sys
-import numpy as np
 import aclruntime
+import numpy as np
 import pytest
 from test_common import TestCommonClass
+
+
 class TestClass:
     @classmethod
     def setup_class(cls):
