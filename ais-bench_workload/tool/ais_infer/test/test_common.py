@@ -50,7 +50,7 @@ class TestCommonClass:
 
         base_size_file_path = os.path.join(size_path, "{}.bin".format(size))
         if not os.path.exists(base_size_file_path):
-            cls.create_inputs_file(input_path, size)
+            cls.create_inputs_file(size_path, size)
 
         size_folder_path = os.path.join(input_path, str(input_file_num))
 

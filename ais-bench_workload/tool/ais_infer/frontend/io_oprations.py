@@ -123,14 +123,24 @@ def check_input_parameter(inputs_list, intensors_desc):
         raise RuntimeError()
     if os.path.isfile(inputs_list[0]):
         for file_path in inputs_list:
-            if not os.path.isfile(file_path):
-                logger.error("Invalid input parameters. Parameter inputs_list contains non-file path: {}".format(file_path))
-                raise RuntimeError()
+            if os.path.islink(file_path):
+                if not os.path.isfile(os.readlink(file_path)):
+                    logger.error("Invalid input parameters. Parameter inputs_list contains invalid soft link file path: {}".format(file_path))
+                    raise RuntimeError()
+            else:
+                if not os.path.isfile(file_path):
+                    logger.error("Invalid input parameters. Parameter inputs_list contains non-file path: {}".format(file_path))
+                    raise RuntimeError()
     elif os.path.isdir(inputs_list[0]):
         for dir_path in inputs_list:
-            if not os.path.isdir(dir_path):
-                logger.error("Invalid input parameters. Parameter inputs_List contains non-folder path:{}".format(dir_path))
-                raise RuntimeError()
+            if os.path.islink(dir_path):
+                if not os.path.isdir(os.readlink(dir_path)):
+                    logger.error("Invalid input parameters. Parameter inputs_List contains invalid soft link folder path:{}".format(dir_path))
+                    raise RuntimeError()
+            else:
+                if not os.path.isdir(dir_path):
+                    logger.error("Invalid input parameters. Parameter inputs_List contains non-folder path:{}".format(dir_path))
+                    raise RuntimeError()
         if len(inputs_list) != len(intensors_desc):
             logger.error("Invalid input parameters. The length of  inputs_list is invalid")
             raise RuntimeError()
