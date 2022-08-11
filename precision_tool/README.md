@@ -36,12 +36,19 @@ sudo yum install graphviz
     ```python
     # 对于使用tf.random / np.random / (python) random的可以通过固定随机种子的方式固定输入
     # import tf_config.py 默认会设置上述三种random的seed，但由于import位置关系，可能不一定能作用到所有的关联代码，建议在代码确认合适位置手动嵌入
-    random.seed(cfg.DUMP_SEED)
-    tf.random.set_random_seed(cfg.DUMP_SEED)
-    np.random.seed(cfg.DUMP_SEED)
-    
-    # 此处给出一些典型示例，需要根据自己的脚本进行排查
-
+    seed =987654
+    random.seed(seed)
+    tf.random.set_random_seed(seed)
+    np.random.seed(seed)
+  
+    # RunConfig/NPURunConfig中设置tf_random_seed固定网络随机因子
+    # Estimator中tf.random设置的随机种子并不能全局生效
+    # 需要使用下面的方式进行设置
+    run_config = tf.estimator.RunConfig(tf_random_seed=1, ...)
+    run_config = NPURunConfig(tf_random_seed=1, ...)
+    ```
+ * **理论上网络中的大多数随机均能通过上面的方式固定, 一般不需要再做下面的这些操作**
+    ```python
     # 1. 参数初始化中的随机操作
     #    加载checkpoint的方式能够固定大多数初始参数
     saver.restore(sess, saver_dir)
@@ -67,10 +74,6 @@ sudo yum install graphviz
     # 4.3 Random crop
     mage_depth = tf.concat([image, depth_gt], 2)
     image_depth_cropped = tf.random_crop(image_depth, [self.params.height, self.params.width, 4])
-    
-    # 5. RunConfig/NPURunConfig中设置tf_random_seed固定网络随机因子
-    run_config = tf.estimator.RunConfig(tf_random_seed=1, ...)
-    run_config = NPURunConfig(tf_random_seed=1, ...)
   
     # 其他......
     ```

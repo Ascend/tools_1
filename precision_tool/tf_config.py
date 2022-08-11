@@ -28,6 +28,12 @@ def seed_everything(seed=cfg.DUMP_SEED):
     except ImportError as err:
         np = None
         print("[PrecisionTool] No numpy module.", err)
+    try:
+        from tfdeterminism import patch
+        patch()
+        print("[PrecisionTool] patch tf determinism success.")
+    except ImportError as err:
+        print("[PrecisionTool] No tfdeterminism module. Install it by pip3 install tfdeterminism.", err)
 
 
 # set global random seed

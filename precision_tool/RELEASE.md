@@ -1,3 +1,8 @@
+# Release 0.1.4
+## Update
+* 完善训练随机固定场景
+
+
 # Release 0.1.3
 ## Update
 * 支持解析Torch Dump的H5数据
