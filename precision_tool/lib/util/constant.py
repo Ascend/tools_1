@@ -2,7 +2,7 @@
 
 
 class Constant(object):
-    VERSION = "0.1.3"
+    VERSION = "0.1.4"
     NEW_LINE = "\n"
     TAB_LINE = "\t"
     DEFAULT_DEBUG_ID = "debug_0"
