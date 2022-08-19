@@ -102,7 +102,7 @@ def run_inference(session, inputs, outputs_names):
     return outputs
 
 def warmup(session, args, intensors_desc, outputs_names):
-    n_loop = 5
+    n_loop = 1
     inputs = create_intensors_zerodata(intensors_desc, args.device, args.pure_data_type)
     run_inference_step(session, inputs, outputs_names, n_loop)
     summary.reset()
@@ -265,8 +265,8 @@ if __name__ == "__main__":
         infileslist = create_infileslist_from_inputs_list(inputs_list, intensors_desc)
 
     #infer_fulltensors_run(session, args, intensors_desc, infileslist, outputs_names, output_prefix)
-    #infer_loop_run(session, args, intensors_desc, infileslist, outputs_names, output_prefix)
-    asyncio.run(infer_pipeline_process_run(session, args, intensors_desc, infileslist, outputs_names, output_prefix))
+    infer_loop_run(session, args, intensors_desc, infileslist, outputs_names, output_prefix)
+    #asyncio.run(infer_pipeline_process_run(session, args, intensors_desc, infileslist, outputs_names, output_prefix))
 
     summary.add_args(sys.argv)
     s = session.sumary()
