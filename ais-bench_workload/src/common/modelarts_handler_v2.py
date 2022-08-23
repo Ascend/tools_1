@@ -1,14 +1,11 @@
 import logging
 import os
 import time
-from re import S
-from urllib.parse import urlparse
 
-from modelarts.estimator import JOB_STATE, Estimator
-from modelarts.estimatorV2 import Estimator as EstimatorV2
+from modelarts.estimatorV2 import JOB_STATE, Estimator
 from modelarts.session import Session
 from modelarts.train_params import InputData, OutputData, TrainingFiles
-from obs import ObsClient, model
+from obs import ObsClient
 
 logging.basicConfig(level=logging.DEBUG, format='[%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
@@ -18,117 +15,83 @@ def get_config_value(config, key):
     return None if config.get(key) == "" else config.get(key)
 
 
-def continue_waiting(job_info):
-    print("waiting for task, status %s, total time: %d(s)" % (JOB_STATE[job_info['status']], job_info['duration'] / 1000))
-
-
-def exit_by_failure(job_info):
-    print("task failed, status %s, please check log on obs, exit" % (JOB_STATE[job_info['status']]))
-    raise RuntimeError('failed')
-
-
-func_table = {
-    0: continue_waiting,
-    1: continue_waiting,
-    2: continue_waiting,
-    3: exit_by_failure,
-    4: continue_waiting,
-    5: exit_by_failure,
-    6: exit_by_failure,
-    7: continue_waiting,
-    8: continue_waiting,
-    9: exit_by_failure,
-    11: exit_by_failure,
-    12: exit_by_failure,
-    13: exit_by_failure,
-    14: exit_by_failure,
-    15: continue_waiting,
-    16: exit_by_failure,
-    17: exit_by_failure,
-    18: continue_waiting,
-    19: continue_waiting,
-    20: continue_waiting,
-    21: exit_by_failure,
-    22: exit_by_failure
-}
-
-# 调试需要 超时后停止
-def wait_for_job_timeout(job_instance):
-    count = 0
-    while True:
-        time.sleep(10)
-        job_info = job_instance.get_job_info()
-        if job_info['status'] == 10:
-            print("task succeeded, total time %d(s)" % (job_info['duration'] / 1000))
-            break
-        func_table[job_info['status']](job_info)
-        count = count + 1
-        print("modelarts run time count:{}".format(count))
-        if count == 6:
-            print("modelarts run match:{} 10 so exit >>>>>>>".format(count))
-            status = job_instance.stop_job_version()
-            #status = job_instance.delete_job()
-            raise RuntimeError('failed')
-
-
 try:
     import moxing as mox
     moxing_import_flag = True
-except:
+except Exception:
     moxing_import_flag = False
 
 
 class modelarts_handler_v2():
+    RESP_OK = 300
+
     def __init__(self):
         self.output_url = None
         self.job_log_prefix = None
+        self.job_name = ""
+        self.job_instance = None
 
     def sync_job_log(self, session_config):
         dstpath = os.path.join(os.getenv("BASE_PATH", "./"), "log")
         if not os.path.exists(dstpath):
-            print("dstpath:{} not exist no get log")
-            return
+            os.makedirs(dstpath)
         for id in range(session_config.train_instance_count):
             logurl = self.job_log_prefix + '-' + str(id) + '.log'
             logname = os.path.basename(logurl)
             logpath = os.path.join(dstpath, logname)
             if self.session.obs.is_obs_path_exists(logurl):
                 self.session.obs.download_file(logurl, logpath)
-                #print("logurl:{} sync log to dstpath:{}".format(logurl, logpath))
 
-    def wait_for_job(self, job_instance, session_config):
+    def continue_waiting(self):
+        print("waiting for task, phase %s, total time: %d(s)" % (self.job_info['status']['phase'],
+                                                                 self.job_info['duration'] / 1000))
+
+    def exit_by_failure(self):
+        print("task failed, phase %s, please check log on obs, exit" % (self.job_info['status']['phase']))
+        raise RuntimeError('job failed')
+
+    def wait_for_job(self, session_config):
         count = 0
         while True:
             time.sleep(10)
             count = count + 1
             if count > 10:
-                count = 10
                 self.sync_job_log(session_config)
-            job_info = job_instance.get_job_info()
-            if job_info['status'] == 10:
-                print("task succeeded, total time %d(s)" % (job_info['duration'] / 1000))
+            job_info = self.job_instance.get_job_info()
+
+            phase = job_info['status']['phase']
+            if phase == "Completed":
+                logger.info("task succeeded, total time %d(s)" % (job_info['status']['duration'] / 1000))
                 break
-            func_table[job_info['status']](job_info)
+            elif phase == 'Failed' or phase == 'Abnormal':
+                self.exit_by_failure()
+            else:
+                self.continue_waiting()
 
     def create_obs_output_dirs(self, output_url):
-        if moxing_import_flag == True:
+        """
+        output_url , like '/zgwtest/lcm_test/result/XXX'. bucket name: zgwtest subdir: lcm_test/result/XXX
+        """
+        # print("\n===================output_url: {} moxing_import_flag : {}".format(output_url, moxing_import_flag))
+        if moxing_import_flag:
             dstpath = output_url.replace("s3:", "obs:", 1)
             logger.info("create obs outdir mox mkdir:{}".format(dstpath))
             mox.file.make_dirs(dstpath)
         else:
-            bucket_name = output_url[5:].split('/')[0]
+            bucket_name = output_url[1:].split('/')[0]
             sub_dir = output_url.replace(f"s3://{bucket_name}/", "", 1)
             logger.debug('create obs output{} subdir:{} bucket:{}'.format(output_url, sub_dir, bucket_name))
             resp = self.obsClient.putContent(bucket_name, sub_dir, content=None)
-            if resp.status < 300:
+
+            if resp.status < self.RESP_OK:
                 logger.debug('obs put content request ok')
             else:
-                logger.warn('errorCode:{} msg:{}'.format(resp.errorCode, resp.errorMessage))
-                raise RuntimeError('failed')
+                logger.warn('create obs folder failed. errorCode:{} msg:{}'.format(resp.errorCode, resp.errorMessage))
+                raise RuntimeError('create obs folder failed')
 
     def create_obs_handler(self, access_config):
         if not moxing_import_flag:
-            # 创建 obs登录句柄
+            # Create OBS login handle
             self.obsClient = ObsClient(access_key_id=access_config.access_key,
                                        secret_access_key=access_config.secret_access_key, server=access_config.server)
 
@@ -140,51 +103,18 @@ class modelarts_handler_v2():
             Session.set_endpoint(iam_endpoint=access_config.iam_endpoint, obs_endpoint=access_config.obs_endpoint,
                                  modelarts_endpoint=access_config.modelarts_endpoint,
                                  region_name=access_config.region_name)
-        # 创建modelarts句柄
+        # Create modelars handle
         self.session = Session(access_key=access_config.access_key,
-            secret_key=access_config.secret_access_key,
-            project_id=access_config.project_id,
-            region_name=access_config.region_name)
+                               secret_key=access_config.secret_access_key,
+                               project_id=access_config.project_id,
+                               region_name=access_config.region_name)
 
     def print_train_instance_types(self):
-        algo_info = Estimator.get_train_instance_types(modelarts_session=self.session)
+        algo_info = Estimator.get_train_instance_types(self.session)
         print("get valid train_instance_types:{}".format(algo_info))
 
-    def stop_new_versions(self, session_config):
-        base_job_list_info = Estimator.get_job_list(modelarts_session=self.session, per_page=10, page=1, order="asc",
-                                                    search_content=session_config.job_name)
-        if base_job_list_info is None or base_job_list_info.get("job_total_count", 0) == 0:
-            print("find no match version return")
-        else:
-            pre_version_id = base_job_list_info["jobs"][0].get("version_id")
-            job_id = base_job_list_info["jobs"][0].get("job_id")
-            job_status = base_job_list_info["jobs"][0].get("status")
-            estimator = Estimator(modelarts_session=self.session, job_id=job_id, version_id=pre_version_id)
-            if JOB_STATE[job_status] == "JOBSTAT_INIT" \
-                or JOB_STATE[job_status] == "JOBSTAT_IMAGE_CREATING" \
-                or JOB_STATE[job_status] == "JOBSTAT_SUBMIT_TRYING" \
-                or JOB_STATE[job_status] == "JOBSTAT_DEPLOYING" \
-                or JOB_STATE[job_status] == "JOBSTAT_WAITING" \
-                or JOB_STATE[job_status] == "JOBSTAT_RUNNING":
-                status = estimator.stop_job_version()
-                print("jobname:{} jobid:{} preversionid:{} jobstatus:{} stop status:{}".format(
-                    session_config.job_name, job_id, pre_version_id, JOB_STATE[job_status], status))
-            else:
-                print("jobname:{} jobid:{} preversionid:{} jobstatus:{} no need stop".format(
-                    session_config.job_name, job_id, pre_version_id, JOB_STATE[job_status]))
-
-    def get_job_name_next_new_version(self, session_config):
-        base_job_list_info = Estimator.get_job_list(modelarts_session=self.session, per_page=10, page=1, order="asc",
-                                                    search_content=session_config.job_name)
-        if base_job_list_info is None or base_job_list_info.get("job_total_count", 0) == 0:
-            return 1
-        else:
-            pre_version_id = base_job_list_info["jobs"][0].get("version_id")
-            job_id = base_job_list_info["jobs"][0].get("job_id")
-            estimator = Estimator(modelarts_session=self.session, job_id=job_id, version_id=pre_version_id)
-            job_info = estimator.get_job_info()
-            pre_version_id = job_info.get("version_name", "V0")[1:]
-            return int(pre_version_id)+1
+    def stop_job(self):
+        self.job_instance.control_job()
 
     def get_obs_url_content(self, obs_url):
         if moxing_import_flag:
@@ -194,9 +124,10 @@ class modelarts_handler_v2():
                 return file_str
         else:
             bucket_name = obs_url[5:].split('/')[0]
-            obs_sub_path = obs_url.replace(f"s3://{bucket_name}/", "", 1)
+            obs_sub_path = obs_url.replace(f"/{bucket_name}/", "", 1)
             resp = self.obsClient.getObject(bucket_name, obs_sub_path, loadStreamInMemory=True)
-            if resp.status < 300:
+
+            if resp.status < self.RESP_OK:
                 logger.debug('request ok')
                 return resp.body.buffer.decode("utf-8")
             else:
@@ -204,7 +135,6 @@ class modelarts_handler_v2():
                                                                                            bucket_name, obs_sub_path))
 
     def update_code_to_obs(self, session_config, localpath):
-        # 待完善 验证
         if moxing_import_flag:
             dstpath = "obs:/" + session_config.code_dir
             logger.info("mox update loaclpath:{} dstpath:{}".format(localpath, dstpath))
@@ -215,74 +145,67 @@ class modelarts_handler_v2():
             logger.info("update code localpath:{} codepath:{} bucket:{} subdir:{}".format(
                 localpath, session_config.code_dir, bucket_name, sub_dir))
             resp = self.obsClient.putFile(bucket_name, sub_dir, localpath)
+            if resp.status < self.RESP_OK:
+                logger.info("update code to obs success. requestId:{}".format(resp.requestId))
+            else:
+                logger.error("update code to obs failed. errorCode:{} errorMessage:{}".format(resp.errorCode,
+                                                                                              resp.errorMessage))
+                raise RuntimeError('update code to obs failed')
 
     def create_modelarts_job(self, session_config, output_url):
-        jobdesc = session_config.job_description_prefix + "_jobname_" + session_config.job_name + "_" +\
+        timestr = time.strftime("%Y_%m_%d-%H_%M_%S")
+        self.job_name = session_config.job_name + "_ais-bench_" + timestr
+        jobdesc = session_config.job_description_prefix + "_jobname_" + self.job_name + "_" +\
             str(session_config.train_instance_type) + "_" + str(session_config.train_instance_count)
 
-        output_list = []
-        for output in enumerate(session_config.outputs):
-            output_list.append(OutputData(obs_path=output.obs_path, name=output.name))
+        output_list = [OutputData(obs_path="obs:/" + session_config.out_base_url, name="train_url")]
 
-        estimator = EstimatorV2(session=self.session,
-                                framework_type=session_config.framework_type,
-                                framework_version=session_config.framework_version,
-                                training_files=TrainingFiles(code_dir=session_config.code_dir,
-                                                             boot_file=session_config.boot_file),
-                                log_url=output_url[4:],
-                                parameters=session_config.parameters,
-                                outputs=output_list,
-                                pool_id=get_config_value(session_config, "pool_id"),
-                                train_instance_type=get_config_value(session_config, "train_instance_type"),
-                                train_instance_count=session_config.train_instance_count,
-                                job_description=jobdesc,
-                                user_command=None)
+        estimator = Estimator(session=self.session,
+                              framework_type=session_config.framework_type,
+                              framework_version=session_config.framework_version,
+                              training_files=TrainingFiles(code_dir="obs:/" + session_config.code_dir,
+                                                           boot_file="obs:/" + session_config.boot_file),
+                              log_url="obs:/" + output_url,
+                              parameters=session_config.parameters,
+                              outputs=output_list,
+                              pool_id=get_config_value(session_config, "pool_id"),
+                              train_instance_type=get_config_value(session_config, "train_instance_type"),
+                              train_instance_count=session_config.train_instance_count,
+                              job_description=jobdesc,
+                              user_command=None)
 
-        base_job_list_info = Estimator.get_job_list(modelarts_session=self.session, per_page=10, page=1, order="asc",
-                                                    search_content=session_config.job_name)
+        logger.debug("new create inputs:{} job_name:{}".format(session_config.inputs, self.job_name))
+        inut_list = [InputData(obs_path="obs:/" + session_config.inputs, name="data_url")]
+        try:
+            job_instance = estimator.fit(inputs=inut_list, wait=False, job_name=self.job_name)
+        except Exception as e:
+            logger.error("failed to create job on modelarts, msg %s" % (e))
+            raise RuntimeError('creat job failed')
 
-        input_list = []
-        for input in enumerate(session_config.inputs):
-            input_list.append(InputData(obs_path=input.obs_path, name=input.name))
-
-        if base_job_list_info is None or base_job_list_info.get("job_total_count", 0) == 0:
-            logger.debug("new create inputs:{} job_name:{}".format(session_config.inputs, session_config.job_name))
-            job_instance = estimator.fit(inputs=input_list, wait=False, job_name=session_config.job_name)
-        else:
-            job_id = base_job_list_info["jobs"][0].get("job_id")
-            pre_version_id = base_job_list_info["jobs"][0].get("version_id")
-            logger.debug("new versions job_id:{} pre_version_id:{}".format(job_id, pre_version_id))
-            job_instance = estimator.create_job_version(job_id=job_id, pre_version_id=pre_version_id,
-                                                        inputs=input_list, wait=False, job_desc=jobdesc)
-
-        print("inputs:{} job_name:{} ret instance:{}".format(input_list, session_config.job_name,
-              job_instance))
+        logger.debug("inputs:{} job_name:{} ret instance:{}".format(inut_list, self.job_name, job_instance))
         job_info = job_instance.get_job_info()
-        if not job_info['is_success']:
+        print("\njob_info: {}\n".format(job_info))
+
+        if 'error_msg' in job_info.keys():
             logger.error("failed to run job on modelarts, msg %s" % (job_info['error_msg']))
-            raise RuntimeError('failed')
+            raise RuntimeError('creat job failed')
 
-        self.job_log_prefix = "obs:/" + output_url[4:] + job_info["resource_id"] + "-job-" + session_config.job_name
-
-        print("create sucess job_id:{} resource_id:{} version_name:{} create_time:{}".format(
-            job_info["job_id"], job_info["resource_id"], job_info["version_name"], job_info["create_time"]))
+        self.job_log_prefix = output_url + self.job_name
+        print("create job sucess. id:{}  name:{} create_time:{}".format(
+              job_info["metadata"]["id"],  job_info["metadata"]["name"], job_info["metadata"]["create_time"]))
         return job_instance
-
 
     def run_job(self, session_config, localpath):
         logger.debug("session config:{}".format(session_config))
 
         self.print_train_instance_types()
-
-        # 获取job_name的next 版本号
-        next_version_id = self.get_job_name_next_new_version(session_config)
-        # 生成输出路径
-        self.output_url = os.path.join("s3:/{}".format(session_config.out_base_url), "V{}".format(next_version_id), "")
+        self.output_url = os.path.join(session_config.out_base_url + "lhbtest/")
         logger.debug("output_url:{}".format(self.output_url))
         self.create_obs_output_dirs(self.output_url)
 
-        # 更新代码到obs上
+        # update codes to obs
         self.update_code_to_obs(session_config, localpath)
-
+        # create job
         job_instance = self.create_modelarts_job(session_config, self.output_url)
-        self.wait_for_job(job_instance, session_config)
+        self.job_instance = job_instance
+        self.wait_for_job(session_config)
