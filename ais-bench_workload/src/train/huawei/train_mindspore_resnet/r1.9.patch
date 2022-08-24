@@ -1,6 +1,6 @@
 diff -Nur origin/eval.py code/eval.py
---- origin/eval.py	2022-08-24 11:04:01.400000000 +0800
-+++ code/eval.py	2022-08-24 11:04:01.430000000 +0800
+--- origin/eval.py	2022-08-24 17:26:22.440000000 +0800
++++ code/eval.py	2022-08-24 17:26:22.470000000 +0800
 @@ -82,6 +82,15 @@
      # eval model
      res = model.eval(dataset)
@@ -13,18 +13,18 @@ diff -Nur origin/eval.py code/eval.py
 +    else:
 +        ACC_LOG = os.path.join(ACC_DIR, "eval_acc.log")
 +        with open(ACC_LOG, 'w') as f:
-+            f.write("{}".format(res['top_1_accuracy']))
-
++            f.write("{}".format(res['top_1_accuracy']))  
+ 
  if __name__ == '__main__':
      eval_net()
 diff -Nur origin/train.py code/train.py
---- origin/train.py	2022-08-24 11:04:01.420000000 +0800
-+++ code/train.py	2022-08-24 11:04:01.460000000 +0800
+--- origin/train.py	2022-08-24 17:26:22.460000000 +0800
++++ code/train.py	2022-08-24 17:26:22.490000000 +0800
 @@ -17,7 +17,7 @@
  import glob
  import os
  import numpy as np
-
+-
 +import time
  import mindspore as ms
  import mindspore.nn as nn
@@ -39,13 +39,13 @@ diff -Nur origin/train.py code/train.py
 +   ais_utils_is_existed = False
 +else:
 +   ais_utils_is_existed = True
-
+ 
  ms.set_seed(1)
-
+ 
 @@ -351,6 +357,7 @@
          config.run_eval = False
          logger.warning("Thor optimizer not support evaluation while training.")
-
+ 
 +    model.build(dataset, None, sink_size=dataset.get_dataset_size(), epoch=config.epoch_size - config.pretrain_epoch_size)
      # define callbacks
      time_cb = TimeMonitor(data_size=step_size)
@@ -78,6 +78,6 @@ diff -Nur origin/train.py code/train.py
 +        THROUGHPUT_LOG = os.path.join(THROUGHPUT_DIR, "throughput_rank_{}".format(rank_id))
 +        with open(THROUGHPUT_LOG, 'w') as f:
 +            f.write("{}".format(throughput_rate))
-
+ 
      if config.run_eval and config.enable_cache:
          print("Remember to shut down the cache server via \"cache_admin --stop\"")
