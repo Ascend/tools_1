@@ -127,7 +127,11 @@ post_process()
             for dir in `ls -l $base_path$device_msreport_path/target/slog | grep ^d | awk '{print $9}'`
             do
                 mkdir -p $base_path$device_system_path/$dir
-                for file in `find $base_path$device_msreport_path/target/slog/$dir/device-os -type f`
+                for file in `find $base_path$device_msreport_path/target/slog/$dir/debug/device-os -type f`
+                do
+                    mv $file $base_path$device_system_path/$dir
+                done
+                for file in `find $base_path$device_msreport_path/target/slog/$dir/run/device-os -type f`
                 do
                     mv $file $base_path$device_system_path/$dir
                 done
@@ -165,7 +169,12 @@ post_process()
 
     #process host message
     if [ "$HOME" == "/root" ];then
-        file=/var/log/messages
+        id=$(lsb_release -i)
+        if [[ $id =~ "Ubuntu" ]];then
+            file=/var/log/syslog
+        else
+            file=/var/log/messages
+        fi
         if [ -f $file -a -r $file ];then
             cp $file $base_path$host_driver_log_path
         else
