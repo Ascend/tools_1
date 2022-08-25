@@ -11,9 +11,6 @@ export TRAIN_STEPS=12000
 export RANK_SIZE=8
 export DEVICE_NUM=8
 
-#model_arts version default "V1", Optional value ["V1", "V2"]
-#export MODEL_ARTS_VERSION=V2
-
 # options needed only if rank_size > 1
 export RANK_TABLE_FILE=/home/lcm/tool/rank_table_8p.json
 

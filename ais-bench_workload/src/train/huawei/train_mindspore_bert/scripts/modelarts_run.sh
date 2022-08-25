@@ -15,7 +15,7 @@ run_train()
     logger_Info "run_train called"
     [ ! -f $CODE_PATH/code/ma-pre-start.sh ] && touch $CODE_PATH/code/ma-pre-start.sh
     sed -i '/SINGLESERVER_MODE=/d' $CODE_PATH/code/ma-pre-start.sh
-    [[ $MODEL_ARTS_VERSION ]]&&[[ $MODEL_ARTS_VERSION == "V2" ]] && modelarts_version="V2" || modelarts_version="V1"
+    [[ $MODELARTS_VERSION ]]&&[[ $MODELARTS_VERSION == "V2" ]] && modelarts_version="V2" || modelarts_version="V1"
     if [ "$SINGLESERVER_MODE" == "True" ];then
         echo "now set singleserver_mode OK"
         echo -e "\nexport SINGLESERVER_MODE=True" >> $CODE_PATH/code/ma-pre-start.sh

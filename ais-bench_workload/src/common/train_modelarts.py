@@ -1,16 +1,19 @@
+import argparse
+import logging
 import os
 import sys
 from statistics import mean
-import logging
-import argparse
 
 sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)), '..'))
 
-from config.modelarts_config import access_config, session_config_v2
-from config.modelarts_config import session_config as session_config_v1
-from modelarts_handler import modelarts_handler, logger
-from modelarts_handler_v2 import modelarts_handler_v2
 import ais_utils
+from config.modelarts_config import access_config
+from config.modelarts_config import session_config as session_config_v1
+from config.modelarts_config import session_config_v2
+from modelarts_handler_v2 import modelarts_handler_v2
+
+from modelarts_handler import logger, modelarts_handler
+
 
 def report_result(handler):
     ranksize_file_url = os.path.join(handler.output_url, 'ranksize.json')
@@ -78,19 +81,18 @@ if __name__ == '__main__':
     session_config = session_config_v1 if args.version == 'V1' else session_config_v2
 
     handler = modelarts_handler() if args.version == 'V1' else modelarts_handler_v2()
+    handler.modelarts_version = args.version
+    handler.session_config = session_config
     handler.create_session(access_config)
 
     if args.action == "stop":
-        if args.version == 'V1':
-            handler.stop_new_versions(session_config)
-        else:
-            handler.stop_job()
+        handler.stop_job()
         sys.exit()
 
     handler.create_obs_handler(access_config)
 
     # default run mode
-    handler.run_job(session_config, args.local_code_path)
+    handler.run_job(args.local_code_path)
 
     # handler.output_url = "s3://0923/00lcm/result_dump/res/V212/"
     try:

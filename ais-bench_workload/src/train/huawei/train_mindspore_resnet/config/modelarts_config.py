@@ -23,7 +23,6 @@ access_config = ed({
 })
 
 session_config = ed({
-    'version': "V1",
     # 运行模型的传入超参
     'hyperparameters': [
         # 模型配置文件，默认boost模式，不需要更改
@@ -54,7 +53,7 @@ session_config = ed({
 
     # 使用容器类型与镜像版本
     'framework_type': 'Ascend-Powered-Engine',
-    'framework_version': 'MindSpore-1.3.0-c78-python3.7-euleros2.8-aarch64',
+    'framework_version': 'mindspore_1.3.0-cann_5.0.2-py_3.7-euler_2.8.3-aarch64',
 
     # 资源参数类型主要包括如下2个值 train_instance_type和pool_id
     # 不设置pool_id 默认是公共池 设置了就是专属资源池
@@ -64,7 +63,7 @@ session_config = ed({
     # https://support.huaweicloud.com/sdkreference-modelarts/modelarts_04_0191.html 该链接指示获取方法
 
     # 专属资源池id 不是则为None
-    'pool_id' : None,
+    'pool_id': None,
     # 训练类型 如下为8卡 如果是专属资源池id设置，那么该类型需要设置为None
     'train_instance_type': 'modelarts.kat1.8xlarge',
     # 训练结点数
@@ -82,7 +81,6 @@ session_config = ed({
 })
 
 session_config_v2 = ed({
-    'version': "V2",
     # 运行模型的传入超参
     'parameters': [
         # 模型配置文件，默认boost模式，不需要更改
@@ -124,16 +122,16 @@ session_config_v2 = ed({
     # https://support.huaweicloud.com/sdkreference-modelarts/modelarts_04_0191.html 该链接指示获取方法
 
     # 专属资源池id 不是则为None
-    'pool_id' : None,
+    'pool_id': None,
     # 训练类型 如下为8卡 如果是专属资源池id设置，那么该类型需要设置为None
     'train_instance_type': 'modelarts.kat1.8xlarge',
     # 训练结点数
     'train_instance_count': 1,
 
     # 云存储路径 默认为空
-    # 'nas_type' : None,
-    # 'nas_share_addr' : None,
-    # 'nas_mount_path' : None,
+    # 'nas_type': None,
+    # 'nas_share_addr': None,
+    # 'nas_mount_path': None,
 
     # 输出信息基准路径 整体路径为 train_url = out_base_url/version_name
     "out_base_url": "/zgwtest/lcm_test/result/",

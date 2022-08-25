@@ -19,11 +19,10 @@ access_config = ed({
     # 设置该信息后 需要设置相关的域名解析地址
     'iam_endpoint': '',
     'obs_endpoint': '',
-    'modelarts_endpoint' : '',
+    'modelarts_endpoint': '',
 })
 
 session_config = ed({
-    'version': "V1",
     # 运行模型的传入超参
     'hyperparameters': [
         # 模型配置文件，默认boost模式，不需要修改
@@ -67,7 +66,7 @@ session_config = ed({
 
     # 使用容器类型与镜像版本
     'framework_type': 'Ascend-Powered-Engine',
-    'framework_version': 'MindSpore-1.3.0-c78-python3.7-euleros2.8-aarch64',
+    'framework_version': 'mindspore_1.3.0-cann_5.0.2-py_3.7-euler_2.8.3-aarch64',
 
     # 资源参数类型主要包括如下2个值 train_instance_type和pool_id
     # 不设置pool_id 默认是公共池 设置了就是专属资源池
@@ -77,7 +76,7 @@ session_config = ed({
     # https://support.huaweicloud.com/sdkreference-modelarts/modelarts_04_0191.html 该链接指示获取方法
 
     # 专属资源池id 不是则为None
-    'pool_id' : None,
+    'pool_id': None,
     # 训练类型 如下为8卡 如果是专属资源池id设置，那么该类型需要设置为None
     'train_instance_type': 'modelarts.kat1.8xlarge',
     # 训练结点数
@@ -95,9 +94,8 @@ session_config = ed({
 })
 
 session_config_v2 = ed({
-    'version': "V2",
     # 运行模型的传入超参
-    'hyperparameters': [
+    'parameters': [
         # 模型配置文件，默认boost模式，不需要修改
         {'name': 'config_path', 'value': '../../pretrain_config_Ascend_Boost.yaml'},
         # 是否使能modelarts 必须设置为True，不需要修改
