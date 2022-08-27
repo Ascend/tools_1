@@ -53,7 +53,7 @@ session_config = ed({
 
     # 使用容器类型与镜像版本
     'framework_type': 'Ascend-Powered-Engine',
-    'framework_version': 'mindspore_1.3.0-cann_5.0.2-py_3.7-euler_2.8.3-aarch64',
+    'framework_version': 'MindSpore-1.3-cann_5.0.2-python3.7-euleros2.8-aarch64',
 
     # 资源参数类型主要包括如下2个值 train_instance_type和pool_id
     # 不设置pool_id 默认是公共池 设置了就是专属资源池
@@ -75,7 +75,7 @@ session_config = ed({
     # 'nas_mount_path' : None,
 
     # 输出信息基准路径 整体路径为 train_url = out_base_url/version_name
-    "out_base_url": "/zgwtest/lcm_test/result",
+    "out_base_url": "/zgwtest/lcm_test/result/",
     # job 描述前缀
     "job_description_prefix": 'lcm-debug desc',
 })
