@@ -145,7 +145,6 @@ class PrecisionTool(object):
         parser = argparse.ArgumentParser()
         parser.add_argument('-n', '--name', dest='name', default='', help='op name')
         parser.add_argument('-g', '--graph', dest='graph', help='graph name')
-        parser.add_argument('-d', '--dump', dest='dump', action='store_true', help='show dump data info')
         parser.add_argument('-a', '--attr', dest='attr', action='store_true', help='show all attr info')
         parser.add_argument('-c', '--check', dest='check ', action='store_true', help='check single op precision')
         parser.add_argument('-s', '--save', dest='save', type=int, default=0,
