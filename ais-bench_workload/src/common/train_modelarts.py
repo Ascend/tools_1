@@ -10,7 +10,6 @@ import ais_utils
 from config.modelarts_config import access_config
 from config.modelarts_config import session_config as session_config_v1
 from config.modelarts_config import session_config_v2
-from modelarts_handler_v2 import modelarts_handler_v2
 
 from modelarts_handler import logger, modelarts_handler
 
@@ -80,7 +79,7 @@ if __name__ == '__main__':
     logger.setLevel(logging.DEBUG)
     session_config = session_config_v1 if args.version == 'V1' else session_config_v2
 
-    handler = modelarts_handler() if args.version == 'V1' else modelarts_handler_v2()
+    handler = modelarts_handler()
     handler.modelarts_version = args.version
     handler.session_config = session_config
     handler.create_session(access_config)

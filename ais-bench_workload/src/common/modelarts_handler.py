@@ -90,6 +90,7 @@ class modelarts_handler():
         self.job_instance = None
         self.session_config = None
         self.modelarts_version = 'V1'
+        self.bucket_name = None
 
     def sync_job_log(self, session_config):
         dstpath = os.path.join(os.getenv("BASE_PATH", "./"), "log")
@@ -99,6 +100,7 @@ class modelarts_handler():
             logurl = self.job_log_prefix + '-' + str(id) + '.log'
             logname = os.path.basename(logurl)
             logpath = os.path.join(dstpath, logname)
+            #print("\n===============logurl: {} logname: {} logpath: {}".format(logurl, logname, logpath))
             if self.session.obs.is_obs_path_exists(logurl):
                 self.session.obs.download_file(logurl, logpath)
 
@@ -108,7 +110,7 @@ class modelarts_handler():
             time.sleep(10)
             count = count + 1
             if count > 10:
-                count = 10
+                # count = 10
                 self.sync_job_log(self.session_config)
             job_info = self.job_instance.get_job_info()
             if self.modelarts_version == 'V1':
@@ -123,11 +125,10 @@ class modelarts_handler():
                     logger.info("task succeeded, total time %d(s)" % (job_info['status']['duration'] / 1000))
                     break
                 elif phase in ['Failed', 'Abnormal', 'Terminated']:
-                    print("task failed, phase %s, please check log on obs, exit" % (self.job_info['status']['phase']))
+                    print("task failed, phase %s, please check log on obs, exit" % (job_info['status']['phase']))
                     raise RuntimeError('job failed')
                 else:
-                    print("waiting for task, phase %s, total time: %d(s)" % (self.job_info['status']['phase'],
-                                                                             self.job_info['duration'] / 1000))
+                    print("waiting for task, phase %s, total time: %d(s)" % (job_info['status']['phase'], 10 * count))
 
     def create_obs_output_dirs(self, output_url):
         if moxing_import_flag:
@@ -135,13 +136,9 @@ class modelarts_handler():
             logger.info("create obs outdir mox mkdir:{}".format(dstpath))
             mox.file.make_dirs(dstpath)
         else:
-            if self.modelarts_version == 'V1':
-                bucket_name = output_url[5:].split('/')[0]
-            else:
-                bucket_name = output_url[1:].split('/')[0]
-            sub_dir = output_url.replace(f"s3://{bucket_name}/", "", 1)
-            logger.debug('create obs output{} subdir:{} bucket:{}'.format(output_url, sub_dir, bucket_name))
-            resp = self.obsClient.putContent(bucket_name, sub_dir, content=None)
+            sub_dir = output_url.replace(f"s3://{self.bucket_name}/", "", 1)
+            logger.debug('create obs output{} subdir:{} bucket:{}'.format(output_url, sub_dir, self.bucket_name))
+            resp = self.obsClient.putContent(self.bucket_name, sub_dir, content=None)
             if resp.status < self.RESP_OK:
                 logger.debug('obs put content request ok')
             else:
@@ -221,15 +218,18 @@ class modelarts_handler():
                 file_str = f.read()
                 return file_str
         else:
-            bucket_name = obs_url[5:].split('/')[0]
-            obs_sub_path = obs_url.replace(f"s3://{bucket_name}/", "", 1)
-            resp = self.obsClient.getObject(bucket_name, obs_sub_path, loadStreamInMemory=True)
+            if self.modelarts_version == 'V1':
+                obs_sub_path = obs_url.replace(f"s3://{self.bucket_name}/", "", 1)
+            else:
+                obs_sub_path = obs_url.replace(f"/{self.bucket_name}/", "", 1)
+
+            resp = self.obsClient.getObject(self.bucket_name, obs_sub_path, loadStreamInMemory=True)
             if resp.status < self.RESP_OK:
                 logger.debug('request ok')
                 return resp.body.buffer.decode("utf-8")
             else:
                 raise RuntimeError('obs get object ret:{} url:{} bucket:{} \
-                                   path:{}'.format(resp.status, obs_url, bucket_name, obs_sub_path))
+                                   path:{}'.format(resp.status, obs_url, self.bucket_name, obs_sub_path))
 
     def update_code_to_obs(self, localpath):
         if moxing_import_flag:
@@ -237,17 +237,17 @@ class modelarts_handler():
             logger.info("mox update loaclpath:{} dstpath:{}".format(localpath, dstpath))
             mox.file.copy_parallel(localpath, dstpath)
         else:
-            bucket_name = self.session_config.code_dir.split('/')[1]
             sub_dir = "/".join(self.session_config.code_dir.strip("/").split('/')[1:])
             logger.info("update code localpath:{} codepath:{} bucket:{} subdir:{}".format(
-                localpath, self.session_config.code_dir, bucket_name, sub_dir))
-            resp = self.obsClient.putFile(bucket_name, sub_dir, localpath)
-            if resp.status < self.RESP_OK:
-                logger.info("update code to obs success. requestId:{}".format(resp.requestId))
-            else:
-                logger.error("update code to obs failed. errorCode:{} errorMessage:{}".format(resp.errorCode,
-                                                                                              resp.errorMessage))
-                raise RuntimeError('update code to obs failed')
+                localpath, self.session_config.code_dir, self.bucket_name, sub_dir))
+            print("\n==============self.bucket_name:{} sub_dir: {} localpath:{}".format(self.bucket_name, sub_dir, localpath))
+            resp = self.obsClient.putFile(self.bucket_name, sub_dir, localpath)
+            # if resp.status < self.RESP_OK:
+            #     logger.info("update code to obs success. requestId:{}".format(resp.requestId))
+            # else:
+            #     logger.error("update code to obs failed. errorCode:{} errorMessage:{}".format(resp.errorCode,
+            #                                                                                   resp.errorMessage))
+            #     raise RuntimeError('update code to obs failed')
 
     def create_modelarts_job_v1(self, output_url):
         jobdesc = self.session_config.job_description_prefix + "_jobname_" + self.session_config.job_name + "_" +\
@@ -298,12 +298,11 @@ class modelarts_handler():
         return job_instance
 
     def create_modelarts_job_v2(self, output_url):
-        timestr = time.strftime("%Y_%m_%d-%H_%M_%S")
-        self.job_name = self.session_config.job_name + "_ais-bench_" + timestr
         jobdesc = self.session_config.job_description_prefix + "_jobname_" + self.job_name + "_" +\
             str(self.session_config.train_instance_type) + "_" + str(self.session_config.train_instance_count)
 
-        output_list = [OutputData(obs_path="obs:/" + self.session_config.out_base_url, name="train_url")]
+        output_list = [OutputData(obs_path="obs:/" + self.session_config.out_base_url + self.job_name + "/",
+                                  name="train_url")]
 
         estimator = Estimatorv2(session=self.session,
                                 framework_type=self.session_config.framework_type,
@@ -335,9 +334,11 @@ class modelarts_handler():
             logger.error("failed to run job on modelarts, msg %s" % (job_info['error_msg']))
             raise RuntimeError('creat job failed')
 
-        self.job_log_prefix = output_url + self.job_name
-        print("create job sucess. id:{}  name:{} create_time:{}".format(
-              job_info["metadata"]["id"],  job_info["metadata"]["name"], job_info["metadata"]["create_time"]))
+        self.job_log_prefix = 'obs:/' + output_url + "modelarts-job-" + job_info['metadata']['id'] + '-worker'
+        print("create job sucess. id:{}  name:{} create_time:{} job_log_prefix:{}".format(
+              job_info["metadata"]["id"],  job_info["metadata"]["name"], job_info["metadata"]["create_time"],
+              self.job_log_prefix))
+
         return job_instance
 
     def create_modelarts_job(self, output_url):
@@ -349,8 +350,10 @@ class modelarts_handler():
 
     def run_job(self, localpath):
         logger.debug("session config:{}".format(self.session_config))
-
-        self.print_train_instance_types()
+        timestr = time.strftime("%Y_%m_%d-%H_%M_%S")
+        self.job_name = self.session_config.job_name + timestr
+        # self.print_train_instance_types()
+        # modelarts path end with '/'，or report error ModelArts.2791
         if self.modelarts_version == 'V1':
             # get job_name's next version number
             next_version_id = self.get_job_name_next_new_version()
@@ -358,7 +361,8 @@ class modelarts_handler():
             self.output_url = os.path.join("s3:/{}".format(self.session_config.out_base_url),
                                            "V{}".format(next_version_id), "")
         else:
-            self.output_url = self.session_config.out_base_url
+            self.output_url = os.path.join(self.session_config.out_base_url, self.job_name, "")
+        self.bucket_name = self.session_config.out_base_url.split('/')[1]
         logger.debug("output_url:{}".format(self.output_url))
         self.create_obs_output_dirs(self.output_url)
 
