@@ -180,19 +180,26 @@ ais-bench-stubs  code  log  result  tmp
 
 **PYTHON_COMMAND**
 
-```
+```bash
 export PYTHON_COMMAND=python3.7
 ```
 
-**必须要设置为跟当前运行环境匹配的python版本。同时该版本也必须安装对应的python软件依赖。**
+必须要设置为跟当前运行环境匹配的python版本。同时该版本也必须安装对应的python软件依赖。
 
 **SINGLESERVER_MODE**
 
-**单服务器模式指运行n个设备。但是运行是各自设备进行单设备8卡进行业务训练，默认不开启。**
+单服务器模式指运行n个设备。但是运行是各自设备进行单设备8卡进行业务训练，默认不开启。
 
-**如果需要打开该模式 请增加如下命令 export SINGLESERVER_MODE=True**
+如果需要打开该模式 请增加如下命令 export SINGLESERVER_MODE=True
 
+**MODELARTS_VERSION**
 
+```bash
+#modelarts version default "V1", Optional value ["V1", "V2"]
+export MODELARTS_VERSION=V2
+```
+
+modelarts的执行版本。该环境变量不设置时默认是V1版本。需要执行modelarts V2版本时请显示声明该变量为"V2"
 
 #### modelarts_config.py   modelarts配置文件
 
