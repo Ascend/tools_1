@@ -142,14 +142,13 @@ session_config_v2 = ed({
     # 资源参数类型主要包括如下2个值 train_instance_type和pool_id
     # 不设置pool_id 默认是公共池 设置了就是专属资源池
     # 只设置pool_id 不设置train_instance_type 默认为专属资源池的默认类型
-    # train_instance_type 在程序打印中有提示的 一般为如下四个值 分别对应 1卡 2卡 4卡 8卡
-    # ['modelarts.kat1.xlarge', 'modelarts.kat1.2xlarge', 'modelarts.kat1.4xlarge', 'modelarts.kat1.8xlarge']
-    # https://support.huaweicloud.com/sdkreference-modelarts/modelarts_04_0191.html 该链接指示获取方法
+    # train_instance_type 在程序打印中有提示的. 由modelarts.estimatorV2 类Estimator的接口get_train_instance_types（）查询而来。
+    # 请参见https://support.huaweicloud.com/sdkreference-modelarts/modelarts_04_0431.html 该链接指示获取方法。注意不同云环境查询的结果不同
 
     # 专属资源池id 不是则为None
     'pool_id': None,
     # 训练类型 如下为8卡 如果是专属资源池id设置，那么该类型需要设置为None
-    'train_instance_type': 'modelarts.kat1.8xlarge',
+    'train_instance_type': 'modelarts.kat1.8xlarge.public',
     # 训练结点数
     'train_instance_count': 1,
 
