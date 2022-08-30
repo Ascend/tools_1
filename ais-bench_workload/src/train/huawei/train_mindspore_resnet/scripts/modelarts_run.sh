@@ -23,10 +23,10 @@ run_train()
         echo "now set singleserver_mode OK"
         echo -e "\nexport SINGLESERVER_MODE=True" >> $CODE_PATH/code/ma-pre-start.sh
 
-        ${PYTHON_COMMAND} -u ${CODE_PATH}/common/train_modelarts.py --local_code_path  $CODE_PATH/code --single_server_mode --version $modelarts_version || { logger_Warn "run train modelarts failed ret:$?";return 1; }
+        ${PYTHON_COMMAND} -u ${CODE_PATH}/common/train_modelarts.py --local_code_path $CODE_PATH/code --single_server_mode --modelarts_version $modelarts_version || { logger_Warn "run train modelarts failed ret:$?";return 1; }
     else
         echo "now not set singleserver_mode"
-        ${PYTHON_COMMAND} -u ${CODE_PATH}/common/train_modelarts.py --local_code_path $CODE_PATH/code --version $modelarts_version || { logger_Warn "run train modelarts failed ret:$?";return 1; }
+        ${PYTHON_COMMAND} -u ${CODE_PATH}/common/train_modelarts.py --local_code_path $CODE_PATH/code --modelarts_version $modelarts_version || { logger_Warn "run train modelarts failed ret:$?";return 1; }
     fi
     ${PYTHON_COMMAND} $CODE_PATH/ais_utils.py set_result "training" "result" "OK"
 }
