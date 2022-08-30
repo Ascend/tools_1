@@ -175,7 +175,7 @@ class modelarts_handler():
             raise RuntimeError('creat job failed')
 
         self.job_log_prefix = self.OBS_PATH_HEAD + output_url + "modelarts-job-" + job_info['metadata']['id'] + '-worker'
-        print("create job sucess. id:{}  name:{} create_time:{} job_log_prefix:{}".format(
+        print("create job sucess. job_id:{}  job name:{} create_time:{} job_log_prefix:{}".format(
               job_info["metadata"]["id"],  job_info["metadata"]["name"], job_info["metadata"]["create_time"],
               self.job_log_prefix))
 
