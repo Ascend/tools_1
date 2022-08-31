@@ -92,8 +92,8 @@ class DynamicInput(object):
         if self.cur_dynamic_arg is DynamicArgumentEnum.DYM_SHAPE:
             return
         # check dynamic input value is valid, "--arg=value" ,split by '='
-        dynamic_arg_values = self.cur_dynamic_arg.split(utils.EQUAL)[1]
-        if self.atc_dynamic_arg.split(utils.EQUAL)[0] == DynamicArgumentEnum.DYM_SHAPE.value.atc_arg:
+        dynamic_arg_values = self.atc_dynamic_arg.split(utils.EQUAL)[1]
+        if self.atc_dynamic_arg.split(utils.EQUAL)[0] == DynamicArgumentEnum.DYM_BATCH.value.atc_arg:
             dynamic_arg_values = dynamic_arg_values.replace(utils.COMMA, utils.SEMICOLON)
         try:
             atc_value_list = utils.parse_arg_value(dynamic_arg_values)
@@ -284,6 +284,13 @@ class NpuDumpData(DumpData):
                     utils.print_error_log(
                         "The size (%d) of bin file can not match the input of the model." % bin_file_size)
                     raise AccuracyCompareException(utils.ACCURACY_COMPARISON_BIN_FILE_ERROR)
+        elif self.dynamic_input.is_dynamic_shape_scenario():
+            for shape_size in shape_size_array:
+                for bin_size in bin_files_size_array:
+                    if bin_size < shape_size:
+                        return
+            utils.print_error_log("The size of bin file can not match the input of the model.")
+            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_BIN_FILE_ERROR)
         else:
             for shape_size, bin_file_size in zip(shape_size_array, bin_files_size_array):
                 if shape_size == 0:
