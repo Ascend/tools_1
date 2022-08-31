@@ -373,7 +373,7 @@ def parser_input_shape(input_shape_str):
     input_shape_map = {}
     for input_op_shape in input_shape_str.split(SEMICOLON):
         op_name = input_op_shape.split(COLON)[0]
-        op_shape = parser_input_shape(input_op_shape.split(COLON)[1])
+        op_shape = parse_value_by_comma(input_op_shape.split(COLON)[1])
         input_shape_map[op_name] = op_shape
     return input_shape_map
 
@@ -385,7 +385,7 @@ def parse_value_by_comma(value):
     value_list = []
     value_str_list = value.split(",")
     for value_str in value_str_list:
-        if str(value).isdigit() or value_str == '-1':
+        if str(value_str).isdigit() or value_str == '-1':
             value_list.append(int(value_str))
         else:
             raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
