@@ -34,6 +34,10 @@ ACCURACY_COMPARISON_INVALID_DEVICE_ERROR = 17
 MODEL_TYPE = ['.onnx', '.pb', '.om']
 DIM_PATTERN = "^[^,][0-9,]*$"
 MAX_DEVICE_ID = 255
+SEMICOLON = ";"
+COLON = ":"
+EQUAL = "="
+COMMA = ","
 
 
 class AccuracyCompareException(Exception):
@@ -346,3 +350,43 @@ def check_device_param_valid(device):
             "Please enter a valid number for device, the device id should be"
             " in [0, 255], now is %s." % device)
         raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_DEVICE_ERROR)
+
+
+def parse_arg_value(values):
+    """
+    parse dynamic arg value of atc cmdline
+    """
+    value_list = []
+    for item in values.split(SEMICOLON):
+        value_list.append(parse_value_by_comma(item))
+    return value_list
+
+
+def parser_input_shape(input_shape_str):
+    """
+    parse input shape with op name to map, like "Input:2,224,224,3"
+    param:
+    input_shape_str : str
+    return:
+    input_shape_map: dict
+    """
+    input_shape_map = {}
+    for input_op_shape in input_shape_str.split(SEMICOLON):
+        op_name = input_op_shape.split(COLON)[0]
+        op_shape = parser_input_shape(input_op_shape.split(COLON)[1])
+        input_shape_map[op_name] = op_shape
+    return input_shape_map
+
+
+def parse_value_by_comma(value):
+    """
+    parse value by comma, like '1,2,4,8'
+    """
+    value_list = []
+    value_str_list = value.split(",")
+    for value_str in value_str_list:
+        if str(value).isdigit() or value_str == '-1':
+            value_list.append(int(value_str))
+        else:
+            raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
+    return value_list
