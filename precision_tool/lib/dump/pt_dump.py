@@ -16,24 +16,25 @@ class PtDump(object):
     def prepare(self):
         util.create_dir(cfg.PT_NPU_DIR)
         util.create_dir(cfg.PT_GPU_DIR)
+        util.create_dir(cfg.PT_DUMP_DECODE_DIR)
         if not util.empty_dir(cfg.PT_NPU_DIR):
             npu_h5_files = util.list_h5_files(cfg.PT_NPU_DIR)
             if len(npu_h5_files) != 0:
                 file_list = sorted(npu_h5_files.values(), key=lambda x: x.timestamp)
-                self.npu = H5Util(file_list[0].file_name, prefix='npu')
+                self.npu = H5Util(file_list[0].path, prefix='npu')
         if not util.empty_dir(cfg.PT_GPU_DIR):
             gpu_h5_files = util.list_h5_files(cfg.PT_GPU_DIR)
             if len(gpu_h5_files) != 0:
                 file_list = sorted(gpu_h5_files.values(), key=lambda x: x.timestamp)
-                self.gpu = H5Util(file_list[0].file_name, prefix='gpu')
+                self.gpu = H5Util(file_list[0].path, prefix='gpu')
 
     @staticmethod
     def get_dump_files_by_name(file_name):
         """Get dump files by name"""
         npu_pattern = gen_h5_data_name(file_name, 'npu') if '/' in file_name else file_name
         gpu_pattern = gen_h5_data_name(file_name, 'gpu') if '/' in file_name else file_name
-        files = util.list_numpy_files(cfg.DUMP_DECODE_DIR, extern_pattern=npu_pattern)
-        files.update(util.list_numpy_files(cfg.DUMP_DECODE_DIR, extern_pattern=gpu_pattern))
+        files = util.list_numpy_files(cfg.PT_DUMP_DECODE_DIR, extern_pattern=npu_pattern)
+        files.update(util.list_numpy_files(cfg.PT_DUMP_DECODE_DIR, extern_pattern=gpu_pattern))
         return files
 
     def op_dump_summary(self, ir_name):
