@@ -26,6 +26,7 @@ NPU_DUMP_DATA_BASE_PATH = "dump_data/npu"
 RESULT_DIR = "result"
 INPUT = "input"
 INPUT_SHAPE = "--input_shape"
+OUTPUT_SIZE = "--outputSize"
 
 
 class DynamicInput(object):
@@ -133,7 +134,7 @@ class DynamicInput(object):
                     utils.print_error_log("The size (%s) must be large than zero. Please check the output size."
                                           % self.arguments.output_size)
                     raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
-            msame_cmd.append('--outputSize')
+            msame_cmd.append(OUTPUT_SIZE)
             msame_cmd.append(self.arguments.output_size)
 
 
