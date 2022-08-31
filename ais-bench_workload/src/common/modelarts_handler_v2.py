@@ -104,8 +104,9 @@ class modelarts_handler():
         algo_info = Estimator.get_train_instance_types(self.session)
         print("get valid train_instance_types:{}".format(algo_info))
 
-    def stop_job(self):
-        self.job_instance.control_job()
+    def stop_job(self, job_id):
+        job_info = Estimator.control_job_by_id(session=self.session, job_id=job_id)
+        print("job stop status: {}".format(job_info["status"]["phase"]))
 
     def get_obs_url_content(self, obs_url):
         if moxing_import_flag:
@@ -174,7 +175,7 @@ class modelarts_handler():
             raise RuntimeError('creat job failed')
 
         self.job_log_prefix = self.OBS_PATH_HEAD + output_url + "modelarts-job-" + job_info['metadata']['id'] + '-worker'
-        print("create job sucess. id:{}  name:{} create_time:{} job_log_prefix:{}".format(
+        print("create job sucess. job_id:{}  job name:{} create_time:{} job_log_prefix:{}".format(
               job_info["metadata"]["id"],  job_info["metadata"]["name"], job_info["metadata"]["create_time"],
               self.job_log_prefix))
 

@@ -251,14 +251,30 @@ benchmark.log  job3be1f0e5-job-aisbench-debug-0.log  job3be1f0e5-job-aisbench-de
 
 + 云上modelarts界面操作
   在云环境modelarts服务“训练管理”->“训练作业”界面，点击正在运行的job链接并进入。在执行job界面，点击“更多操作”按钮，激活下拉菜单，在上下文菜单中点击“停止”，即可终止运行的job。
+  
 + 本地停止方法，如下操作即可。该操作可以停止掉配置文件中job_name指示的最新一个作业版本
 
-```
+  对于modelarts V1版本：
+
+```bash
 [root@node66 ]# ls
 ais-bench-stubs  code  log  result
 [root@node66 code]# python3  ./code/common/train_modelarts.py  --action stop
 jobname:aisbench-debug jobid:3043 preversionid:13231 jobstatus:JOBSTAT_RUNNING stop status:{'is_success': True}
 ```
+
+​        对于modelarts V2版本：
+
+创建job成功后，本地屏幕会打印job相关信息，请搜索类似“create job sucess. job_id:c8e62b62-9529-4696-ba08-2969f4861a5d”，取"job_id:"后面部分，就是Job_id。
+
+```bash
+[root@node66 ]# python3  ./code/common/train_modelarts.py  --action stop --modelarts_version V2  --job_id e7052953-3107-47d5-a5fa-725f9eced6e3
+stop jobid:e7052953-3107-47d5-a5fa-725f9eced6e3 sesion:<modelarts.session.Session object at 0xffffa1f96e10>
+INFO:root:Successfully stop the job e7052953-3107-47d5-a5fa-725f9eced6e3
+job stop status: Terminated
+```
+
+
 
 ### 结果呈现和展示
 

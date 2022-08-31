@@ -70,7 +70,8 @@ def get_args():
     parser.add_argument("--local_code_path", help="the local path of run code")
     parser.add_argument("--single_server_mode", action="store_true", help="the local path of run code")
     parser.add_argument("--action", default="run", choices=["run", "stop"], help="action (run or stop)")
-    parser.add_argument("--version", default="V1", choices=["V1", "V2"], help="modelarts version (V1 or V2)")
+    parser.add_argument("--modelarts_version", default="V1", choices=["V1", "V2"], help="modelarts version (V1 or V2)")
+    parser.add_argument("--job_id", default="None",  help="job id used to stop given job")
     args = parser.parse_args()
     return args
 
@@ -78,16 +79,16 @@ if __name__ == '__main__':
     args = get_args()
 
     logger.setLevel(logging.DEBUG)
-    session_config = session_config_v1 if args.version == 'V1' else session_config_v2
+    session_config = session_config_v1 if args.modelarts_version == 'V1' else session_config_v2
 
-    handler = modelarts_handler() if args.version == 'V1' else modelarts_handler_v2()
+    handler = modelarts_handler() if args.modelarts_version == 'V1' else modelarts_handler_v2()
     handler.create_session(access_config)
 
     if args.action == "stop":
-        if args.version == 'V1':
+        if args.modelarts_version == 'V1':
             handler.stop_new_versions(session_config)
         else:
-            handler.stop_job()
+            handler.stop_job(args.job_id)
         sys.exit()
 
     handler.create_obs_handler(access_config)
