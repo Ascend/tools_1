@@ -383,9 +383,9 @@ def parse_value_by_comma(value):
     parse value by comma, like '1,2,4,8'
     """
     value_list = []
-    value_str_list = value.split(",")
+    value_str_list = value.split(COMMA)
     for value_str in value_str_list:
-        if str(value_str).isdigit() or value_str == '-1':
+        if value_str.isdigit() or value_str == '-1':
             value_list.append(int(value_str))
         else:
             print_error_log("please check your input shape.")
