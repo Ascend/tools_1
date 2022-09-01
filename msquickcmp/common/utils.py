@@ -362,7 +362,7 @@ def parse_arg_value(values):
     return value_list
 
 
-def parser_input_shape(input_shape_str):
+def parse_input_shape(input_shape_str):
     """
     parse input shape with op name to map, like "Input:2,224,224,3"
     param:

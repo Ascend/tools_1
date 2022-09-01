@@ -65,8 +65,8 @@ class DynamicInput(object):
                 atc_input_shape = atc_arg.split(utils.EQUAL)[1]
                 break
 
-        atc_input_shape_dict = utils.parser_input_shape(atc_input_shape)
-        quickcmp_input_shape_dict = utils.parser_input_shape(arguments.input_shape)
+        atc_input_shape_dict = utils.parse_input_shape(atc_input_shape)
+        quickcmp_input_shape_dict = utils.parse_input_shape(arguments.input_shape)
         batch_size_set = set([])
         for op_name in atc_input_shape_dict.keys():
             DynamicInput.add_dynamic_shape(atc_input_shape_dict[op_name],
