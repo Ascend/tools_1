@@ -58,13 +58,15 @@ class DynamicInput(object):
     def get_arg_value(om_parser, arguments):
         if om_parser.shape_range:
             return getattr(arguments, DynamicArgumentEnum.DYM_SHAPE.value.msquickcmp_arg)
+        # get atc input shape from atc cmdline
         atc_input_shape = ""
         atc_cmd_args = om_parser.get_atc_cmdline().split(" ")
         for atc_arg in atc_cmd_args:
             if INPUT_SHAPE in atc_arg:
                 atc_input_shape = atc_arg.split(utils.EQUAL)[1]
                 break
-
+        # from atc input shape and current input shape to get input batch size
+        # if dim in shape is -1, the shape in the index of current input shape is the batch size
         atc_input_shape_dict = utils.parse_input_shape(atc_input_shape)
         quickcmp_input_shape_dict = utils.parse_input_shape(arguments.input_shape)
         batch_size_set = set()
