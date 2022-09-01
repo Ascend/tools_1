@@ -119,7 +119,7 @@ def create_intensors_from_infileslist(infileslist, intensors_desc, device, pure_
 
 def check_input_parameter(inputs_list, intensors_desc):
     if len(inputs_list) == 0:
-        logger.error("Invalid input parameters. Parameter inputs_list is empty")
+        logger.error("Invalid input parameters. Parameter input is empty")
         raise RuntimeError()
     if os.path.isfile(inputs_list[0]):
         for file_path in inputs_list:
@@ -129,16 +129,18 @@ def check_input_parameter(inputs_list, intensors_desc):
                 raise RuntimeError()
     elif os.path.isdir(inputs_list[0]):
         if len(inputs_list) != len(intensors_desc):
-            logger.error("Invalid input parameters. The length of  inputs_list is invalid")
+            logger.error("Invalid input parameters. args input dir num:{0} not equal model inputs num:{1}".format(
+                len(inputs_list), len(intensors_desc)))
             raise RuntimeError()
 
         for dir_path in inputs_list:
             real_dir_path = os.readlink(dir_path) if os.path.islink(dir_path) else dir_path
             if not os.path.isdir(real_dir_path):
-                logger.error("Invalid input parameters. dir_path:{} real_dir_path:{} not exist".format(dir_path, real_dir_path))
+                logger.error("Invalid input parameters. dir_path:{} real_dir_path:{} not exist".format(dir_path,
+                                                                                                       real_dir_path))
                 raise RuntimeError()
     else:
-        logger.error("Invalid input parameters. --input[0] is not file or folder {}".format(inputs_list[0]))
+        logger.error("Invalid input parameters. {}  of --input is invalid".format(inputs_list[0]))
         raise RuntimeError()
 
 
