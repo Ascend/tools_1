@@ -123,6 +123,13 @@ class OmParser(object):
                 count += len(operator.get(INPUT_DESC_OBJECT))
         return count
 
+    def get_atc_cmdline(self):
+        for attr in self.json_object.get(ATTR_OBJECT):
+            if KEY_OBJECT in attr and attr.get(KEY_OBJECT) == ATC_CMDLINE_OBJECT:
+                if VALUE_OBJECT in attr and S_OBJECT in attr.get(VALUE_OBJECT):
+                    return attr.get(VALUE_OBJECT).get(S_OBJECT)
+        return ''
+
     @staticmethod
     def _get_prefix(input_obj):
         return input_obj.split(':')[0]
