@@ -56,6 +56,8 @@ class DynamicInput(object):
 
     @staticmethod
     def get_arg_value(om_parser, arguments):
+        if om_parser.shape_range:
+            return getattr(arguments, DynamicArgumentEnum.DYM_SHAPE.value.msquickcmp_arg)
         atc_input_shape = ""
         atc_cmd_args = om_parser.get_atc_cmdline().split(" ")
         for atc_arg in atc_cmd_args:

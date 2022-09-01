@@ -388,5 +388,6 @@ def parse_value_by_comma(value):
         if str(value_str).isdigit() or value_str == '-1':
             value_list.append(int(value_str))
         else:
+            print_error_log("please check your input shape.")
             raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
     return value_list
