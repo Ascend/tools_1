@@ -69,9 +69,9 @@ class DynamicInput(object):
         quickcmp_input_shape_dict = utils.parse_input_shape(arguments.input_shape)
         batch_size_set = set()
         for op_name in atc_input_shape_dict.keys():
-            DynamicInput.add_dynamic_shape(atc_input_shape_dict[op_name],
-                                           quickcmp_input_shape_dict[op_name],
-                                           batch_size_set)
+            DynamicInput.append_dynamic_batch_size(atc_input_shape_dict[op_name],
+                                                   quickcmp_input_shape_dict[op_name],
+                                                   batch_size_set)
         if len(batch_size_set) == 1:
             for batch_size in batch_size_set:
                 return str(batch_size)
@@ -79,7 +79,7 @@ class DynamicInput(object):
         raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
 
     @staticmethod
-    def add_dynamic_shape(dym_shape, cur_shape, shape_set):
+    def append_dynamic_batch_size(dym_shape, cur_shape, shape_set):
         for dim in range(len(dym_shape)):
             if dym_shape[dim] == -1:
                 shape_set.add(cur_shape[dim])
