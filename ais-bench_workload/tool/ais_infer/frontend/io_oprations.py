@@ -125,7 +125,7 @@ def check_input_parameter(inputs_list, intensors_desc):
         for file_path in inputs_list:
             realpath = os.readlink(file_path) if os.path.islink(file_path) else file_path
             if not os.path.isfile(realpath):
-                logger.error("Invalid input parameters. file_path:{} realpath:{} not exist".format(file_path, realpath))
+                logger.error("Invalid args. file_path:{} realpath:{} not exist".format(file_path, realpath))
                 raise RuntimeError()
     elif os.path.isdir(inputs_list[0]):
         if len(inputs_list) != len(intensors_desc):
@@ -139,7 +139,7 @@ def check_input_parameter(inputs_list, intensors_desc):
                 logger.error("Invalid args. {} of input args is not a real dir path".format(real_dir_path))
                 raise RuntimeError()
     else:
-        logger.error("Invalid input parameters. {}  of --input is invalid".format(inputs_list[0]))
+        logger.error("Invalid args. {}  of --input is invalid".format(inputs_list[0]))
         raise RuntimeError()
 
 
