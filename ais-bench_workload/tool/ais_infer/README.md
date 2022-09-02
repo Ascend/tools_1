@@ -74,7 +74,7 @@ python3.7.5 ais_infer.py  --model /home/model/resnet50_v1.om --output ./ --outfm
 ```
 
 ### 调试模式开启
-设置debug参数为1、True、true可以开启调试模式，设置命令如下。
+debug调试模式 默认不使能。 设置为true 或1时可以开启调试模式。设置命令如下。
 ```
 python3.7.5 ais_infer.py  --model /home/model/resnet50_v1.om --output ./ --debug=1
 ```

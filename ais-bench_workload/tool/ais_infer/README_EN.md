@@ -4,7 +4,7 @@
 
 ## Overview
 This document introduces ais-bench referencing tool, which includes front-end and back-end parts.
-The back-end is developed based on C ++ to realize the general referencing function.
+The back-end is developed based on C++ to realize the general referencing function.
 The front end is developed based on Python to realize the function of user interface.
 
 ## Environment Setup
