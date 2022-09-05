@@ -38,8 +38,8 @@ class DynamicInput(object):
         self.dynamic_arg_value = self.get_arg_value(om_parser, arguments)
 
     def add_dynamic_arg_for_msame(self, msame_cmd: list):
-        self.check_input_dynamic_arg_valid()
         if self.is_dynamic_shape_scenario():
+            self.check_input_dynamic_arg_valid()
             msame_cmd.append(self.cur_dynamic_arg.value.msame_arg)
             msame_cmd.append(self.dynamic_arg_value)
         if self.cur_dynamic_arg is DynamicArgumentEnum.DYM_SHAPE:
@@ -56,6 +56,9 @@ class DynamicInput(object):
 
     @staticmethod
     def get_arg_value(om_parser, arguments):
+        if not om_parser.is_dynamic_scenario():
+            utils.print_info_log("The input of model is not dynamic.")
+            return ""
         if om_parser.shape_range:
             return getattr(arguments, DynamicArgumentEnum.DYM_SHAPE.value.msquickcmp_arg)
         # get atc input shape from atc cmdline
@@ -77,7 +80,7 @@ class DynamicInput(object):
         if len(batch_size_set) == 1:
             for batch_size in batch_size_set:
                 return str(batch_size)
-        utils.print_error_log("please check your input_shape arg is valid.")
+        utils.print_error_log("Please check your input_shape arg is valid.")
         raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
 
     @staticmethod
@@ -107,7 +110,7 @@ class DynamicInput(object):
                     return
         except AccuracyCompareException:
             pass
-        utils.print_error_log("please input the valid shape, "
+        utils.print_error_log("Please input the valid shape, "
                               "the valid dynamic value range are {0}".format(dynamic_arg_values))
         raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
 
