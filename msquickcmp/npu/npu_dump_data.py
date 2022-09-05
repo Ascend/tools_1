@@ -38,8 +38,8 @@ class DynamicInput(object):
         self.dynamic_arg_value = self.get_arg_value(om_parser, arguments)
 
     def add_dynamic_arg_for_msame(self, msame_cmd: list):
-        self.check_input_dynamic_arg_valid()
         if self.is_dynamic_shape_scenario():
+            self.check_input_dynamic_arg_valid()
             msame_cmd.append(self.cur_dynamic_arg.value.msame_arg)
             msame_cmd.append(self.dynamic_arg_value)
         if self.cur_dynamic_arg is DynamicArgumentEnum.DYM_SHAPE:
