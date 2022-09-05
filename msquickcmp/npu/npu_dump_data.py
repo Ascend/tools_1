@@ -56,6 +56,9 @@ class DynamicInput(object):
 
     @staticmethod
     def get_arg_value(om_parser, arguments):
+        if not om_parser.is_dynamic_scenario():
+            utils.print_info_log("The input of model is not dynamic.")
+            return ""
         if om_parser.shape_range:
             return getattr(arguments, DynamicArgumentEnum.DYM_SHAPE.value.msquickcmp_arg)
         # get atc input shape from atc cmdline

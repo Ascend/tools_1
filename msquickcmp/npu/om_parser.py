@@ -13,6 +13,7 @@ import numpy as np
 from common.dump_data import DumpData
 from common import utils
 from common.utils import AccuracyCompareException
+from common.dynamic_argument_bean import DynamicArgumentEnum
 
 GRAPH_OBJECT = "graph"
 OP_OBJECT = "op"
@@ -242,3 +243,11 @@ class OmParser(object):
                     item_sum *= num
                 value.append(item_sum * data_type_size)
         return value
+
+    def is_dynamic_scenario(self):
+        atc_cmd = self.get_atc_cmdline()
+        for dym_arg in DynamicArgumentEnum:
+            if dym_arg.value.atc_arg in atc_cmd:
+                return True
+        return False
+
