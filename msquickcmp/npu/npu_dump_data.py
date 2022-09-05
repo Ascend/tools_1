@@ -77,7 +77,7 @@ class DynamicInput(object):
         if len(batch_size_set) == 1:
             for batch_size in batch_size_set:
                 return str(batch_size)
-        utils.print_error_log("please check your input_shape arg is valid.")
+        utils.print_error_log("Please check your input_shape arg is valid.")
         raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
 
     @staticmethod
@@ -107,7 +107,7 @@ class DynamicInput(object):
                     return
         except AccuracyCompareException:
             pass
-        utils.print_error_log("please input the valid shape, "
+        utils.print_error_log("Please input the valid shape, "
                               "the valid dynamic value range are {0}".format(dynamic_arg_values))
         raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
 

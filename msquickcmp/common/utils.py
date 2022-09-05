@@ -370,7 +370,7 @@ def parse_input_shape(input_shape_str):
     return:
     input_shape_map: dict
     """
-    if not input_shape_str or input_shape_str =="":
+    if not input_shape_str or input_shape_str == "":
         return {}
     input_shape_map = {}
     for input_op_shape in input_shape_str.split(SEMICOLON):
