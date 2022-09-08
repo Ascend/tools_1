@@ -295,7 +295,7 @@ class NpuDumpData(DumpData):
         elif self.dynamic_input.is_dynamic_shape_scenario():
             for shape_size in shape_size_array:
                 for bin_size in bin_files_size_array:
-                    if bin_size < shape_size:
+                    if bin_size <= shape_size:
                         return
             utils.print_error_log("The size of bin file can not match the input of the model.")
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_BIN_FILE_ERROR)
