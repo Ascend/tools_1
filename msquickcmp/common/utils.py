@@ -38,6 +38,7 @@ SEMICOLON = ";"
 COLON = ":"
 EQUAL = "="
 COMMA = ","
+ASCEND_BATCH_FIELD = "ascend_mbatch_batch"
 
 
 class AccuracyCompareException(Exception):
@@ -394,3 +395,12 @@ def parse_value_by_comma(value):
             print_error_log("please check your input shape.")
             raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
     return value_list
+
+
+def get_batch_index(dump_data_path):
+    for _, _, files in os.walk(dump_data_path):
+        for file_name in files:
+            if ASCEND_BATCH_FIELD in file_name:
+                last_batch_field_index = file_name.rfind(ASCEND_BATCH_FIELD)
+                return file_name[last_batch_field_index + len(ASCEND_BATCH_FIELD) + 1]
+    return ""

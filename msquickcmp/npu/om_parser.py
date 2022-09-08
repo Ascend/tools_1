@@ -45,6 +45,7 @@ DTYPE_MAP = {"DT_FLOAT": np.float32, "DT_FLOAT16": np.float16, "DT_DOUBLE": np.f
 OUT_NODES_NAME = "attr_model_out_nodes_name"
 # special ops
 SPECIAL_OPS_TYPE = ("Cast", "TransData")
+BATCH_INDEX = "batch_{0}"
 
 
 class OmParser(object):
@@ -69,7 +70,8 @@ class OmParser(object):
 
     def _gen_operator_list(self):
         for graph in self.json_object.get(GRAPH_OBJECT):
-            if graph.get(NAME_OBJECT) in self.subgraph_name:
+            if graph.get(NAME_OBJECT) in self.subgraph_name and \
+                    self.is_dynamic_scenario()[1] != DynamicArgumentEnum.DYM_BATCH:
                 continue
             for operator in graph.get(OP_OBJECT):
                 yield operator
@@ -176,13 +178,22 @@ class OmParser(object):
                 input_index += 1
         return net_output_info
 
-    def get_net_output_data_info(self):
+    def get_net_output_data_info(self, dump_data_path):
         """
         get_net_output_data_info
         """
+        net_output_list = []
         for operator in self._gen_operator_list():
             if NET_OUTPUT_OBJECT == operator.get(TYPE_OBJECT):
-                return self._parse_net_output_node_attr(operator)
+                net_output_list.append(operator)
+        if len(net_output_list) == 1:
+            return self._parse_net_output_node_attr(net_output_list[0])
+        # if it's dynamic batch scenario, the net output node should be identified by batch index
+        if self.is_dynamic_scenario()[1] == DynamicArgumentEnum.DYM_BATCH:
+            cur_batch_index_field = BATCH_INDEX.format(utils.get_batch_index(dump_data_path))
+            for operator in net_output_list:
+                if cur_batch_index_field in operator.get(NAME_OBJECT):
+                    return self._parse_net_output_node_attr(operator)
 
     def _is_input_shape_range(self):
         if ATTR_OBJECT not in self.json_object:
@@ -248,6 +259,6 @@ class OmParser(object):
         atc_cmd = self.get_atc_cmdline()
         for dym_arg in DynamicArgumentEnum:
             if dym_arg.value.atc_arg in atc_cmd:
-                return True
-        return False
+                return True, dym_arg
+        return False, None
 

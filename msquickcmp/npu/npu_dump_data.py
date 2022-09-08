@@ -56,7 +56,8 @@ class DynamicInput(object):
 
     @staticmethod
     def get_arg_value(om_parser, arguments):
-        if not om_parser.is_dynamic_scenario():
+        is_dynamic_scenario, _ = om_parser.is_dynamic_scenario()
+        if not is_dynamic_scenario:
             utils.print_info_log("The input of model is not dynamic.")
             return ""
         if om_parser.shape_range:
@@ -231,12 +232,12 @@ class NpuDumpData(DumpData):
         if not file_is_exist:
             utils.print_error_log("The path {} net output data is not exist.".format(npu_net_output_data_path))
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
-        self._convert_net_output_to_numpy(npu_net_output_data_path)
+        self._convert_net_output_to_numpy(npu_net_output_data_path, npu_dump_data_path)
         return npu_dump_data_path, npu_net_output_data_path
 
-    def _convert_net_output_to_numpy(self, npu_net_output_data_path):
+    def _convert_net_output_to_numpy(self, npu_net_output_data_path, npu_dump_data_path):
         net_output_data = None
-        npu_net_output_data_info = self.om_parser.get_net_output_data_info()
+        npu_net_output_data_info = self.om_parser.get_net_output_data_info(npu_dump_data_path)
         for dir_path, sub_paths, files in os.walk(npu_net_output_data_path):
             for index, each_file in enumerate(sorted(files)):
                 data_type = npu_net_output_data_info.get(index)[0]
