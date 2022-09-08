@@ -2,7 +2,7 @@
 
 ## 介绍
 本文介绍AisBench推理工具，该工具包含前端和后端两部分。
-后端基于c+开发，实现通用推理功能；
+后端基于c++开发，实现通用推理功能；
 前端基于python开发，实现用户界面功能。
 
 ## 使用环境与依赖
@@ -73,6 +73,28 @@ root@root:/home/aclruntime-aarch64# source  /usr/local/Ascend/ascend-toolkit/set
 python3.7.5 ais_infer.py  --model /home/model/resnet50_v1.om --output ./ --outfmt BIN --loop 5
 ```
 
+### 调试模式开启
+debug调试模式 默认不使能。 设置为true 或1时可以开启调试模式。设置命令如下。
+```
+python3.7.5 ais_infer.py  --model /home/model/resnet50_v1.om --output ./ --debug=1
+```
+
+调试模式开启后会增加更多的打印信息，包括
+- 模型的输入输出参数信息
+```bash
+input:
+  #0    input_ids  (1, 384)  int32  1536  1536
+  #1    input_mask  (1, 384)  int32  1536  1536
+  #2    segment_ids  (1, 384)  int32  1536  1536
+output:
+  #0    logits:0  (1, 384, 2)  float32  3072  3072
+```
+- 详细的推理耗时信息
+```
+[DEBUG] model aclExec const : 2.336000
+```
+- 模型输入输出等具体操作信息
+
 
  ### 文件输入场景 input传入文件列表 通过,进行分隔
  本场景会根据文件输入和模型实际输入进行组batch
@@ -95,7 +117,12 @@ python3.7.5 ais_infer.py --model ./resnet50_v1_bs1_fp32.om --input "./"
 
 ```
 
-如下样例，模型输入需与传入文件夹的个数一致，比如bert有三个输入 则必须传入3个文件夹
+如下指令示例，模型输入需与传入文件夹的个数一致。bert模型有三个输入 则必须传入3个文件夹，且三个文件夹分别对应模型的三个输入，顺序要对应。
+模型输入参数的信息可以通过开启调试模式查看，bert模型的三个输入依次为input_ids、 input_mask、 segment_ids，所以依次传入三个文件夹，
+第一个文件夹“./data/SQuAD1.1/input_ids",  对应模型第一个参数"input_ids"的输入 
+第二文件夹"./data/SQuAD1.1/input_mask",  对应第二个输入"input_mask"的输入
+第三个文件夹"./data/SQuAD1.1/segment_ids",  对应第三个输入"segment_ids"的输入
+
 ```
 python3 ais_infer.py --model ./save/model/BERT_Base_SQuAD_BatchSize_1.om  --input ./data/SQuAD1.1/input_ids,./data/SQuAD1.1/input_mask,./data/SQuAD1.1/segment_ids
 ```

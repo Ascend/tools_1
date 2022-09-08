@@ -4,7 +4,7 @@
 
 ## Overview
 This document introduces ais-bench referencing tool, which includes front-end and back-end parts.
-The back-end is developed based on C + to realize the general referencing function.
+The back-end is developed based on C++ to realize the general referencing function.
 The front end is developed based on Python to realize the function of user interface.
 
 ## Environment Setup
@@ -80,8 +80,30 @@ root@root:/home/aclruntime-aarch64# source  /usr/local/Ascend/ascend-toolkit/set
 python3.7.5 ais_infer.py  --model /home/model/resnet50_v1.om --output ./ --outfmt BIN --loop 5
 ```
 
+### Debug mode on
+Set the debug parameter to 1, true, and true to enable debugging mode.，The setting command is as follows:
+```
+python3.7.5 ais_infer.py  --model /home/model/resnet50_v1.om --output ./ --debug=1
+```
+
+After the debugging mode is enabled, more printing information will be added as follows:
+- Input and output parameter information of the model
+```bash
+input:
+  #0    input_ids  (1, 384)  int32  1536  1536
+  #1    input_mask  (1, 384)  int32  1536  1536
+  #2    segment_ids  (1, 384)  int32  1536  1536
+output:
+  #0    logits:0  (1, 384, 2)  float32  3072  3072
+```
+- Detailed reasoning time-consuming information
+```
+[DEBUG] model aclExec const : 2.336000
+```
+- Specific operation information such as model input and output
 
  ### File input scenario. Input is passed into the file list, separated by commas.
+
  In this scenario, group batch will be performed according to the file input and the actual input of the model.
 
 ```

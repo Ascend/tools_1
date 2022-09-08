@@ -188,7 +188,7 @@ def str2bool(v):
     elif v.lower() in ('no', 'false', 'f', 'n', '0'):
         return False
     else:
-        raise argparse.ArgumentTypeError('Boolean value expected.')
+        raise argparse.ArgumentTypeError('Boolean value expected true, 1, false, 0 with case insensitive.')
 
 
 def check_positive_integer(value):
