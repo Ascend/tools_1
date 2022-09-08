@@ -15,7 +15,7 @@ import time
 import enum
 import numpy as np
 
-from dynamic_argument_bean import DynamicArgumentEnum
+from common.dynamic_argument_bean import DynamicArgumentEnum
 
 ACCURACY_COMPARISON_INVALID_PARAM_ERROR = 1
 ACCURACY_COMPARISON_INVALID_DATA_ERROR = 2
