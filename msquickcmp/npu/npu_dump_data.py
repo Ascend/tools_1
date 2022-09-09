@@ -297,8 +297,7 @@ class NpuDumpData(DumpData):
                 for bin_size in bin_files_size_array:
                     if bin_size <= shape_size:
                         return
-            utils.print_error_log("The size of bin file can not match the input of the model.")
-            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_BIN_FILE_ERROR)
+            utils.print_warn_log("The size of bin file can not match the input of the model.")
         else:
             for shape_size, bin_file_size in zip(shape_size_array, bin_files_size_array):
                 if shape_size == 0:
