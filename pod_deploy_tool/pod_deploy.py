@@ -232,7 +232,12 @@ class ClientAdapter:
 
     def _on_message(self, client, obj, msg):
         topic_name = msg.topic
-        logger.info(f"topic={topic_name} message={msg.payload}")
+        logger.info(f"receive topic={topic_name}")
+        paylod_dict = json.loads(msg.payload)
+        if paylod_dict.get("result") != "success":
+            logger.error(f'operate pod failed: {paylod_dict.get("content")}')
+        else:
+            logger.info("operate pod success")
 
     def _on_publish(self, client, obj, mid):
         logger.info(f"{self._client_id},{obj},{mid}")

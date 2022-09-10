@@ -8,6 +8,7 @@
 - 该工具在纳管为FD网管模式后，不支持操作容器。
 - 该工具需使用root用户执行。
 - 使用该工具部署容器，需在设备上提前加载对应容器镜像。
+- 如果部署的容器涉及高危功能，请参考[container_capability_tool](https://gitee.com/ascend/tools/tree/master/container_capability_tool)
 - 该工具需配套MindX Edge使用，支持配套MindX Edge 2.0.3及以后的版本
 
 ## 前置条件
