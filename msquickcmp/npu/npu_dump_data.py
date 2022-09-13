@@ -80,7 +80,7 @@ class DynamicInput(object):
                                                    batch_size_set)
         if len(batch_size_set) == 1:
             for batch_size in batch_size_set:
-                return str(batch_size)
+                return batch_size
         utils.print_error_log("Please check your input_shape arg is valid.")
         raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
 
