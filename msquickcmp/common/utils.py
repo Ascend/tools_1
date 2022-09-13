@@ -368,24 +368,6 @@ def parse_arg_value(values):
     return value_list
 
 
-def parse_input_shape(input_shape_str):
-    """
-    parse input shape with op name to map, like "Input:2,224,224,3"
-    param:
-    input_shape_str : str
-    return:
-    input_shape_map: dict
-    """
-    if not input_shape_str or input_shape_str == "":
-        return {}
-    input_shape_map = {}
-    for input_op_shape in input_shape_str.split(SEMICOLON):
-        op_name = input_op_shape.split(COLON)[0]
-        op_shape = parse_value_by_comma(input_op_shape.split(COLON)[1])
-        input_shape_map[op_name] = op_shape
-    return input_shape_map
-
-
 def parse_value_by_comma(value):
     """
     parse value by comma, like '1,2,4,8'
