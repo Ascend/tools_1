@@ -87,7 +87,7 @@ class DynamicInput(object):
     @staticmethod
     def append_dynamic_batch_size(dym_shape, cur_shape, shape_set):
         for dim in range(len(dym_shape)):
-            if dym_shape[dim] == -1:
+            if dym_shape[dim] == "-1":
                 shape_set.add(cur_shape[dim])
 
     def is_dynamic_shape_scenario(self):
