@@ -166,7 +166,7 @@ class PrecisionTool(object):
                 title = "[green](%s)[/green] %s" % (debug_id, graph_name)
                 util.print_panel(Constant.NEW_LINE.join(summary_txt), title)
         if pt_dump_summary != '':
-            util.print_panel(Constant.NEW_LINE.join(pt_dump_summary))
+            util.print_panel(pt_dump_summary, args.name)
         if args.save != 0:
             self.graph_manager.save_sub_graph(npu_ops, args.save)
 

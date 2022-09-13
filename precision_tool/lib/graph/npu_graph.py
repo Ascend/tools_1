@@ -88,7 +88,7 @@ class NpuSubGraph(object):
             return [self.ops_list[name]]
         guess_op_list = []
         for op_detail in self.ops_list.values():
-            if name in op_detail.name():
+            if name in op_detail.name() or name == str(op_detail.name()).replace('/', '_'):
                 guess_op_list.append(op_detail)
         return guess_op_list
 

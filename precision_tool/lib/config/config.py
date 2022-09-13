@@ -87,6 +87,7 @@ OP_GRAPH_DIR = os.path.join(TMP_DIR, 'op_graph')
 DECODE_DIR = os.path.join(TMP_DIR, 'decode')
 OVERFLOW_DECODE_DIR = os.path.join(DECODE_DIR, 'overflow_decode')
 DUMP_DECODE_DIR = os.path.join(DECODE_DIR, 'dump_decode')
+PT_DUMP_DECODE_DIR = os.path.join(DECODE_DIR, 'pt')
 DUMP_CONVERT_DIR = os.path.join(DECODE_DIR, 'dump_convert')
 
 VECTOR_COMPARE_PATH = os.path.join(TMP_DIR, 'vector_compare')

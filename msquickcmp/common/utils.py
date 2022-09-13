@@ -8,11 +8,14 @@ HuaWei Technologies Co.,Ltd. All Rights Reserved © 2021
 """
 import os
 import re
+import shutil
 import subprocess
 import sys
 import time
 import enum
 import numpy as np
+
+from common.dynamic_argument_bean import DynamicArgumentEnum
 
 ACCURACY_COMPARISON_INVALID_PARAM_ERROR = 1
 ACCURACY_COMPARISON_INVALID_DATA_ERROR = 2
@@ -38,6 +41,9 @@ SEMICOLON = ";"
 COLON = ":"
 EQUAL = "="
 COMMA = ","
+DOT = "."
+ASCEND_BATCH_FIELD = "ascend_mbatch_batch"
+BATCH_SCENARIO_OP_NAME = "{0}_ascend_mbatch_batch_{1}"
 
 
 class AccuracyCompareException(Exception):
@@ -362,22 +368,6 @@ def parse_arg_value(values):
     return value_list
 
 
-def parse_input_shape(input_shape_str):
-    """
-    parse input shape with op name to map, like "Input:2,224,224,3"
-    param:
-    input_shape_str : str
-    return:
-    input_shape_map: dict
-    """
-    input_shape_map = {}
-    for input_op_shape in input_shape_str.split(SEMICOLON):
-        op_name = input_op_shape.split(COLON)[0]
-        op_shape = parse_value_by_comma(input_op_shape.split(COLON)[1])
-        input_shape_map[op_name] = op_shape
-    return input_shape_map
-
-
 def parse_value_by_comma(value):
     """
     parse value by comma, like '1,2,4,8'
@@ -392,3 +382,23 @@ def parse_value_by_comma(value):
             print_error_log("please check your input shape.")
             raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
     return value_list
+
+
+def get_batch_index(dump_data_path):
+    for _, _, files in os.walk(dump_data_path):
+        for file_name in files:
+            if ASCEND_BATCH_FIELD in file_name:
+                last_batch_field_index = file_name.rfind(ASCEND_BATCH_FIELD)
+                return file_name[last_batch_field_index + len(ASCEND_BATCH_FIELD) + 1]
+    return ""
+
+
+def handle_ground_truth_files(om_parser, npu_dump_data_path, golden_dump_data_path):
+    if om_parser.is_dynamic_scenario()[1] == DynamicArgumentEnum.DYM_BATCH:
+        batch_index = get_batch_index(npu_dump_data_path)
+        for root, _, files in os.walk(golden_dump_data_path):
+            for file_name in files:
+                first_dot_index = file_name.find(DOT)
+                current_op_name = BATCH_SCENARIO_OP_NAME.format(file_name[:first_dot_index], batch_index)
+                dst_file_name = current_op_name + file_name[first_dot_index:]
+                shutil.copy(os.path.join(root, file_name), os.path.join(root, dst_file_name))

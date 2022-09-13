@@ -38,8 +38,8 @@ class DynamicInput(object):
         self.dynamic_arg_value = self.get_arg_value(om_parser, arguments)
 
     def add_dynamic_arg_for_msame(self, msame_cmd: list):
-        self.check_input_dynamic_arg_valid()
         if self.is_dynamic_shape_scenario():
+            self.check_input_dynamic_arg_valid()
             msame_cmd.append(self.cur_dynamic_arg.value.msame_arg)
             msame_cmd.append(self.dynamic_arg_value)
         if self.cur_dynamic_arg is DynamicArgumentEnum.DYM_SHAPE:
@@ -56,6 +56,10 @@ class DynamicInput(object):
 
     @staticmethod
     def get_arg_value(om_parser, arguments):
+        is_dynamic_scenario, _ = om_parser.is_dynamic_scenario()
+        if not is_dynamic_scenario:
+            utils.print_info_log("The input of model is not dynamic.")
+            return ""
         if om_parser.shape_range:
             return getattr(arguments, DynamicArgumentEnum.DYM_SHAPE.value.msquickcmp_arg)
         # get atc input shape from atc cmdline
@@ -76,14 +80,14 @@ class DynamicInput(object):
                                                    batch_size_set)
         if len(batch_size_set) == 1:
             for batch_size in batch_size_set:
-                return str(batch_size)
-        utils.print_error_log("please check your input_shape arg is valid.")
+                return batch_size
+        utils.print_error_log("Please check your input_shape arg is valid.")
         raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
 
     @staticmethod
     def append_dynamic_batch_size(dym_shape, cur_shape, shape_set):
         for dim in range(len(dym_shape)):
-            if dym_shape[dim] == -1:
+            if dym_shape[dim] == "-1":
                 shape_set.add(cur_shape[dim])
 
     def is_dynamic_shape_scenario(self):
@@ -107,7 +111,7 @@ class DynamicInput(object):
                     return
         except AccuracyCompareException:
             pass
-        utils.print_error_log("please input the valid shape, "
+        utils.print_error_log("Please input the valid shape, "
                               "the valid dynamic value range are {0}".format(dynamic_arg_values))
         raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
 
@@ -228,12 +232,12 @@ class NpuDumpData(DumpData):
         if not file_is_exist:
             utils.print_error_log("The path {} net output data is not exist.".format(npu_net_output_data_path))
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
-        self._convert_net_output_to_numpy(npu_net_output_data_path)
+        self._convert_net_output_to_numpy(npu_net_output_data_path, npu_dump_data_path)
         return npu_dump_data_path, npu_net_output_data_path
 
-    def _convert_net_output_to_numpy(self, npu_net_output_data_path):
+    def _convert_net_output_to_numpy(self, npu_net_output_data_path, npu_dump_data_path):
         net_output_data = None
-        npu_net_output_data_info = self.om_parser.get_net_output_data_info()
+        npu_net_output_data_info = self.om_parser.get_net_output_data_info(npu_dump_data_path)
         for dir_path, sub_paths, files in os.walk(npu_net_output_data_path):
             for index, each_file in enumerate(sorted(files)):
                 data_type = npu_net_output_data_info.get(index)[0]
@@ -291,10 +295,9 @@ class NpuDumpData(DumpData):
         elif self.dynamic_input.is_dynamic_shape_scenario():
             for shape_size in shape_size_array:
                 for bin_size in bin_files_size_array:
-                    if bin_size < shape_size:
+                    if bin_size <= shape_size:
                         return
-            utils.print_error_log("The size of bin file can not match the input of the model.")
-            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_BIN_FILE_ERROR)
+            utils.print_warn_log("The size of bin file can not match the input of the model.")
         else:
             for shape_size, bin_file_size in zip(shape_size_array, bin_files_size_array):
                 if shape_size == 0:
