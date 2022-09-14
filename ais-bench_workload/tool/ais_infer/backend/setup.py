@@ -25,7 +25,7 @@ def get_cann_path():
     atlas_nnae_path = "/usr/local/Ascend/nnae/latest/"
     atlas_toolkit_path = "/usr/local/Ascend/ascend-toolkit/latest/"
     hisi_fwk_path = "/usr/local/Ascend/"
-    check_file_path = "acllib/lib64/stub/libascendcl.so"
+    check_file_path = "runtime/lib64/stub/libascendcl.so"
     if os.path.exists(set_env_path+check_file_path):
         cann_base_path = set_env_path
     elif os.path.exists(atlas_nnae_path+check_file_path):
@@ -69,10 +69,10 @@ ext_modules = [
             'python/include/',
             'base/include/',
             'base/include/Base/ModelInfer/',
-            cann_base_path + '/acllib/include',
+            cann_base_path + '/runtime/include',
         ],
         #library_dirs=['output/lib/',],
-        library_dirs=[ cann_base_path + '/acllib/lib64/stub/',],
+        library_dirs=[ cann_base_path + '/runtime/lib64/stub/',],
         
         extra_compile_args = ['--std=c++11', '-g3'],
 
