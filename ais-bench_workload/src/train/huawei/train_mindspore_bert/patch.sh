@@ -61,7 +61,7 @@ get_git_info(){
     elif [ "$branch_args" == "r1.9" ];then
         branch="master"
         patch_file_name="r1.9"
-        commitid="e34c6bdd02cb6a7a94a203956955498242d18bbb"
+        commitid="04c88140d602b29423855a1a8d0dfe5a450c0f10"
         git_url="https://gitee.com/mindspore/models.git"
         modelzoo_sub_dir="models/official/nlp/bert"
     else
