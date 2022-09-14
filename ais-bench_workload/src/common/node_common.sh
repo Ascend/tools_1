@@ -93,7 +93,11 @@ function node_common_train()
             export RANK_INDEX=$SERVER_ID
         fi
         # clear and create path
-        RUN_PATH="$WORK_PATH/train_parallel$index"
+        if [ $AIS_BENCH_RESULT_PATH == "" ];then
+            RUN_PATH="$WORK_PATH/train_parallel$index"
+        else
+            RUN_PATH="$AIS_BENCH_RESULT_PATH/train_parallel$index"
+        fi
         rm -rf $RUN_PATH; mkdir -p $RUN_PATH; cd $RUN_PATH;
 
         # if bindcore should get cmdopt for cores
