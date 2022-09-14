@@ -1,6 +1,6 @@
 diff -Nur origin/pretrain_eval.py code/pretrain_eval.py
---- origin/pretrain_eval.py	2022-08-24 10:33:47.340000000 +0800
-+++ code/pretrain_eval.py	2022-08-24 10:33:47.380000000 +0800
+--- origin/pretrain_eval.py	2022-09-14 18:17:44.190000000 +0800
++++ code/pretrain_eval.py	2022-09-14 18:17:44.220000000 +0800
 @@ -53,6 +53,15 @@
      print("==============================================================")
      for _, v in res.items():
@@ -13,23 +13,22 @@ diff -Nur origin/pretrain_eval.py code/pretrain_eval.py
 +        else:
 +           ACC_LOG = os.path.join(ACC_DIR, "eval_acc.log")
 +           with open(ACC_LOG, 'w') as f:
-+              f.write("{}".format(v))
++               f.write("{}".format(v))
      print("==============================================================")
  
  
 diff -Nur origin/run_pretrain.py code/run_pretrain.py
---- origin/run_pretrain.py	2022-08-24 10:33:47.330000000 +0800
-+++ code/run_pretrain.py	2022-08-24 10:33:47.360000000 +0800
-@@ -17,6 +17,8 @@
+--- origin/run_pretrain.py	2022-09-14 18:17:44.180000000 +0800
++++ code/run_pretrain.py	2022-09-14 18:17:44.210000000 +0800
+@@ -17,6 +17,7 @@
  python run_pretrain.py
  """
  import os
 +import time
-+
  import mindspore.communication.management as D
  from mindspore.communication.management import get_rank
  import mindspore.common.dtype as mstype
-@@ -43,6 +45,13 @@
+@@ -43,6 +44,13 @@
  from src.model_utils.config import config as cfg, bert_net_cfg
  from src.model_utils.moxing_adapter import moxing_wrapper
  from src.model_utils.device_adapter import get_device_id, get_device_num
@@ -43,7 +42,7 @@ diff -Nur origin/run_pretrain.py code/run_pretrain.py
  _current_dir = os.path.dirname(os.path.realpath(__file__))
  
  
-@@ -268,8 +277,31 @@
+@@ -268,8 +276,31 @@
          callback.append(eval_callback)
  
      model = ConvertModelUtils().convert_to_thor_model(model, network=net_with_grads, optimizer=optimizer)
