@@ -49,11 +49,6 @@ update_common_config()
         echo -e "\nexport NODEINFO_FILE=$NODEINFO_FILE" >> $CURDIR/src/$execModel/config/config.sh
     fi
 
-    local curtime=`date "+%Y-%m-%d_%H%M%S"`
-    AIS_BENCH_RESULT_PATH=$CURDIR/result/$execModel-${curtime}
-    sed -i '/AIS_BENCH_RESULT_PATH=/d' $CURDIR/src/$execModel/config/config.sh
-    echo -e "\nexport AIS_BENCH_RESULT_PATH=$AIS_BENCH_RESULT_PATH" >> $CURDIR/src/$execModel/config/config.sh
-
     echo "$execModel configfile is :"
     cat $CURDIR/src/$execModel/config/config.sh
 }
