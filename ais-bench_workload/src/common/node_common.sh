@@ -92,10 +92,9 @@ function node_common_train()
             export DEVICE_INDEX=$DEVICE_ID
             export RANK_INDEX=$SERVER_ID
         fi
-        # clear and create path. it's  no need to delete and recreate RUN_PATH. because one train will be failed when
-        # two training action are exacuted almostly at the same time in container under the premise of calculation force segmentation
+        # clear and create path.
         RUN_PATH="$WORK_PATH/train_parallel$index"
-
+        mkdir -p $RUN_PATH; cd $RUN_PATH;
         # if bindcore should get cmdopt for cores
         [ $bindcore == "true" ] && { start=`expr $i \* $avg`; end=`expr $start \+ $gap`; cmdopt=$start"-"$end; }
         # call out func get run cmd
