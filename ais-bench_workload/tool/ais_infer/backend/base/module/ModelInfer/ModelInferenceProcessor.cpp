@@ -154,21 +154,18 @@ APP_ERROR ModelInferenceProcessor::AddOutTensors(std::vector<MemoryData>& output
     bool is_dymshape = (dynamicInfo_.dynamicType == DYNAMIC_SHAPE ? true : false);
     uint64_t dymbatch_size = (dynamicInfo_.dynamicType == DYNAMIC_BATCH ? dynamicInfo_.dyBatch.batchSize : 0);
     int realLen;
-    // 获取输出tensor实际size 对于动态分档场景 需要获取size的实际大小。根据第一个入参的size/realsize比值获取
-    // 对于动态shape模型 可以直接获取len
-    float sizeRatio = (float)modelDesc_.inTensorsDesc[0].size / modelDesc_.inTensorsDesc[0].realsize;
     for (const auto& name : outputNames) {
         auto index = modelDesc_.outnames2Index[name];
 
         std::vector<int64_t> i64shape;
         std::vector<uint32_t> u32shape;
-        realLen = processModel.GetOutTensorLen(index, is_dymshape, sizeRatio);
+        realLen = processModel.GetOutTensorLen(index, is_dymshape);
         if (processModel.GetCurOutputShape(index, i64shape) != SUCCESS){
             // 针对于动态shape场景 无法获取真实的输出shape 先填写一个一维的值 以便后续内存可以导出
             i64shape.push_back(realLen / aclDataTypeSize(static_cast<aclDataType>(modelDesc_.outTensorsDesc[index].datatype)));
         }
-        DEBUG_LOG("AddOutTensors name:%s index:%d ratio:%f len:%d outdescsize:%d shapesize:%d\n",
-            name.c_str(), index, sizeRatio, realLen, modelDesc_.outTensorsDesc[index].size, i64shape.size());
+        DEBUG_LOG("AddOutTensors name:%s index:%d len:%d outdescsize:%d shapesize:%d\n",
+            name.c_str(), index, realLen, modelDesc_.outTensorsDesc[index].size, i64shape.size());
         outputs[index].size = realLen;
         bool isBorrowed = false;
         for (size_t j = 0; j < i64shape.size(); ++j) {
@@ -520,6 +517,7 @@ APP_ERROR ModelInferenceProcessor::SetDynamicHW(int width, int height)
     for (size_t i = 0; i < modelDesc_.inTensorsDesc.size(); ++i) {
         if (find(modelDesc_.inTensorsDesc[i].shape.begin(), modelDesc_.inTensorsDesc[i].shape.end(), -1) != modelDesc_.inTensorsDesc[i].shape.end()){
             modelDesc_.inTensorsDesc[i].realsize = modelDesc_.inTensorsDesc[i].size * width * height / dynamicInfo_.dyHW.maxHWSize;
+            printf("lcm debug realsize:%d maxsize:%d\n", modelDesc_.inTensorsDesc[i].realsize, dynamicInfo_.dyHW.maxHWSize);
         }
     }
 
