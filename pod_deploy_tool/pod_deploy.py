@@ -17,6 +17,7 @@ import argparse
 import json
 import logging
 import os
+import queue
 import re
 import shlex
 import ssl
@@ -133,6 +134,9 @@ class YamlOperator:
             return Result(False, error_msg=error_msg)
 
 
+msg_queue = queue.Queue(maxsize=256)
+
+
 class MqttConfig:
     def __init__(self, **kwargs):
         self.host: str = kwargs.get("host", "127.0.0.1")
@@ -215,7 +219,8 @@ class ClientAdapter:
         logger.info("subscribe wait for connected")
         self._connected_event.wait(timeout=self.configure.connect_time_out)
         if self.connect_status:
-            subscribe_data = [("$hw/edge/v1/apps/pod/+/+/result", self.configure.mqtt_subscribe_qos)]
+            subscribe_data = [("$hw/edge/v1/apps/pod/+/+/result", self.configure.mqtt_subscribe_qos),
+                              ("$hw/edge/v1/apps/nodestatus/query/result", self.configure.mqtt_subscribe_qos)]
             logger.info("start subscribe")
             self.client.subscribe(subscribe_data)
             logger.info("end subscribe")
@@ -233,11 +238,10 @@ class ClientAdapter:
     def _on_message(self, client, obj, msg):
         topic_name = msg.topic
         logger.info(f"receive topic={topic_name}")
-        paylod_dict = json.loads(msg.payload)
-        if paylod_dict.get("result") != "success":
-            logger.error(f'operate pod failed: {paylod_dict.get("content")}')
-        else:
-            logger.info("operate pod success")
+        if msg_queue.full():
+            msg_queue.queue.clear()
+
+        msg_queue.put(msg, False, 2)
 
     def _on_publish(self, client, obj, mid):
         logger.info(f"{self._client_id},{obj},{mid}")
@@ -248,13 +252,42 @@ class ClientAdapter:
     def _on_log(self, client, obj, level, string):
         logger.log(mqtt_client.LOGGING_LEVEL.get(level), f"client:{self._client_id}, obj:{obj}")
 
-    def mqtt_publish(self, topic, payload, qos=1):
-        if self.connect_status:
-            try:
-                info = self.client.publish(topic, payload, qos)
-                info.wait_for_publish()
-            except Exception as err:
-                logger.error(f"mqtt publish exception:{err}")
+    def wait_response(self, topic, timeout=10):
+        time_start = time.time()
+        try:
+            while True:
+                if not msg_queue.empty():
+                    ret = msg_queue.get(timeout=2)
+                    if ret.topic == topic:
+                        return Result(result=True, data=ret)
+
+                    continue
+
+                time.sleep(0.2)
+                time_end = time.time()
+                time_start = min(time_start, time_end)
+                if time_end - time_start > timeout:
+                    logger.error("Failed to get [{}] response, wait timeout.". format(topic))
+                    return Result(result=False, error_msg="Failed to get [{}] response, wait timeout.". format(topic))
+        except Exception as abn:
+            logger.error("Failed to get {} response, because {}.".format(topic, abn))
+            return Result(result=False, error_msg="Failed to get {} response, because {}.".format(topic, abn))
+
+    def mqtt_publish(self, topic, payload, qos=1, sync=False):
+        if not self.connect_status:
+            return Result(result=False, error_msg="mqtt is not connected")
+
+        try:
+            info = self.client.publish(topic, payload, qos)
+            info.wait_for_publish()
+        except Exception as err:
+            logger.error(f"mqtt publish exception:{err}")
+            return Result(result=False, error_msg=f"mqtt publish exception:{err}")
+
+        if not sync:
+            return Result(result=True)
+
+        return self.wait_response(topic+"/result")
 
     def connect_mqtt_sever(self):
         count = 0
@@ -270,6 +303,8 @@ class ClientAdapter:
 
 class PodOperator:
     UUID_LEN = 36
+    DEFAULT_NPU_NAME = "huawei.com/davinci-mini"
+    NPU_NAME_PREFIX = "huawei.com"
 
     def __init__(self, client_adapter, pod_file):
         self.client_adapter = client_adapter
@@ -301,6 +336,25 @@ class PodOperator:
 
         return True
 
+    def query_npu_resource_name(self):
+        ret = self.client_adapter.mqtt_publish(r"$hw/edge/v1/apps/nodestatus/query", json.dumps({}), sync=True)
+        if not ret:
+            logger.warning("query node status error")
+            return Result(result=True, data=self.DEFAULT_NPU_NAME)
+
+        payload_dict = json.loads(ret.data.payload)
+        if payload_dict.get("result") != "success":
+            logger.warning("query node status error")
+            return Result(result=True, data=self.DEFAULT_NPU_NAME)
+
+        keys = payload_dict.get("content", [])[0].get("Status", {}).get("capacity", {}).keys()
+        for key in keys:
+            if key.startswith(self.NPU_NAME_PREFIX):
+                logger.warning(f"replace {self.DEFAULT_NPU_NAME} to {key}")
+                return Result(result=True, data=key)
+
+        return Result(result=True, data=self.DEFAULT_NPU_NAME)
+
     def create_pod(self):
         ret = YamlOperator(self.pod_file).read_data()
         if not ret:
@@ -319,6 +373,17 @@ class PodOperator:
             return False
 
         uid = pod_name[-self.UUID_LEN:]
+        npu_name = self.query_npu_resource_name().data
+        for i in range(len(data["spec"]["containers"])):
+            if data["spec"]["containers"][i]["resources"]["limits"].get(self.DEFAULT_NPU_NAME, "") != "":
+                count = data["spec"]["containers"][i]["resources"]["limits"].get(self.DEFAULT_NPU_NAME, "")
+                data["spec"]["containers"][i]["resources"]["limits"][npu_name] = count
+                del data["spec"]["containers"][i]["resources"]["limits"][self.DEFAULT_NPU_NAME]
+
+            if data["spec"]["containers"][i]["resources"]["requests"].get(self.DEFAULT_NPU_NAME, "") != "":
+                count = data["spec"]["containers"][i]["resources"]["requests"].get(self.DEFAULT_NPU_NAME, "")
+                data["spec"]["containers"][i]["resources"]["requests"][npu_name] = count
+                del data["spec"]["containers"][i]["resources"]["requests"][self.DEFAULT_NPU_NAME]
 
         data["metadata"]["creationTimestamp"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.localtime())
         data["metadata"]["name"] = pod_name
@@ -327,7 +392,19 @@ class PodOperator:
         data["metadata"]["selfLink"] = "/api/v1/namespaces/websocket/pods/" + pod_name
         data["metadata"]["uid"] = str(uid)
         logger.info("-------------------------create pod -------------------------")
-        self.client_adapter.mqtt_publish(r"$hw/edge/v1/apps/pod/{}/update".format(pod_name), json.dumps(data))
+        ret = self.client_adapter.mqtt_publish(r"$hw/edge/v1/apps/pod/{}/update".format(pod_name),
+                                               json.dumps(data), sync=True)
+        if not ret:
+            logger.error("publish [$hw/edge/v1/apps/pod/{}/update] failed".format(pod_name))
+            return False
+
+        payload_dict = json.loads(ret.data.payload)
+        if payload_dict.get("result") != "success":
+            logger.error(f'create container failed: {payload_dict.get("content")}')
+            return False
+
+        logger.info("create container success")
+
         return True
 
     @staticmethod
@@ -369,7 +446,18 @@ class PodOperator:
         data["metadata"]["selfLink"] = "/api/v1/namespaces/websocket/pods/{}".format(pod_name)
         data["metadata"]["uid"] = uid
         logger.info("-------------------------delete pod -------------------------")
-        self.client_adapter.mqtt_publish(r"$hw/edge/v1/apps/pod/{}/delete".format(pod_name), json.dumps(data))
+        ret = self.client_adapter.mqtt_publish(r"$hw/edge/v1/apps/pod/{}/delete".format(pod_name),
+                                               json.dumps(data), sync=True)
+        if not ret:
+            logger.error("publish [$hw/edge/v1/apps/pod/{}/delete] failed".format(pod_name))
+            return False
+
+        payload_dict = json.loads(ret.data.payload)
+        if payload_dict.get("result") != "success":
+            logger.error(f'delete container failed: {payload_dict.get("content")}')
+            return False
+
+        logger.info("delete container success")
         return True
 
 
