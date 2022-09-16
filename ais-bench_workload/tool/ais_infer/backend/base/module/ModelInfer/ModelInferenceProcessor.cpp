@@ -64,7 +64,7 @@ APP_ERROR ModelInferenceProcessor::Init(const std::string& modelPath, std::share
 
     SETLOGLEVEL(options_->log_level);
 
-    // initResource 
+    // initResource
     CHECK_RET_EQ(processModel.LoadModelFromFile(modelPath), SUCCESS);
 
     CHECK_RET_EQ(processModel.CreateDesc(), SUCCESS);
@@ -517,7 +517,6 @@ APP_ERROR ModelInferenceProcessor::SetDynamicHW(int width, int height)
     for (size_t i = 0; i < modelDesc_.inTensorsDesc.size(); ++i) {
         if (find(modelDesc_.inTensorsDesc[i].shape.begin(), modelDesc_.inTensorsDesc[i].shape.end(), -1) != modelDesc_.inTensorsDesc[i].shape.end()){
             modelDesc_.inTensorsDesc[i].realsize = modelDesc_.inTensorsDesc[i].size * width * height / dynamicInfo_.dyHW.maxHWSize;
-            printf("lcm debug realsize:%d maxsize:%d\n", modelDesc_.inTensorsDesc[i].realsize, dynamicInfo_.dyHW.maxHWSize);
         }
     }
 
@@ -560,7 +559,7 @@ APP_ERROR ModelInferenceProcessor::SetDynamicDims(std::string dymdimsStr)
 
     // update realsize according real shapes
     vector<string> dymdims_tmp;
-    Utils::SplitStringWithPunctuation(dymdimsStr, dymdims_tmp, ';'); 
+    Utils::SplitStringWithPunctuation(dymdimsStr, dymdims_tmp, ';');
 
     std::map<string, int64_t> namedimsmap;
     ret = Utils::SplitStingGetNameDimsMulMap(dymdims_tmp, namedimsmap);
@@ -588,7 +587,7 @@ APP_ERROR ModelInferenceProcessor::SetDynamicDims(std::string dymdimsStr)
 APP_ERROR ModelInferenceProcessor::SetDynamicShape(std::string dymshapeStr)
 {
     vector<string> dym_shape_tmp;
-    Utils::SplitStringWithPunctuation(dymshapeStr, dym_shape_tmp, ';'); 
+    Utils::SplitStringWithPunctuation(dymshapeStr, dym_shape_tmp, ';');
 
     FreeDymInfoMem();
     if (dynamicInfo_.dyShape.pShapes == nullptr){
