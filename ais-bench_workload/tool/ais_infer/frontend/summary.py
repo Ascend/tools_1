@@ -1,3 +1,6 @@
+import json
+import os
+
 import numpy as np
 
 from frontend.utils import logger
@@ -83,9 +86,9 @@ class Summary(object):
             batchsize, npu_compute_time.mean, throughput))
         logger.info("------------------------------------------------------")
 
-        # if output_prefix is not None:
-        #     with open(os.path.join(output_prefix, "sumary.json"), 'w') as f:
-        #         json.dump(self.infodict, f)
+        if output_prefix is not None:
+            with open(os.path.join(output_prefix, "sumary.json"), 'w') as f:
+                json.dump(self.infodict, f)
 
 
 summary = Summary()
