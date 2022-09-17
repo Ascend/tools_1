@@ -23,9 +23,9 @@
 ## 工具使用方法
 1 执行如下命令修改脚本文件权限，其中{AtlasEdgeWorkDir}为中间安装目录，请根据实际安装目录适配
 ```
-chattr -i {AtlasEdgeWorkDir}/edge_core/src/*
+chattr -i {AtlasEdgeWorkDir}/edge_work_dir/edge_core/src/*
 ```
-2 获取工具脚本下的所有.py文件，并存放于{AtlasEdgeWorkDir}/edge_core/src/目录下
+2 获取工具脚本下的所有.py文件，并存放于{AtlasEdgeWorkDir}/edge_work_dir/edge_core/src/目录下
 
 3 执行如下命令，执行结果存放在/var/alog/AtlasEdge_log/edge_core/edge_core_script_operate.log中
 ```
