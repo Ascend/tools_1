@@ -35,7 +35,7 @@ ACCURACY_COMPARISON_NOT_SUPPORT_ERROR = 15
 ACCURACY_COMPARISON_NET_OUTPUT_ERROR = 16
 ACCURACY_COMPARISON_INVALID_DEVICE_ERROR = 17
 MODEL_TYPE = ['.onnx', '.pb', '.om']
-DIM_PATTERN = "^[^,][0-9,]*$"
+DIM_PATTERN = r"^(-?[0-9]+,)+-?[0-9]+$"
 MAX_DEVICE_ID = 255
 SEMICOLON = ";"
 COLON = ":"
@@ -388,13 +388,13 @@ def get_batch_index(dump_data_path):
     for _, _, files in os.walk(dump_data_path):
         for file_name in files:
             if ASCEND_BATCH_FIELD in file_name:
-                last_batch_field_index = file_name.rfind(ASCEND_BATCH_FIELD)
-                return file_name[last_batch_field_index + len(ASCEND_BATCH_FIELD) + 1]
+                return get_batch_index_from_file(file_name)
     return ""
 
 
 def handle_ground_truth_files(om_parser, npu_dump_data_path, golden_dump_data_path):
-    if om_parser.is_dynamic_scenario()[1] == DynamicArgumentEnum.DYM_BATCH:
+    _, scenario = om_parser.get_dynamic_scenario_info()
+    if scenario in [DynamicArgumentEnum.DYM_BATCH, DynamicArgumentEnum.DYM_DIMS]:
         batch_index = get_batch_index(npu_dump_data_path)
         for root, _, files in os.walk(golden_dump_data_path):
             for file_name in files:
@@ -402,3 +402,23 @@ def handle_ground_truth_files(om_parser, npu_dump_data_path, golden_dump_data_pa
                 current_op_name = BATCH_SCENARIO_OP_NAME.format(file_name[:first_dot_index], batch_index)
                 dst_file_name = current_op_name + file_name[first_dot_index:]
                 shutil.copy(os.path.join(root, file_name), os.path.join(root, dst_file_name))
+
+
+def get_batch_index_from_file(file_name):
+    batch_index = ""
+    last_batch_field_index = file_name.rfind(ASCEND_BATCH_FIELD)
+    pos = last_batch_field_index + len(ASCEND_BATCH_FIELD) + 1
+    while file_name[pos].isdigit():
+        batch_index += file_name[pos]
+        pos += 1
+    return batch_index
+
+
+def get_data_len_by_shape(shape):
+    data_len = 1
+    for item in shape:
+        if item is -1:
+            print_error_log("please check your input shape, one dim in shape is -1.")
+            return -1
+        data_len = data_len * item
+    return data_len

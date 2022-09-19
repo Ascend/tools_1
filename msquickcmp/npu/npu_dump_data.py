@@ -55,13 +55,7 @@ class DynamicInput(object):
         return "", None
 
     @staticmethod
-    def get_arg_value(om_parser, arguments):
-        is_dynamic_scenario, _ = om_parser.is_dynamic_scenario()
-        if not is_dynamic_scenario:
-            utils.print_info_log("The input of model is not dynamic.")
-            return ""
-        if om_parser.shape_range:
-            return getattr(arguments, DynamicArgumentEnum.DYM_SHAPE.value.msquickcmp_arg)
+    def get_input_shape_from_om(om_parser):
         # get atc input shape from atc cmdline
         atc_input_shape = ""
         atc_cmd_args = om_parser.get_atc_cmdline().split(" ")
@@ -69,26 +63,41 @@ class DynamicInput(object):
             if INPUT_SHAPE in atc_arg:
                 atc_input_shape = atc_arg.split(utils.EQUAL)[1]
                 break
+        return atc_input_shape
+
+    @staticmethod
+    def get_arg_value(om_parser, arguments):
+        is_dynamic_scenario, scenario = om_parser.get_dynamic_scenario_info()
+        if not is_dynamic_scenario:
+            utils.print_info_log("The input of model is not dynamic.")
+            return ""
+        if om_parser.shape_range or scenario == DynamicArgumentEnum.DYM_DIMS:
+            return getattr(arguments, DynamicArgumentEnum.DYM_SHAPE.value.msquickcmp_arg)
+        atc_input_shape = DynamicInput.get_input_shape_from_om(om_parser)
         # from atc input shape and current input shape to get input batch size
         # if dim in shape is -1, the shape in the index of current input shape is the batch size
         atc_input_shape_dict = utils.parse_input_shape(atc_input_shape)
         quickcmp_input_shape_dict = utils.parse_input_shape(arguments.input_shape)
         batch_size_set = set()
         for op_name in atc_input_shape_dict.keys():
-            DynamicInput.append_dynamic_batch_size(atc_input_shape_dict[op_name],
-                                                   quickcmp_input_shape_dict[op_name],
-                                                   batch_size_set)
+            DynamicInput.get_dynamic_dim_values(atc_input_shape_dict[op_name],
+                                                quickcmp_input_shape_dict[op_name],
+                                                batch_size_set)
         if len(batch_size_set) == 1:
             for batch_size in batch_size_set:
-                return batch_size
+                return str(batch_size)
         utils.print_error_log("Please check your input_shape arg is valid.")
         raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
 
     @staticmethod
-    def append_dynamic_batch_size(dym_shape, cur_shape, shape_set):
-        for dim in range(len(dym_shape)):
-            if dym_shape[dim] == "-1":
-                shape_set.add(cur_shape[dim])
+    def get_dynamic_dim_values(dym_shape, cur_shape, shape_values):
+        for (dim, _) in enumerate(dym_shape):
+            if dym_shape[dim] != "-1":
+                continue
+            if isinstance(shape_values, list):
+                shape_values.append(int(cur_shape[dim]))
+            else:
+                shape_values.add(cur_shape[dim])
 
     def is_dynamic_shape_scenario(self):
         """
@@ -96,13 +105,25 @@ class DynamicInput(object):
         """
         return self.atc_dynamic_arg != ""
 
+    def judge_dynamic_shape_scenario(self, atc_dym_arg):
+        """
+        check the dynamic shape scenario
+        """
+        return self.atc_dynamic_arg.split(utils.EQUAL)[0] == atc_dym_arg
+
     def check_input_dynamic_arg_valid(self):
         if self.cur_dynamic_arg is DynamicArgumentEnum.DYM_SHAPE:
             return
         # check dynamic input value is valid, "--arg=value" ,split by '='
         dynamic_arg_values = self.atc_dynamic_arg.split(utils.EQUAL)[1]
-        if self.atc_dynamic_arg.split(utils.EQUAL)[0] == DynamicArgumentEnum.DYM_BATCH.value.atc_arg:
-            dynamic_arg_values = dynamic_arg_values.replace(utils.COMMA, utils.SEMICOLON)
+        if self.judge_dynamic_shape_scenario(DynamicArgumentEnum.DYM_DIMS.value.atc_arg):
+            self.check_dynamic_dims_valid(dynamic_arg_values)
+            return
+        if self.judge_dynamic_shape_scenario(DynamicArgumentEnum.DYM_BATCH.value.atc_arg):
+            self.check_dynamic_batch_valid(dynamic_arg_values)
+
+    def check_dynamic_batch_valid(self, atc_dynamic_arg_values):
+        dynamic_arg_values = atc_dynamic_arg_values.replace(utils.COMMA, utils.SEMICOLON)
         try:
             atc_value_list = utils.parse_arg_value(dynamic_arg_values)
             cur_input = utils.parse_value_by_comma(self.dynamic_arg_value)
@@ -112,7 +133,27 @@ class DynamicInput(object):
         except AccuracyCompareException:
             pass
         utils.print_error_log("Please input the valid shape, "
-                              "the valid dynamic value range are {0}".format(dynamic_arg_values))
+                              "the valid dynamic value range are {}".format(dynamic_arg_values))
+        raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
+
+    def check_dynamic_dims_valid(self, atc_dynamic_arg_values):
+        try:
+            atc_input_shape = DynamicInput.get_input_shape_from_om(self.om_parser)
+            atc_input_shape_dict = utils.parse_input_shape(atc_input_shape)
+            quickcmp_input_shape_dict = utils.parse_input_shape(self.dynamic_arg_value)
+            dym_dims = []
+            for op_name in atc_input_shape_dict.keys():
+                DynamicInput.get_dynamic_dim_values(atc_input_shape_dict[op_name],
+                                                    quickcmp_input_shape_dict[op_name],
+                                                    dym_dims)
+            atc_value_list = utils.parse_arg_value(atc_dynamic_arg_values)
+            for value in atc_value_list:
+                if dym_dims == value:
+                    return
+        except AccuracyCompareException:
+            pass
+        utils.print_error_log("Please input the valid shape, "
+                              "the valid dynamic value range are {}".format(atc_dynamic_arg_values))
         raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
 
     def _make_msame_cmd_for_shape_range(self, msame_cmd):
@@ -242,7 +283,8 @@ class NpuDumpData(DumpData):
             for index, each_file in enumerate(sorted(files)):
                 data_type = npu_net_output_data_info.get(index)[0]
                 shape = npu_net_output_data_info.get(index)[1]
-                original_net_output_data = np.fromfile(os.path.join(dir_path, each_file), data_type)
+                data_len = utils.get_data_len_by_shape(shape)
+                original_net_output_data = np.fromfile(os.path.join(dir_path, each_file), data_type, data_len)
                 try:
                     net_output_data = original_net_output_data.reshape(shape)
                 except ValueError:
