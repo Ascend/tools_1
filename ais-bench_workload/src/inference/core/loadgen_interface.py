@@ -25,22 +25,23 @@ class LoadgenInterface():
 
 def run_loadgen(datasets, backend, postproc, args):
     run_loadgen_base(datasets, backend.predict_proc_func, postproc.post_proc_func, args)
+    backend.sumary()
 
 
 def run_loadgen_base(datasets, predict_proc, post_proc, args):
     if args.maxloadsamples_count is None:
-        maxloadsamples_count = datasets.get_samples_count()
+        maxloadsamples_count = datasets.get_samples_count
     else:
         maxloadsamples_count = args.maxloadsamples_count
 
-    if maxloadsamples_count < datasets.get_samples_count():
+    if maxloadsamples_count < datasets.get_samples_count:
         samplesPerQuery = maxloadsamples_count
     else:
-        samplesPerQuery = datasets.get_samples_count()
+        samplesPerQuery = datasets.get_samples_count
 
     # 创建QSL设备
     params = loadgen.QslParams()
-    params.totalSamplesCount = datasets.get_samples_count()
+    params.totalSamplesCount = datasets.get_samples_count
     params.maxLoadSamplesCount = maxloadsamples_count
     params.loadSamplesCb = datasets.load_query_sample
     params.unloadSamplesCb = datasets.unload_query_sample
@@ -62,7 +63,7 @@ def run_loadgen_base(datasets, predict_proc, post_proc, args):
     settings.arrivalMode = QueryArrivalMode_map[args.query_arrival_mode]
     if args.query_arrival_mode == "offline":
         settings.samplesPerQuery = samplesPerQuery
-        settings.minQueryCount = math.ceil(datasets.get_samples_count()/settings.samplesPerQuery)
+        settings.minQueryCount = math.ceil(datasets.get_samples_count/settings.samplesPerQuery)
         settings.targetQPS = samplesPerQuery
         settings.latencyConstraintNs = 100*3600*1000000000
     elif args.query_arrival_mode == "continuous":
@@ -78,8 +79,6 @@ def run_loadgen_base(datasets, predict_proc, post_proc, args):
 
     # start test 启动测试
     loadgen.StartTest(sut, qsl, settings)
-
-    #backend.sumary()
 
     # 销毁句柄
     loadgen.DestroyQSL(qsl)

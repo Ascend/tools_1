@@ -15,8 +15,11 @@ class Outbrain(dataset.DataSet):
         self.args = None
         self.infer_log = os.path.join(self.cur_path, "benchmark.log")
 
-    # 获取样本个数。loadgen将根据样本个数进行调度和计算
+    @property
     def get_samples_count(self):
+        """
+        获取样本个数。loadgen将根据样本个数进行调度和计算
+        """
         return 100
 
     def pre_proc_func(self, sample_list):
@@ -37,7 +40,7 @@ class Outbrain(dataset.DataSet):
         """
         loadgen推理接口 传入数据索引query_samples 进行推理
         :param query_samples: 数据索引list
-        :return: True：操作成功；False：操作失败
+        :return: True: 操作成功; False: 操作失败
         """
         print("predict query samples size:{}".format(len(query_samples)))
 
@@ -56,17 +59,13 @@ class Outbrain(dataset.DataSet):
         return 0
 
     def get_processeddata_item(self, nr):
-        """Get image by number in the list."""
-        #dst = os.path.join(self.cache_path, self.image_list[nr])
-        #img = np.load(dst + ".npy")
-        #return img
         return None
 
     def post_proc_func(self, sample_list):
         """
         loadgen后处理接口 传入数据索引list 进行数据处理
         :param sample_list: 数据索引list
-        :return: True：操作成功；False：操作失败
+        :return: True: 操作成功; False: 操作失败
         """
         cmd = "{} -u {}/postprocess.py --infer_result {} --display_id={}/display_id/ --label={}/labels/".format(
             sys.executable, self.cur_path, self.output_dir, self.cur_path, self.cur_path)

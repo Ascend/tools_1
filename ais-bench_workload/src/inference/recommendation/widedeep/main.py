@@ -15,7 +15,6 @@ log = logging.getLogger("main")
 
 SUPPORTED_PROFILES = {
     "defaults": {
-
     },
     "resnet50_pytorch": {
         "dataset_name": "imagenet",
