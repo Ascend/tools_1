@@ -274,7 +274,7 @@ INFO:root:Successfully stop the job e7052953-3107-47d5-a5fa-725f9eced6e3
 job stop status: Terminated
 ```
 
-
+注意：训练job必须创建成功，处于运行状态。如果job还未创建成功，则该停止指令无效
 
 ### 结果呈现和展示
 
@@ -422,7 +422,9 @@ run目录文件结果示例：
 
 请咨询modelarts所在云环境的运维，获取该云相关服务（obs、modelarts、swr）域名和IP的映射关系并写入/etc/hosts,
 
-比如武汉云相关服务obs、modelarts、swr域名映射关系如下：
+相关服务obs、modelarts、swr域名映射关系示例如下：
+
+武汉云：
 
 ```bash
 58.48.42.196 obs.cn-central-221.ovaijisuan.com
@@ -430,10 +432,18 @@ run目录文件结果示例：
 58.48.42.198 swr.cn-central-221.ovaijisuan.com
 ```
 
+鹏城实验室：
+
+```
+112.95.163.83 obs.cn-south-222.ai.pcl.cn
+112.95.163.81 modelarts.cn-south-222.ai.pcl.cn
+112.95.163.65 swr.cn-south-222.ai.pcl.cn
+```
+
 注意：
 
 - 如果在notebook中运行，不需要设置该项
-- 华为云不需要
+- 华为云等通用云不需要
 
 
 

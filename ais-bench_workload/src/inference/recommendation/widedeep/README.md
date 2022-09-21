@@ -69,4 +69,4 @@ DEBUG           调试开关是否开启，默认不开启
 ## 模型获取与转换指南
 
 本样例使用的widedeep原始模型路径如下：
-https://github.com/NVIDIA/DeepLearningExamples/tree/master/TensorFlow/Recommendation/WideAndDeep
+https://gitee.com/ascend/ModelZoo-TensorFlow/tree/master/ACL_TensorFlow/contrib/recommendation/WideDeep_for_ACL
