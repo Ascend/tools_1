@@ -211,8 +211,6 @@ modelarts的执行版本。该环境变量不设置时默认是V1版本。需要
 
 **session_config配置：必须填写，包含训练作业参数信息。**
 
-
-
 注意：
 
 1. 如果access_config.iam_endpoint access_config.obs_endpoint access_config.modelarts_endpoint三个参数需要填写，必须要设置对应的域名解析地址，该地址请咨询运维同事获取。
@@ -225,7 +223,9 @@ modelarts的执行版本。该环境变量不设置时默认是V1版本。需要
 
 3. 训练运行参数v1版本的session_config.hyperparameters和V2版本的session_config.parameters，请参考对应的模型训练启动文件的运行参数
 
-3. 注意节点配置不能跨资源池。要么使用某个资源池，要么使用公共节点，不能一起使用
+4. 注意节点配置不能跨资源池。要么使用专属资源池，要么使用公共资源池，不能一起使用
+
+5. modelarts配置项的详细配置方法，请参照配置文件中的注释说明
 
 ### 启动运行
 
