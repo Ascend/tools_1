@@ -119,7 +119,7 @@ def infer_loop_run(session, args, intensors_desc, infileslist, outputs_names, ou
         outputs = run_inference(session, intensors, outputs_names)
         outtensors_to_host(outputs)
         if output_prefix != None:
-            save_tensors_to_file(outputs, output_prefix, infiles, args.outfmt, i)
+            save_tensors_to_file(outputs, output_prefix, infiles, args.outfmt, i, args.output_batchsize_axis)
 
 # First prepare the data, then execute the reference, and then write the file uniformly
 def infer_fulltensors_run(session, args, intensors_desc, infileslist, outputs_names, output_prefix):
@@ -134,7 +134,7 @@ def infer_fulltensors_run(session, args, intensors_desc, infileslist, outputs_na
     for i, outputs in enumerate(outtensors):
         outtensors_to_host(outputs)
         if output_prefix != None:
-            save_tensors_to_file(outputs, output_prefix, infileslist[i], args.outfmt, i)
+            save_tensors_to_file(outputs, output_prefix, infileslist[i], args.outfmt, i, args.output_batchsize_axis)
 
 async def in_task(inque, args, intensors_desc, infileslist):
     logger.debug("in_task begin")
@@ -168,7 +168,7 @@ async def out_task(outque, output_prefix, args):
 
         outtensors_to_host(outputs)
         if output_prefix != None:
-            save_tensors_to_file(outputs, output_prefix, infiles, args.outfmt, i)
+            save_tensors_to_file(outputs, output_prefix, infiles, args.outfmt, i, args.output_batchsize_axis)
 
 async def infer_pipeline_process_run(session, args, intensors_desc, infileslist, outputs_names, output_prefix):
     inque = asyncio.Queue(maxsize=args.infer_queue_count)
@@ -198,6 +198,13 @@ def check_positive_integer(value):
     return ivalue
 
 
+def check_nonnegative_integer(value):
+    ivalue = int(value)
+    if ivalue < 0:
+        raise argparse.ArgumentTypeError("%s is an invalid nonnegative int value" % value)
+    return ivalue
+
+
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", "--om", required=True, help="the path of the om model")
@@ -219,6 +226,7 @@ def get_args():
     parser.add_argument("--dump", action="store_true", default=False, help="dump switch")
     parser.add_argument("--acl_json_path", type=str, default=None, help="acl json path for profiling or dump")
     parser.add_argument("--infer_queue_count",  type=check_positive_integer, default=20, help="Maximum number of data in inference queue, such as --maxqueue 15")
+    parser.add_argument("--output_batchsize_axis",  type=check_nonnegative_integer, default=0, help="splitting axis number when outputing tensor results, such as --output_batchsize_axis 12")
 
     args = parser.parse_args()
 

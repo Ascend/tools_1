@@ -178,14 +178,18 @@ def outtensors_to_host(outputs):
         totle_laency += float(endtime - starttime) * 1000.0  # millisecond
     summary.d2h_latency_list.append(totle_laency)
 
-def save_tensors_to_file(outputs, output_prefix, infiles_paths, outfmt, index):
+
+def save_tensors_to_file(outputs, output_prefix, infiles_paths, outfmt, index, output_batchsize_axis):
     files_count_perbatch = len(infiles_paths[0])
     infiles_perbatch = np.transpose(infiles_paths)
-    logger.debug("files_count_perbatch:{} outputs count:{}".format(files_count_perbatch, len(outputs)))
     for i, out in enumerate(outputs):
         ndata = np.array(out)
-        if files_count_perbatch == 1 or ndata.shape[0] % files_count_perbatch == 0:
-            subdata = np.array_split(ndata, files_count_perbatch)
+        if output_batchsize_axis >= len(ndata.shape):
+            logger.error("error i:{0} ndata.shape:{1} len:{2} <= output_batchsize_axis:{3}  is invalid".format(
+                i, ndata.shape, len(ndata.shape), output_batchsize_axis))
+            raise RuntimeError()
+        if files_count_perbatch == 1 or ndata.shape[output_batchsize_axis] % files_count_perbatch == 0:
+            subdata = np.array_split(ndata, files_count_perbatch, output_batchsize_axis)
             for j in range(files_count_perbatch):
                 sample_id = index*files_count_perbatch+j
                 #file_path = os.path.join(output_prefix, "input{}_output_{}.{}".format(sample_id, i, outfmt.lower()))
@@ -196,11 +200,11 @@ def save_tensors_to_file(outputs, output_prefix, infiles_paths, outfmt, index):
                 file_path = os.path.join(output_prefix, "{}_{}.{}".format(
                     os.path.basename(infiles_perbatch[j][0]).split('.')[0], i, outfmt.lower()))
                 summary.add_sample_id_infiles(sample_id, infiles_perbatch[j])
-                logger.debug("save func: sampleid:{} i:{} infiles:{} outfile:{} fmt:{}".format(
-                    sample_id, i, infiles_perbatch[j], file_path, outfmt))
+                logger.debug("save func: sampleid:{} i:{} infiles:{} outfile:{} fmt:{} axis:{}".format(
+                    sample_id, i, infiles_perbatch[j], file_path, outfmt, output_batchsize_axis))
                 summary.append_sample_id_outfile(sample_id, file_path)
                 save_data_to_files(file_path, subdata[j])
         else:
-            logger.error('save out files error array shape:{} filesinfo:{} files_count_perbatch:{} ndata.shape0:{}'.format(
-                ndata.shape, infiles_paths, files_count_perbatch, ndata.shape[0]))
+            logger.error('save out files error array shape:{} filesinfo:{} files_count_perbatch:{} ndata.shape{}:{}'.format(
+                ndata.shape, infiles_paths, files_count_perbatch, output_batchsize_axis, ndata.shape[output_batchsize_axis]))
             raise RuntimeError()
