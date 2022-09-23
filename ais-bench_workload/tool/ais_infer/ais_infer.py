@@ -267,7 +267,8 @@ if __name__ == "__main__":
             output_prefix = os.path.join(args.output, timestr)
         else:
             output_prefix = os.path.join(args.output, args.output_dirname)
-        os.mkdir(output_prefix, 0o755)
+        if not os.path.exists(output_prefix):
+            os.mkdir(output_prefix, 0o755)
         logger.info("output path:{}".format(output_prefix))
     else:
         output_prefix = None
