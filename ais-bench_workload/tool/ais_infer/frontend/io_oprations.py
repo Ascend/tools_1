@@ -181,7 +181,8 @@ def outtensors_to_host(outputs):
         totle_laency += float(endtime - starttime) * 1000.0  # millisecond
     summary.d2h_latency_list.append(totle_laency)
 
-def save_tensors_to_file(outputs, output_prefix, infiles_paths, outfmt, index):
+
+def save_tensors_to_file(outputs, output_prefix, infiles_paths, outfmt, index, output_batchsize_axis):
     files_count_perbatch = len(infiles_paths[0])
     infiles_perbatch = np.transpose(infiles_paths)
     logger.debug("files_count_perbatch:{} outputs count:{}".format(files_count_perbatch, len(outputs)))
