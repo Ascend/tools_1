@@ -45,7 +45,6 @@ DTYPE_MAP = {"DT_FLOAT": np.float32, "DT_FLOAT16": np.float16, "DT_DOUBLE": np.f
 OUT_NODES_NAME = "attr_model_out_nodes_name"
 # special ops
 SPECIAL_OPS_TYPE = ("Cast", "TransData")
-BATCH_INDEX = "batch_{0}"
 
 
 class OmParser(object):
@@ -192,10 +191,13 @@ class OmParser(object):
         # if it's dynamic batch scenario, the net output node should be identified by batch index
         _, scenario = self.get_dynamic_scenario_info()
         if scenario in [DynamicArgumentEnum.DYM_BATCH, DynamicArgumentEnum.DYM_DIMS]:
-            cur_batch_index_field = BATCH_INDEX.format(utils.get_batch_index(dump_data_path))
+            cur_batch_index = utils.get_batch_index(dump_data_path)
             for operator in net_output_list:
-                if cur_batch_index_field in operator.get(NAME_OBJECT):
+                batch_index_in_operator = utils.get_batch_index_from_name(operator.get(NAME_OBJECT))
+                if cur_batch_index == batch_index_in_operator:
                     return self._parse_net_output_node_attr(operator)
+        utils.print_error_log("get npu output node info failed.")
+        raise AccuracyCompareException(utils.ACCURACY_COMPARISON_PARSER_JSON_FILE_ERROR)
 
     def _is_input_shape_range(self):
         if ATTR_OBJECT not in self.json_object:

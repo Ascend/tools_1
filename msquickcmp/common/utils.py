@@ -42,7 +42,7 @@ COLON = ":"
 EQUAL = "="
 COMMA = ","
 DOT = "."
-ASCEND_BATCH_FIELD = "ascend_mbatch_batch"
+ASCEND_BATCH_FIELD = "ascend_mbatch_batch_"
 BATCH_SCENARIO_OP_NAME = "{0}_ascend_mbatch_batch_{1}"
 
 
@@ -388,7 +388,7 @@ def get_batch_index(dump_data_path):
     for _, _, files in os.walk(dump_data_path):
         for file_name in files:
             if ASCEND_BATCH_FIELD in file_name:
-                return get_batch_index_from_file(file_name)
+                return get_batch_index_from_name(file_name)
     return ""
 
 
@@ -404,12 +404,12 @@ def handle_ground_truth_files(om_parser, npu_dump_data_path, golden_dump_data_pa
                 shutil.copy(os.path.join(root, file_name), os.path.join(root, dst_file_name))
 
 
-def get_batch_index_from_file(file_name):
+def get_batch_index_from_name(name):
     batch_index = ""
-    last_batch_field_index = file_name.rfind(ASCEND_BATCH_FIELD)
-    pos = last_batch_field_index + len(ASCEND_BATCH_FIELD) + 1
-    while file_name[pos].isdigit():
-        batch_index += file_name[pos]
+    last_batch_field_index = name.rfind(ASCEND_BATCH_FIELD)
+    pos = last_batch_field_index + len(ASCEND_BATCH_FIELD)
+    while pos < len(name) and name[pos].isdigit():
+        batch_index += name[pos]
         pos += 1
     return batch_index
 
