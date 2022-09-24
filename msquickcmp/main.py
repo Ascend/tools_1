@@ -42,6 +42,8 @@ def _accuracy_compare_parser(parser):
     parser.add_argument("--output-nodes", dest="output_nodes", default="",
                         help="<Optional> Output nodes designated by user. Separate multiple nodes with semicolons(;)."
                              " E.g: node_name1:0;node_name2:1;node_name3:0")
+    parser.add_argument("--advisor", dest="advisor", action="store_true",
+                        help="<Optional> Enable advisor after compare.")
 
 
 def _generate_golden_data_model(args):
