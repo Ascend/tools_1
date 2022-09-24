@@ -65,7 +65,7 @@ def get_files_count_per_batch(intensors_desc, fileslist, auto_set_dymshape_mode=
     if auto_set_dymshape_mode == True:
         files_count_per_batch = 1
     else:
-        if filesize == 0 or tensorsize%filesize != 0:
+        if filesize == 0 or tensorsize % filesize != 0:
             logger.error('arg0 tensorsize: {} filesize: {} not match'.format(tensorsize, filesize))
             raise RuntimeError()
         files_count_per_batch = (int)(tensorsize/filesize)
@@ -158,7 +158,7 @@ def create_infileslist_from_inputs_list(inputs_list, intensors_desc, auto_set_dy
         logger.debug("create intensors list file type inlistcount:{} intensorcont:{} chunks:{} files_size:{}".format(
             inputlistcount, intensorcount, chunks, len(fileslist)))
     elif os.path.isdir(inputs_list[0]) and inputlistcount == intensorcount:
-        fileslist = [ get_fileslist_from_dir(dir) for dir in inputs_list ]
+        fileslist = [get_fileslist_from_dir(dir) for dir in inputs_list]
         logger.debug("create intensors list dictionary type inlistcount:{} intensorcont:{} files_size:{}".format(
             inputlistcount, intensorcount, len(fileslist)))
     else:
@@ -185,7 +185,6 @@ def outtensors_to_host(outputs):
 def save_tensors_to_file(outputs, output_prefix, infiles_paths, outfmt, index, output_batchsize_axis):
     files_count_perbatch = len(infiles_paths[0])
     infiles_perbatch = np.transpose(infiles_paths)
-    logger.debug("files_count_perbatch:{} outputs count:{}".format(files_count_perbatch, len(outputs)))
     for i, out in enumerate(outputs):
         ndata = np.array(out)
         if output_batchsize_axis >= len(ndata.shape):
