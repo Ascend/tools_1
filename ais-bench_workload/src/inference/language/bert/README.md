@@ -6,7 +6,10 @@
 ```
 pip3 install -r requirements.txt
 ```
+其中，对于arm64平台安装tensorflow1.15.0， 请参照《CANN 5.0.4 软件安装指南 01》， 网址：https://support.huawei.com/enterprise/zh/doc/EDOC1100234042/5d4f9eec
+
 2. 安装loadgenerator模块，即负载生成器。该部分以whl包方式提供，需要通过如下命令安装，要注意python版本与包的对应关系
+
 ```
 pip3 install loadgen-0.0.1-cp36-cp36m-linux_aarch64.whl
 或
