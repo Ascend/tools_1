@@ -11,7 +11,7 @@ import os
 from common import utils
 from common.utils import AccuracyCompareException
 
-ATC_FILE_PATH = "bin/atc"
+ATC_FILE_PATH = "compiler/bin/atc"
 OLD_ATC_FILE_PATH = "atc/bin/atc"
 
 
