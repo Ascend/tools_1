@@ -2,21 +2,28 @@
 本程序为ais-bench针对bert任务的推理python语言样例实现。对应的软件包为inference_language_bert-Ais-Benchmark-Stubs-aarch64-1.0-.tar
 
 ## 依赖与安装
-1. 调用如下命令安装依赖包，主要包括transformers, tensorflow, tokenization等.请确保能连接公开网络
+1. 调用如下命令安装依赖包，主要包括transformers,  tokenization等. 请确保能连接公开网络
 ```
 pip3 install -r requirements.txt
 ```
-2. 安装loadgenerator模块，即负载生成器。该部分以whl包方式提供，需要通过如下命令安装，要注意python版本与包的对应关系
+2. 另外还依赖tensorflow 1.15.0版本
+
+   其安装方法，请参照《CANN 5.0.4 软件安装指南 01》， 网址：https://support.huawei.com/enterprise/zh/doc/EDOC1100234042/5d4f9eec
+
+3. 安装loadgenerator模块，即负载生成器。该部分以whl包方式提供，需要通过如下命令安装，要注意python版本与包的对应关系
+
 ```
 pip3 install loadgen-0.0.1-cp36-cp36m-linux_aarch64.whl
 或
 pip3 install loadgen-0.0.1-cp37-cp37m-linux_aarch64.whl
 ```
-3. 安装aclruntime模块。
+4. 安装aclruntime模块。
+
 ```
 pip3 install aclruntime-0.0.1-cp37-cp37m-linux_aarch64.whl
 ```
-4. 设置ascend-toolkit环境变量。对于不同的设备，请设置对应的路径的set_env.sh
+5. 设置ascend-toolkit环境变量。对于不同的设备，请设置对应的路径的set_env.sh
+
 ```
 source /usr/local/Ascend/ascend-toolkit/set_env.sh
 ```
@@ -34,7 +41,7 @@ PYTHON_COMMAND  设置运行的python命令
 PROFILE         支持的场景
 MODEL_PATH      om模型路径
 BATCH_SIZE      om模型对应的batchsize
-DATASET_PATH    数据集路径
+DATASET_PATH    数据集路径。可选数据集sample_text.txt, 下载链接：https://github.com/google-research/bert/blob/master/sample_text.txt
 VOCAB_FILE      vocab.txt文件路径
 DEVICE_ID       推理执行卡序号
 ```
