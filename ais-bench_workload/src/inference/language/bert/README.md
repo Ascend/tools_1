@@ -6,7 +6,7 @@
 ```
 pip3 install -r requirements.txt
 ```
-2. 另外还依赖tensorflow 1.15.0版本. 请确保能连接公开网络
+2. 另外还依赖tensorflow 1.15.0版本
 
    其安装方法，请参照《CANN 5.0.4 软件安装指南 01》， 网址：https://support.huawei.com/enterprise/zh/doc/EDOC1100234042/5d4f9eec
 

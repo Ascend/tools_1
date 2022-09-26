@@ -6,7 +6,7 @@
 
 ## 依赖与安装
 
-1. 调用如下命令安装依赖包，主要包括numpy, Pillow等. 请确保能连接公开网络
+1. 调用如下命令安装依赖包，主要包括numpy, Pillow等
 
 ```
 pip3 install -r requirements.txt
