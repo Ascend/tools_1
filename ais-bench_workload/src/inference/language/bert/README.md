@@ -37,7 +37,7 @@ PYTHON_COMMAND  设置运行的python命令
 PROFILE         支持的场景
 MODEL_PATH      om模型路径
 BATCH_SIZE      om模型对应的batchsize
-DATASET_PATH    数据集路径
+DATASET_PATH    数据集路径。可选数据集sample_text.txt, 下载链接：https://github.com/google-research/bert/blob/master/sample_text.txt
 VOCAB_FILE      vocab.txt文件路径
 DEVICE_ID       推理执行卡序号
 ```
