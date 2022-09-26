@@ -37,8 +37,7 @@ APP_ERROR FreeFuncCFree(void* ptr)
 APP_ERROR MemoryHelper::Malloc(MemoryData& data)
 {
     APP_ERROR ret = APP_ERR_OK;
-    if (data.size == 0)
-    {
+    if (data.size == 0) {
         data.ptrData = nullptr;
         return APP_ERR_OK
     }
@@ -66,7 +65,7 @@ APP_ERROR MemoryHelper::Malloc(MemoryData& data)
             break;
         case MemoryData::MEMORY_HOST_NEW:
             data.ptrData = (void*)(new int8_t[data.size]);
-            if (data.ptrData == nullptr) {Pten
+            if (data.ptrData == nullptr) {
                 ret = APP_ERR_ACL_BAD_ALLOC;
             } else {
                 ret = APP_ERR_OK;
@@ -88,8 +87,7 @@ APP_ERROR MemoryHelper::Malloc(MemoryData& data)
 
 APP_ERROR MemoryHelper::Free(MemoryData& data)
 {
-    if (data.size == 0 && data.ptrData == nullptr)
-    {
+    if (data.size == 0 && data.ptrData == nullptr) {
         return APP_ERR_OK;
     }
     if (data.ptrData == nullptr) {
@@ -199,7 +197,7 @@ APP_ERROR MemoryHelper::MxbsMallocAndCopy(MemoryData& dest, const MemoryData& sr
 bool MemoryHelper::IsHostToDevice(const MemoryData& dest, const MemoryData& src)
 {
     return (dest.type == MemoryData::MEMORY_DEVICE || dest.type == MemoryData::MEMORY_DVPP) &&
-        (src.type == MemoryData::MEMORY_HOST || src.type == MemoryData::MEMORY_HOST_MALLOC ||
+        (src.type == MemoryData::MEMORY_HOST || src.type == MemoryData::MEMORY_HOST_MALLOC || 
         src.type == MemoryData::MEMORY_HOST_NEW);
 }
 
@@ -211,15 +209,15 @@ bool MemoryHelper::IsDeviceToDevice(const MemoryData& dest, const MemoryData& sr
 
 bool MemoryHelper::IsHostToHost(const MemoryData& dest, const MemoryData& src)
 {
-    return (dest.type == MemoryData::MEMORY_HOST || dest.type == MemoryData::MEMORY_HOST_MALLOC ||
-        dest.type == MemoryData::MEMORY_HOST_NEW) &&
-        (src.type == MemoryData::MEMORY_HOST || src.type == MemoryData::MEMORY_HOST_MALLOC ||
+    return (dest.type == MemoryData::MEMORY_HOST || dest.type == MemoryData::MEMORY_HOST_MALLOC || 
+        dest.type == MemoryData::MEMORY_HOST_NEW) && 
+        (src.type == MemoryData::MEMORY_HOST || src.type == MemoryData::MEMORY_HOST_MALLOC || 
         src.type == MemoryData::MEMORY_HOST_NEW);
 }
 
 bool MemoryHelper::IsDeviceToHost(const MemoryData& dest, const MemoryData& src)
 {
-    return (dest.type == MemoryData::MEMORY_HOST || dest.type == MemoryData::MEMORY_HOST_MALLOC ||
+    return (dest.type == MemoryData::MEMORY_HOST || dest.type == MemoryData::MEMORY_HOST_MALLOC || 
         dest.type == MemoryData::MEMORY_HOST_NEW) &&
         (src.type == MemoryData::MEMORY_DEVICE || src.type == MemoryData::MEMORY_DVPP);
 }

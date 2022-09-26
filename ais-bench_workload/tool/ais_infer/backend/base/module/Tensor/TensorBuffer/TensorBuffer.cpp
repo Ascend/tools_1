@@ -195,8 +195,7 @@ APP_ERROR TensorBuffer::CopyBetweenDiffDevice(TensorBuffer &dst, const TensorBuf
 
 APP_ERROR TensorBuffer::TensorBufferCopy(TensorBuffer &dst, const TensorBuffer &src)
 {
-    if (src.size == 0 && dst.size == 0)
-    {
+    if (src.size == 0 && dst.size == 0) {
         return APP_ERR_OK;
     }
     APP_ERROR ret = CheckCopyValid(dst, src);
