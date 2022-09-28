@@ -70,7 +70,7 @@ DEBUG           调试开关是否开启，默认不开启
 
 + 联机测试：直接执行，不带参数，会连接远程服务器
 + 离线测试：增加test参数，执行 ./ais-bench-stubs test命令，本地运行, 不联机
-
+说明： 程序运行过程中会出现类似 “WARNING: tensorflow ......is deprecated and will be removed in a futrue version.”，此提示是tensorflow软件提示的API兼容的告警。该告警是对您使用的tensorflow软件API兼容性问题的正常提示，不影响本工具的正常使用
 ## 模型获取与转换指南
 
 本样例使用的widedeep原始模型路径如下：
