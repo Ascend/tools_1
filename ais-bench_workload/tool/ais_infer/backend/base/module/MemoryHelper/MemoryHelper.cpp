@@ -37,6 +37,10 @@ APP_ERROR FreeFuncCFree(void* ptr)
 APP_ERROR MemoryHelper::Malloc(MemoryData& data)
 {
     APP_ERROR ret = APP_ERR_OK;
+    if (data.size == 0) {
+        data.ptrData = nullptr;
+        return APP_ERR_OK;
+    }
     switch (data.type) {
         case MemoryData::MEMORY_HOST:
             ret = aclrtMallocHost(&(data.ptrData), data.size);
@@ -83,6 +87,9 @@ APP_ERROR MemoryHelper::Malloc(MemoryData& data)
 
 APP_ERROR MemoryHelper::Free(MemoryData& data)
 {
+    if (data.size == 0 && data.ptrData == nullptr) {
+        return APP_ERR_OK;
+    }
     if (data.ptrData == nullptr) {
         LogError << GetError(APP_ERR_COMM_INVALID_POINTER)
                  << "Free failed, ptrData is nullptr.";
