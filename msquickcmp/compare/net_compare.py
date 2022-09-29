@@ -37,6 +37,10 @@ class NetCompare(object):
         self.cpu_dump_data_path = cpu_dump_data_path
         self.output_json_path = output_json_path
         self.arguments = arguments
+        self.cmd = ["python3", "-V"]
+        self.msaccucmp_command_dir_path = os.path.join(self.arguments.cann_path, MSACCUCMP_DIR_PATH)
+        self.msaccucmp_command_file_path = self._check_msaccucmp_file(self.msaccucmp_command_dir_path)
+        self.python_version = self._check_python_command_valid(self.cmd)
 
     def accuracy_network_compare(self):
         """
@@ -45,12 +49,8 @@ class NetCompare(object):
         Exception Description:
             when invalid  msaccucmp command throw exception
         """
-        cmd = ["python3", "-V"]
-        python_version = self._check_python_command_valid(cmd)
-        msaccucmp_command_dir_path = os.path.join(self.arguments.cann_path, MSACCUCMP_DIR_PATH)
-        msaccucmp_command_file_path = self._check_msaccucmp_file(msaccucmp_command_dir_path)
-        self._check_pyc_to_python_version(msaccucmp_command_file_path, python_version)
-        msaccucmp_cmd = ["python" + python_version, msaccucmp_command_file_path, "compare", "-m",
+        self._check_pyc_to_python_version(self.msaccucmp_command_file_path, self.python_version)
+        msaccucmp_cmd = ["python" + self.python_version, self.msaccucmp_command_file_path, "compare", "-m",
                          self.npu_dump_data_path, "-g",
                          self.cpu_dump_data_path, "-f", self.output_json_path, "-out", self.arguments.out_path]
         if self.arguments.advisor:
@@ -72,10 +72,6 @@ class NetCompare(object):
             return
         npu_dump_file = {}
         file_index = 0
-        cmd = ["python3", "-V"]
-        python_version = self._check_python_command_valid(cmd)
-        msaccucmp_command_dir_path = os.path.join(self.arguments.cann_path, MSACCUCMP_DIR_PATH)
-        msaccucmp_command_file_path = self._check_msaccucmp_file(msaccucmp_command_dir_path)
         utils.print_info_log("=================================compare Node_output=================================")
         utils.print_info_log("start to compare the Node_output at now, compare result is:")
         utils.print_warn_log("The comparison of Node_output may be incorrect in certain scenarios. If the precision"
@@ -85,7 +81,7 @@ class NetCompare(object):
             for each_file in sorted(files):
                 if each_file.endswith(".npy"):
                     npu_dump_file[file_index] = os.path.join(dir_path, each_file)
-                    msaccucmp_cmd = ["python" + python_version, msaccucmp_command_file_path, "compare", "-m",
+                    msaccucmp_cmd = ["python" + self.python_version, self.msaccucmp_command_file_path, "compare", "-m",
                                      npu_dump_file.get(file_index), "-g", golden_net_output_info.get(file_index)]
                     status, compare_result = self.execute_msaccucmp_command(msaccucmp_cmd, True)
                     if status == 2 or status == 0:
@@ -162,8 +158,7 @@ class NetCompare(object):
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_OPEN_FILE_ERROR)
         return None
 
-    @staticmethod
-    def _process_result_one_line(fp_write, fp_read, npu_file_name, golden_file_name, result):
+    def _process_result_one_line(self, fp_write, fp_read, npu_file_name, golden_file_name, result):
         writer = csv.writer(fp_write)
         # write header to file
         table_header_info = next(fp_read)
@@ -184,6 +179,8 @@ class NetCompare(object):
             else:
                 new_content = [line[0], "NaN", "Node_Output", "NaN", "NaN",
                                npu_file_name, "NaN", golden_file_name, "[]"]
+                if self._check_msaccucmp_compare_support_advisor():
+                    new_content.append("NaN")
                 new_content.extend(result)
                 new_content.extend([""])
                 if line[ground_truth_index] != "*":
@@ -251,14 +248,35 @@ class NetCompare(object):
         Return Value:
             status code
         """
-        utils.print_info_log('Execute command:%s' % cmd)
         result = []
-        process = subprocess.Popen(cmd, shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        process = self.execute_command_line(cmd)
         while process.poll() is None:
-            line = process.stdout.readline()
-            line = line.strip()
+            line = process.stdout.readline().strip()
             if line:
                 print(line)
                 compare_result = self._catch_compare_result(line, catch)
                 result = compare_result if compare_result else result
         return process.returncode, result
+
+    @staticmethod
+    def execute_command_line(cmd):
+        utils.print_info_log('Execute command:%s' % cmd)
+        process = subprocess.Popen(cmd, shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        return process
+
+    def _check_msaccucmp_compare_support_agrs(self, compare_args):
+        check_cmd = ["python" + self.python_version, self.msaccucmp_command_file_path, "compare", "-h"]
+        process = self.execute_command_line(check_cmd)
+        while process.poll() is None:
+            line = process.stdout.readline().strip()
+            if line:
+                line_decode = line.decode(encoding="utf-8")
+                if compare_args in line_decode:
+                    return True
+        else:
+            utils.print_warn_log("Current version does not support advisor function")
+            return False
+
+    def _check_msaccucmp_compare_support_advisor(self):
+        return self.arguments.advisor and \
+               self._check_msaccucmp_compare_support_agrs(utils.ADVISOR_ARGS)
