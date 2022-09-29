@@ -85,8 +85,8 @@ OBS存储->>本地运行设备: 下载数据
    pip3 install easydict
    ```
 
-- 安装modelarts-sdk程序包。当前适配ModelArts版本 >= 21.9.0，请根据[modelarts-sdk官网教程](https://support.huaweicloud.com/sdkreference-modelarts/modelarts_04_0004.html)下载对应版本并执行安装。
-
+- 安装modelarts-sdk程序包。请根据[modelarts-sdk官网教程](https://support.huaweicloud.com/sdkreference-modelarts/modelarts_04_0004.html)下载对应版本并执行安装。
+- 当前适配ModelArts版本 >= 21.9.0
 ### 数据集
 
 下载相关模型数据集并上传至OBS存储中。
@@ -167,6 +167,12 @@ tar xvf train_huawei_train_mindspore_resnet-Ais-Benchmark-Stubs-aarch64-1.0-r1.3
 
 modelarts_config.py是modelarts运行配置文件，位于性能测试软件包解压路径/code/config/modelarts_config.py，主要包括modelarts的鉴权和训练参数信息。
 
+比较重要和必须要设置的参数如下：
+
+**access_config配置：必须填写，包含modelarts认证信息，请通过计算中心或者云服务的运维同事获取并确定。**
+
+**session_config配置：必须填写，包含训练作业参数信息。其中session_config是modelarts V1版本的配置，session_config_v2是modelarts V2版本的配置。**
+
 请根据配置文件的注释来编辑配置。
 
 注意：
@@ -179,7 +185,7 @@ modelarts_config.py是modelarts运行配置文件，位于性能测试软件包�
 
 2. 当前选择的容器镜像版本是默认modelarts自带的，如果需要更新为指定的mindspore和cann版本。请参考“附录>CANN包和MindSpore软件更新”。
 
-3. 训练运行参数v1版本的session_config.hyperparameters和V2版本的session_config.parameters，请参考对应的模型训练启动文件的运行参数。
+3. 训练运行参数v1版本的session_config.hyperparameters和V2版本的session_config_v2.parameters，请参考对应的模型训练启动文件的运行参数。
 
 4. 注意节点配置不能跨资源池。要么使用专属资源池，要么使用公共资源池，不能一起使用。
 
