@@ -79,7 +79,7 @@ OBS存储->>本地运行设备: 下载数据
 
    请使用如下命令进行安装（当前以pip3为例，请选择与Python版本对应的的pip命令）：
 
-   ```本
+   ```
    pip3 install easydict
    ```
 
@@ -146,11 +146,11 @@ tar xvf train_huawei_train_mindspore_resnet-Ais-Benchmark-Stubs-aarch64-1.0-r1.3
 │   │   ├── mindspore_env.sh  // Mindspore框架模型测试时的环境变量，可根据实际需求补充环境变量
 │   │   ├── modelarts_config.py  // 线上训练性能测试时配置
 │   │   └── tensorflow_env.sh  // TensorFlow框架模型测试时的环境变量，可根据实际需求补充环境变量
-│   ├── config.json  // tester服务器信息配置文件，配置后可自动将测试结果上报到tester服务器上。暂未开放
+│   ├── config.json  // tester服务器信息配置文件，配置后可自动将测试结果上报到tester服务器上。本地测试模式下不需要填写
 │   ├── doc  // 指导文档存放目录
-│   └── system.json  // 性能测试系统信息配置文件，仅当需要将测试结果上报到tester服务器时需要配置。暂未开放
+│   └── system.json  // 性能测试系统信息配置文件，仅当需要将测试结果上报到tester服务器时需要配置。本地测试模式下不需要填写
 ├── log  // 日志输出目录
-├── README.md  // 离线性能测试指导
+├── README.md  // 测试指导文档
 ├── result  // 测试结果输出目录
 └── tmp  // 数据缓存
 ```
@@ -163,172 +163,9 @@ tar xvf train_huawei_train_mindspore_resnet-Ais-Benchmark-Stubs-aarch64-1.0-r1.3
 
 #### 配置modelarts_config.py
 
-modelarts_config.py为modelarts配置文件，位于性能测试软件包解压路径/code/config/modelarts_config.py，主要包括modelarts的鉴权和训练参数信息。
+modelarts_config.py是modelarts运行配置文件，位于性能测试软件包解压路径/code/config/modelarts_config.py，主要包括modelarts的鉴权和训练参数信息。
 
-根据注释编辑文件：
-
-```
-from easydict import EasyDict as ed
-
-# 该部分为认证信息，请向相关运维同事咨询并填写
-access_config = ed({
-    # 登录需要的ak sk信息
-    'access_key': '',
-    'secret_access_key': '',
-    # 连接OBS的服务地址。可包含协议类型、域名、端口号。（出于安全性考虑，建议使用https协议）
-    # 如果是计算中心，需要联系运维同事获取
-    'server': '',
-    # project_id/region_name:
-    # 项目ID/区域ID，获取方式参考链接
-    # https://support.huaweicloud.com/api-iam/iam_17_0002.html
-    # 如果是计算中心,请咨询相关维护同事
-    'region_name': '',
-    'project_id': '',
-
-    # 如下配置针对计算中心等专有云 通用云不需要设置 设置为空 请咨询相关维护同事
-    # 设置该信息后 需要设置相关的域名解析地址
-    'iam_endpoint': '',
-    'obs_endpoint': '',
-    'modelarts_endpoint' : '',
-})
-
-session_config = ed({
-    # 运行模型的传入超参
-    'hyperparameters': [
-        # bert模型类型 默认large_acc模式 不需要修改
-        {'label': 'bert_network', 'value': 'large_acc'},
-        # 是否使能modelarts 必须设置为True，不需要修改
-        {'label': 'enable_modelarts', 'value': 'True'},
-        # 是否开启分布式，如果1卡以上的话都是True 一般不需要修改
-        {'label': 'distribute', 'value': 'true'},
-        # epoch次数 必须关注 当前默认设置为5 训练的epoch数
-        # 优先级低于train_steps，如果存在train_steps以此为准，否则以epoch_size为准
-        {'label': 'epoch_size', 'value': '5'},
-        # 训练step数 必须填写并审视 该值优先级高于train_steps数
-        {'label': 'train_steps', 'value': '12000'},
-        # 是否保存ckpt文件 默认为True 保存ckpt
-        {'label': 'enable_save_ckpt', 'value': 'true'},
-        # 不需要修改
-        {'label': 'enable_lossscale', 'value': 'true'},
-        # 不需要修改
-        {'label': 'do_shuffle', 'value': 'true'},
-        # 不需要修改
-        {'label': 'enable_data_sink', 'value': 'true'},
-        # 不需要修改
-        {'label': 'data_sink_steps', 'value': '100'},
-        # 不需要修改
-        {'label': 'accumulation_steps', 'value': '1'},
-        # 保存ckpt的step数 注意 该值必须要跟step数保存一致 这样提高性能
-        {'label': 'save_checkpoint_steps', 'value': '12000'},
-        # 保存ckpt的个数 默认为1 不需要修改
-        {'label': 'save_checkpoint_num', 'value': '1'},
-    ],
-    # 输入数据集obs目录,请按样例格式填写
-    'inputs': '/zgwtest/lcm_test/dataset/enwiki_small/',
-    # obs代码路径 程序会自动拷贝到该路径
-    'code_dir': '/zgwtest/lcm_test/bert/',
-    # 启动文件 必须要在code_dir路径下，请按样例格式填写
-    'boot_file': '/zgwtest/lcm_test/bert/run_pretrain.py',
-
-    # 如下为运行相关参数
-    # job名称  如果云环境Modelarts服务训练作业job队列中没有，则会新建一个job；若和已有job同名，则会在该job中，新建测试实例.
-    'job_name': "aisbench-debug",
-
-    # 使用容器类型与镜像版本
-    'framework_type': 'Ascend-Powered-Engine',
-    'framework_version': 'MindSpore-1.3-cann_5.0.2-python3.7-euleros2.8-aarch64',
-
-    # 资源参数类型主要包括如下2个值 train_instance_type和pool_id
-    # 不设置pool_id 默认是公共池 设置了就是专属资源池
-    # 只设置pool_id 不设置train_instance_type 默认为专属资源池的默认类型
-    # train_instance_type 在程序打印中有提示的 一般为如下四个值 分别对应 1卡 2卡 4卡 8卡
-    # ['modelarts.kat1.xlarge', 'modelarts.kat1.2xlarge', 'modelarts.kat1.4xlarge', 'modelarts.kat1.8xlarge']
-    # https://support.huaweicloud.com/sdkreference-modelarts/modelarts_04_0191.html 该链接指示获取方法
-
-    # 专属资源池id 不是则为None
-    'pool_id' : None,
-    # 训练类型 如下为8卡 如果是专属资源池id设置，那么该类型需要设置为None
-    'train_instance_type': 'modelarts.kat1.8xlarge',
-    # 训练结点数
-    'train_instance_count': 1,
-
-    # 云存储路径 默认为空
-    # 'nas_type' : None,
-    # 'nas_share_addr' : None,
-    # 'nas_mount_path' : None,
-
-    # 输出信息基准路径 整体路径为 train_url = out_base_url/version_name
-    "out_base_url": "/zgwtest/lcm_test/result/",
-    # job 描述前缀
-    "job_description_prefix": 'lcm-debug desc',
-})
-
-
-session_config_v2 = ed({
-    # 运行模型的传入超参
-    'parameters': [
-        # bert模型类型 默认large_acc模式 不需要修改
-        {'name': 'bert_network', 'value': 'large_acc'},
-        # 是否使能modelarts 必须设置为True，不需要修改
-        {'name': 'enable_modelarts', 'value': 'True'},
-        # 是否开启分布式，如果1卡以上的话都是True 一般不需要修改
-        {'name': 'distribute', 'value': 'true'},
-        # epoch次数 必须关注 当前默认设置为5 训练的epoch数
-        # 优先级低于train_steps，如果存在train_steps以此为准，否则以epoch_size为准
-        {'name': 'epoch_size', 'value': '5'},
-        # 训练step数 必须填写并审视 该值优先级高于train_steps数
-        {'name': 'train_steps', 'value': '12000'},
-        # 是否保存ckpt文件 默认为True 保存ckpt
-        {'name': 'enable_save_ckpt', 'value': 'true'},
-        # 不需要修改
-        {'name': 'enable_lossscale', 'value': 'true'},
-        # 不需要修改
-        {'name': 'do_shuffle', 'value': 'true'},
-        # 不需要修改
-        {'name': 'enable_data_sink', 'value': 'true'},
-        # 不需要修改
-        {'name': 'data_sink_steps', 'value': '100'},
-        # 不需要修改
-        {'name': 'accumulation_steps', 'value': '1'},
-        # 保存ckpt的step数 注意 该值必须要跟step数保存一致 这样提高性能
-        {'name': 'save_checkpoint_steps', 'value': '12000'},
-        # 保存ckpt的个数 默认为1 不需要修改
-        {'name': 'save_checkpoint_num', 'value': '1'},
-    ],
-    # 输入数据集obs目录,请按样例格式填写
-    'inputs': '/zgwtest/lcm_test/dataset/enwiki_small/',
-    # obs代码路径 程序会自动拷贝到该路径. 和boot_files一起用于复合参数 training_files
-    'code_dir': '/zgwtest/lcm_test/bert/',
-    # 启动文件 必须要在code_dir路径下，请按样例格式填写
-    'boot_file': '/zgwtest/lcm_test/bert/run_pretrain.py',
-
-    # 如下为运行相关参数
-    # job名称  如果云环境Modelarts服务训练作业job队列中没有，则会新建一个job；若和已有job同名，则会在该job中，新建测试实例.
-    'job_name': "aisbench-debug",
-
-    # 使用容器类型与镜像版本
-    'framework_type': 'Ascend-Powered-Engine',
-    'framework_version': 'mindspore_1.3.0-cann_5.0.2-py_3.7-euler_2.8.3-aarch64',
-
-    # pool_id不设置或者设置为None， 默认是公共资源池。 设置了就表示是专属资源池。在ModelArts管理控制台，单击左侧“专属资源池”，在专属资源池列表中可以查看专属资源池ID，类似poolc90f063b
-    'pool_id' : None,
-    # 训练类型，默认8卡。train_instance_type 在程序打印中有提示的,请注意紧随“get valid train_instance_types：”之后的打印输出. 由modelarts.estimatorV2 类Estimator的接口get_train_instance_types（）查询而来。
-    # 请参见https://support.huaweicloud.com/sdkreference-modelarts/modelarts_04_0431.html 该链接指示获取方法。注意不同云环境查询的结果不同
-    'train_instance_type': 'modelarts.kat1.8xlarge',
-    # 训练节点数
-    'train_instance_count': 1,
-
-    # 云存储路径 默认为空
-    # 'nas_type' : None,
-    # 'nas_share_addr' : None,
-    # 'nas_mount_path' : None,
-
-    # 输出信息基准路径 整体路径为 train_url = out_base_url/version_name
-    "out_base_url": "/zgwtest/lcm_test/result/",
-    # job 描述前缀
-    "job_description_prefix": 'lcm-debug desc',
-})
-```
+请根据配置文件的注释来编辑配置。
 
 注意：
 
@@ -360,7 +197,13 @@ export PYTHON_COMMAND=python3.7
 # 单服务器模式，取值为True/False，配置后各训练节点测试结果单独反馈，关闭时测试结果为各设备汇总性能结果。可选，默认关闭。
 export SINGLESERVER_MODE=True
 ```
-
+**modelarts训练版本配置**
+本配置文件中增加如下配置，可将当前Modelarts运行版本配置为V2:
+```bash
+#modelarts version default "V1", Optional value ["V1", "V2"]
+export MODELARTS_VERSION=V2
+```
+该环境变量默认是V1版本,不设置。需要执行modelarts V2版本时请显示声明该变量为"V2"
 
 
 #### 配置config.json

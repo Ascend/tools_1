@@ -53,9 +53,9 @@ tar xvf train_huawei_train_mindspore_resnet-Ais-Benchmark-Stubs-aarch64-1.0-r1.3
 │   │   ├── mindspore_env.sh  // Mindspore框架模型测试时的环境变量，可根据实际需求补充环境变量
 │   │   ├── modelarts_config.py  // 线上训练性能测试时配置
 │   │   └── tensorflow_env.sh  // TensorFlow框架模型测试时的环境变量，可根据实际需求补充环境变量
-│   ├── config.json  // tester服务器信息配置文件，配置后可自动将测试结果上报到tester服务器上。暂未开放
+│   ├── config.json  // tester服务器信息配置文件，配置后可自动将测试结果上报到tester服务器上。本地测试模式下不需要填写
 │   ├── doc  // 指导文档存放目录
-│   └── system.json  // 性能测试系统信息配置文件，仅当需要将测试结果上报到tester服务器时需要配置。暂未开放
+│   └── system.json  // 性能测试系统信息配置文件，仅当需要将测试结果上报到tester服务器时需要配置。本地测试模式下不需要填写
 ├── log  // 日志输出目录
 ├── README.md  // 离线性能测试指导
 └── result  // 测试结果输出目录
@@ -71,34 +71,7 @@ tar xvf train_huawei_train_mindspore_resnet-Ais-Benchmark-Stubs-aarch64-1.0-r1.3
 
 config.sh通用负载配置文件，位于性能测试软件包解压路径/code/config/config.sh，主要包括离线训练性能测试操作的基本配置信息。
 
-编辑文件：
-
-```
-# Python版本，请根据系统实际安装版本配置
-export PYTHON_COMMAND=python3.7
-# 训练数据集路径
-export TRAIN_DATA_PATH=/home/datasets/Bert-Dataset/
-# 评估数据集路径
-export EVAL_DATA_PATH=/home/datasets/Bert-TestData/
-# 预训练模型路径
-export PRETRAIN_MODEL_PATH=/home/models/ms_bert_large.ckpt
-# 训练的轮数
-export EPOCH_SIZE=5
-# 训练步数
-export TRAIN_STEPS=12000
-# 集群Device的数量
-export RANK_SIZE=8
-# 训练NPU的数量，默认8卡
-export DEVICE_NUM=8
-
-# 芯片资源配置文件。options needed only if rank_size > 1。
-export RANK_TABLE_FILE=/home/lcm/tool/rank_table_16p_64_66.json
-
-# 集群训练参数
-# 集群节点ssh信息文件，仅集群场景时需要指定
-# export NODEINFO_FILE=/home/lcm/tool/ssh64_66.json
-```
-
+请在配置文件中根据注释说明填写.
 
 
 **注意**
@@ -187,7 +160,7 @@ GLOG日志级别取值为：0（INFO）、1（WARNING）、2（ERROR）、3（FA
 
 集群场景下执行性能测试时，需要设置节点ssh信息文件，用于在测试过程中节点之间的登录验证。
 
-节点ssh信息文件由用户自行创建文件名格式为ssh64_<<u>**这里填什么字段的含义**</u>>.json，按照如下示例格式进行配置。
+节点ssh信息文件由用户自行创建文件名格式类似于ssh64_66.json，按照如下示例格式进行配置。
 
 示例：ssh64_66.json
 
@@ -197,7 +170,8 @@ GLOG日志级别取值为：0（INFO）、1（WARNING）、2（ERROR）、3（FA
     "90.90.66.64": {    # 节点IP，必须与rank_table文件中的server_id一一对应
       "user": "root",   # 节点登录用户名，完成集群节点免密设置可不配置
       "pd": "xxxx",     # 节点登录密码，完成集群节点免密设置可不配置
-      "port":0          # 容器端口，默认22。可不设置。删除本参数或配置为0时，表示性能测试在该节点本地（非容器）运行；设置具体端口号时，表示在容器中运行并提供指定端口访问能力
+      "port":0          # 容器端口，默认22。可不设置。删除本参数或配置为22时，表示性能测试在默认22端口通信；设置具体端口号时，表示在容器或者设备中运行并提供指定端口访问能力
+
     },
     "90.90.66.66": {
       "user": "root",
