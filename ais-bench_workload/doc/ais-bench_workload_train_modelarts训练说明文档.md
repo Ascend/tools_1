@@ -12,18 +12,20 @@ ais-bench标准化性能测试软件，又称AI Server Benchmark软件，是根�
 [Modelarts](https://support.huaweicloud.com/productdesc-modelarts/modelarts_01_0001.html)是面向AI开发者的一站式开发平台，提供海量数据预处理及半自动化标注、大规模分布式训练、自动化模型生成及端-边-云模型按需部署能力，帮助用户快速创建和部署模型，管理全周期AI工作流。
 
 ## 流程介绍
+modelarts业务启动有如下三种方式运行:
+
+```mermaid
+graph LR
+UI页面 --> Modelarts服务
+modelarts-sdk --> Modelarts服务
+modelarts-api --> Modelarts服务
+```
 
 ModelArts线上训练性能测试选择modelarts-sdk作为启动方式，通过ais-bench-stubs拉起modelarts-sdk向ModelArts平台下发训练作业指令。
 
+
 测试操作总体流程：
-
-
-
-
 如下测试流程，本测试需要一台本地运行设备，用于给modelarts服务下发训练作业。
-
-
-
 ```mermaid
 graph LR
     subgraph 本地运行设备
@@ -412,5 +414,4 @@ ModleArts训练作业日志可以通过以下方式查看：
 
 - 如果在notebook中运行，无须设置该项。
 - 华为云无须设置。
-
 
