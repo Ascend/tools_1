@@ -160,8 +160,8 @@ APP_ERROR ModelInferenceProcessor::AddOutTensors(std::vector<MemoryData>& output
         std::vector<int64_t> i64shape;
         std::vector<uint32_t> u32shape;
         realLen = processModel.GetOutTensorLen(index, is_dymshape);
-        if (processModel.GetCurOutputShape(index, i64shape) != SUCCESS){
-            // 针对于动态shape场景 无法获取真实的输出shape 先填写一个一维的值 以便后续内存可以导出
+        if (processModel.GetCurOutputShape(index, is_dymshape, i64shape) != SUCCESS) {
+            // 针对于动态shape场景 如果无法获取真实的输出shape 先填写一个一维的值 以便后续内存可以导出
             i64shape.push_back(realLen / aclDataTypeSize(static_cast<aclDataType>(modelDesc_.outTensorsDesc[index].datatype)));
         }
         DEBUG_LOG("AddOutTensors name:%s index:%d len:%d outdescsize:%d shapesize:%d\n",
@@ -555,7 +555,7 @@ APP_ERROR ModelInferenceProcessor::SetDynamicDims(std::string dymdimsStr)
         return APP_ERR_ACL_FAILURE;
     }
 
-    INFO_LOG("prepare dynamic dims successful");
+    DEBUG_LOG("prepare dynamic dims successful");
 
     // update realsize according real shapes
     vector<string> dymdims_tmp;

@@ -70,6 +70,8 @@ class Summary(object):
         self.infodict['D2H_latency'] = {"min": d2h_latency.min, "max": d2h_latency.max, "mean": d2h_latency.mean,
                                "median": d2h_latency.median, "percentile({}%)".format(scale): d2h_latency.percentile}
         self.infodict['throughput'] = throughput
+        self.infodict['npu_compute_time_list'] = self.npu_compute_time_list
+        self.infodict['pid'] = os.getpid()
 
         # logger.debug("infer finish (ms) sumary:{}".format(self.infodict))
         logger.info("-----------------Performance Summary------------------")
