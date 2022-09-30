@@ -274,7 +274,7 @@ class NetCompare(object):
                 if compare_args in line_decode:
                     return True
         else:
-            utils.print_warn_log(f'"Current version does not support {compare_args} function"')
+            utils.print_warn_log(f'Current version does not support {compare_args} function')
             return False
 
     def _check_msaccucmp_compare_support_advisor(self):
