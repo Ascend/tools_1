@@ -25,7 +25,8 @@ WRITE_MODES = stat.S_IWUSR | stat.S_IRUSR
 NPU_DUMP_TAG = "NPUDump"
 GROUND_TRUTH_TAG = "GroundTruth"
 MIN_ELEMENT_NUM = 3
-
+ADVISOR_ARGS = "-advisor"
+PYTHON_CMD = ["python3", "-V"]
 
 class NetCompare(object):
     """
@@ -37,10 +38,9 @@ class NetCompare(object):
         self.cpu_dump_data_path = cpu_dump_data_path
         self.output_json_path = output_json_path
         self.arguments = arguments
-        self.cmd = ["python3", "-V"]
         self.msaccucmp_command_dir_path = os.path.join(self.arguments.cann_path, MSACCUCMP_DIR_PATH)
         self.msaccucmp_command_file_path = self._check_msaccucmp_file(self.msaccucmp_command_dir_path)
-        self.python_version = self._check_python_command_valid(self.cmd)
+        self.python_version = self._check_python_command_valid(PYTHON_CMD)
 
     def accuracy_network_compare(self):
         """
@@ -54,7 +54,7 @@ class NetCompare(object):
                          self.npu_dump_data_path, "-g",
                          self.cpu_dump_data_path, "-f", self.output_json_path, "-out", self.arguments.out_path]
         if self._check_msaccucmp_compare_support_advisor():
-            msaccucmp_cmd.append(utils.ADVISOR_ARGS)
+            msaccucmp_cmd.append(ADVISOR_ARGS)
         utils.print_info_log("msaccucmp command line: %s " % " ".join(msaccucmp_cmd))
         status_code, _ = self.execute_msaccucmp_command(msaccucmp_cmd)
         if status_code == 2 or status_code == 0:
@@ -279,4 +279,4 @@ class NetCompare(object):
 
     def _check_msaccucmp_compare_support_advisor(self):
         return self.arguments.advisor and \
-               self._check_msaccucmp_compare_support_agrs(utils.ADVISOR_ARGS)
+               self._check_msaccucmp_compare_support_agrs(ADVISOR_ARGS)
