@@ -53,8 +53,8 @@ class NetCompare(object):
         msaccucmp_cmd = ["python" + self.python_version, self.msaccucmp_command_file_path, "compare", "-m",
                          self.npu_dump_data_path, "-g",
                          self.cpu_dump_data_path, "-f", self.output_json_path, "-out", self.arguments.out_path]
-        if self.arguments.advisor:
-            msaccucmp_cmd.append("-advisor")
+        if self._check_msaccucmp_compare_support_advisor():
+            msaccucmp_cmd.append(utils.ADVISOR_ARGS)
         utils.print_info_log("msaccucmp command line: %s " % " ".join(msaccucmp_cmd))
         status_code, _ = self.execute_msaccucmp_command(msaccucmp_cmd)
         if status_code == 2 or status_code == 0:
