@@ -555,7 +555,7 @@ APP_ERROR ModelInferenceProcessor::SetDynamicDims(std::string dymdimsStr)
         return APP_ERR_ACL_FAILURE;
     }
 
-    INFO_LOG("prepare dynamic dims successful");
+    DEBUG_LOG("prepare dynamic dims successful");
 
     // update realsize according real shapes
     vector<string> dymdims_tmp;

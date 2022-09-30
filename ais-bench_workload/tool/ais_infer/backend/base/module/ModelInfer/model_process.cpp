@@ -182,7 +182,7 @@ Result ModelProcess::CheckDynamicShape(std::vector<std::string> dym_shape_tmp, s
             return FAILED;       
         }
     }
-    INFO_LOG("check Dynamic Shape success");
+    DEBUG_LOG("check Dynamic Shape success");
     return SUCCESS;
 
 }
