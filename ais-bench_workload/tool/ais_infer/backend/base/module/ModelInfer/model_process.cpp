@@ -396,7 +396,7 @@ Result ModelProcess::CheckDynamicDims(vector<string> dym_dims, size_t gearCount,
         GetDimInfo(gearCount, dims);
         return FAILED;  
     }
-    INFO_LOG("check dynamic dims success");
+    DEBUG_LOG("check dynamic dims success");
     return SUCCESS;
  
 }
