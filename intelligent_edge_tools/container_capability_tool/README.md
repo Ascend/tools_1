@@ -56,11 +56,11 @@ python3 {AtlasEdgeWorkDir}/edge_work_dir/edge_core/src/modify_pod_config_json.py
 --
 imageSha256WhiteList=sha256:1f082f05a7fc20f99a4ccffc0484f45e6227984940f2c57d8617187b44fd5c46,sha256:b0b140824a486ccc0f7968f3c6ceb6982b4b77e82ef8b4faaf2806049fc266df \
 --
-addHostPath=/var/lib/docker/modelfile/,/var/lib/docker/modelfile/ \
+addHostPath=/var/lib/docker/modelfile/ \
 --
-deleteHostPath=/var/lib/docker/modelfile,/var/lib/docker/modelfile/
+deleteHostPath=/var/lib/docker/modelfile
 ```
-3 重启中间件，执行如下命令：
+3 重启中间件使配置生效，执行如下命令：
 ```
 {AtlasEdgeWorkDir}/edge_work_dir/run.sh restart
 ```
@@ -103,12 +103,12 @@ deleteHostPath=/var/lib/docker/modelfile,/var/lib/docker/modelfile/
 ## FD上应用部署操作补充介绍
 ### 资源文件创建及应用
 1.  在FusionDirector界面上方菜单栏选择“菜单 > 配置 > 配置部署 > 容器应用部署 > 资源文件”，进入资源文件管理界面。
-![](./picture/资源文件.png)
+![](picture/资源文件.png)
 2. 单击“创建资源文件”，进入资源文件创建界面
-![](./picture/创建资源文件.png)
+![](picture/创建资源文件.png)
 
 3. 配置资源文件信息，完成配置后单击“确定”。
-![](./picture/配置资源信息.png)
+![](picture/配置资源信息.png)
 
 | 参数    | 说明                                                                                                    | 取值                                                                                  |
 |:------|:------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------|
@@ -119,7 +119,7 @@ deleteHostPath=/var/lib/docker/modelfile,/var/lib/docker/modelfile/
 
 4.  在资源文件列表中选择该资源文件，单击其后的“创建子版本”，进入创建子版本页面。
 5.  配置子版本信息，完成配置后单击“确定”。
-![](./picture/配置子版本信息.png)
+![](picture/配置子版本信息.png)
 
 | 参数      | 说明                             | 取值                                                                                                          |
 |:--------|:-------------------------------|:------------------------------------------------------------------------------------------------------------|
@@ -130,6 +130,9 @@ deleteHostPath=/var/lib/docker/modelfile,/var/lib/docker/modelfile/
 | 资源文件校验码 | 当对上传的资源文件进行校验操作时，需输入资源文件的校验码。  | 校验码有多种获取方法，例如可以通过Windows系统自带命令certutil -hashfile “资源文件的绝对路径”sha256获取，即在Windows系统中输入cmd，进入命令提示符界面，输入该命令即可获取。 |
 | 子版本描述   | 子版本的描述信息。                      | -                                                                                                           |
 
+## 须知：
+
+部署带模型文件的容器需参考[container_auxiliary_tool](https://gitee.com/ascend/tools/intelligent_edge_tools/container_auxiliary_tool)工具打开模型文件下载开关和添加挂在卷白名单/var/lib/docker/modelfile/，
 ### 容器启动命令设置
 设置控制容器运行的命令和参数，请用户根据容器实际情况进行配置。如果不设置运行命令和参数，容器运行时会运行镜像制作时提供的默认命令和参数，默认命令和参数具体请参见《FusionDirector 操作指南》中的“配置部署 > 容器应用部署 > 应用模板 > 创建应用模板”章节。
 * 运行命令：输入控制容器运行的命令，支持二进制方式和Bash方式。
