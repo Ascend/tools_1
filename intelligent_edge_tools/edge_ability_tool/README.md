@@ -1,7 +1,7 @@
-# container_auxiliary_tool工具
+# edge_ability_tool 工具
 
 ## 功能描述
-- 该工具实现对Web部署容器和模型文件下载能力开关配置
+- AtlasEdge部分功能为可选特性，客户根据需要自行打开对应能力项，该工具实现对Web部署容器和模型文件下载能力配置
 
 ## 约束
 - 该工具需配套MindX Edge使用，支持配套MindX Edge 2.0.4.6、3.0.RC2及以后的版本
@@ -14,7 +14,7 @@
 
     ```chattr -i AtlasEdge软件安装路径/edge_work_dir/edge_om/package/edge_om/src/utils/high_risk/*.py```
 
-2. 拷贝 high_risk_op_policy.py site_high_risk_ops_cli.py
+2. 拷贝 site_high_risk_ops_cli.py
 
     ```cp -f site_high_risk_ops_cli.py AtlasEdge软件安装路径/edge_work_dir/edge_om/package/edge_om/src/utils/high_risk/ ```
 
@@ -54,13 +54,12 @@
 AtlasEdge软件安装路径/edge_work_dir/run.sh restart
 ```
 
-## 能力项配置文件内容
+## 能力项配置文件内容说明
 能力项安全配置文件：AtlasEdge软件安装路径/edge_work_dir/edge_om/config/high_risk_ops_policy.json，配置文件内容如下：
 
 {
     "disable_all": true,
     "allow": {
-        "net_config": false,
         "create_container": false,
         "download_model_file": false
     }
@@ -68,5 +67,5 @@ AtlasEdge软件安装路径/edge_work_dir/run.sh restart
 
 参数说明
 disable_all：禁止能力项总开关，默认打开，即禁止所有能力项。
-create_container：Atlas 500 智能小站 WebUI部署容器能力项开关。
+create_container：Web部署容器能力项开关。
 download_model_file：模型文件下载能力项开关。
