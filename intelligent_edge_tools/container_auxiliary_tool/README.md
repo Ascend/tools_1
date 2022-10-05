@@ -16,7 +16,7 @@
 
 2. 拷贝 high_risk_op_policy.py site_high_risk_ops_cli.py
 
-    ```cp -f high_risk_op_policy.py site_high_risk_ops_cli.py AtlasEdge软件安装路径/edge_work_dir/edge_om/package/edge_om/src/utils/high_risk/ ```
+    ```cp -f site_high_risk_ops_cli.py AtlasEdge软件安装路径/edge_work_dir/edge_om/package/edge_om/src/utils/high_risk/ ```
 
 3. 执行命令切换到入口脚本路径
 
