@@ -51,7 +51,7 @@
 
 5. 重启中间件使配置生效，执行如下命令：
 ```
-AtlasEdge软件安装路径/edge_work_dir/run.sh restart
+AtlasEdge软件安装路径/run.sh restart
 ```
 
 ## 能力项配置文件内容说明
