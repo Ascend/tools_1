@@ -20,7 +20,7 @@
 
 3. 执行命令切换到入口脚本路径
 
-    ```cd AtlasEdge软件安装路径/AtlasEdge/edge_work_dir/edge_om/bin/```
+    ```cd AtlasEdge软件安装路径/edge_work_dir/edge_om/bin/```
 
 4. 根据需要使用以下命令：
 
