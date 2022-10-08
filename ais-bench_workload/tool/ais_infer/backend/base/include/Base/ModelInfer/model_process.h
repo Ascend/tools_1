@@ -201,7 +201,7 @@ public:
 
     int GetOutTensorLen(size_t i, bool is_dymshape);
 
-    Result GetCurOutputShape(size_t index, std::vector<int64_t>& shape);
+    Result GetCurOutputShape(size_t index, bool is_dymshape, std::vector<int64_t>& shape);
 
     Result GetMaxDynamicHWSize(size_t &outsize);
 

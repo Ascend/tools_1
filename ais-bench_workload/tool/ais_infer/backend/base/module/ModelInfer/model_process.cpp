@@ -182,7 +182,7 @@ Result ModelProcess::CheckDynamicShape(std::vector<std::string> dym_shape_tmp, s
             return FAILED;       
         }
     }
-    INFO_LOG("check Dynamic Shape success");
+    DEBUG_LOG("check Dynamic Shape success");
     return SUCCESS;
 
 }
@@ -396,7 +396,7 @@ Result ModelProcess::CheckDynamicDims(vector<string> dym_dims, size_t gearCount,
         GetDimInfo(gearCount, dims);
         return FAILED;  
     }
-    INFO_LOG("check dynamic dims success");
+    DEBUG_LOG("check dynamic dims success");
     return SUCCESS;
  
 }
@@ -1104,20 +1104,34 @@ void ModelProcess::Unload()
     INFO_LOG("unload model success, model Id is %u", modelId_);
 }
 
-Result ModelProcess::GetCurOutputShape(size_t index, std::vector<int64_t>& shape)
+Result ModelProcess::GetCurOutputShape(size_t index, bool is_dymshape, std::vector<int64_t>& shape)
 {
     aclError ret; 
     aclmdlIODims ioDims;
     int64_t tmp_dim = 1;
-    // 对于动态shape场景，通过该接口获取不到输出shape
-    ret = aclmdlGetCurOutputDims(modelDesc_, index, &ioDims);
-    if (ret != ACL_SUCCESS) {
-        // cout << aclGetRecentErrMsg() << endl;
-        DEBUG_LOG("aclmdlGetCurOutputDims get not success, maybe the modle has dynamic shape", ret);
-        return FAILED;
-    }
-    for (int i = 0; i < ioDims.dimCount; i++) {
-        shape.push_back(ioDims.dims[i]);
+    // 对于动态shape场景，通过V2接口获取，其他通过V1接口获取
+    if (is_dymshape == true) {
+        aclTensorDesc *outputDesc = aclmdlGetDatasetTensorDesc(output_, index);
+        size_t dimNums = aclGetTensorDescNumDims(outputDesc);
+         if (dimNums == ACL_UNKNOWN_RANK) {
+            return FAILED;
+         } else {
+            for (size_t i = 0; i < dimNums; ++i) {
+                int64_t dim;
+                ret = aclGetTensorDescDimV2(outputDesc, i, &dim);
+                shape.push_back(dim);
+            }
+         }
+    } else {
+        ret = aclmdlGetCurOutputDims(modelDesc_, index, &ioDims);
+        if (ret != ACL_SUCCESS) {
+            // cout << aclGetRecentErrMsg() << endl;
+            DEBUG_LOG("aclmdlGetCurOutputDims get not success, maybe the modle has dynamic shape", ret);
+            return FAILED;
+        }
+        for (int i = 0; i < ioDims.dimCount; i++) {
+            shape.push_back(ioDims.dims[i]);
+        }
     }
     return SUCCESS;
 }
