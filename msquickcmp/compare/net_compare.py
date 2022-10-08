@@ -264,7 +264,7 @@ class NetCompare(object):
         process = subprocess.Popen(cmd, shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         return process
 
-    def _check_msaccucmp_compare_support_agrs(self, compare_args):
+    def _check_msaccucmp_compare_support_args(self, compare_args):
         check_cmd = ["python" + self.python_version, self.msaccucmp_command_file_path, "compare", "-h"]
         process = self.execute_command_line(check_cmd)
         while process.poll() is None:
@@ -279,4 +279,4 @@ class NetCompare(object):
 
     def _check_msaccucmp_compare_support_advisor(self):
         return self.arguments.advisor and \
-               self._check_msaccucmp_compare_support_agrs(ADVISOR_ARGS)
+               self._check_msaccucmp_compare_support_args(ADVISOR_ARGS)
