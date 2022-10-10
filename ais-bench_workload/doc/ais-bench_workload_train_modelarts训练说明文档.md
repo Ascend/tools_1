@@ -223,7 +223,7 @@ config.json tester服务器信息配置文件，位于性能测试软件包解�
 完成配置文件配置后执行性能测试操作，命令如下：
 
 ```
-./ais-bench-stubs
+./ais-bench-stubs test
 ```
 
 ### 中断和停止训练

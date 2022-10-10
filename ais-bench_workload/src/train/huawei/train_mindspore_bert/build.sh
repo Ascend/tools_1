@@ -9,6 +9,8 @@ file_change()
 {
     local run_type=$1
     [ "$run_type" == "modelarts" ] && { sed -i 's|RUNTYPE=.*|RUNTYPE="modelarts"|g' ${CURDIR}//output/benchmark.sh; }
+    # update dataset_format to tfrecord, since 1.9 version
+    sed -i "s|dataset_format:.*|dataset_format: 'tfrecord'|g" "$CONFIG_FILE"
     return 0
 }
 
