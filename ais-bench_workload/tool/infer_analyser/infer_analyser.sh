@@ -60,7 +60,6 @@ get_infer_time_from_json()
 check_args_valid()
 {
     [ -f "$MODEL" ] || { echo "model:$MODEL not valid"; return 1; }
-    [ -d "${INPUT}" ] || { echo "input:${INPUT} not valid"; return 1; }
     return 0
 }
 
@@ -81,11 +80,13 @@ check_env_valid()
 run_infer()
 {
     if [ $TOOL == "msame" ]; then
-        app="$CUR_PATH/../../../msame/out/msame --model $MODEL --output $CACHE_PATH/ --device $DEVICE --input $INPUT"
+        app="$CUR_PATH/../../../msame/out/msame --model $MODEL --output $CACHE_PATH/ --device $DEVICE --loop $LOOP"
     else
         app="$PYTHON_COMMAND $CUR_PATH/../ais_infer/ais_infer.py --model $MODEL --output $CACHE_PATH/ \
-        --device $DEVICE --input $INPUT --output_dirname=aisout"
+        --device $DEVICE --loop $LOOP --output_dirname=aisout"
     fi
+
+    [ "$INPUT" != "" ] && { app="$app --input $INPUT"; }
 
     if [ $PROFILER == "true" ]; then
         $msprof_bin --output=${CACHE_PATH} --application="$app"  \
@@ -189,6 +190,10 @@ do
         PROFILER=$2
         shift
         ;;
+    -loop|--loop)
+        LOOP=$2
+        shift
+        ;;
     -h|--help)
         echo_help;
         exit
@@ -202,7 +207,7 @@ do
 done
 
     [ "$PYTHON_COMMAND" != "" ] || { PYTHON_COMMAND="python3.7";echo "set default pythoncmd:$PYTHON_COMMAND"; }
-    [ "$LOOP_COUNT" != "" ] || { LOOP_COUNT="1";echo "set default loop_count:$LOOP_COUNT"; }
+    [ "$LOOP" != "" ] || { LOOP="1";echo "set default LOOP:$LOOP"; }
     [ "$DEVICE" != "" ] || { DEVICE="0";echo "set default DEVICE:$DEVICE"; }
     [ "$TOOL" != "" ] || { TOOL="ais_infer";echo "set default TOOL:$TOOL"; }
     [ "$PROFILER" != "" ] || { PROFILER="true";echo "set default PROFILER:$PROFILER"; }
