@@ -16,6 +16,8 @@ ais-bench标准化性能测试软件，又称AI Server Benchmark软件，是根�
 
 1. Atals训练设备（搭载Ascend NPU以及Ascend 910芯片等昇腾硬件环境），可以搭建单卡、单机、线下集群、容器集群场景，相关硬件产品文档请参见[昇腾硬件产品文档](https://www.hiascend.com/document?data=hardware)。
 2. 根据需要测试的模型类型安装MindSpore或TensorFlow框架；参见《[CANN 软件安装指南](https://www.hiascend.com/document/detail/zh/canncommercial/51RC1/envdeployment/instg/instg_000002.html)》安装CANN软件包。MindSpore或TensorFlow框架需要根据《ais-bench_workload构建教程》所选择的模型版本来安装对应版本的框架。
+3. 集群测试时需要安装依赖软件--sshpass，版本无要求。
+4. 容器环境测试时，容器制作请参照《制作可ssh登录镜像ascend-mindspore-arm的方法》
 
 ### 数据集
 
