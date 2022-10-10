@@ -9,9 +9,6 @@ function get_train_cmd()
 
     CONFIG_FILE=$WORK_PATH/code/pretrain_config_Ascend_Boost.yaml
 
-    # update dataset_format to tfrecord, since 1.9 version
-    sed -i "s|dataset_format:.*|dataset_format: 'tfrecord'|g" "$CONFIG_FILE"
-
     train_run_cmd="${PYTHON_COMMAND} -u $WORK_PATH/code/run_pretrain.py \
         --distribute=$DISTRUTE_ENABLE \
         --epoch_size=$EPOCH_SIZE \
