@@ -1,7 +1,7 @@
 diff -Nur origin/pretrain_eval.py code/pretrain_eval.py
---- origin/pretrain_eval.py	2022-10-10 19:28:46.368000000 +0800
-+++ code/pretrain_eval.py	2022-10-10 19:28:46.384000000 +0800
-@@ -32,7 +32,10 @@
+--- origin/pretrain_eval.py	2022-10-11 15:49:43.260000000 +0800
++++ code/pretrain_eval.py	2022-10-11 15:49:43.300000000 +0800
+@@ -32,7 +32,11 @@
      Predict function
      '''
      devid = int(os.getenv('DEVICE_ID'))
@@ -10,10 +10,11 @@ diff -Nur origin/pretrain_eval.py code/pretrain_eval.py
 +    #context.set_context(mode=context.GRAPH_MODE, device_target="Ascend", device_id=devid)
 +    from mindspore.context import ParallelMode
 +    context.set_auto_parallel_context(parallel_mode=ParallelMode.STAND_ALONE)    
++
      dataset = create_eval_dataset(cfg.batch_size, 1, data_dir=cfg.eval_data_dir, dataset_format=cfg.dataset_format)
      net_for_pretraining = BertPretrainEval(bert_net_cfg)
      net_for_pretraining.set_train(False)
-@@ -53,6 +56,18 @@
+@@ -53,6 +57,18 @@
      print("==============================================================")
      for _, v in res.items():
          print("Accuracy is: ", v)
@@ -28,13 +29,13 @@ diff -Nur origin/pretrain_eval.py code/pretrain_eval.py
 +            f.write(str(v))
 +        ranksize_file = os.path.join(cfg.train_url, "ranksize.json")
 +        if mox.file.exists(ranksize_file) == False:
-+            mox.file.write(ranksize_file, str(get_device_num()))        
++            mox.file.write(ranksize_file, str(get_device_num()))
      print("==============================================================")
  
  
 diff -Nur origin/run_pretrain.py code/run_pretrain.py
---- origin/run_pretrain.py	2022-10-10 19:28:46.368000000 +0800
-+++ code/run_pretrain.py	2022-10-10 19:28:46.384000000 +0800
+--- origin/run_pretrain.py	2022-10-11 15:49:43.240000000 +0800
++++ code/run_pretrain.py	2022-10-11 15:49:43.280000000 +0800
 @@ -17,6 +17,7 @@
  python run_pretrain.py
  """
@@ -72,14 +73,15 @@ diff -Nur origin/run_pretrain.py code/run_pretrain.py
  def run_pretrain():
      """pre-train bert_clue"""
      context.set_context(mode=context.GRAPH_MODE, device_target=cfg.device_target, device_id=cfg.device_id)
-@@ -268,10 +279,87 @@
+@@ -268,10 +279,86 @@
          callback.append(eval_callback)
  
      model = ConvertModelUtils().convert_to_thor_model(model, network=net_with_grads, optimizer=optimizer)
 +    model.build(ds, sink_size=cfg.data_sink_steps, epoch=new_repeat_count)
-+    start_time = time.time()    
++    start_time = time.time()
      model.train(new_repeat_count, ds, callbacks=callback,
                  dataset_sink_mode=(cfg.enable_data_sink == "true"), sink_size=cfg.data_sink_steps)
+-
 +    end_time = time.time()
 +    data_sum = new_repeat_count * cfg.data_sink_steps * cfg.batch_size
 +    throughput_rate = data_sum / (int)(end_time - start_time)
@@ -143,8 +145,7 @@ diff -Nur origin/run_pretrain.py code/run_pretrain.py
 +        rank_table = FileOperator.read_json_to_dict(os.getenv("RANK_TABLE_FILE"))
 +        generate_single_node_rank_table(rank_table, old_rank_id)
 +        FileOperator.create_empty_file(empty_file_path)
-+    return new_rank_id    
- 
++    return new_rank_id
  
  if __name__ == '__main__':
 +    if os.getenv("SINGLESERVER_MODE", "") == "True":
@@ -159,14 +160,14 @@ diff -Nur origin/run_pretrain.py code/run_pretrain.py
 +    if get_rank() == 0:
 +        from pretrain_eval import MLM_eval
 +        MLM_eval()
-+    
++
 diff -Nur origin/src/model_utils/moxing_adapter.py code/src/model_utils/moxing_adapter.py
---- origin/src/model_utils/moxing_adapter.py	2022-10-10 19:28:46.376000000 +0800
-+++ code/src/model_utils/moxing_adapter.py	2022-10-10 19:28:46.392000000 +0800
-@@ -99,6 +99,16 @@
-                 config.device_id = get_device_id()
+--- origin/src/model_utils/moxing_adapter.py	2022-10-11 15:49:43.250000000 +0800
++++ code/src/model_utils/moxing_adapter.py	2022-10-11 15:49:43.290000000 +0800
+@@ -100,6 +100,16 @@
                  if not os.path.exists(config.output_path):
                      os.makedirs(config.output_path)
+ 
 +                # modelarts sdk fit
 +                config.schema_file = None
 +                base_path = config.data_path
@@ -176,7 +177,7 @@ diff -Nur origin/src/model_utils/moxing_adapter.py code/src/model_utils/moxing_a
 +                    config.load_checkpoint_path = os.path.join(base_path, "ms_bert_large.ckpt")
 +                if os.path.exists(os.path.join(base_path, "val")):
 +                    config.eval_data_dir = os.path.join(base_path, "val")
-+ 
- 
++
                  if pre_process:
                      pre_process()
+ 
