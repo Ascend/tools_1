@@ -67,11 +67,6 @@ public:
     int SetDynamicShape(std::string dymshapeStr);
     int SetCustomOutTensorsSize(std::vector<int> customOutSize);
 
-    int InferVector_SetInputs(std::vector<TensorBase>& feeds);
-    int InferMap_SetInputs(std::map<std::string, TensorBase>& feeds);
-    int Infer_Execute(int loop);
-    std::vector<TensorBase> Infer_GetOutputs(std::vector<std::string>& output_names);
-
     Base::ModelInferenceProcessor modelInfer_ = {};
 
 private:

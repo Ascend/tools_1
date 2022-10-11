@@ -262,42 +262,6 @@ APP_ERROR ModelInferenceProcessor::DestroyInferCacheData()
     return APP_ERR_OK;
 }
 
-// step inference one:set inputs
-APP_ERROR ModelInferenceProcessor::Inference_SetInputs(const std::map<std::string, TensorBase>& feeds)
-{
-    // create basetensors
-    std::vector<BaseTensor> inputs;
-    APP_ERROR ret = CheckInMapAndFillBaseTensor(feeds, inputs);
-    if (ret != APP_ERR_OK){
-        ERROR_LOG("Check InVector failed ret:%d\n", ret);
-        return ret;
-    }
-    ret = SetInputsData(inputs);
-    if (ret != APP_ERR_OK){
-        ERROR_LOG("Set InputsData failed ret:%d\n", ret);
-        return ret;
-    }
-    return APP_ERR_OK;
-}
-
-APP_ERROR ModelInferenceProcessor::Inference_SetInputs(const std::vector<TensorBase>& feeds)
-{
-    // create basetensors
-    std::vector<BaseTensor> inputs;
-    APP_ERROR ret = CheckInVectorAndFillBaseTensor(feeds, inputs);
-    if (ret != APP_ERR_OK) {
-        ERROR_LOG("Check InVector failed ret:%d\n", ret);
-        return ret;
-    }
-
-    ret = SetInputsData(inputs);
-    if (ret != APP_ERR_OK) {
-        ERROR_LOG("Set InputsData failed ret:%d\n", ret);
-        return ret;
-    }
-    return APP_ERR_OK;
-}
-
 APP_ERROR ModelInferenceProcessor::SetInputsData(std::vector<BaseTensor> &inputs)
 {
     APP_ERROR ret;
@@ -356,7 +320,7 @@ APP_ERROR ModelInferenceProcessor::SetInputsData(std::vector<BaseTensor> &inputs
     return APP_ERR_OK;
 }
 
-APP_ERROR ModelInferenceProcessor::Inference_GetOutputs(std::vector<std::string> outputNames,
+APP_ERROR ModelInferenceProcessor::GetOutputs(std::vector<std::string> outputNames,
     std::vector<TensorBase> &outputTensors)
 {
     for (const auto& name : outputNames) {
@@ -384,14 +348,14 @@ APP_ERROR ModelInferenceProcessor::ModelInference_Inner(std::vector<BaseTensor> 
     }
 
     for (int i = 0; i < options_->loop; i++){
-        ret = Inference_Execute();
+        ret = Execute();
         if (ret != APP_ERR_OK){
             ERROR_LOG("Execute Infer failed ret:%d\n", ret);
             return ret;
         }
     }
 
-    ret = Inference_GetOutputs(outputNames, outputTensors);
+    ret = GetOutputs(outputNames, outputTensors);
     if (ret != APP_ERR_OK){
         ERROR_LOG("Get OutTensors failed ret:%d\n", ret);
         return ret;
@@ -399,7 +363,7 @@ APP_ERROR ModelInferenceProcessor::ModelInference_Inner(std::vector<BaseTensor> 
     return APP_ERR_OK;
 }
 
-APP_ERROR ModelInferenceProcessor::Inference_Execute()
+APP_ERROR ModelInferenceProcessor::Execute()
 {
     struct timeval start = { 0 };
     struct timeval end = { 0 };

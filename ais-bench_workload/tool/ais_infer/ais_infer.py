@@ -88,15 +88,6 @@ def init_inference_session(args):
     logger.debug("session info:{}".format(session))
     return session
 
-def run_inference_step(session, inputs, outputs_names, loop=1):
-    session.run_setinputs(inputs)
-    starttime = time.time()
-    session.run_execute(loop)
-    endtime = time.time()
-    summary.npu_compute_time_list.append(float(endtime - starttime) * 1000.0/loop)  # millisecond
-    outputs = session.run_getoutputs(outputs_names)
-    return outputs
-
 def set_dymshape_shape(session, inputs):
     dyshape=""
     intensors_desc = session.get_inputs()
@@ -116,7 +107,7 @@ def run_inference(session, inputs, outputs_names):
 def warmup(session, args, intensors_desc, outputs_names):
     n_loop = 1
     inputs = create_intensors_zerodata(intensors_desc, args.device, args.pure_data_type)
-    run_inference_step(session, inputs, outputs_names, n_loop)
+    run_inference(session, inputs, outputs_names)
     summary.reset()
     session.reset_sumaryinfo()
     logger.info("warm up {} times done".format(n_loop))
@@ -235,8 +226,8 @@ def get_args():
     parser.add_argument("--auto_set_dymshape_mode", type=str2bool, default=False, help="auto_set_dymshape_mode")
     parser.add_argument("--batchsize", type=int, default=1, help="batch size of input tensor")
     parser.add_argument("--pure_data_type", type=str, default="zero", choices=["zero", "random"], help="null data type for pure inference(zero or random)")
-    parser.add_argument("--profiler", action="store_true", default=False, help="profiler switch")
-    parser.add_argument("--dump", action="store_true", default=False, help="dump switch")
+    parser.add_argument("--profiler", type=str2bool, default=False, help="profiler switch")
+    parser.add_argument("--dump", type=str2bool, default=False, help="dump switch")
     parser.add_argument("--acl_json_path", type=str, default=None, help="acl json path for profiling or dump")
     parser.add_argument("--infer_queue_count",  type=check_positive_integer, default=20, help="Maximum number of data in inference queue, such as --maxqueue 15")
     parser.add_argument("--output_batchsize_axis",  type=check_nonnegative_integer, default=0, help="splitting axis number when outputing tensor results, such as --output_batchsize_axis 12")

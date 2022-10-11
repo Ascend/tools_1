@@ -170,12 +170,6 @@ public:
     APP_ERROR SetDynamicDims(std::string dymdimsStr);
     APP_ERROR SetDynamicShape(std::string dymshapeStr);
     APP_ERROR SetCustomOutTensorsSize(std::vector<int> customOutSize);
-
-    APP_ERROR Inference_SetInputs(const std::vector<TensorBase>& feeds);
-    APP_ERROR Inference_SetInputs(const std::map<std::string, TensorBase>& feeds);
-    APP_ERROR Inference_Execute();
-    APP_ERROR Inference_GetOutputs(std::vector<std::string> outputNames, std::vector<TensorBase> &outputTensors);
-
 private:
 
     APP_ERROR SetDynamicInfo();
@@ -190,7 +184,11 @@ private:
 
     APP_ERROR GetModelDescInfo();
     APP_ERROR DestroyInferCacheData();
+
     APP_ERROR SetInputsData(std::vector<BaseTensor> &inputs);
+    APP_ERROR Execute();
+    APP_ERROR GetOutputs(std::vector<std::string> outputNames, std::vector<TensorBase> &outputTensors);
+
     APP_ERROR CheckInVectorAndFillBaseTensor(const std::vector<TensorBase>& feeds, std::vector<BaseTensor> &inputs);
     APP_ERROR CheckInMapAndFillBaseTensor(const std::map<std::string, TensorBase>& feeds, std::vector<BaseTensor> &inputs);
 
