@@ -143,7 +143,6 @@ analyse_plog()
 
 generate_topk_index()
 {
-    profiler_path=`find $CACHE_PATH/ -name "device_*"`
     cmd="$PYTHON_COMMAND $CUR_PATH/analyser.py --mode times --summary_path  $CACHE_PATH/aisout/sumary.json --output $CACHE_PATH/"
     $cmd || { echo "cmd:$cmd analyse times failed"; return $ret_run_failed; }
 }
@@ -153,6 +152,7 @@ get_timeline()
     local topk_arr=($(get_topk_array_from_json "${CACHE_PATH}/topk_index.json"))
     echo "topk_arr:$topk_arr"
     k=${#topk_arr[@]}
+    profiler_path=`find $CACHE_PATH/ -name "device_*"`
     for ((i=0; i<$k; i++)); do {
         index="${topk_arr[$i]}"
         # add warmup count and 0index

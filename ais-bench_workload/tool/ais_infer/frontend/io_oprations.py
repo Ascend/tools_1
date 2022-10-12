@@ -27,8 +27,8 @@ def get_pure_infer_data(size, pure_data_type):
     ndata = np.frombuffer(barray, dtype=np.uint8)
     return ndata
 
-# get tensors from files list combile all files
-def get_tensor_from_files_list(files_list, device, size, pure_data_type, auto_set_dymshape_mode=False):
+# get numpy array from files list combile all files
+def get_narray_from_files_list(files_list, size, pure_data_type, auto_set_dymshape_mode=False):
     ndatalist = []
     for i, file_path in enumerate(files_list):
         logger.debug("get tensor from filepath:{} i:{} of all:{}".format(file_path, i, len(files_list)))
@@ -43,10 +43,18 @@ def get_tensor_from_files_list(files_list, device, size, pure_data_type, auto_se
         else:
             ndata = get_file_content(file_path)
         ndatalist.append(ndata)
-    ndata = np.concatenate(ndatalist)
-    if auto_set_dymshape_mode == False and ndata.nbytes != size:
-        logger.error('ndata size:{} not match {}'.format(ndata.nbytes, size))
-        raise RuntimeError()
+    if len(ndatalist) == 1:
+        return ndatalist[0]
+    else:
+        ndata = np.concatenate(ndatalist)
+        if auto_set_dymshape_mode == False and ndata.nbytes != size:
+            logger.error('ndata size:{} not match {}'.format(ndata.nbytes, size))
+            raise RuntimeError()
+        return ndata
+
+# get tensors from files list combile all files
+def get_tensor_from_files_list(files_list, device, size, pure_data_type, auto_set_dymshape_mode=False):
+    ndata = get_narray_from_files_list(files_list, size, pure_data_type, auto_set_dymshape_mode)
 
     tensor = aclruntime.Tensor(ndata)
     starttime = time.time()

@@ -26,6 +26,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
 #include <pybind11/stl.h>
+namespace py = pybind11;
 #endif
 
 #include "Base/ModelInfer/SessionOptions.h"
@@ -44,6 +45,10 @@ public:
     
     std::vector<TensorBase> InferMap(std::vector<std::string>& output_names, std::map<std::string, TensorBase>& feeds);
     std::vector<TensorBase> InferVector(std::vector<std::string>& output_names, std::vector<TensorBase>& feeds);
+
+#ifdef COMPILE_PYTHON_MODULE
+    std::vector<TensorBase> InferNumpy(std::vector<std::string>& output_names, std::vector<py::buffer>& ndatas);
+#endif
 
     std::vector<std::vector<uint64_t>> GetDynamicHW();
     std::vector<int64_t> GetDynamicBatch();
@@ -71,6 +76,7 @@ public:
 
 private:
     void Init(const std::string &modelPath, std::shared_ptr<SessionOptions> options);
+
 private:
     uint32_t deviceId_ = 0;
     Base::ModelDesc modelDesc_ = {};
@@ -78,8 +84,6 @@ private:
 }
 
 #ifdef COMPILE_PYTHON_MODULE
-    namespace py = pybind11;
-
     void RegistInferenceSession(py::module &m);
 #endif
 

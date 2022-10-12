@@ -37,6 +37,8 @@ void TensorToHost(TensorBase &tensor);
 void TensorToDevice(TensorBase &tensor, const int32_t deviceId);
 void TensorToDvpp(TensorBase &tensor, const int32_t deviceId);
 
+TensorBase ConvertNumpy2DeviceTensor(py::buffer b, MemoryData::MemoryType memType, int32_t deviceId);
+
 TensorBase FromNumpy(py::buffer b);
 py::buffer_info ToNumpy(const TensorBase &tensor);
 TensorBase BatchVector(const std::vector<TensorBase> &tensors, const bool &keepDims = false);

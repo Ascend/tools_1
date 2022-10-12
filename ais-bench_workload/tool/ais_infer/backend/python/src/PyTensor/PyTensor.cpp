@@ -101,7 +101,7 @@ void TensorToDvpp(TensorBase &tensor, const int32_t deviceId)
     }
 }
 
-TensorBase FromNumpy(py::buffer b)
+TensorBase ConvertNumpy2DeviceTensor(py::buffer b, MemoryData::MemoryType memType, int32_t deviceId)
 {
     py::buffer_info info = b.request();
     auto dataType = Base::TENSOR_DTYPE_UINT8;
@@ -116,9 +116,11 @@ TensorBase FromNumpy(py::buffer b)
     if (DATA_TYPE_TO_BYTE_SIZE_MAP.find(dataType) != DATA_TYPE_TO_BYTE_SIZE_MAP.end()) {
         bytes = DATA_TYPE_TO_BYTE_SIZE_MAP.find(dataType)->second;
     }
-    MemoryData memoryData(info.ptr, info.size * bytes, MemoryData::MemoryType::MEMORY_HOST_MALLOC, -1);
+    MemoryData memoryData(info.ptr, info.size * bytes, MemoryData::MemoryType::MEMORY_HOST, -1);
     TensorBase src(memoryData, true, shape, dataType);
-    TensorBase dst(shape, dataType);
+    
+    TensorBase dst(shape, dataType, memType, deviceId);
+
     APP_ERROR ret = Base::TensorBase::TensorBaseMalloc(dst);
     if (ret != APP_ERR_OK) {
         LogError << "TensorBaseMalloc failed. ret=" << ret << std::endl;
@@ -130,6 +132,11 @@ TensorBase FromNumpy(py::buffer b)
         throw std::runtime_error(GetError(ret));
     }
     return dst;
+}
+
+TensorBase FromNumpy(py::buffer b)
+{
+    return ConvertNumpy2DeviceTensor(b, MemoryData::MemoryType::MEMORY_HOST, -1);
 }
 
 py::buffer_info ToNumpy(const TensorBase &tensor)
