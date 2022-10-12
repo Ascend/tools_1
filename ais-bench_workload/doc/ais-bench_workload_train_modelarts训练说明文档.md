@@ -226,6 +226,8 @@ config.json tester服务器信息配置文件，位于性能测试软件包解�
 ./ais-bench-stubs test
 ```
 
+连接tester服务器测试时，无需test参数。
+
 ### 中断和停止训练
 
 + 云环境ModleArts界面操作。
