@@ -55,9 +55,9 @@ tar xvf train_huawei_train_mindspore_resnet-Ais-Benchmark-Stubs-aarch64-1.0-r1.3
 │   │   ├── mindspore_env.sh  // Mindspore框架模型测试时的环境变量，可根据实际需求补充环境变量
 │   │   ├── modelarts_config.py  // 线上训练性能测试时配置
 │   │   └── tensorflow_env.sh  // TensorFlow框架模型测试时的环境变量，可根据实际需求补充环境变量
-│   ├── config.json  // tester服务器信息配置文件，配置后可自动将测试结果上报到tester服务器上。本地测试模式下不需要填写
+│   ├── config.json  // tester服务器信息配置文件，配置后可自动将测试结果上报到tester服务器上。本地离线测试模式下不需要填写
 │   ├── doc  // 指导文档存放目录
-│   └── system.json  // 性能测试系统信息配置文件，仅当需要将测试结果上报到tester服务器时需要配置。本地测试模式下不需要填写
+│   └── system.json  // 性能测试系统信息配置文件，仅当需要将测试结果上报到tester服务器时需要配置。本地离线测试模式下不需要填写
 ├── log  // 日志输出目录
 ├── README.md  // 离线性能测试指导
 └── result  // 测试结果输出目录

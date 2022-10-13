@@ -95,7 +95,7 @@ graph LR
 
 #### config.json  ais-bench工具配置文件 
 
-位于基准目录/code/config.json 主要填写ais-bench测试的具体参数与tester服务器具体信息，**本地测试模式下不需要填写，只要网络测试模式下才需要填写。**
+位于基准目录/code/config.json 主要填写ais-bench测试的具体参数与tester服务器具体信息，**本地离线测试模式下不需要填写，只有网络测试模式下才需要填写。**
 
 如果需要网络测试，请修改配置文件内容。
 
@@ -123,7 +123,7 @@ graph LR
 
 ### 启动运行
 
-配置好指定配置文件后，执行`./ais-bench-stubs test`，即可启动本地运行模式，执行性能测试。连接tester服务器测试时，无需test参数。
+配置好指定配置文件后，执行`./ais-bench-stubs test`，即可启动本地运行模式，执行性能测试。
 
 整个训练过程，需要保持网络通畅。
 
