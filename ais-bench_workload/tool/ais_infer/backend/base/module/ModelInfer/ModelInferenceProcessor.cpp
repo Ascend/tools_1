@@ -413,7 +413,7 @@ APP_ERROR ModelInferenceProcessor::Inference_Execute()
 
     gettimeofday(&end, nullptr);
     float time_cost = 1000 * (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000.000;
-    DEBUG_LOG("model aclExec const : %f\n", time_cost);
+    DEBUG_LOG("model aclExec cost : %f\n", time_cost);
     sumaryInfo_.execTimeList.push_back(time_cost);
     return APP_ERR_OK;
 }
