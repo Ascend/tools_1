@@ -89,7 +89,7 @@ APP_ERROR DeviceManager::DestroyDevices()
     }
     initCounter_--;
     if (initCounter_ == 0) {
-        LogDebug << "DestroyDevices begin";
+        LogDebug << "DestroyDevices begin ";
         for (auto item : contexts_) {
             LogDebug << "destory device:" << item.first << std::endl;
             APP_ERROR ret = aclrtDestroyContext(item.second.get());

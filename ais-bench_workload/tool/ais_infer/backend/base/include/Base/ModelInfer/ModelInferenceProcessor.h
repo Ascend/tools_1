@@ -196,7 +196,7 @@ private:
     ModelDesc modelDesc_;
 
     InferSumaryInfo sumaryInfo_ = {};
-    ModelProcess processModel;
+    std::shared_ptr<ModelProcess> processModel;
     DynamicInfo dynamicInfo_ = {};
 
     size_t dynamicIndex_ = -1;
