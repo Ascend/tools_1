@@ -1,7 +1,7 @@
 diff -Nur origin/pretrain_eval.py code/pretrain_eval.py
---- origin/pretrain_eval.py	2022-10-11 14:55:05.400000000 +0800
-+++ code/pretrain_eval.py	2022-10-11 14:55:05.430000000 +0800
-@@ -53,6 +53,15 @@
+--- origin/pretrain_eval.py	2022-10-18 11:29:34.308000000 +0800
++++ code/pretrain_eval.py	2022-10-18 11:29:34.324000000 +0800
+@@ -53,9 +53,17 @@
      print("==============================================================")
      for _, v in res.items():
          print("Accuracy is: ", v)
@@ -16,20 +16,22 @@ diff -Nur origin/pretrain_eval.py code/pretrain_eval.py
 +               f.write("{}".format(v))
      print("==============================================================")
  
- 
+-
+ if __name__ == "__main__":
+     DEVICE_ID = 0
+     os.environ['DEVICE_ID'] = str(DEVICE_ID)
 diff -Nur origin/run_pretrain.py code/run_pretrain.py
---- origin/run_pretrain.py	2022-10-11 14:55:05.380000000 +0800
-+++ code/run_pretrain.py	2022-10-11 14:55:05.410000000 +0800
-@@ -17,6 +17,8 @@
+--- origin/run_pretrain.py	2022-10-18 11:29:34.312000000 +0800
++++ code/run_pretrain.py	2022-10-18 11:29:34.324000000 +0800
+@@ -17,6 +17,7 @@
  python run_pretrain.py
  """
  import os
 +import time
-+
  import mindspore.communication.management as D
  from mindspore.communication.management import get_rank
  import mindspore.common.dtype as mstype
-@@ -43,6 +45,13 @@
+@@ -43,6 +44,13 @@
  from src.model_utils.config import config as cfg, bert_net_cfg
  from src.model_utils.moxing_adapter import moxing_wrapper
  from src.model_utils.device_adapter import get_device_id, get_device_num
@@ -43,7 +45,7 @@ diff -Nur origin/run_pretrain.py code/run_pretrain.py
  _current_dir = os.path.dirname(os.path.realpath(__file__))
  
  
-@@ -268,9 +277,31 @@
+@@ -268,9 +276,31 @@
          callback.append(eval_callback)
  
      model = ConvertModelUtils().convert_to_thor_model(model, network=net_with_grads, optimizer=optimizer)
