@@ -98,7 +98,7 @@ output:
 ```
 - Detailed reasoning time-consuming information
 ```
-[DEBUG] model aclExec const : 2.336000
+[DEBUG] model aclExec cost : 2.336000
 ```
 - Specific operation information such as model input and output
 

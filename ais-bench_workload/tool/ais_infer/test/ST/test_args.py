@@ -79,7 +79,7 @@ class TestClass:
 
     def test_args_loop_ok(self):
         """
-        'aclExec const' log record num = warmup  + loop
+        'cost :' log record num = warmup  + loop
         """
         model_path = TestCommonClass.get_model_static_om_path(1, self.model_name)
         loops = [3, 300]
@@ -93,7 +93,7 @@ class TestClass:
             assert ret == 0
 
             try:
-                cmd = "cat {} |grep 'aclExec const' | wc -l".format(log_path)
+                cmd = "cat {} |grep 'cost :' | wc -l".format(log_path)
                 outval = os.popen(cmd).read()
             except Exception as e:
                 raise Exception("raise an exception: {}".format(e))

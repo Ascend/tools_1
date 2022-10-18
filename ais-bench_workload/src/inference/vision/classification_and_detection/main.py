@@ -102,10 +102,12 @@ SUPPORTED_PROFILES = {
     },
     "yolov3-caffe_voc2012": {
         "dataset_name": "voc2012-yolov3",
+        "tag": "yolo",
         "backend": "acl",
     },
     "deeplabv3-tf_voc2012": {
         "dataset_name": "voc2012-deeplabv3",
+        "tag": "deeplab",
         "backend": "acl",
     },
 

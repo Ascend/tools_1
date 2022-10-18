@@ -96,7 +96,7 @@ class TestCommonClass:
             return 0
 
         try:
-            cmd = "cat {} |grep 'aclExec const' | wc -l".format(log_path)
+            cmd = "cat {} |grep 'cost :' | wc -l".format(log_path)
             outval = os.popen(cmd).read()
         except Exception as e:
             raise Exception("grep action raises raise an exception: {}".format(e))

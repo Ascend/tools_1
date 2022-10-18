@@ -54,20 +54,20 @@ OBS存储->>本地运行设备: 下载数据
 
 测试操作总体步骤：
 
-1. 准备本地设备环境。
+1. 准备本地运行设备环境。
 2. 填写配置信息。
-3. 本地设备启动ais-bench-stubs程序，执行完成后获取性能数据结果。
+3. 本地运行设备启动ais-bench-stubs程序，执行完成后获取性能数据结果。
 
 ## 使用前准备
 
 ### 环境
 
-#### 本地设备
+#### 本地运行设备
 
 - 安装Linux系统。
 - 处于稳定的联网状态。
 
-建议选择以下三种作为本地设备：
+建议选择以下三种作为本地运行设备：
 
 - ECS云主机，可以咨询计算中心运维同事搭建启动ECS云主机。
 - Modelarts的notebook开发环境。 请参考《modelarts_notebook使用入门指导》。
@@ -131,7 +131,7 @@ obs_url  --> ms_bert_large.ckpt预训练文件
 
 #### 解压软件包
 
-登录本地设备，将性能测试软件包拷贝到任意目录下，执行解压操作。
+登录本地运行设备，将性能测试软件包拷贝到任意目录下，执行解压操作。
 
 ```
 tar xvf train_huawei_train_mindspore_resnet-Ais-Benchmark-Stubs-aarch64-1.0-r1.3_modelarts.tar.gz
@@ -148,9 +148,9 @@ tar xvf train_huawei_train_mindspore_resnet-Ais-Benchmark-Stubs-aarch64-1.0-r1.3
 │   │   ├── mindspore_env.sh  // Mindspore框架模型测试时的环境变量，可根据实际需求补充环境变量
 │   │   ├── modelarts_config.py  // 线上训练性能测试时配置
 │   │   └── tensorflow_env.sh  // TensorFlow框架模型测试时的环境变量，可根据实际需求补充环境变量
-│   ├── config.json  // tester服务器信息配置文件，配置后可自动将测试结果上报到tester服务器上。本地测试模式下不需要填写
+│   ├── config.json  // tester服务器信息配置文件，配置后可自动将测试结果上报到tester服务器上。本地离线测试模式下不需要填写
 │   ├── doc  // 指导文档存放目录
-│   └── system.json  // 性能测试系统信息配置文件，仅当需要将测试结果上报到tester服务器时需要配置。本地测试模式下不需要填写
+│   └── system.json  // 性能测试系统信息配置文件，仅当需要将测试结果上报到tester服务器时需要配置。本地离线测试模式下不需要填写
 ├── log  // 日志输出目录
 ├── README.md  // 测试指导文档
 ├── result  // 测试结果输出目录
@@ -220,10 +220,10 @@ config.json tester服务器信息配置文件，位于性能测试软件包解�
 
 ### 运行测试
 
-完成配置文件配置后执行性能测试操作，命令如下：
+完成配置文件配置后执行性能测试操作，本地离线测试模式(aisbench测试模式概念请参考[链接](https://gitee.com/ascend/tools/blob/master/ais-bench_workload/README.md))命令如下：
 
 ```
-./ais-bench-stubs
+./ais-bench-stubs test
 ```
 
 ### 中断和停止训练
@@ -231,7 +231,7 @@ config.json tester服务器信息配置文件，位于性能测试软件包解�
 + 云环境ModleArts界面操作。
   在云环境ModleArts服务“训练管理 > 训练作业”界面，单击正在运行的job链接并进入。在执行job界面，单击“更多操作”按钮，激活下拉菜单，在上下文菜单中单击“停止”，即可终止运行的job。
   
-+ 本地停止方法，操作如下：
++ 本地运行设备停止方法，操作如下：
 
   对于modelarts V1版本：
 
@@ -244,7 +244,7 @@ jobname:aisbench-debug jobid:3043 preversionid:13231 jobstatus:JOBSTAT_RUNNING s
 该操作可以停止配置文件中job_name指示的最新一个作业版本。
 ​   对于modelarts V2版本：
 
-创建job成功后，本地屏幕会打印job相关信息，请搜索类似“create job sucess. job_id:c8e62b62-9529-4696-ba08-2969f4861a5d”，取"job_id:"后面部分，就是Job_id。
+创建job成功后，本地运行设备屏幕会打印job相关信息，请搜索类似“create job sucess. job_id:c8e62b62-9529-4696-ba08-2969f4861a5d”，取"job_id:"后面部分，就是Job_id。
 
 ```bash
 [root@node66 ]# python3  ./code/common/train_modelarts.py  --action stop --modelarts_version V2  --job_id e7052953-3107-47d5-a5fa-725f9eced6e3

@@ -97,7 +97,7 @@ output:
 ```
 - 详细的推理耗时信息
 ```
-[DEBUG] model aclExec const : 2.336000
+[DEBUG] model aclExec cost : 2.336000
 ```
 - 模型输入输出等具体操作信息
 

@@ -377,13 +377,13 @@ class PodOperator:
         for i in range(len(data["spec"]["containers"])):
             if data["spec"]["containers"][i]["resources"]["limits"].get(self.DEFAULT_NPU_NAME, "") != "":
                 count = data["spec"]["containers"][i]["resources"]["limits"].get(self.DEFAULT_NPU_NAME, "")
-                data["spec"]["containers"][i]["resources"]["limits"][npu_name] = count
                 del data["spec"]["containers"][i]["resources"]["limits"][self.DEFAULT_NPU_NAME]
+                data["spec"]["containers"][i]["resources"]["limits"][npu_name] = count
 
             if data["spec"]["containers"][i]["resources"]["requests"].get(self.DEFAULT_NPU_NAME, "") != "":
                 count = data["spec"]["containers"][i]["resources"]["requests"].get(self.DEFAULT_NPU_NAME, "")
-                data["spec"]["containers"][i]["resources"]["requests"][npu_name] = count
                 del data["spec"]["containers"][i]["resources"]["requests"][self.DEFAULT_NPU_NAME]
+                data["spec"]["containers"][i]["resources"]["requests"][npu_name] = count
 
         data["metadata"]["creationTimestamp"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.localtime())
         data["metadata"]["name"] = pod_name
