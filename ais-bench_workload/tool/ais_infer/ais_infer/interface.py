@@ -1,7 +1,7 @@
 
 import time
 import aclruntime
-from frontend.summary import summary
+from ais_infer.summary import summary
 
 class InferSession:
     def __init__(self, device_id: int, model_path: str, acl_json_path: str = None, debug: bool = False, loop: int = 1):

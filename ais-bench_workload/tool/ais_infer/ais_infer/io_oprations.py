@@ -4,8 +4,8 @@ import random
 import time
 import numpy as np
 
-from frontend.summary import summary
-from frontend.utils import (get_file_content, get_file_datasize,
+from ais_infer.summary import summary
+from ais_infer.utils import (get_file_content, get_file_datasize,
                             get_fileslist_from_dir, list_split, logger,
                             save_data_to_files)
 
