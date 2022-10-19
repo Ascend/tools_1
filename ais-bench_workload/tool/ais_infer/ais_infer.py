@@ -98,14 +98,16 @@ def run_inference_step(session, inputs, outputs_names, loop=1):
     return outputs
 
 def set_dymshape_shape(session, inputs):
-    dyshape=""
+    l = []
     intensors_desc = session.get_inputs()
     for i, input in enumerate(inputs):
         if -1 in intensors_desc[i].shape:
             str_shape = [ str(shape) for shape in input.shape ]
             dyshape = "{}:{}".format(intensors_desc[i].name, ",".join(str_shape))
-    logger.debug("set dymshape shape:{}".format(dyshape))
-    session.set_dynamic_shape(dyshape)
+            l.append(dyshape)
+    dyshapes = ';'.join(l)
+    logger.debug("set dymshape shape:{}".format(dyshapes))
+    session.set_dynamic_shape(dyshapes)
 
 def run_inference(session, inputs, outputs_names):
     if args.auto_set_dymshape_mode == True:
