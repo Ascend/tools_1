@@ -8,7 +8,7 @@ set -e
 
 main() {
     if [ $# -lt 1 ]; then
-        echo "at least one parameter. for example: bash test.sh python3.7.5"
+        echo "at least one parameter. for example: bash test.sh python3"
         return $ret_invalid_args
     fi
 
