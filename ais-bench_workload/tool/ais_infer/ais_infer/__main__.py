@@ -182,7 +182,7 @@ def get_args():
     parser.add_argument("--outfmt", default="BIN", choices=["NPY", "BIN", "TXT"], help="Output file format (NPY or BIN or TXT)")
     parser.add_argument("--loop", "-r", type=check_positive_integer, default=1, help="the round of the PrueInfer.")
     parser.add_argument("--debug", type=str2bool, default=False, help="Debug switch,print model information")
-    parser.add_argument("--device", "--device", type=check_device_range_valid, default=0, help="the NPU device ID to use.Valid value range is [0, 255]")
+    parser.add_argument("--device", "--device", type=check_device_range_valid, default=0, help="the NPU device ID to use.valid value range is [0, 255]")
     parser.add_argument("--dymBatch", type=int, default=0, help="dynamic batch size param，such as --dymBatch 2")
     parser.add_argument("--dymHW", type=str, default=None, help="dynamic image size param, such as --dymHW \"300,500\"")
     parser.add_argument("--dymDims", type=str, default=None, help="dynamic dims param, such as --dymDims \"data:1,600;img_info:1,600\"")
