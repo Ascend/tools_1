@@ -150,7 +150,7 @@ convert_dymshape_om()
 main()
 {
     SOC_VERSION="Ascend310"
-    PYTHON_COMMAND="python3.7.5"
+    PYTHON_COMMAND="python3"
     TESTDATA_PATH=$CUR_PATH/testdata/resnet50/model
     [ -d $TESTDATA_PATH ] || mkdir -p $TESTDATA_PATH
 

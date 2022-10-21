@@ -6,16 +6,15 @@ import os
 import sys
 import time
 
-from ais_infer.interface import InferSession
 from tqdm import tqdm
 
+from ais_infer.interface import InferSession
 from ais_infer.io_oprations import (create_infileslist_from_inputs_list,
-                                   create_intensors_from_infileslist,
-                                   create_intensors_zerodata,
-                                   get_narray_from_files_list,
-                                   get_tensor_from_files_list,
-                                   pure_infer_fake_file,
-                                   save_tensors_to_file)
+                                    create_intensors_from_infileslist,
+                                    create_intensors_zerodata,
+                                    get_narray_from_files_list,
+                                    get_tensor_from_files_list,
+                                    pure_infer_fake_file, save_tensors_to_file)
 from ais_infer.summary import summary
 from ais_infer.utils import logger
 
@@ -174,6 +173,11 @@ def check_nonnegative_integer(value):
         raise argparse.ArgumentTypeError("%s is an invalid nonnegative int value" % value)
     return ivalue
 
+def check_device_range_valid(value):
+    ivalue = int(value)
+    if ivalue < 0 and ivalue > 255:
+        raise argparse.ArgumentTypeError("%s is invalid. valid value range is [0, 255]" % value)
+    return ivalue
 
 def get_args():
     parser = argparse.ArgumentParser()
@@ -184,7 +188,7 @@ def get_args():
     parser.add_argument("--outfmt", default="BIN", choices=["NPY", "BIN", "TXT"], help="Output file format (NPY or BIN or TXT)")
     parser.add_argument("--loop", "-r", type=check_positive_integer, default=1, help="the round of the PrueInfer.")
     parser.add_argument("--debug", type=str2bool, default=False, help="Debug switch,print model information")
-    parser.add_argument("--device", "--device", type=int, default=0, choices=range(0, 255), help="the NPU device ID to use")
+    parser.add_argument("--device", "--device", type=check_device_range_valid, default=0, help="the NPU device ID to use.valid value range is [0, 255]")
     parser.add_argument("--dymBatch", type=int, default=0, help="dynamic batch size param，such as --dymBatch 2")
     parser.add_argument("--dymHW", type=str, default=None, help="dynamic image size param, such as --dymHW \"300,500\"")
     parser.add_argument("--dymDims", type=str, default=None, help="dynamic dims param, such as --dymDims \"data:1,600;img_info:1,600\"")
@@ -196,7 +200,6 @@ def get_args():
     parser.add_argument("--profiler", type=str2bool, default=False, help="profiler switch")
     parser.add_argument("--dump", type=str2bool, default=False, help="dump switch")
     parser.add_argument("--acl_json_path", type=str, default=None, help="acl json path for profiling or dump")
-    parser.add_argument("--infer_queue_count",  type=check_positive_integer, default=20, help="Maximum number of data in inference queue, such as --maxqueue 15")
     parser.add_argument("--output_batchsize_axis",  type=check_nonnegative_integer, default=0, help="splitting axis number when outputing tensor results, such as --output_batchsize_axis 12")
     parser.add_argument("--warmup_count", type=check_nonnegative_integer, default=1, help="warmup_count")
     parser.add_argument("--run_mode", type=str, default="numpy", choices=["numpy", "files", "msame", "loop"], help="null data type for pure inference(zero or random")
