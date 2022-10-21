@@ -74,35 +74,46 @@ check_env_valid()
     [ -f ${msprof_bin} ] || { echo "msprof:${msprof_bin} not valid"; return $ret_run_failed; }
 
     # set log level = info
-    export ASCEND_GLOBAL_LOG_LEVEL=1
+    #export ASCEND_GLOBAL_LOG_LEVEL=1
+}
+
+get_infer_cmd()
+{
+    local tool=$1
+    if [ "${tool}" == "msame" ]; then
+        infer_cmd="$CUR_PATH/../../../msame/out/msame --model $MODEL --output $CACHE_PATH/ --device $DEVICE --loop $LOOP"
+    else
+        infer_cmd="$PYTHON_COMMAND $CUR_PATH/../ais_infer/ais_infer.py --model $MODEL --output $CACHE_PATH/ \
+        --device $DEVICE --loop $LOOP --output_dirname=aisout"
+    fi
+
+    [ "$INPUT" != "" ] && { infer_cmd="$infer_cmd --input $INPUT"; }
 }
 
 run_infer()
 {
-    if [ $TOOL == "msame" ]; then
-        app="$CUR_PATH/../../../msame/out/msame --model $MODEL --output $CACHE_PATH/ --device $DEVICE --loop $LOOP"
-    else
-        app="$PYTHON_COMMAND $CUR_PATH/../ais_infer/ais_infer.py --model $MODEL --output $CACHE_PATH/ \
-        --device $DEVICE --loop $LOOP --output_dirname=aisout"
-    fi
-
-    [ "$INPUT" != "" ] && { app="$app --input $INPUT"; }
+    local tool=$1
+    get_infer_cmd $tool
 
     if [ $PROFILER == "true" ]; then
-        $msprof_bin --output=${CACHE_PATH} --application="$app"  \
+        $msprof_bin --output=${CACHE_PATH} --application="$infer_cmd"  \
             --sys-hardware-mem=on --sys-cpu-profiling=on --sys-profiling=on --sys-pid-profiling=on \
             --dvpp-profiling=on --runtime-api=on --task-time=on --aicpu=on \
-        | tee -a $CACHE_PATH/p.log || { echo "msprof run failed"; return $ret_run_failed; }
+        | tee -a $CACHE_PATH/$tool.log || { echo "msprof run failed"; return $ret_run_failed; }
     else
-        $app | tee -a $CACHE_PATH/p.log || { echo "msprof run failed"; return $ret_run_failed; }
+        $infer_cmd | tee -a $CACHE_PATH/$tool.log || { echo "msprof run failed"; return $ret_run_failed; }
     fi
 
     if [ $TOOL == "msame" ]; then
-        cat $CACHE_PATH/p.log | grep 'Inference time:' | awk '{print $3}' | sed '1d' > $CACHE_PATH/m.times
-        cat $CACHE_PATH/p.log | grep pid | awk '{print $3}' > $CACHE_PATH/m.pid
-        mkdir -p $CACHE_PATH/aisout
-        $PYTHON_COMMAND $CUR_PATH/info_convert_json.py $CACHE_PATH/m.times $CACHE_PATH/m.pid $CACHE_PATH/aisout/sumary.json
+        cat $CACHE_PATH/$tool.log | grep 'Inference time:' | awk '{print $3}' | sed '1d' > $CACHE_PATH/$tool.times
+        cat $CACHE_PATH/$tool.log | grep pid | awk '{print $3}' > $CACHE_PATH/$tool.pid
+        $PYTHON_COMMAND $CUR_PATH/info_convert_json.py $CACHE_PATH/$tool.times $CACHE_PATH/$tool.pid $CACHE_PATH/${tool}.json
+    else
+        cp $CACHE_PATH/aisout/sumary.json $CACHE_PATH/${tool}.json
     fi
+
+    cmd="$PYTHON_COMMAND $CUR_PATH/analyser.py --mode times --summary_path $CACHE_PATH/${tool}.json --output $CACHE_PATH/"
+    $cmd || { echo "cmd:$cmd analyse times failed"; return $ret_run_failed; }
 }
 
 analyse_plog()
@@ -210,7 +221,7 @@ done
     [ "$LOOP" != "" ] || { LOOP="1";echo "set default LOOP:$LOOP"; }
     [ "$DEVICE" != "" ] || { DEVICE="0";echo "set default DEVICE:$DEVICE"; }
     [ "$TOOL" != "" ] || { TOOL="ais_infer";echo "set default TOOL:$TOOL"; }
-    [ "$PROFILER" != "" ] || { PROFILER="true";echo "set default PROFILER:$PROFILER"; }
+    [ "$PROFILER" != "" ] || { PROFILER="false";echo "set default PROFILER:$PROFILER"; }
 
     CACHE_PATH=$CUR_PATH/cache
     [ ! -d $CACHE_PATH ] || rm -rf $CACHE_PATH
@@ -219,15 +230,18 @@ done
     check_args_valid || { echo "check args not valid return"; return $ret_run_failed; }
     check_env_valid || { echo "check env not valid return"; return $ret_run_failed; }
 
-    run_infer || { echo "run infer failed"; return $ret_run_failed; }
-
-    generate_topk_index  || { echo "generate topk index failed"; return $ret_run_failed; }
+    if [ $TOOL == "all" ]; then
+        run_infer "msame" || { echo "run infer failed"; return $ret_run_failed; }
+        run_infer "ais_infer" || { echo "run infer failed"; return $ret_run_failed; }
+    else
+        run_infer "${TOOL}" || { echo "run infer failed"; return $ret_run_failed; }
+    fi
 
     if [ $PROFILER == "true" ]; then
         get_timeline || { echo "get timeline failed"; return $ret_run_failed; }
     fi
 
-    analyse_plog || { echo "analyse plog failed"; return $ret_run_failed; }
+    #analyse_plog || { echo "analyse plog failed"; return $ret_run_failed; }
 
     return $ret_ok
 }
