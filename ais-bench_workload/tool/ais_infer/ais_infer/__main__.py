@@ -147,6 +147,7 @@ def infer_loop_numpy_run(session, args, intensors_desc, infileslist, output_pref
             narray = get_narray_from_files_list(files, intensors_desc[j].realsize, args.pure_data_type)
             innarrays.append(narray)
         outputs = run_inference_narray(session, innarrays)
+        session.convert_tensors_to_host(outputs)
         if args.output != None:
             save_tensors_to_file(outputs, output_prefix, infiles, args.outfmt, i, args.output_batchsize_axis)
 
