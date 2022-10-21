@@ -7,10 +7,12 @@ class InferSession:
     def __init__(self, device_id: int, model_path: str, acl_json_path: str = None, debug: bool = False, loop: int = 1):
         self.device_id = device_id
         self.model_path = model_path
-        self.acl_json_path = acl_json_path
-        self.log_level = 1 if debug == True else 0
-        self.loop = loop
         options = aclruntime.session_options()
+        if acl_json_path is not None:
+            options.acl_json_path = acl_json_path
+        options.log_level = 1 if debug == True else 2
+        print("lcm debug debug:{} log:{}".format(debug, options.log_level))
+        options.loop = loop
         self.session = aclruntime.InferenceSession(self.model_path, self.device_id, options)
         self.outputs_names = [meta.name for meta in self.session.get_outputs()]    
 
@@ -49,8 +51,16 @@ class InferSession:
         summary.h2d_latency_list.append(float(endtime - starttime) * 1000.0)  # millisecond
         return tensor
 
-    def run(self, feeds):
+    def run_tensors(self, feeds):
         outputs = self.session.run(self.outputs_names, feeds)
+        return outputs
+
+    def run_narrays(self, narrays):
+        basetensors = []
+        for array in narrays:
+            basetensor = aclruntime.BaseTensor(array.__array_interface__['data'][0], array.nbytes)
+            basetensors.append(basetensor)
+        outputs = self.session.run(self.outputs_names, basetensors)
         return outputs
 
     def convert_tensors_to_host(self, tensors):

@@ -95,7 +95,13 @@ def set_dymshape_shape(session, inputs):
 def run_inference(session, inputs):
     if args.auto_set_dymshape_mode == True:
         set_dymshape_shape(session, inputs)
-    outputs = session.run(inputs)
+    outputs = session.run_tensors(inputs)
+    return outputs
+
+def run_inference_narray(session, inputs):
+    if args.auto_set_dymshape_mode == True:
+        set_dymshape_shape(session, inputs)
+    outputs = session.run_narrays(inputs)
     return outputs
 
 def warmup(session, args):
@@ -136,12 +142,12 @@ def infer_fulltensors_run(session, args, intensors_desc, infileslist, output_pre
 
 # 轮训numpy运行推理
 def infer_loop_numpy_run(session, args, intensors_desc, infileslist, output_prefix):
-    for i, infiles in enumerate(tqdm(infileslist, file=sys.stdout, desc='Inference loop numpy Processing')):
+    for i, infiles in enumerate(tqdm(infileslist, file=sys.stdout, desc='Inference loop basetensor Processing')):
         innarrays = []
         for j, files in enumerate(infiles):
             narray = get_narray_from_files_list(files, intensors_desc[j].realsize, args.pure_data_type)
             innarrays.append(narray)
-        outputs = run_inference(session, innarrays)
+        outputs = run_inference_narray(session, innarrays)
         if args.output != None:
             save_tensors_to_file(outputs, output_prefix, infiles, args.outfmt, i, args.output_batchsize_axis)
 

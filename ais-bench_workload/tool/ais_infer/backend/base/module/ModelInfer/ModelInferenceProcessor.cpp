@@ -183,6 +183,39 @@ APP_ERROR ModelInferenceProcessor::AddOutTensors(std::vector<MemoryData>& output
     return APP_ERR_OK;
 }
 
+APP_ERROR ModelInferenceProcessor::CheckInVectorAndFillBaseTensor(const std::vector<BaseTensor>& feeds,
+        std::vector<BaseTensor> &inputs)
+{
+    for (size_t i = 0; i < feeds.size(); ++i) {
+        BaseTensor baseTensor = {};
+        baseTensor.buf = feeds[i].buf;
+        baseTensor.size = feeds[i].size;
+        if (baseTensor.size != modelDesc_.inTensorsDesc[i].realsize){
+            ERROR_LOG("Check i:%d name:%s in size:%d needsize:%d not match\n",
+                i, modelDesc_.inTensorsDesc[i].name.c_str(), baseTensor.size, modelDesc_.inTensorsDesc[i].realsize);
+            return APP_ERR_ACL_FAILURE;
+        }
+        inputs.push_back(std::move(baseTensor));
+    }
+    return APP_ERR_OK;
+}
+
+APP_ERROR ModelInferenceProcessor::Inference(const std::vector<BaseTensor>& feeds,
+    std::vector<std::string> &outputNames, std::vector<TensorBase>& outputTensors)
+{
+    APP_ERROR ret;
+    // create basetensors
+    std::vector<BaseTensor> inputs;
+    ret = CheckInVectorAndFillBaseTensor(feeds, inputs);
+    if (ret != APP_ERR_OK){
+        ERROR_LOG("Check InVector failed ret:%d\n", ret);
+        return ret;
+    }
+    ret = ModelInference_Inner(inputs, outputNames, outputTensors);
+    DestroyInferCacheData();
+    return ret;
+}
+
 APP_ERROR ModelInferenceProcessor::CheckInMapAndFillBaseTensor(const std::map<std::string, TensorBase>& feeds, std::vector<BaseTensor> &inputs)
 {
     if (feeds.size() != modelDesc_.inTensorsDesc.size()){

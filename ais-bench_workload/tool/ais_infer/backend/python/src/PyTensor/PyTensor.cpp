@@ -101,6 +101,24 @@ void TensorToDvpp(TensorBase &tensor, const int32_t deviceId)
     }
 }
 
+MemoryData CopyMemory2DeviceMemory(void *ptr, uint64_t size, int32_t deviceId)
+{
+    MemoryData src(ptr, size, MemoryData::MemoryType::MEMORY_HOST, -1);
+
+    Base::MemoryData dst(size, MemoryData::MemoryType::MEMORY_DEVICE, deviceId);
+    auto ret = MemoryHelper::MxbsMalloc(dst);
+    if (ret != APP_ERR_OK) {
+        ERROR_LOG("MemoryHelper::MxbsMalloc failed device size:%d ret:%d", size, ret);
+        return ret;
+    }
+    ret = MemoryHelper::MxbsMemcpy(dst, src, dst.size);
+    if (ret != APP_ERR_OK) {
+        LogError << "MemoryHelper::MxbsMemcpy failed. ret=" << ret << std::endl;
+        return ret;
+    }
+    return dst;
+}
+
 TensorBase ConvertNumpy2DeviceTensor(py::buffer b, MemoryData::MemoryType memType, int32_t deviceId)
 {
     py::buffer_info info = b.request();

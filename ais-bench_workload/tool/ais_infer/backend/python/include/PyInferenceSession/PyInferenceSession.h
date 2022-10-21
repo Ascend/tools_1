@@ -46,6 +46,8 @@ public:
     std::vector<TensorBase> InferMap(std::vector<std::string>& output_names, std::map<std::string, TensorBase>& feeds);
     std::vector<TensorBase> InferVector(std::vector<std::string>& output_names, std::vector<TensorBase>& feeds);
 
+    std::vector<TensorBase> InferBaseTensorVector(std::vector<std::string>& output_names, std::vector<Base::BaseTensor>& feeds);
+
 #ifdef COMPILE_PYTHON_MODULE
     std::vector<TensorBase> InferNumpy(std::vector<std::string>& output_names, std::vector<py::buffer>& ndatas);
 #endif
