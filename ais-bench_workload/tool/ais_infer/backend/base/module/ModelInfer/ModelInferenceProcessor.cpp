@@ -135,10 +135,10 @@ APP_ERROR ModelInferenceProcessor::CreateOutMemoryData(std::vector<MemoryData>& 
             size = customOutTensorSize_[customIndex++];
         }
         if (size == 0){
-            ERROR_LOG("out i:%d size is zero custom:%d %d\n", size, customIndex, customOutTensorSize_.size());
+            ERROR_LOG("out i:%d size is zero custom:%d %d", size, customIndex, customOutTensorSize_.size());
             return APP_ERR_ACL_FAILURE;
         }
-        DEBUG_LOG("Create OutMemory i:%d name:%s size:%d\n", i, modelDesc_.outTensorsDesc[i].name.c_str(), size);
+        DEBUG_LOG("Create OutMemory i:%d name:%s size:%d", i, modelDesc_.outTensorsDesc[i].name.c_str(), size);
         Base::MemoryData memorydata(size, MemoryData::MemoryType::MEMORY_DEVICE, deviceId_);
         auto ret = MemoryHelper::MxbsMalloc(memorydata);
         if (ret != APP_ERR_OK) {
@@ -167,7 +167,7 @@ APP_ERROR ModelInferenceProcessor::AddOutTensors(std::vector<MemoryData>& output
             // 针对于动态shape场景 如果无法获取真实的输出shape 先填写一个一维的值 以便后续内存可以导出
             i64shape.push_back(realLen / aclDataTypeSize(static_cast<aclDataType>(modelDesc_.outTensorsDesc[index].datatype)));
         }
-        DEBUG_LOG("AddOutTensors name:%s index:%d len:%d outdescsize:%d shapesize:%d\n",
+        DEBUG_LOG("AddOutTensors name:%s index:%d len:%d outdescsize:%d shapesize:%d",
             name.c_str(), index, realLen, modelDesc_.outTensorsDesc[index].size, i64shape.size());
         outputs[index].size = realLen;
         bool isBorrowed = false;
@@ -191,7 +191,7 @@ APP_ERROR ModelInferenceProcessor::CheckInVectorAndFillBaseTensor(const std::vec
         baseTensor.buf = feeds[i].buf;
         baseTensor.size = feeds[i].size;
         if (baseTensor.size != modelDesc_.inTensorsDesc[i].realsize){
-            ERROR_LOG("Check i:%d name:%s in size:%d needsize:%d not match\n",
+            ERROR_LOG("Check i:%d name:%s in size:%d needsize:%d not match",
                 i, modelDesc_.inTensorsDesc[i].name.c_str(), baseTensor.size, modelDesc_.inTensorsDesc[i].realsize);
             return APP_ERR_ACL_FAILURE;
         }
@@ -208,7 +208,7 @@ APP_ERROR ModelInferenceProcessor::Inference(const std::vector<BaseTensor>& feed
     std::vector<BaseTensor> inputs;
     ret = CheckInVectorAndFillBaseTensor(feeds, inputs);
     if (ret != APP_ERR_OK){
-        ERROR_LOG("Check InVector failed ret:%d\n", ret);
+        ERROR_LOG("Check InVector failed ret:%d", ret);
         return ret;
     }
     ret = ModelInference_Inner(inputs, outputNames, outputTensors);
@@ -219,14 +219,14 @@ APP_ERROR ModelInferenceProcessor::Inference(const std::vector<BaseTensor>& feed
 APP_ERROR ModelInferenceProcessor::CheckInMapAndFillBaseTensor(const std::map<std::string, TensorBase>& feeds, std::vector<BaseTensor> &inputs)
 {
     if (feeds.size() != modelDesc_.inTensorsDesc.size()){
-        ERROR_LOG("intensors size:%d need size:%d not match\n", feeds.size(), modelDesc_.inTensorsDesc.size());
+        ERROR_LOG("intensors size:%d need size:%d not match", feeds.size(), modelDesc_.inTensorsDesc.size());
         return APP_ERR_ACL_FAILURE;
     }
 
     for (size_t i = 0; i < modelDesc_.inTensorsDesc.size(); ++i) {
         auto iter = feeds.find(modelDesc_.inTensorsDesc[i].name);
         if (feeds.end() == iter) {
-            ERROR_LOG("intensors i:%lld name:%s not find\n", i, modelDesc_.inTensorsDesc[i].name);
+            ERROR_LOG("intensors i:%lld name:%s not find", i, modelDesc_.inTensorsDesc[i].name);
             return APP_ERR_ACL_FAILURE;
         }
 
@@ -234,7 +234,7 @@ APP_ERROR ModelInferenceProcessor::CheckInMapAndFillBaseTensor(const std::map<st
         baseTensor.buf = iter->second.GetBuffer();
         baseTensor.size = iter->second.GetByteSize();
         if (baseTensor.size != modelDesc_.inTensorsDesc[i].realsize){
-            ERROR_LOG("Check i:%d name:%s in size:%d needsize:%d not match\n",
+            ERROR_LOG("Check i:%d name:%s in size:%d needsize:%d not match",
                 i, modelDesc_.inTensorsDesc[i].name.c_str(), baseTensor.size, modelDesc_.inTensorsDesc[i].realsize);
             return APP_ERR_ACL_FAILURE;
         }
@@ -251,7 +251,7 @@ APP_ERROR ModelInferenceProcessor::Inference(const std::map<std::string, TensorB
     std::vector<BaseTensor> inputs;
     ret = CheckInMapAndFillBaseTensor(feeds, inputs);
     if (ret != APP_ERR_OK){
-        ERROR_LOG("Check InVector failed ret:%d\n", ret);
+        ERROR_LOG("Check InVector failed ret:%d", ret);
         return ret;
     }
     ret = ModelInference_Inner(inputs, outputNames, outputTensors);
@@ -266,7 +266,7 @@ APP_ERROR ModelInferenceProcessor::CheckInVectorAndFillBaseTensor(const std::vec
         baseTensor.buf = feeds[i].GetBuffer();
         baseTensor.size = feeds[i].GetByteSize();
         if (baseTensor.size != modelDesc_.inTensorsDesc[i].realsize){
-            ERROR_LOG("Check i:%d name:%s in size:%d needsize:%d not match\n",
+            ERROR_LOG("Check i:%d name:%s in size:%d needsize:%d not match",
                 i, modelDesc_.inTensorsDesc[i].name.c_str(), baseTensor.size, modelDesc_.inTensorsDesc[i].realsize);
             return APP_ERR_ACL_FAILURE;
         }
@@ -283,7 +283,7 @@ APP_ERROR ModelInferenceProcessor::Inference(const std::vector<TensorBase>& feed
     std::vector<BaseTensor> inputs;
     ret = CheckInVectorAndFillBaseTensor(feeds, inputs);
     if (ret != APP_ERR_OK){
-        ERROR_LOG("Check InVector failed ret:%d\n", ret);
+        ERROR_LOG("Check InVector failed ret:%d", ret);
         return ret;
     }
     ret = ModelInference_Inner(inputs, outputNames, outputTensors);
@@ -305,12 +305,12 @@ APP_ERROR ModelInferenceProcessor::SetInputsData(std::vector<BaseTensor> &inputs
     DestroyInferCacheData();
 
     if (inputs.size() != modelDesc_.inTensorsDesc.size()){
-        WARN_LOG("intensors in:%d need:%d not match\n", inputs.size(), modelDesc_.inTensorsDesc.size());
+        WARN_LOG("intensors in:%d need:%d not match", inputs.size(), modelDesc_.inTensorsDesc.size());
         return APP_ERR_ACL_FAILURE;
     }
 
     if (dynamicInfo_.dynamicType != DYNAMIC_DIMS && dym_gear_count_ > 0){
-        WARN_LOG("check failed dym gearcount:%d but dymtype:%d not set\n", dym_gear_count_, dynamicInfo_.dynamicType);
+        WARN_LOG("check failed dym gearcount:%d but dymtype:%d not set", dym_gear_count_, dynamicInfo_.dynamicType);
         return APP_ERR_ACL_FAILURE;
     }
 
@@ -325,7 +325,7 @@ APP_ERROR ModelInferenceProcessor::SetInputsData(std::vector<BaseTensor> &inputs
     // create output memdata
     ret = CreateOutMemoryData(outputsMemDataQue_);
     if (ret != APP_ERR_OK) {
-        ERROR_LOG("create outmemory data failed:%d\n", ret);
+        ERROR_LOG("create outmemory data failed:%d", ret);
         return ret;
     }
 
@@ -333,7 +333,7 @@ APP_ERROR ModelInferenceProcessor::SetInputsData(std::vector<BaseTensor> &inputs
     for (const auto& tensor : inputs) {
         auto result = processModel->CreateInput(tensor.buf, tensor.size);
         if (result != SUCCESS) {
-            ERROR_LOG("create inputdataset failed:%d\n", result);
+            ERROR_LOG("create inputdataset failed:%d", result);
             return APP_ERR_ACL_FAILURE;
         }
     }
@@ -342,14 +342,14 @@ APP_ERROR ModelInferenceProcessor::SetInputsData(std::vector<BaseTensor> &inputs
     for (const auto& tensor : outputsMemDataQue_) {
         auto result = processModel->CreateOutput(tensor.ptrData, tensor.size);
         if (result != SUCCESS){
-            ERROR_LOG("create outputdataset failed:%d\n", result);
+            ERROR_LOG("create outputdataset failed:%d", result);
             return APP_ERR_ACL_FAILURE;
         }
     }
 
     ret = SetDynamicInfo();
     if (ret != APP_ERR_OK){
-        ERROR_LOG("set dynamic info failed:%d\n", ret);
+        ERROR_LOG("set dynamic info failed:%d", ret);
         return ret;
     }
 
@@ -361,14 +361,14 @@ APP_ERROR ModelInferenceProcessor::GetOutputs(std::vector<std::string> outputNam
 {
     for (const auto& name : outputNames) {
         if (modelDesc_.outnames2Index.find(name) == modelDesc_.outnames2Index.end()) {
-            ERROR_LOG("outnames %s not valid\n", name.c_str());
+            ERROR_LOG("outnames %s not valid", name.c_str());
             return APP_ERR_ACL_FAILURE;
         }
     }
 
     APP_ERROR ret = AddOutTensors(outputsMemDataQue_, outputNames, outputTensors);
     if (ret != APP_ERR_OK){
-        ERROR_LOG("create outTensor failed ret:%d\n", ret);
+        ERROR_LOG("create outTensor failed ret:%d", ret);
         return ret;
     }
     return APP_ERR_OK;
@@ -379,21 +379,21 @@ APP_ERROR ModelInferenceProcessor::ModelInference_Inner(std::vector<BaseTensor> 
 {
     APP_ERROR ret = SetInputsData(inputs);
     if (ret != APP_ERR_OK){
-        ERROR_LOG("Set InputsData failed ret:%d\n", ret);
+        ERROR_LOG("Set InputsData failed ret:%d", ret);
         return ret;
     }
 
     for (int i = 0; i < options_->loop; i++){
         ret = Execute();
         if (ret != APP_ERR_OK){
-            ERROR_LOG("Execute Infer failed ret:%d\n", ret);
+            ERROR_LOG("Execute Infer failed ret:%d", ret);
             return ret;
         }
     }
 
     ret = GetOutputs(outputNames, outputTensors);
     if (ret != APP_ERR_OK){
-        ERROR_LOG("Get OutTensors failed ret:%d\n", ret);
+        ERROR_LOG("Get OutTensors failed ret:%d", ret);
         return ret;
     }
     return APP_ERR_OK;
@@ -407,13 +407,13 @@ APP_ERROR ModelInferenceProcessor::Execute()
 
     Result result = processModel->Execute();
     if (result != SUCCESS) {
-        ERROR_LOG("acl execute failed:%d\n", result);
+        ERROR_LOG("acl execute failed:%d", result);
         return APP_ERR_ACL_FAILURE;
     }
 
     gettimeofday(&end, nullptr);
     float time_cost = 1000 * (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000.000;
-    DEBUG_LOG("model aclExec cost : %f\n", time_cost);
+    DEBUG_LOG("model aclExec cost : %f", time_cost);
     sumaryInfo_.execTimeList.push_back(time_cost);
     return APP_ERR_OK;
 }
@@ -564,14 +564,14 @@ APP_ERROR ModelInferenceProcessor::SetDynamicDims(std::string dymdimsStr)
     std::map<string, int64_t> namedimsmap;
     ret = Utils::SplitStingGetNameDimsMulMap(dymdims_tmp, namedimsmap);
     if (ret != SUCCESS) {
-        ERROR_LOG("split dims str failed\n");
+        ERROR_LOG("split dims str failed");
         delete [] dims;
         free(dynamicInfo_.dyDims.pDims);
         return APP_ERR_ACL_FAILURE;
     }
     for (auto map : namedimsmap){
         if (modelDesc_.innames2Index.find(map.first) == modelDesc_.innames2Index.end()) {
-            WARN_LOG("find no in names:%s\n", map.first.c_str());
+            WARN_LOG("find no in names:%s", map.first.c_str());
             continue;
         }
         size_t inindex = modelDesc_.innames2Index[map.first];   // get intensors index by name
@@ -614,7 +614,7 @@ APP_ERROR ModelInferenceProcessor::SetDynamicShape(std::string dymshapeStr)
     }
     for (auto map : namedimsmap){
         if (modelDesc_.innames2Index.find(map.first) == modelDesc_.innames2Index.end()) {
-            WARN_LOG("find no in names:%s\n", map.first.c_str());
+            WARN_LOG("find no in names:%s", map.first.c_str());
             continue;
         }
         size_t inindex = modelDesc_.innames2Index[map.first];   // get intensors index by name
@@ -644,14 +644,14 @@ APP_ERROR ModelInferenceProcessor::SetDynamicInfo()
         break;
     case DYNAMIC_DIMS:
         if (dynamicInfo_.dyDims.pDims == nullptr){
-            WARN_LOG("error dynamic dims type but pdims is null\n");
+            WARN_LOG("error dynamic dims type but pdims is null");
         }else{
             CHECK_RET_EQ(processModel->SetDynamicDims(dynamicInfo_.dyDims.pDims->dym_dims), SUCCESS);
         }
         break;
     case DYNAMIC_SHAPE:
         if (dynamicInfo_.dyShape.pShapes == nullptr){
-            WARN_LOG("error dynamic shapes type but pshapes is null\n");
+            WARN_LOG("error dynamic shapes type but pshapes is null");
         }else{
             CHECK_RET_EQ(processModel->SetDynamicShape(
                 dynamicInfo_.dyShape.pShapes->dym_shape_map, dynamicInfo_.dyShape.pShapes->dims_num), SUCCESS);

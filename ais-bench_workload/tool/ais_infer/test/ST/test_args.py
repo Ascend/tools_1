@@ -25,13 +25,15 @@ class TestClass:
         model_path = TestCommonClass.get_model_static_om_path(1, self.model_name)
         for i, device_id in enumerate(invalid_device_ids):
             cmd = "{} --model {} --device {}".format(TestCommonClass.cmd_prefix, model_path, device_id)
-            ret = os.system(cmd)
-            assert ret != 0
+            print("run cmd:{}".format(cmd))
+        ret = os.system(cmd)
+        assert ret != 0
 
     def test_args_invalid_model_path(self):
         model_path = "xxx_invalid.om"
         cmd = "{} --model {} --device {}".format(TestCommonClass.cmd_prefix, model_path,
                                                  TestCommonClass.default_device_id)
+        print("run cmd:{}".format(cmd))
         ret = os.system(cmd)
         assert ret != 0
 
@@ -43,6 +45,7 @@ class TestClass:
         acl_json_path = "xxx_invalid.json"
         cmd = "{} --model {} --device {} --acl_json_path {} ".format(TestCommonClass.cmd_prefix, model_path,
                                                                      TestCommonClass.default_device_id, acl_json_path)
+        print("run cmd:{}".format(cmd))
         ret = os.system(cmd)
         assert ret != 0
 
@@ -58,6 +61,7 @@ class TestClass:
             json.dump(json_dict, f, indent=4, separators=(", ", ": "), sort_keys=True)
         cmd = "{} --model {} --device {} --acl_json_path {} ".format(TestCommonClass.cmd_prefix, model_path,
                                                                      TestCommonClass.default_device_id, acl_json_path)
+        print("run cmd:{}".format(cmd))
         ret = os.system(cmd)
         assert ret != 0
 
@@ -65,6 +69,7 @@ class TestClass:
         model_path = TestCommonClass.get_model_static_om_path(1, self.model_name)
         cmd = "{} --model {} --device {}".format(TestCommonClass.cmd_prefix, model_path,
                                                  TestCommonClass.default_device_id)
+        print("run cmd:{}".format(cmd))
         ret = os.system(cmd)
         assert ret == 0
 
@@ -74,6 +79,7 @@ class TestClass:
         for _, loop_num in enumerate(loops):
             cmd = "{} --model {} --device {} --loop {}".format(TestCommonClass.cmd_prefix, model_path,
                                                                TestCommonClass.default_device_id, loop_num)
+            print("run cmd:{}".format(cmd))
             ret = os.system(cmd)
             assert ret != 0
 
@@ -89,6 +95,7 @@ class TestClass:
             cmd = "{} --model {} --device {} --loop {} --debug True > {}".format(TestCommonClass.cmd_prefix, model_path,
                                                                                  TestCommonClass.default_device_id,
                                                                                  loop_num, log_path)
+            print("run cmd:{}".format(cmd))
             ret = os.system(cmd)
             assert ret == 0
 
@@ -108,6 +115,7 @@ class TestClass:
         log_path = os.path.join(TestCommonClass.base_path, "log.txt")
         cmd = "{} --model {} --device {} --debug True > {}".format(TestCommonClass.cmd_prefix, model_path,
                                                                    TestCommonClass.default_device_id, log_path)
+        print("run cmd:{}".format(cmd))
         ret = os.system(cmd)
         assert ret == 0
 
@@ -126,8 +134,9 @@ class TestClass:
         profiler_path = os.path.join(output_path, "profiler")
         TestCommonClass.prepare_dir(output_path)
 
-        cmd = "{} --model {} --device {} --profiler --output {}".format(TestCommonClass.cmd_prefix, model_path,
+        cmd = "{} --model {} --device {} --profiler true --output {}".format(TestCommonClass.cmd_prefix, model_path,
                                                                         TestCommonClass.default_device_id, output_path)
+        print("run cmd:{}".format(cmd))
         ret = os.system(cmd)
         #assert ret == 139
 
@@ -159,8 +168,9 @@ class TestClass:
         TestCommonClass.prepare_dir(output_path)
         dump_path = os.path.join(output_path, "dump")
 
-        cmd = "{} --model {} --device {} --dump --output {}".format(TestCommonClass.cmd_prefix, model_path,
+        cmd = "{} --model {} --device {} --dump true --output {}".format(TestCommonClass.cmd_prefix, model_path,
                                                                     TestCommonClass.default_device_id, output_path)
+        print("run cmd:{}".format(cmd))
         ret = os.system(cmd)
         assert ret == 0
         assert os.path.exists(dump_path)
@@ -177,6 +187,7 @@ class TestClass:
         TestCommonClass.prepare_dir(output_path)
         cmd = "{} --model {} --device {}  --output {} ".format(TestCommonClass.cmd_prefix, model_path,
                                                                TestCommonClass.default_device_id, output_path)
+        print("run cmd:{}".format(cmd))
         ret = os.system(cmd)
         assert ret == 0
 
@@ -199,6 +210,7 @@ class TestClass:
         cmd = "{} --model {} --device {} --acl_json_path {} --output {}".format(TestCommonClass.cmd_prefix, model_path,
                                                                                 TestCommonClass.default_device_id,
                                                                                 out_json_file_path, output_path)
+        print("run cmd:{}".format(cmd))
         ret = os.system(cmd)
         #assert ret == 139
         assert os.path.exists(profiler_path)
@@ -221,6 +233,7 @@ class TestClass:
         cmd = "{} --model {} --device {} --output {}".format(TestCommonClass.cmd_prefix, model_path,
                                                              TestCommonClass.default_device_id,
                                                              output_path)
+        print("run cmd:{}".format(cmd))
         ret = os.system(cmd)
         assert ret == 0
         paths = os.listdir(output_path)
@@ -245,6 +258,7 @@ class TestClass:
                                                                              model_path,
                                                                              TestCommonClass.default_device_id,
                                                                              output_path, output_file_suffix)
+            print("run cmd:{}".format(cmd))
             ret = os.system(cmd)
             assert ret == 0
 

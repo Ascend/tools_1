@@ -91,26 +91,24 @@ def set_dymshape_shape(session, inputs):
     logger.debug("set dymshape shape:{}".format(dyshape))
     session.set_dynamic_shape(dyshape)
 
+g_warmup_count = 1
+def warmup(session, inputs):
+    global g_warmup_count
+    if g_warmup_count > 0:
+        session.set_loop_count(g_warmup_count)
+        session.run(inputs)
+        summary.reset()
+        session.reset_sumaryinfo()
+        logger.info("warm up {} times done".format(g_warmup_count))
+        session.set_loop_count(session.loop)
+        g_warmup_count = 0
+
 def run_inference(session, inputs):
     if args.auto_set_dymshape_mode == True:
         set_dymshape_shape(session, inputs)
-    outputs = session.run_tensors(inputs)
+    warmup(session, inputs)
+    outputs = session.run(inputs)
     return outputs
-
-def run_inference_narray(session, inputs):
-    if args.auto_set_dymshape_mode == True:
-        set_dymshape_shape(session, inputs)
-    outputs = session.run_narrays(inputs)
-    return outputs
-
-def warmup(session, args):
-    n_loop = args.warmup_count
-    inputs = create_intensors_zerodata(session, args.pure_data_type)
-    for x in range(n_loop):
-        run_inference(session, inputs)
-    summary.reset()
-    session.reset_sumaryinfo()
-    logger.info("warm up {} times done".format(n_loop))
 
 # Rotation training operation reference
 def infer_loop_run(session, args, intensors_desc, infileslist, output_prefix):
@@ -146,7 +144,7 @@ def infer_loop_numpy_run(session, args, intensors_desc, infileslist, output_pref
         for j, files in enumerate(infiles):
             narray = get_narray_from_files_list(files, intensors_desc[j].realsize, args.pure_data_type)
             innarrays.append(narray)
-        outputs = run_inference_narray(session, innarrays)
+        outputs = run_inference(session, innarrays)
         session.convert_tensors_to_host(outputs)
         if args.output != None:
             save_tensors_to_file(outputs, output_prefix, infiles, args.outfmt, i, args.output_batchsize_axis)
@@ -202,7 +200,6 @@ def get_args():
     parser.add_argument("--dump", type=str2bool, default=False, help="dump switch")
     parser.add_argument("--acl_json_path", type=str, default=None, help="acl json path for profiling or dump")
     parser.add_argument("--output_batchsize_axis",  type=check_nonnegative_integer, default=0, help="splitting axis number when outputing tensor results, such as --output_batchsize_axis 12")
-    parser.add_argument("--warmup_count", type=check_nonnegative_integer, default=1, help="warmup_count")
     parser.add_argument("--run_mode", type=str, default="numpy", choices=["numpy", "files", "msame", "loop"], help="null data type for pure inference(zero or random")
     args = parser.parse_args()
 
@@ -238,9 +235,6 @@ if __name__ == "__main__":
         logger.info("output path:{}".format(output_prefix))
     else:
         output_prefix = None
-
-    if args.auto_set_dymshape_mode == False:
-        warmup(session, args)
 
     inputs_list = [] if args.input == None else args.input.split(',')
 

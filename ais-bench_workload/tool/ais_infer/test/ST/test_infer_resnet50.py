@@ -56,6 +56,7 @@ class TestClass():
             model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
             cmd = "{} --model {} --device {}".format(TestCommonClass.cmd_prefix, model_path,
                                                      TestCommonClass.default_device_id)
+            print("run cmd:{}".format(cmd))
             ret = os.system(cmd)
             assert ret == 0
 
@@ -65,6 +66,7 @@ class TestClass():
         for _, dys_batch_size in enumerate(batch_list):
             cmd = "{} --model {} --device {} --dymBatch {}".format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id,
                                                                    dys_batch_size)
+            print("run cmd:{}".format(cmd))
             ret = os.system(cmd)
             assert ret == 0
 
@@ -73,6 +75,7 @@ class TestClass():
         model_path = self.get_dynamic_hw_om_path()
         for _, dym_hw in enumerate(batch_list):
             cmd = "{} --model {} --device {} --dymHW {}".format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id, dym_hw)
+            print("run cmd:{}".format(cmd))
             ret = os.system(cmd)
             assert ret == 0
 
@@ -82,6 +85,7 @@ class TestClass():
         model_path = self.get_dynamic_dim_om_path()
         for _, dym_dims in enumerate(batch_list):
             cmd = "{} --model {} --device {} --dymDims {}".format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id, dym_dims)
+            print("run cmd:{}".format(cmd))
             ret = os.system(cmd)
             assert ret == 0
 
@@ -93,6 +97,7 @@ class TestClass():
                                                                                 TestCommonClass.default_device_id,
                                                                                 output_size,
                                                                                 dym_shape)
+        print("run cmd:{}".format(cmd))
         ret = os.system(cmd)
         assert ret == 0
 
@@ -108,6 +113,7 @@ class TestClass():
             model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
             cmd = "{} --model {} --device {} --input {}".format(TestCommonClass.cmd_prefix, model_path,
                                                                 TestCommonClass.default_device_id, input_path)
+            print("run cmd:{}".format(cmd))
             ret = os.system(cmd)
             assert ret == 0
 
@@ -125,6 +131,7 @@ class TestClass():
                                                                               TestCommonClass.default_device_id,
                                                                               dys_batch_size,
                                                                               input_path)
+            print("run cmd:{}".format(cmd))
             ret = os.system(cmd)
             assert ret == 0
 

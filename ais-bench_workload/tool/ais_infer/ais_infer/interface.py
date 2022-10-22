@@ -1,28 +1,48 @@
 
 import time
 import aclruntime
-from ais_infer.summary import summary
+import numpy as np
 
 class InferSession:
     def __init__(self, device_id: int, model_path: str, acl_json_path: str = None, debug: bool = False, loop: int = 1):
+        """
+        init InferSession
+
+        Args:
+            device_id: device id for npu device
+            model_path: om model path to load
+            acl_json_path: set acl_json_path to enable profiling or dump function
+            debug: enable debug log.  Default: False
+            loop: loop count for one inference. Default: 1
+        """
         self.device_id = device_id
         self.model_path = model_path
+        self.loop = loop
         options = aclruntime.session_options()
         if acl_json_path is not None:
             options.acl_json_path = acl_json_path
         options.log_level = 1 if debug == True else 2
-        print("lcm debug debug:{} log:{}".format(debug, options.log_level))
-        options.loop = loop
+        options.loop = self.loop
         self.session = aclruntime.InferenceSession(self.model_path, self.device_id, options)
-        self.outputs_names = [meta.name for meta in self.session.get_outputs()]    
+        self.outputs_names = [meta.name for meta in self.session.get_outputs()]
 
     def get_inputs(self):
+        """
+        get inputs info of model
+        """
         self.intensors_desc = self.session.get_inputs()
         return self.intensors_desc
 
     def get_outputs(self):
+        """
+        get outputs info of model
+        """
         self.outtensors_desc = self.session.get_outputs()
         return self.outtensors_desc
+
+    def set_loop_count(self, loop):
+        options = self.session.options()
+        options.loop = loop
 
     # 默认设置为静态batch
     def set_staticbatch(self):
@@ -45,32 +65,37 @@ class InferSession:
 
     def create_tensor_from_numpy_to_device(self, ndata):
         tensor = aclruntime.Tensor(ndata)
-        starttime = time.time()
         tensor.to_device(self.device_id)
-        endtime = time.time()
-        summary.h2d_latency_list.append(float(endtime - starttime) * 1000.0)  # millisecond
         return tensor
 
-    def run_tensors(self, feeds):
-        outputs = self.session.run(self.outputs_names, feeds)
-        return outputs
-
-    def run_narrays(self, narrays):
-        basetensors = []
-        for array in narrays:
-            basetensor = aclruntime.BaseTensor(array.__array_interface__['data'][0], array.nbytes)
-            basetensors.append(basetensor)
-        outputs = self.session.run(self.outputs_names, basetensors)
-        return outputs
-
     def convert_tensors_to_host(self, tensors):
-        totle_laency = 0.0
-        for i, out in enumerate(tensors):
-            starttime = time.time()
-            out.to_host()
-            endtime = time.time()
-            totle_laency += float(endtime - starttime) * 1000.0  # millisecond
-        summary.d2h_latency_list.append(totle_laency)
+        for tensor in tensors:
+            tensor.to_host()
+
+    def convert_tensors_to_naray(self, tensors):
+        arrays = []
+        for tensor in tensors:
+            # convert acltensor to numpy array
+            arrays.append(np.array(tensor))
+        return arrays
+
+    def run(self, feeds, out_array=False):     
+        if len(feeds) > 0 and not isinstance(feeds[0], aclruntime.Tensor):
+            # if feeds is ndarray list, convert to baseTensor
+            inputs = []
+            for array in feeds:
+                basetensor = aclruntime.BaseTensor(array.__array_interface__['data'][0], array.nbytes)
+                inputs.append(basetensor)
+        else:
+            inputs = feeds
+        outputs = self.session.run(self.outputs_names, inputs)
+        if out_array == True:
+            # convert to host tensor
+            self.convert_tensors_to_host(outputs)
+            # convert tensor to narray
+            return self.convert_tensors_to_naray(outputs)
+        else:
+            return outputs
 
     def reset_sumaryinfo(self):
         self.session.reset_sumaryinfo()
