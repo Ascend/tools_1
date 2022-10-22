@@ -8,7 +8,7 @@ import time
 
 from tqdm import tqdm
 
-from ais_infer.interface import InferSession
+from ais_infer.interface import InferSession, MemorySummary
 from ais_infer.io_oprations import (create_infileslist_from_inputs_list,
                                     create_intensors_from_infileslist,
                                     create_intensors_zerodata,
@@ -257,4 +257,6 @@ if __name__ == "__main__":
     summary.add_args(sys.argv)
     s = session.sumary()
     summary.npu_compute_time_list = s.exec_time_list
+    summary.h2d_latency_list = MemorySummary.get_H2D_time_list()
+    summary.d2h_latency_list = MemorySummary.get_D2H_time_list()
     summary.report(args.batchsize, output_prefix)

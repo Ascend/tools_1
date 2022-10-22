@@ -102,3 +102,14 @@ class InferSession:
 
     def sumary(self):
         return self.session.sumary()
+
+class MemorySummary:
+    @staticmethod
+    def get_H2D_time_list():
+        return aclruntime.MemorySummary().H2D_time_list
+    @staticmethod
+    def get_D2H_time_list():
+        return aclruntime.MemorySummary().D2H_time_list
+    @staticmethod
+    def reset():
+        aclruntime.MemorySummary().reset()

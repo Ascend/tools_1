@@ -48,10 +48,6 @@ public:
 
     std::vector<TensorBase> InferBaseTensorVector(std::vector<std::string>& output_names, std::vector<Base::BaseTensor>& feeds);
 
-#ifdef COMPILE_PYTHON_MODULE
-    std::vector<TensorBase> InferNumpy(std::vector<std::string>& output_names, std::vector<py::buffer>& ndatas);
-#endif
-
     std::vector<std::vector<uint64_t>> GetDynamicHW();
     std::vector<int64_t> GetDynamicBatch();
 

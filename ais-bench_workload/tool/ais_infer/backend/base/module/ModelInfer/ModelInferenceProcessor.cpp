@@ -420,7 +420,7 @@ APP_ERROR ModelInferenceProcessor::Execute()
 
 APP_ERROR ModelInferenceProcessor::ResetSumaryInfo()
 {
-    memset(&sumaryInfo_, 0, sizeof(InferSumaryInfo));
+    sumaryInfo_.execTimeList.clear();
     return APP_ERR_OK;
 }
 

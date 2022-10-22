@@ -239,29 +239,6 @@ std::vector<TensorBase> PyInferenceSession::InferBaseTensorVector(std::vector<st
     return outputs;
 }
 
-#ifdef COMPILE_PYTHON_MODULE
-std::vector<TensorBase> PyInferenceSession::InferNumpy(std::vector<std::string>& output_names, std::vector<py::buffer>& ndatas)
-{
-    DEBUG_LOG("start to ModelInference numpy base tensor");
-
-    std::vector<TensorBase> feeds = {};
-    for (auto &ndata : ndatas) {
-       feeds.push_back(std::move(ConvertNumpy2DeviceTensor(ndata, MemoryData::MemoryType::MEMORY_DEVICE, deviceId_)));
-    }
-
-    std::vector<TensorBase> outputs = {};
-    APP_ERROR ret = modelInfer_.Inference(feeds, output_names, outputs);
-    if (ret != APP_ERR_OK) {
-        throw std::runtime_error(GetError(ret));
-    }
-
-    for (auto &tensor : outputs){
-        tensor.ToHost();
-    }
-    return outputs;
-}
-#endif
-
 }
 
 std::shared_ptr<Base::PyInferenceSession> CreateModelInstance(const std::string &modelPath, const uint32_t &deviceId, std::shared_ptr<Base::SessionOptions> options)
@@ -302,7 +279,6 @@ void RegistInferenceSession(py::module &m)
     model.def(py::init<std::string&, int, std::shared_ptr<Base::SessionOptions>>());
     model.def("run", &Base::PyInferenceSession::InferVector);
     model.def("run", &Base::PyInferenceSession::InferMap);
-    model.def("run", &Base::PyInferenceSession::InferNumpy);
     model.def("run", &Base::PyInferenceSession::InferBaseTensorVector);
     model.def("__str__", &Base::PyInferenceSession::GetDesc);
     model.def("__repr__", &Base::PyInferenceSession::GetDesc);

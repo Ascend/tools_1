@@ -101,25 +101,7 @@ void TensorToDvpp(TensorBase &tensor, const int32_t deviceId)
     }
 }
 
-MemoryData CopyMemory2DeviceMemory(void *ptr, uint64_t size, int32_t deviceId)
-{
-    MemoryData src(ptr, size, MemoryData::MemoryType::MEMORY_HOST, -1);
-
-    Base::MemoryData dst(size, MemoryData::MemoryType::MEMORY_DEVICE, deviceId);
-    auto ret = MemoryHelper::MxbsMalloc(dst);
-    if (ret != APP_ERR_OK) {
-        ERROR_LOG("MemoryHelper::MxbsMalloc failed device size:%d ret:%d", size, ret);
-        return ret;
-    }
-    ret = MemoryHelper::MxbsMemcpy(dst, src, dst.size);
-    if (ret != APP_ERR_OK) {
-        LogError << "MemoryHelper::MxbsMemcpy failed. ret=" << ret << std::endl;
-        return ret;
-    }
-    return dst;
-}
-
-TensorBase ConvertNumpy2DeviceTensor(py::buffer b, MemoryData::MemoryType memType, int32_t deviceId)
+TensorBase FromNumpy(py::buffer b)
 {
     py::buffer_info info = b.request();
     auto dataType = Base::TENSOR_DTYPE_UINT8;
@@ -134,11 +116,9 @@ TensorBase ConvertNumpy2DeviceTensor(py::buffer b, MemoryData::MemoryType memTyp
     if (DATA_TYPE_TO_BYTE_SIZE_MAP.find(dataType) != DATA_TYPE_TO_BYTE_SIZE_MAP.end()) {
         bytes = DATA_TYPE_TO_BYTE_SIZE_MAP.find(dataType)->second;
     }
-    MemoryData memoryData(info.ptr, info.size * bytes, MemoryData::MemoryType::MEMORY_HOST, -1);
+    MemoryData memoryData(info.ptr, info.size * bytes, MemoryData::MemoryType::MEMORY_HOST_MALLOC, -1);
     TensorBase src(memoryData, true, shape, dataType);
-    
-    TensorBase dst(shape, dataType, memType, deviceId);
-
+    TensorBase dst(shape, dataType);
     APP_ERROR ret = Base::TensorBase::TensorBaseMalloc(dst);
     if (ret != APP_ERR_OK) {
         LogError << "TensorBaseMalloc failed. ret=" << ret << std::endl;
@@ -150,11 +130,6 @@ TensorBase ConvertNumpy2DeviceTensor(py::buffer b, MemoryData::MemoryType memTyp
         throw std::runtime_error(GetError(ret));
     }
     return dst;
-}
-
-TensorBase FromNumpy(py::buffer b)
-{
-    return ConvertNumpy2DeviceTensor(b, MemoryData::MemoryType::MEMORY_HOST, -1);
 }
 
 py::buffer_info ToNumpy(const TensorBase &tensor)
@@ -222,6 +197,12 @@ void RegistPyTensorEnumType(py::module &m)
 
 void RegistPyTensorModule(py::module &m)
 {
+    py::class_<Base::MemorySummary, std::unique_ptr<Base::MemorySummary, py::nodelete>>(m, "MemorySummary")
+        .def(py::init([]() { return Base::GetMemorySummaryPtr(); }))
+        .def_readwrite("H2D_time_list", &Base::MemorySummary::H2DTimeList)
+        .def_readwrite("D2H_time_list", &Base::MemorySummary::D2HTimeList)
+        .def("reset", &Base::MemorySummary::Reset);
+
     auto tensor = py::class_<Base::TensorBase>(m, "Tensor", py::buffer_protocol());
     tensor.def(py::init(&Base::FromNumpy));
     tensor.def_buffer(&Base::ToNumpy);
