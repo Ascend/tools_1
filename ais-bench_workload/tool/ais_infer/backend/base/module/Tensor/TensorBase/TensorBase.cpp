@@ -18,7 +18,6 @@
 
 #include <map>
 #include <algorithm>
-#include <sys/time.h>
 
 #include "Base/Tensor/TensorBuffer/TensorBuffer.h"
 #include "Base/Tensor/TensorShape/TensorShape.h"
@@ -65,14 +64,6 @@ const std::map<Base::TensorDataType, std::string> DATA_TYPE_TO_STRING_MAP = {
 };
 }
 namespace Base {
-
-static MemorySummary g_MemorySummary;
-
-struct MemorySummary* GetMemorySummaryPtr()
-{
-    return &g_MemorySummary;
-}
-
 std::string GetTensorDataTypeDesc(TensorDataType type)
 {
     if (DATA_TYPE_TO_STRING_MAP.find(type) != DATA_TYPE_TO_STRING_MAP.end()) {
@@ -217,17 +208,11 @@ APP_ERROR TensorBase::ToDevice(int32_t deviceId)
         LogError << "TensorBuffer::TensorBufferMalloc failed. ret=" << ret << std::endl;
         return ret;
     }
-    struct timeval start = { 0 };
-    struct timeval end = { 0 };
-    gettimeofday(&start, nullptr);
     ret = TensorBuffer::TensorBufferCopy(newBuffer, *buffer_);
-    gettimeofday(&end, nullptr);
     if (ret != APP_ERR_OK) {
         LogError << "TensorBuffer::TensorBufferCopy failed. ret=" << ret << std::endl;
         return ret;
     }
-    float costTime = 1000 * (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000.000;
-    g_MemorySummary.H2DTimeList.push_back(costTime);
     *buffer_ = newBuffer;
     return APP_ERR_OK;
 }
@@ -279,17 +264,11 @@ APP_ERROR TensorBase::ToHost()
         return ret;
     }
 
-    struct timeval start = { 0 };
-    struct timeval end = { 0 };
-    gettimeofday(&start, nullptr);
     ret = TensorBuffer::TensorBufferCopy(host, *buffer_);
-    gettimeofday(&end, nullptr);
     if (ret != APP_ERR_OK) {
         LogError << "TensorBuffer::TensorBufferCopy failed. ret=" << ret << std::endl;
         return ret;
     }
-    float costTime = 1000 * (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000.000;
-    g_MemorySummary.D2HTimeList.push_back(costTime);
     *buffer_ = host;
     return APP_ERR_OK;
 }
@@ -531,17 +510,11 @@ MemoryData CopyMemory2DeviceMemory(void *ptr, uint64_t size, int32_t deviceId)
         ERROR_LOG("MemoryHelper::MxbsMalloc failed device size:%d ret:%d", size, ret);
         return ret;
     }
-    struct timeval start = { 0 };
-    struct timeval end = { 0 };
-    gettimeofday(&start, nullptr);
     ret = MemoryHelper::MxbsMemcpy(dst, src, dst.size);
-    gettimeofday(&end, nullptr);
     if (ret != APP_ERR_OK) {
         LogError << "MemoryHelper::MxbsMemcpy failed. ret=" << ret << std::endl;
         return ret;
     }
-    float costTime = 1000 * (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000.000;
-    g_MemorySummary.H2DTimeList.push_back(costTime);
     return dst;
 }
 }
