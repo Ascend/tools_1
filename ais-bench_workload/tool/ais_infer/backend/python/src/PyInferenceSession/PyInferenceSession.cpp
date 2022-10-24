@@ -24,10 +24,6 @@
 #include "Base/ErrorCode/ErrorCode.h"
 #include "Base/Log/Log.h"
 
-#ifdef COMPILE_PYTHON_MODULE
-#include "PyTensor/PyTensor.h"
-#endif
-
 namespace Base {
 PyInferenceSession::PyInferenceSession(const std::string &modelPath, const uint32_t &deviceId, std::shared_ptr<SessionOptions> options) : deviceId_(deviceId)
 {

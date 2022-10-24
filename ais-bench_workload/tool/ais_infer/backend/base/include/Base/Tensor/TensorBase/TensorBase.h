@@ -71,6 +71,8 @@ struct MemorySummary {
 
 struct MemorySummary* GetMemorySummaryPtr();
 
+MemoryData CopyMemory2DeviceMemory(void *ptr, uint64_t size, int32_t deviceId);
+
 class TensorBuffer;
 class TensorShape;
 class TensorBase {
