@@ -53,7 +53,7 @@ def get_narray_from_files_list(files_list, size, pure_data_type, auto_set_dymsha
 # get tensors from files list combile all files
 def get_tensor_from_files_list(files_list, session, size, pure_data_type, auto_set_dymshape_mode=False):
     ndata = get_narray_from_files_list(files_list, size, pure_data_type, auto_set_dymshape_mode)
-    tensor = session.create_tensor_from_numpy_to_device(ndata)
+    tensor = session.create_tensor_from_arrays_to_device(ndata)
     return tensor
 
 # Obtain filesperbatch runcount information according to file information and input description information
@@ -84,7 +84,7 @@ def create_intensors_zerodata(session, pure_data_type):
     for info in intensors_desc:
         logger.debug("info shape:{} type:{} val:{} realsize:{} size:{}".format(info.shape, info.datatype, int(info.datatype), info.realsize, info.size))
         ndata = get_pure_infer_data(info.realsize, pure_data_type)
-        tensor = session.create_tensor_from_numpy_to_device(ndata)
+        tensor = session.create_tensor_from_arrays_to_device(ndata)
         intensors.append(tensor)
     return intensors
 
