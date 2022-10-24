@@ -99,6 +99,7 @@ def warmup(session, inputs):
         session.run(inputs)
         summary.reset()
         session.reset_sumaryinfo()
+        MemorySummary.reset()
         logger.info("warm up {} times done".format(g_warmup_count))
         session.set_loop_count(session.loop)
         g_warmup_count = 0

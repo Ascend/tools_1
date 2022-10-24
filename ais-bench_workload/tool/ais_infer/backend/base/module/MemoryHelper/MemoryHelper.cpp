@@ -18,6 +18,7 @@
 #include "acl/acl.h"
 #include "acl/ops/acl_dvpp.h"
 #include "Base/Log/Log.h"
+#include <sys/time.h>
 
 namespace Base {
 using MemeoryDataFreeFuncPointer = APP_ERROR (*)(void*);
@@ -32,6 +33,13 @@ APP_ERROR FreeFuncCFree(void* ptr)
 {
     free(ptr);
     return APP_ERR_OK;
+}
+
+static MemorySummary g_MemorySummary;
+
+struct MemorySummary* GetMemorySummaryPtr()
+{
+    return &g_MemorySummary;
 }
 
 APP_ERROR MemoryHelper::Malloc(MemoryData& data)
@@ -151,14 +159,25 @@ APP_ERROR MemoryHelper::Memcpy(MemoryData& dest, const MemoryData& src, size_t c
         return APP_ERR_COMM_INVALID_POINTER;
     }
     APP_ERROR ret = APP_ERR_OK;
+    struct timeval start = { 0 };
+    struct timeval end = { 0 };
+    float costTime;
     if (IsDeviceToHost(dest, src)) {
+        gettimeofday(&start, nullptr);
         ret = aclrtMemcpy(dest.ptrData, dest.size, src.ptrData, count, ACL_MEMCPY_DEVICE_TO_HOST);
+        gettimeofday(&end, nullptr);
+        costTime = 1000 * (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000.000;
+        g_MemorySummary.D2HTimeList.push_back(costTime);
     } else if (IsHostToHost(dest, src)) {
         ret = aclrtMemcpy(dest.ptrData, dest.size, src.ptrData, count, ACL_MEMCPY_HOST_TO_HOST);
     } else if (IsDeviceToDevice(dest, src)) {
         ret = aclrtMemcpy(dest.ptrData, dest.size, src.ptrData, count, ACL_MEMCPY_DEVICE_TO_DEVICE);
     } else if (IsHostToDevice(dest, src)) {
+        gettimeofday(&start, nullptr);
         ret = aclrtMemcpy(dest.ptrData, dest.size, src.ptrData, count, ACL_MEMCPY_HOST_TO_DEVICE);
+        gettimeofday(&end, nullptr);
+        costTime = 1000 * (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000.000;
+        g_MemorySummary.H2DTimeList.push_back(costTime);
     }
     if (ret != APP_ERR_OK) {
         LogError << GetError(ret) << "Memcpy ptrData failed.";
