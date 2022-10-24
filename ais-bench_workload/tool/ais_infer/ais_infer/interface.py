@@ -63,8 +63,8 @@ class InferSession:
     def set_custom_outsize(self, custom_sizes):
         self.session.set_custom_outsize(custom_sizes)
 
-    def create_tensor_from_numpy_to_device(self, ndata):
-        tensor = aclruntime.Tensor(ndata)
+    def create_tensor_from_arrays_to_device(self, arrays):
+        tensor = aclruntime.Tensor(arrays)
         tensor.to_device(self.device_id)
         return tensor
 
@@ -72,7 +72,7 @@ class InferSession:
         for tensor in tensors:
             tensor.to_host()
 
-    def convert_tensors_to_naray(self, tensors):
+    def convert_tensors_to_arrays(self, tensors):
         arrays = []
         for tensor in tensors:
             # convert acltensor to numpy array
@@ -93,7 +93,7 @@ class InferSession:
             # convert to host tensor
             self.convert_tensors_to_host(outputs)
             # convert tensor to narray
-            return self.convert_tensors_to_naray(outputs)
+            return self.convert_tensors_to_arrays(outputs)
         else:
             return outputs
 

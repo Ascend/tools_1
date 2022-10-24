@@ -112,7 +112,7 @@ def run_inference(session, inputs):
 
 # Rotation training operation reference
 def infer_loop_run(session, args, intensors_desc, infileslist, output_prefix):
-    for i, infiles in enumerate(tqdm(infileslist, file=sys.stdout, desc='Inference Processing')):
+    for i, infiles in enumerate(tqdm(infileslist, file=sys.stdout, desc='Inference tensor Processing')):
         intensors = []
         for j, files in enumerate(infiles):
             tensor = get_tensor_from_files_list(files, session, intensors_desc[j].realsize, args.pure_data_type, args.auto_set_dymshape_mode)
@@ -139,7 +139,7 @@ def infer_fulltensors_run(session, args, intensors_desc, infileslist, output_pre
 
 # loop numpy array to infer
 def infer_loop_array_run(session, args, intensors_desc, infileslist, output_prefix):
-    for i, infiles in enumerate(tqdm(infileslist, file=sys.stdout, desc='Inference loop basetensor Processing')):
+    for i, infiles in enumerate(tqdm(infileslist, file=sys.stdout, desc='Inference array Processing')):
         innarrays = []
         for j, files in enumerate(infiles):
             narray = get_narray_from_files_list(files, intensors_desc[j].realsize, args.pure_data_type)
