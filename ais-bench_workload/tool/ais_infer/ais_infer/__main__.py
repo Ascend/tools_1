@@ -137,8 +137,8 @@ def infer_fulltensors_run(session, args, intensors_desc, infileslist, output_pre
         if output_prefix != None:
             save_tensors_to_file(outputs, output_prefix, infileslist[i], args.outfmt, i, args.output_batchsize_axis)
 
-# 轮训numpy运行推理
-def infer_loop_numpy_run(session, args, intensors_desc, infileslist, output_prefix):
+# loop numpy array to infer
+def infer_loop_array_run(session, args, intensors_desc, infileslist, output_prefix):
     for i, infiles in enumerate(tqdm(infileslist, file=sys.stdout, desc='Inference loop basetensor Processing')):
         innarrays = []
         for j, files in enumerate(infiles):
@@ -200,7 +200,7 @@ def get_args():
     parser.add_argument("--dump", type=str2bool, default=False, help="dump switch")
     parser.add_argument("--acl_json_path", type=str, default=None, help="acl json path for profiling or dump")
     parser.add_argument("--output_batchsize_axis",  type=check_nonnegative_integer, default=0, help="splitting axis number when outputing tensor results, such as --output_batchsize_axis 12")
-    parser.add_argument("--run_mode", type=str, default="numpy", choices=["numpy", "files", "msame", "loop"], help="null data type for pure inference(zero or random")
+    parser.add_argument("--run_mode", type=str, default="array", choices=["array", "tensor"], help="run mode")
     args = parser.parse_args()
 
     if args.profiler is True and args.dump is True:
@@ -245,12 +245,8 @@ if __name__ == "__main__":
     else:
         infileslist = create_infileslist_from_inputs_list(inputs_list, intensors_desc, args.auto_set_dymshape_mode)
 
-    #infer_fulltensors_run(session, args, intensors_desc, infileslist, outputs_names, output_prefix)
-    # infer_loop_run(session, args, intensors_desc, infileslist, outputs_names, output_prefix)
-    #asyncio.run(infer_pipeline_process_run(session, args, intensors_desc, infileslist, outputs_names, output_prefix))
-
-    if args.run_mode == "numpy":
-        infer_loop_numpy_run(session, args, intensors_desc, infileslist, output_prefix)
+    if args.run_mode == "array":
+        infer_loop_array_run(session, args, intensors_desc, infileslist, output_prefix)
     else:
         infer_loop_run(session, args, intensors_desc, infileslist, output_prefix)
 
