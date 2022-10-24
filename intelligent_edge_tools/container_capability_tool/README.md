@@ -29,7 +29,7 @@ chattr -i AtlasEdge软件安装路径/edge_work_dir/edge_core/src/*
 ```
 2 获取工具脚本下的所有.py文件，并存放于"AtlasEdge软件安装路径/edge_work_dir/edge_core/src/"目录下
 
-3 执行如下命令，执行结果存放在/var/alog/AtlasEdge_log/edge_core/edge_core_script_operate.log中
+3 参考如下命令，请根据配置需要，自行配置所需的参数，请注意addHostPath和deleteHostPath参数不能在同一次执行命令中输入。
 ```
 python3 AtlasEdge软件安装路径/edge_work_dir/edge_core/src/modify_pod_config_json.py \
 --useSecuritySetting=true \
@@ -64,6 +64,8 @@ AtlasEdge软件安装路径/run.sh restart
 
 **参数说明如下：**
 
+                                                表1
+
 | 参数                        | 取值类型   | 说明                                                                                                                                                         |
 |:--------------------------|:-------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------|
 | useSecuritySetting        | bool   | 校验总开关，true表示进行容器安全校验,false不进行容器安全校验                                                                                                                        |
@@ -91,11 +93,10 @@ AtlasEdge软件安装路径/run.sh restart
 | systemReservedCPUQuota    | float  | 系统预留CPU资源,默认为系统预留1个CPU核心,其余CPU资源用于应用部署。取值范围[0.5,4.0]                                                                                                       |
 | systemReservedMemoryQuota | int    | 系统预留内存资源,默认为系统预留1024MB,其余内存资源用于应用部署。取值范围[512,4096]                                                                                                         |
 
-## 提示
+提示：
 关闭useSecuritySetting校验或者打开capability、privileged、allowPrivilegeEscalation、runAsRoot、probe、startCommand、useHostNetwork、useDefaultContainerCap等选项或关闭setRootFsReadOnly、checkImageSha256等选项,可能会有容器逃逸或系统资源受损的风险。
 
-## 容器部署常见错误及解决方法
-[请参考昇腾社区案例指导](https://bbs.huaweicloud.com/forum/thread-0221983618504460029-1-1.html)
+----结束
 
 ## FD上应用部署操作补充介绍
 ### 资源文件创建及应用
@@ -163,9 +164,16 @@ AtlasEdge软件安装路径/run.sh restart
 * 使用主机网络时，容器与主机间不做网络隔离，容器内应用程序可以访问宿主机上任意网络接口，建议使用安全性更高的端口映射模式。
 * 如果容器的重启策略配置为“不重启”，当该容器出现异常时，该容器会一直保持异常状态。
 
+----结束
+
 ### 容器日志收集
 FusionDirector容器日志收集约束：
 * 只支持HwHiAiUser用户运行的容器，并且日志名后缀必须为.log，如果是其他用户运行的容器，日志会持续增长导致磁盘空间满
 * 需将/var/log/container/添加到挂在卷白名单，具体操作参考本文档工具使用方法章节介绍，并且将容器日志挂在到/var/log/container/"容器名"目录下
 * 容器日志收集功能在FusionDirector 1.7.2及之后版本支持此功能
 * 容器内部记录日志时，不能一直占用文件句柄，否则导致日志转储后，文件无法清空
+
+----结束
+
+## 容器部署常见错误及解决方法
+[请参考昇腾社区案例指导](https://bbs.huaweicloud.com/forum/thread-0221983618504460029-1-1.html)

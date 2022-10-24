@@ -403,7 +403,8 @@ class PodOperator:
             logger.error(f'create container failed: {payload_dict.get("content")}')
             return False
 
-        logger.info("create container success")
+        logger.info("execute create container command success, please execute 'docker ps' check the container status "
+                    "by few moments")
 
         return True
 
@@ -457,7 +458,8 @@ class PodOperator:
             logger.error(f'delete container failed: {payload_dict.get("content")}')
             return False
 
-        logger.info("delete container success")
+        logger.info("execute delete container command success, please execute 'docker ps' check the container status "
+                    "by few moments")
         return True
 
 
