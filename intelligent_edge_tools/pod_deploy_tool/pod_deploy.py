@@ -400,7 +400,7 @@ class PodOperator:
 
         payload_dict = json.loads(ret.data.payload)
         if payload_dict.get("result") != "success":
-            logger.error(f'create container failed: {payload_dict.get("content")}')
+            logger.error(f'execute create container command failed: {payload_dict.get("content")}')
             return False
 
         logger.info("execute create container command success, please execute 'docker ps' check the container status "
@@ -455,7 +455,7 @@ class PodOperator:
 
         payload_dict = json.loads(ret.data.payload)
         if payload_dict.get("result") != "success":
-            logger.error(f'delete container failed: {payload_dict.get("content")}')
+            logger.error(f'execute delete container command failed: {payload_dict.get("content")}')
             return False
 
         logger.info("execute delete container command success, please execute 'docker ps' check the container status "
