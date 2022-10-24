@@ -2,12 +2,10 @@ import math
 import os
 import random
 import time
-
-import aclruntime
 import numpy as np
 
-from frontend.summary import summary
-from frontend.utils import (get_file_content, get_file_datasize,
+from ais_infer.summary import summary
+from ais_infer.utils import (get_file_content, get_file_datasize,
                             get_fileslist_from_dir, list_split, logger,
                             save_data_to_files)
 
@@ -27,8 +25,8 @@ def get_pure_infer_data(size, pure_data_type):
     ndata = np.frombuffer(barray, dtype=np.uint8)
     return ndata
 
-# get tensors from files list combile all files
-def get_tensor_from_files_list(files_list, device, size, pure_data_type, auto_set_dymshape_mode=False):
+# get numpy array from files list combile all files
+def get_narray_from_files_list(files_list, size, pure_data_type, auto_set_dymshape_mode=False):
     ndatalist = []
     for i, file_path in enumerate(files_list):
         logger.debug("get tensor from filepath:{} i:{} of all:{}".format(file_path, i, len(files_list)))
@@ -43,16 +41,19 @@ def get_tensor_from_files_list(files_list, device, size, pure_data_type, auto_se
         else:
             ndata = get_file_content(file_path)
         ndatalist.append(ndata)
-    ndata = np.concatenate(ndatalist)
-    if auto_set_dymshape_mode == False and ndata.nbytes != size:
-        logger.error('ndata size:{} not match {}'.format(ndata.nbytes, size))
-        raise RuntimeError()
+    if len(ndatalist) == 1:
+        return ndatalist[0]
+    else:
+        ndata = np.concatenate(ndatalist)
+        if auto_set_dymshape_mode == False and ndata.nbytes != size:
+            logger.error('ndata size:{} not match {}'.format(ndata.nbytes, size))
+            raise RuntimeError()
+        return ndata
 
-    tensor = aclruntime.Tensor(ndata)
-    starttime = time.time()
-    tensor.to_device(device)
-    endtime = time.time()
-    summary.h2d_latency_list.append(float(endtime - starttime) * 1000.0)  # millisecond
+# get tensors from files list combile all files
+def get_tensor_from_files_list(files_list, session, size, pure_data_type, auto_set_dymshape_mode=False):
+    ndata = get_narray_from_files_list(files_list, size, pure_data_type, auto_set_dymshape_mode)
+    tensor = session.create_tensor_from_numpy_to_device(ndata)
     return tensor
 
 # Obtain filesperbatch runcount information according to file information and input description information
@@ -77,16 +78,13 @@ def get_files_count_per_batch(intensors_desc, fileslist, auto_set_dymshape_mode=
     return files_count_per_batch, runcount
 
 # out api create empty data
-def create_intensors_zerodata(intensors_desc, device, pure_data_type):
+def create_intensors_zerodata(session, pure_data_type):
     intensors = []
+    intensors_desc = session.get_inputs()
     for info in intensors_desc:
         logger.debug("info shape:{} type:{} val:{} realsize:{} size:{}".format(info.shape, info.datatype, int(info.datatype), info.realsize, info.size))
         ndata = get_pure_infer_data(info.realsize, pure_data_type)
-        tensor = aclruntime.Tensor(ndata)
-        starttime = time.time()
-        tensor.to_device(device)
-        endtime = time.time()
-        summary.h2d_latency_list.append(float(endtime - starttime) * 1000.0)  # millisecond
+        tensor = session.create_tensor_from_numpy_to_device(ndata)
         intensors.append(tensor)
     return intensors
 
@@ -110,12 +108,12 @@ def create_infileslist_from_fileslist(fileslist, intensors_desc, auto_set_dymsha
     return infileslist
 
 #  outapi. Obtain tensor information and files information according to the input filelist. Create intensor form files list
-def create_intensors_from_infileslist(infileslist, intensors_desc, device, pure_data_type, auto_set_dymshape_mode=False):
+def create_intensors_from_infileslist(infileslist, intensors_desc, session, pure_data_type, auto_set_dymshape_mode=False):
     intensorslist = []
     for i, infiles in enumerate(infileslist):
         intensors = []
         for j, files in enumerate(infiles):
-            tensor = get_tensor_from_files_list(files, device, intensors_desc[j].realsize, pure_data_type, auto_set_dymshape_mode)
+            tensor = get_tensor_from_files_list(files, session, intensors_desc[j].realsize, pure_data_type, auto_set_dymshape_mode)
             intensors.append(tensor)
         intensorslist.append(intensors)
     return intensorslist
@@ -171,16 +169,6 @@ def create_infileslist_from_inputs_list(inputs_list, intensors_desc, auto_set_dy
         raise RuntimeError()
 
     return infileslist
-
-def outtensors_to_host(outputs):
-    totle_laency = 0.0
-    for i, out in enumerate(outputs):
-        starttime = time.time()
-        out.to_host()
-        endtime = time.time()
-        totle_laency += float(endtime - starttime) * 1000.0  # millisecond
-    summary.d2h_latency_list.append(totle_laency)
-
 
 def save_tensors_to_file(outputs, output_prefix, infiles_paths, outfmt, index, output_batchsize_axis):
     files_count_perbatch = len(infiles_paths[0])

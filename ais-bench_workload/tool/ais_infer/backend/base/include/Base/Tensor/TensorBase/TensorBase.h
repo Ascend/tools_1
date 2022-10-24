@@ -60,6 +60,19 @@ static std::map<int, std::string> TensorDataTypeStr = {
 
 std::string GetTensorDataTypeDesc(TensorDataType type);
 
+struct MemorySummary {
+    std::vector<float> H2DTimeList;
+    std::vector<float> D2HTimeList;
+    void Reset(){
+        H2DTimeList.clear();
+        D2HTimeList.clear();
+    }
+};
+
+struct MemorySummary* GetMemorySummaryPtr();
+
+MemoryData CopyMemory2DeviceMemory(void *ptr, uint64_t size, int32_t deviceId);
+
 class TensorBuffer;
 class TensorShape;
 class TensorBase {

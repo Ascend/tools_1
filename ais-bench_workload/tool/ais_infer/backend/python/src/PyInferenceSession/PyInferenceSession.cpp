@@ -24,8 +24,6 @@
 #include "Base/ErrorCode/ErrorCode.h"
 #include "Base/Log/Log.h"
 
-// #include "PyTensor/PyTensor.h"
-
 namespace Base {
 PyInferenceSession::PyInferenceSession(const std::string &modelPath, const uint32_t &deviceId, std::shared_ptr<SessionOptions> options) : deviceId_(deviceId)
 {
@@ -68,53 +66,6 @@ std::vector<TensorBase> PyInferenceSession::InferMap(std::vector<std::string>& o
         throw std::runtime_error(GetError(ret));
     }
 
-    return outputs;
-}
-
-int PyInferenceSession::InferMap_SetInputs(std::map<std::string, TensorBase>& feeds)
-{
-    DEBUG_LOG("start to ModelInference SetInputs");
-
-    APP_ERROR ret = modelInfer_.Inference_SetInputs(feeds);
-    if (ret != APP_ERR_OK) {
-        throw std::runtime_error(GetError(ret));
-    }
-
-    return APP_ERR_OK;
-}
-
-int PyInferenceSession::InferVector_SetInputs(std::vector<TensorBase>& feeds)
-{
-    DEBUG_LOG("start to ModelInference SetInputs");
-
-    APP_ERROR ret = modelInfer_.Inference_SetInputs(feeds);
-    if (ret != APP_ERR_OK) {
-        throw std::runtime_error(GetError(ret));
-    }
-
-    return APP_ERR_OK;
-}
-
-int PyInferenceSession::Infer_Execute(int loop)
-{
-    DEBUG_LOG("start to ModelInference Execute loop:%d", loop);
-    for (size_t t = 0; t < loop; ++t) {
-        APP_ERROR ret = modelInfer_.Inference_Execute();
-        if (ret != APP_ERR_OK) {
-            throw std::runtime_error(GetError(ret));
-        }
-    }
-    return APP_ERR_OK;
-}
-
-std::vector<TensorBase> PyInferenceSession::Infer_GetOutputs(std::vector<std::string>& output_names)
-{
-    DEBUG_LOG("start to ModelInference GetOutputs");
-    std::vector<TensorBase> outputs = {};
-    APP_ERROR ret = modelInfer_.Inference_GetOutputs(output_names, outputs);
-    if (ret != APP_ERR_OK) {
-        throw std::runtime_error(GetError(ret));
-    }
     return outputs;
 }
 
@@ -260,6 +211,30 @@ int PyInferenceSession::SetCustomOutTensorsSize(std::vector<int> customOutSize)
     return APP_ERR_OK;
 }
 
+std::vector<TensorBase> PyInferenceSession::InferBaseTensorVector(std::vector<std::string>& output_names, std::vector<Base::BaseTensor>& feeds)
+{
+    DEBUG_LOG("start to ModelInference base_tensor");
+
+    std::vector<MemoryData> memorys = {};
+    std::vector<BaseTensor> inputs = {};
+    for (auto &info : feeds) {
+        MemoryData mem = CopyMemory2DeviceMemory(info.buf, info.size, deviceId_);
+        memorys.push_back(mem);
+        BaseTensor tensor(mem.ptrData, mem.size);
+        inputs.push_back(tensor);
+    }
+
+    std::vector<TensorBase> outputs = {};
+    APP_ERROR ret = modelInfer_.Inference(inputs, output_names, outputs);
+    if (ret != APP_ERR_OK) {
+        throw std::runtime_error(GetError(ret));
+    }
+    for (auto &mem : memorys) {
+        MemoryHelper::Free(mem);
+    }
+    return outputs;
+}
+
 }
 
 std::shared_ptr<Base::PyInferenceSession> CreateModelInstance(const std::string &modelPath, const uint32_t &deviceId, std::shared_ptr<Base::SessionOptions> options)
@@ -271,6 +246,11 @@ std::shared_ptr<Base::PyInferenceSession> CreateModelInstance(const std::string 
 void RegistInferenceSession(py::module &m)
 {
     using namespace pybind11::literals;
+
+    py::class_<Base::BaseTensor>(m, "BaseTensor")
+        .def(py::init<int64_t, int64_t>())
+        .def_readwrite("buf", &Base::BaseTensor::buf)
+        .def_readwrite("size", &Base::BaseTensor::size);
 
     py::class_<Base::SessionOptions, std::shared_ptr<Base::SessionOptions>>(m, "session_options")
     .def(py::init([]() { return std::make_shared<Base::SessionOptions>(); }))
@@ -293,12 +273,9 @@ void RegistInferenceSession(py::module &m)
 
     auto model = py::class_<Base::PyInferenceSession, std::shared_ptr<Base::PyInferenceSession>>(m, "InferenceSession");
     model.def(py::init<std::string&, int, std::shared_ptr<Base::SessionOptions>>());
-    model.def("run", &Base::PyInferenceSession::InferVector, py::call_guard<py::gil_scoped_release>());
-    model.def("run", &Base::PyInferenceSession::InferMap, py::call_guard<py::gil_scoped_release>());
-    model.def("run_setinputs", &Base::PyInferenceSession::InferVector_SetInputs, py::call_guard<py::gil_scoped_release>());
-    model.def("run_setinputs", &Base::PyInferenceSession::InferMap_SetInputs, py::call_guard<py::gil_scoped_release>());
-    model.def("run_execute", &Base::PyInferenceSession::Infer_Execute, "loop"_a = 1, py::call_guard<py::gil_scoped_release>());
-    model.def("run_getoutputs", &Base::PyInferenceSession::Infer_GetOutputs, py::call_guard<py::gil_scoped_release>());
+    model.def("run", &Base::PyInferenceSession::InferVector);
+    model.def("run", &Base::PyInferenceSession::InferMap);
+    model.def("run", &Base::PyInferenceSession::InferBaseTensorVector);
     model.def("__str__", &Base::PyInferenceSession::GetDesc);
     model.def("__repr__", &Base::PyInferenceSession::GetDesc);
 

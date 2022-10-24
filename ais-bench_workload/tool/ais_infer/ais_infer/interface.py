@@ -1,0 +1,115 @@
+
+import time
+import aclruntime
+import numpy as np
+
+class InferSession:
+    def __init__(self, device_id: int, model_path: str, acl_json_path: str = None, debug: bool = False, loop: int = 1):
+        """
+        init InferSession
+
+        Args:
+            device_id: device id for npu device
+            model_path: om model path to load
+            acl_json_path: set acl_json_path to enable profiling or dump function
+            debug: enable debug log.  Default: False
+            loop: loop count for one inference. Default: 1
+        """
+        self.device_id = device_id
+        self.model_path = model_path
+        self.loop = loop
+        options = aclruntime.session_options()
+        if acl_json_path is not None:
+            options.acl_json_path = acl_json_path
+        options.log_level = 1 if debug == True else 2
+        options.loop = self.loop
+        self.session = aclruntime.InferenceSession(self.model_path, self.device_id, options)
+        self.outputs_names = [meta.name for meta in self.session.get_outputs()]
+
+    def get_inputs(self):
+        """
+        get inputs info of model
+        """
+        self.intensors_desc = self.session.get_inputs()
+        return self.intensors_desc
+
+    def get_outputs(self):
+        """
+        get outputs info of model
+        """
+        self.outtensors_desc = self.session.get_outputs()
+        return self.outtensors_desc
+
+    def set_loop_count(self, loop):
+        options = self.session.options()
+        options.loop = loop
+
+    # 默认设置为静态batch
+    def set_staticbatch(self):
+        self.session.set_staticbatch()
+
+    def set_dynamic_batchsize(self, dymBatch: str):
+        self.session.set_dynamic_batchsize(dymBatch)
+
+    def set_dynamic_hw(self, w: int, h: int):
+        self.session.set_dynamic_hw(w, h)
+
+    def set_dynamic_dims(self, dym_dims: str):
+        self.session.set_dynamic_dims(dym_dims)
+
+    def set_dynamic_shape(self, dym_shape: str):
+        self.session.set_dynamic_shape(dym_shape)
+
+    def set_custom_outsize(self, custom_sizes):
+        self.session.set_custom_outsize(custom_sizes)
+
+    def create_tensor_from_numpy_to_device(self, ndata):
+        tensor = aclruntime.Tensor(ndata)
+        tensor.to_device(self.device_id)
+        return tensor
+
+    def convert_tensors_to_host(self, tensors):
+        for tensor in tensors:
+            tensor.to_host()
+
+    def convert_tensors_to_naray(self, tensors):
+        arrays = []
+        for tensor in tensors:
+            # convert acltensor to numpy array
+            arrays.append(np.array(tensor))
+        return arrays
+
+    def run(self, feeds, out_array=False):     
+        if len(feeds) > 0 and not isinstance(feeds[0], aclruntime.Tensor):
+            # if feeds is ndarray list, convert to baseTensor
+            inputs = []
+            for array in feeds:
+                basetensor = aclruntime.BaseTensor(array.__array_interface__['data'][0], array.nbytes)
+                inputs.append(basetensor)
+        else:
+            inputs = feeds
+        outputs = self.session.run(self.outputs_names, inputs)
+        if out_array == True:
+            # convert to host tensor
+            self.convert_tensors_to_host(outputs)
+            # convert tensor to narray
+            return self.convert_tensors_to_naray(outputs)
+        else:
+            return outputs
+
+    def reset_sumaryinfo(self):
+        self.session.reset_sumaryinfo()
+
+    def sumary(self):
+        return self.session.sumary()
+
+class MemorySummary:
+    @staticmethod
+    def get_H2D_time_list():
+        return aclruntime.MemorySummary().H2D_time_list
+    @staticmethod
+    def get_D2H_time_list():
+        return aclruntime.MemorySummary().D2H_time_list
+    @staticmethod
+    def reset():
+        aclruntime.MemorySummary().reset()

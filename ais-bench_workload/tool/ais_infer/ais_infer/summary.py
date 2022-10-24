@@ -3,7 +3,7 @@ import os
 
 import numpy as np
 
-from frontend.utils import logger
+from ais_infer.utils import logger
 
 
 class ListInfo(object):

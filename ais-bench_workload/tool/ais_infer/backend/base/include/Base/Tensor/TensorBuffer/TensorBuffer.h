@@ -72,7 +72,7 @@ public:
 
 public:
     uint32_t size = 0;
-    MemoryData::MemoryType type = MemoryData::MemoryType::MEMORY_HOST_NEW;
+    MemoryData::MemoryType type = MemoryData::MemoryType::MEMORY_HOST;
     int32_t deviceId = -1;
     std::shared_ptr<void> data = nullptr;
 };

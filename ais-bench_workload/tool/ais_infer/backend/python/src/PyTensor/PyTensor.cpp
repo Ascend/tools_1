@@ -197,6 +197,12 @@ void RegistPyTensorEnumType(py::module &m)
 
 void RegistPyTensorModule(py::module &m)
 {
+    py::class_<Base::MemorySummary, std::unique_ptr<Base::MemorySummary, py::nodelete>>(m, "MemorySummary")
+        .def(py::init([]() { return Base::GetMemorySummaryPtr(); }))
+        .def_readwrite("H2D_time_list", &Base::MemorySummary::H2DTimeList)
+        .def_readwrite("D2H_time_list", &Base::MemorySummary::D2HTimeList)
+        .def("reset", &Base::MemorySummary::Reset);
+
     auto tensor = py::class_<Base::TensorBase>(m, "Tensor", py::buffer_protocol());
     tensor.def(py::init(&Base::FromNumpy));
     tensor.def_buffer(&Base::ToNumpy);

@@ -29,6 +29,7 @@ class TestClass:
         cmd = "{} --model {} --device {}".format(TestCommonClass.cmd_prefix, model_path,
                                                  TestCommonClass.default_device_id)
         cmd = "{} --output {}".format(cmd, output_path)
+        print("run cmd:{}".format(cmd))
         ret = os.system(cmd)
         assert ret == 0
 
@@ -56,6 +57,7 @@ class TestClass:
             cmd = "{} --model {} --device {} --output {} --debug True \
                 --input {} > {}".format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id,
                                         output_path, input_path, log_path)
+            print("run cmd:{}".format(cmd))
             ret = os.system(cmd)
             assert ret == 0
 
@@ -77,6 +79,7 @@ class TestClass:
         # bin file compare for batch size [1, 2,4,8], should be same
         for _, result_path in enumerate(result_paths[1:]):
             cmd = "diff -x {} {}  {}".format(exclude_file, result_paths[0], result_path)
+            print("run cmd:{}".format(cmd))
             ret = os.system(cmd)
             assert ret == 0
 
@@ -101,6 +104,7 @@ class TestClass:
             cmd = "{0} --model {1} --device {2} --debug True --dymBatch {3} --input {4} \
                 --output {5} > {6}".format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id,
                                            dys_batch_size, input_path, output_path, log_path)
+            print("run cmd:{}".format(cmd))
             ret = os.system(cmd)
             assert ret == 0
 
@@ -122,6 +126,7 @@ class TestClass:
         # bin file compare for batch size [1, 2,4,8], should be same
         for _, result_path in enumerate(result_paths[1:]):
             cmd = "diff -x {} {}  {}".format(exclude_file, result_paths[0], result_path)
+            print("run cmd:{}".format(cmd))
             ret = os.system(cmd)
             assert ret == 0
 
