@@ -50,6 +50,9 @@ Ascend tools，昇腾工具仓库。
 
 12. [intelligent_edge_tools](https://gitee.com/ascend/tools/tree/master/intelligent_edge_tools)  
     **intelligent_edge_tools**： 该目录包含智能边缘工具集。
+    
+13. [auto-optimizer](https://gitee.com/ascend/tools/tree/master/auto-optimizer)  
+    **auto-optimizer**： 提供基于ONNX的改图、自动优化及端到端推理流程。
 
 #### 贡献
 

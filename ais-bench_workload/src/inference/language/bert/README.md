@@ -65,9 +65,7 @@ DEVICE_ID       推理执行卡序号
 + 动态Dims
 增加 export DYM_DIMS="actual_input_1:1,3,224,224" 设置指定的dims 该设置格式跟atc命令转换一致
 
-## 模型获取与转换指南
+## 模型获取指南
 本样例使用的bert原始模型路径如下：
 https://github.com/google-research/bert
 
-ATC转换工具，参考文档：
-https://support.huaweicloud.com/adevg-A800_3000_3010/atlasdevelopment_01_0034.html
