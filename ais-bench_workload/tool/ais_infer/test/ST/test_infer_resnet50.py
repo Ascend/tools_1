@@ -61,7 +61,7 @@ class TestClass():
             file = os.path.join(self.auto_set_dymshape_mode_input_dir_path, "{}.npy".format(file_name))
             np.save(file, x)
             i += 1
-    @pytest.mark.skip(reason="no way of currently testing this")
+
     def test_pure_inference_normal_static_batch(self):
         """
         batch size 1,2,4,8
@@ -75,7 +75,7 @@ class TestClass():
             print("run cmd:{}".format(cmd))
             ret = os.system(cmd)
             assert ret == 0
-    @pytest.mark.skip(reason="no way of currently testing this")
+
     def test_pure_inference_normal_dynamic_batch(self):
         batch_list = [1, 2, 4, 8]
         model_path = self.get_dynamic_batch_om_path()
@@ -85,7 +85,7 @@ class TestClass():
             print("run cmd:{}".format(cmd))
             ret = os.system(cmd)
             assert ret == 0
-    @pytest.mark.skip(reason="no way of currently testing this")
+
     def test_pure_inference_normal_dynamic_hw(self):
         batch_list = ["224,224", "448,448"]
         model_path = self.get_dynamic_hw_om_path()
@@ -94,7 +94,7 @@ class TestClass():
             print("run cmd:{}".format(cmd))
             ret = os.system(cmd)
             assert ret == 0
-    @pytest.mark.skip(reason="no way of currently testing this")
+
     def test_pure_inference_normal_dynamic_dims(self):
         batch_list = ["actual_input_1:1,3,224,224", "actual_input_1:8,3,448,448"]
 
@@ -104,7 +104,7 @@ class TestClass():
             print("run cmd:{}".format(cmd))
             ret = os.system(cmd)
             assert ret == 0
-    @pytest.mark.skip(reason="no way of currently testing this")
+
     def test_pure_inference_normal_dynamic_shape(self):
         dym_shape = "actual_input_1:1,3,224,224"
         output_size = 10000
@@ -175,7 +175,7 @@ class TestClass():
 
         assert int(bin_num2) == num_shape
 
-    @pytest.mark.skip(reason="no way of currently testing this")
+
     def test_general_inference_normal_static_batch(self):
         batch_size = 1
         static_model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
@@ -191,7 +191,7 @@ class TestClass():
             print("run cmd:{}".format(cmd))
             ret = os.system(cmd)
             assert ret == 0
-    @pytest.mark.skip(reason="no way of currently testing this")
+
     def test_general_inference_normal_dynamic_batch(self):
         batch_size = 1
         static_model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
