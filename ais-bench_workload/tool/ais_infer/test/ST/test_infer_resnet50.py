@@ -1,7 +1,10 @@
 import os
-import pytest
+
 import aclruntime
+import numpy as np
+import pytest
 from test_common import TestCommonClass
+
 
 class TestClass():
     @classmethod
@@ -100,6 +103,40 @@ class TestClass():
         print("run cmd:{}".format(cmd))
         ret = os.system(cmd)
         assert ret == 0
+
+    def test_pure_inference_normal_dynamic_shape_auto_set_dymshape_mode(self):
+        shapes = [[1, 3,  224,  224], [1, 3, 300, 300], [1, 3, 200, 200]]
+        num_shape = len(shapes)
+        output_size = 10000
+        model_path = self.get_dynamic_shape_om_path()
+        input_shapes = []
+        i = 1
+        for shape in shapes:
+            x = np.zeros(shape, dtype=np.int32)
+            file_name = 'save_{}'.format(i)
+            np.save(file_name, x)
+            file = "./{}.npy".format(file_name)
+            ndata = np.load(file)
+            input_shapes.append(file)
+            i += 1
+
+        shapes = ",".join(input_shapes)
+        output_dirname = "1"
+        cmd = "{} --model {} --device {} --outputSize {} --auto_set_dymshape_mode true --input {} --output ./  --output_dirname {} ".format(TestCommonClass.cmd_prefix, model_path,
+                                                                                TestCommonClass.default_device_id,
+                                                                                output_size, shapes, output_dirname)
+
+        ret = os.system(cmd)
+        assert ret == 0
+
+        try:
+            cmd = "find {} -name '*.bin'|wc -l".format("./{}".format(output_dirname))
+            bin_num = os.popen(cmd).read()
+        except Exception as e:
+            raise Exception("raise an exception: {}".format(e))
+
+        assert int(bin_num) == num_shape
+
 
     def test_general_inference_normal_static_batch(self):
         batch_size = 1
