@@ -23,7 +23,7 @@ class TestClass():
         self.model_name = self.get_model_name(self)
         self.model_base_path = self.get_model_base_path(self)
         self.output_file_num = 5
-        self.auto_set_dymshape_mode_input_dir_path = os.path.join(self.model_base_path, "model", "input", "auto_set_dymshape_mode_input")
+        self.auto_set_dymshape_mode_input_dir_path = os.path.join(self.model_base_path, "input", "auto_set_dymshape_mode_input")
 
     def get_model_name(self):
         return "resnet50"
@@ -141,7 +141,7 @@ class TestClass():
         for file in filelist:
             file_paths.append(os.path.join(self.auto_set_dymshape_mode_input_dir_path, file))
         file_paths = ",".join(file_paths)
-        output_parent_path = os.path.join(self.model_base_path, "model", "output")
+        output_parent_path = os.path.join(self.model_base_path,  "output")
         output_dirname = "auto_set_dymshape_mode_output"
         output_path = os.path.join(output_parent_path, output_dirname)
         if os.path.exists(output_path):
@@ -180,7 +180,7 @@ class TestClass():
         model_path = self.get_dynamic_shape_om_path()
         filelist = os.listdir(self.auto_set_dymshape_mode_input_dir_path)
         num_shape = len(filelist)
-        output_parent_path = os.path.join(self.model_base_path, "model", "output")
+        output_parent_path = os.path.join(self.model_base_path, "output")
         output_dirname = "auto_set_dymshape_mode_output"
         output_path = os.path.join(output_parent_path, output_dirname)
         if os.path.exists(output_path):
