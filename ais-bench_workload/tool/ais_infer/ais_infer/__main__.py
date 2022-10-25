@@ -91,23 +91,27 @@ def set_dymshape_shape(session, inputs):
     logger.debug("set dymshape shape:{}".format(dyshape))
     session.set_dynamic_shape(dyshape)
 
-g_warmup_count = 1
-def warmup(session, inputs):
-    global g_warmup_count
-    if g_warmup_count > 0:
-        session.set_loop_count(g_warmup_count)
-        session.run(inputs)
-        summary.reset()
-        session.reset_sumaryinfo()
-        logger.info("warm up {} times done".format(g_warmup_count))
-        session.set_loop_count(session.loop)
-        g_warmup_count = 0
+def warmup(session, args, intensors_desc, infiles):
+    # prepare input data
+    innarrays = []
+    for j, files in enumerate(infiles):
+        narray = get_narray_from_files_list(files, intensors_desc[j].realsize, args.pure_data_type)
+        innarrays.append(narray)
+    # warmup
+    for i in range(args.warmup_count):
+        outputs = run_inference(session, innarrays, out_array=True)
+        logger.debug("warm up {} run".format(i))
 
-def run_inference(session, inputs):
+    # reset summary info
+    summary.reset()
+    session.reset_sumaryinfo()
+    MemorySummary.reset()
+    logger.info("warm up {} done".format(args.warmup_count))
+
+def run_inference(session, inputs, out_array=False):
     if args.auto_set_dymshape_mode == True:
         set_dymshape_shape(session, inputs)
-    warmup(session, inputs)
-    outputs = session.run(inputs)
+    outputs = session.run(inputs, out_array)
     return outputs
 
 # Rotation training operation reference
@@ -201,6 +205,7 @@ def get_args():
     parser.add_argument("--acl_json_path", type=str, default=None, help="acl json path for profiling or dump")
     parser.add_argument("--output_batchsize_axis",  type=check_nonnegative_integer, default=0, help="splitting axis number when outputing tensor results, such as --output_batchsize_axis 12")
     parser.add_argument("--run_mode", type=str, default="array", choices=["array", "tensor"], help="run mode")
+    parser.add_argument("--warmup_count",  type=check_nonnegative_integer, default=1, help="warmup count before inference")
     args = parser.parse_args()
 
     if args.profiler is True and args.dump is True:
@@ -244,6 +249,8 @@ if __name__ == "__main__":
         infileslist = [[ [ pure_infer_fake_file ] for index in intensors_desc ]]
     else:
         infileslist = create_infileslist_from_inputs_list(inputs_list, intensors_desc, args.auto_set_dymshape_mode)
+
+    warmup(session, args, intensors_desc, infileslist[0])
 
     if args.run_mode == "array":
         infer_loop_array_run(session, args, intensors_desc, infileslist, output_prefix)
