@@ -1,7 +1,11 @@
 import os
-import pytest
+import shutil
+
 import aclruntime
+import numpy as np
+import pytest
 from test_common import TestCommonClass
+
 
 class TestClass():
     @classmethod
@@ -45,6 +49,20 @@ class TestClass():
 
     def get_dynamic_shape_om_path(self):
         return os.path.join(self.model_base_path, "model", "pth_resnet50_dymshape.om")
+
+    def create_npy_files_in_auto_set_dymshape_mode_input(self, dirname, shapes):
+        if os.path.exists(dirname):
+            shutil.rmtree(dirname)
+
+        os.makedirs(dirname)
+
+        i = 1
+        for shape in shapes:
+            x = np.zeros(shape, dtype=np.int32)
+            file_name = 'input_shape_{}'.format(i)
+            file = os.path.join(dirname, "{}.npy".format(file_name))
+            np.save(file, x)
+            i += 1
 
     def test_pure_inference_normal_static_batch(self):
         """
@@ -100,6 +118,60 @@ class TestClass():
         print("run cmd:{}".format(cmd))
         ret = os.system(cmd)
         assert ret == 0
+
+    def test_inference_normal_dynamic_shape_auto_set_dymshape_mode(self):
+        """"
+        multiple npy input files or a npy folder as input parameter
+        """
+        shapes = [[1, 3,  224,  224], [1, 3, 300, 300], [1, 3, 200, 200]]
+        auto_set_dymshape_mode_input_dir_path = os.path.join(self.model_base_path, "input", "auto_set_dymshape_mode_input")
+        self.create_npy_files_in_auto_set_dymshape_mode_input(auto_set_dymshape_mode_input_dir_path, shapes)
+
+        output_size = 10000
+        model_path = self.get_dynamic_shape_om_path()
+        filelist = os.listdir(auto_set_dymshape_mode_input_dir_path)
+        num_shape = len(filelist)
+        file_paths = []
+        for file in filelist:
+            file_paths.append(os.path.join(auto_set_dymshape_mode_input_dir_path, file))
+        file_paths = ",".join(file_paths)
+        output_parent_path = os.path.join(self.model_base_path,  "output")
+        output_dirname = "auto_set_dymshape_mode_output"
+        output_path = os.path.join(output_parent_path, output_dirname)
+        if os.path.exists(output_path):
+            shutil.rmtree(output_path)
+        os.makedirs(output_path)
+        cmd = "{} --model {} --device {} --outputSize {} --auto_set_dymshape_mode true --input {} --output {}  --output_dirname {} ".format(TestCommonClass.cmd_prefix, model_path,
+            TestCommonClass.default_device_id, output_size, file_paths, output_parent_path, output_dirname)
+
+        ret = os.system(cmd)
+        assert ret == 0
+
+        try:
+            cmd = "find {} -name '*.bin'|wc -l".format(output_path)
+            bin_num = os.popen(cmd).read()
+        except Exception as e:
+            raise Exception("raise an exception: {}".format(e))
+
+        assert int(bin_num) == num_shape
+        shutil.rmtree(output_path)
+        os.makedirs(output_path)
+        # check input parameter is a folder
+        cmd = "{} --model {} --device {} --outputSize {} --auto_set_dymshape_mode true --input {} --output {}  --output_dirname {} ".format(TestCommonClass.cmd_prefix, model_path,
+            TestCommonClass.default_device_id, output_size, auto_set_dymshape_mode_input_dir_path, output_parent_path, output_dirname)
+
+        ret2 = os.system(cmd)
+        assert ret2 == 0
+
+        try:
+            cmd = "find {} -name '*.bin'|wc -l".format(output_path)
+            bin_num2 = os.popen(cmd).read()
+        except Exception as e:
+            raise Exception("raise an exception: {}".format(e))
+
+        assert int(bin_num2) == num_shape
+        shutil.rmtree(output_path)
+
 
     def test_general_inference_normal_static_batch(self):
         batch_size = 1
