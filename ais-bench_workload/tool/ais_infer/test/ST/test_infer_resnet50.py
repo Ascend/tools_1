@@ -50,15 +50,17 @@ class TestClass():
     def get_dynamic_shape_om_path(self):
         return os.path.join(self.model_base_path, "model", "pth_resnet50_dymshape.om")
 
-    def create_npy_files_in_auto_set_dymshape_mode_input(self, shapes):
-        # default the folder is not existed
-        os.makedirs(self.auto_set_dymshape_mode_input_dir_path)
+    def create_npy_files_in_auto_set_dymshape_mode_input(self, dirname, shapes):
+        if os.path.exists(dirname):
+            shutil.rmtree(dirname)
+
+        os.makedirs(dirname)
 
         i = 1
         for shape in shapes:
             x = np.zeros(shape, dtype=np.int32)
             file_name = 'input_shape_{}'.format(i)
-            file = os.path.join(self.auto_set_dymshape_mode_input_dir_path, "{}.npy".format(file_name))
+            file = os.path.join(dirname, "{}.npy".format(file_name))
             np.save(file, x)
             i += 1
 
@@ -123,8 +125,7 @@ class TestClass():
         """
         shapes = [[1, 3,  224,  224], [1, 3, 300, 300], [1, 3, 200, 200]]
         auto_set_dymshape_mode_input_dir_path = os.path.join(self.model_base_path, "input", "auto_set_dymshape_mode_input")
-        if not os.path.exists(auto_set_dymshape_mode_input_dir_path):
-            self.create_npy_files_in_auto_set_dymshape_mode_input(shapes)
+        self.create_npy_files_in_auto_set_dymshape_mode_input(auto_set_dymshape_mode_input_dir_path, shapes)
 
         output_size = 10000
         model_path = self.get_dynamic_shape_om_path()
@@ -153,6 +154,8 @@ class TestClass():
             raise Exception("raise an exception: {}".format(e))
 
         assert int(bin_num) == num_shape
+        shutil.rmtree(output_path)
+        os.makedirs(output_path)
         # check input parameter is a folder
         cmd = "{} --model {} --device {} --outputSize {} --auto_set_dymshape_mode true --input {} --output {}  --output_dirname {} ".format(TestCommonClass.cmd_prefix, model_path,
             TestCommonClass.default_device_id, output_size, auto_set_dymshape_mode_input_dir_path, output_parent_path, output_dirname)
@@ -167,6 +170,7 @@ class TestClass():
             raise Exception("raise an exception: {}".format(e))
 
         assert int(bin_num2) == num_shape
+        shutil.rmtree(output_path)
 
 
     def test_general_inference_normal_static_batch(self):
