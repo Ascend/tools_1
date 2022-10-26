@@ -1,3 +1,5 @@
+import json
+import math
 import os
 import shutil
 
@@ -207,6 +209,68 @@ class TestClass():
             ret = os.system(cmd)
             assert ret == 0
 
+    def test_general_inference_normal_run_mode(self):
+        batch_size = 1
+        static_model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
+        input_size = TestCommonClass.get_model_inputs_size(static_model_path)[0]
+        input_path = TestCommonClass.get_inputs_path(input_size, os.path.join(self.model_base_path, "input"),
+                                                     self.output_file_num)
+        run_modes = ["array", "tensor"]
+        model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
+        for _, run_mode in  enumerate(run_modes):
+            cmd = "{} --model {} --device {} --input {} --run_mode {}".format(TestCommonClass.cmd_prefix, model_path,
+                                                                TestCommonClass.default_device_id, input_path, run_mode)
+            ret = os.system(cmd)
+            assert ret == 0
+
+    def test_general_inference_normal_inference_time(self):
+        batch_size = 1
+        num_input_file = 100
+        static_model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
+
+        input_size = TestCommonClass.get_model_inputs_size(static_model_path)[0]
+        input_path = TestCommonClass.get_inputs_path(input_size, os.path.join(self.model_base_path, "input"),
+                                                     num_input_file)
+
+        model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
+        output_parent_path = os.path.join(self.model_base_path,  "output")
+        output_dirname = "infer_time_output"
+        output_path = os.path.join(output_parent_path, output_dirname)
+        log_path = os.path.join(output_path, "log.txt")
+        if os.path.exists(output_path):
+            shutil.rmtree(output_path)
+        os.makedirs(output_path)
+        cmd = "{} --model {} --device {} --input {}  --debug true --output {}  --output_dirname {} > {}".format(TestCommonClass.cmd_prefix, model_path,
+            TestCommonClass.default_device_id, input_path, output_parent_path, output_dirname, log_path)
+        ret = os.system(cmd)
+        assert ret == 0
+        assert os.path.exists(log_path)
+
+        # ignore of warmup inference time, get  inferening times from log file and  sumary.json, compare them and assert
+        infer_time_lists = []
+        with open(log_path) as f:
+            i = 0
+            for line in f:
+                if "cost :" not in line:
+                    continue
+                i += 1
+                if i == 1:
+                    continue
+
+                sub_str = line[(line.rfind(':') + 1):]
+                sub_str = sub_str.replace('\n','')
+                infer_time_lists.append(float(sub_str))
+
+        time_array = np.array(infer_time_lists)
+        sumary_json_path = os.path.join(output_path, "sumary.json")
+        with open(sumary_json_path,'r',encoding='utf8') as fp:
+            json_data = json.load(fp)
+            json_mean = json_data["NPU_compute_time"]["mean"]
+            json_percentile = json_data["NPU_compute_time"]["percentile(99%)"]
+
+            EPSILON = 1e-6
+            assert math.fabs(time_array.mean() - json_mean) <= EPSILON
+            assert math.fabs(np.percentile(time_array, 99) - json_percentile) <= EPSILON
 
 if __name__ == '__main__':
     pytest.main(['test_infer_resnet50.py', '-vs'])

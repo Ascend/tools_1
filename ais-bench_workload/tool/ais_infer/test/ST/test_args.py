@@ -63,7 +63,7 @@ class TestClass:
                                                                      TestCommonClass.default_device_id, acl_json_path)
         print("run cmd:{}".format(cmd))
         ret = os.system(cmd)
-        assert ret != 0
+        assert ret == 0
 
     def test_args_ok(self):
         model_path = TestCommonClass.get_model_static_om_path(1, self.model_name)
