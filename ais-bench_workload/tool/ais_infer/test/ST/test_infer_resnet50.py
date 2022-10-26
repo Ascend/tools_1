@@ -119,19 +119,12 @@ class TestClass():
 
     def test_inference_normal_dynamic_shape_auto_set_dymshape_mode(self):
         """"
-        multiple npy input files or npy folder as input parameter
+        multiple npy input files or a npy folder as input parameter
         """
         shapes = [[1, 3,  224,  224], [1, 3, 300, 300], [1, 3, 200, 200]]
         auto_set_dymshape_mode_input_dir_path = os.path.join(self.model_base_path, "input", "auto_set_dymshape_mode_input")
         if not os.path.exists(auto_set_dymshape_mode_input_dir_path):
             self.create_npy_files_in_auto_set_dymshape_mode_input(shapes)
-        else:
-            filelist = os.listdir(auto_set_dymshape_mode_input_dir_path)
-            for file_path in filelist:
-                if not file_path.endswith(".npy"):
-                    os.remove(file_path)
-            if len(os.listdir(auto_set_dymshape_mode_input_dir_path)) == 0:
-                self.create_npy_files_in_auto_set_dymshape_mode_input(shapes)
 
         output_size = 10000
         model_path = self.get_dynamic_shape_om_path()
