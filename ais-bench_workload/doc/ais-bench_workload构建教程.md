@@ -161,7 +161,7 @@ ais-bench stubs基础测试工具包用于选择构建测试软件包适用的aa
 
 访问[面向人工智能基础技术及应用的检验检测基础服务平台](http://www.aipubservice.com/#/show/compliance/detail/127)， 通过“成果展示”->“标准符合性测试”->“人工智能服务器系统性能测试”， 进入“人工智能服务器系统性能测试”页面，在“测试工具”章节下载Stubs压缩包到本地，将Stubs压缩包解压到ais-bench_workload/build目录下。
 
-解压后的stubs基础测试工具目录结构如下：
+解压后的工具build目录结构如下：
 
 ```
 ais-bench_workload
