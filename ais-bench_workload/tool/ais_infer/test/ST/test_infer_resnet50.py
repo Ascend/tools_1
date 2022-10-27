@@ -1,3 +1,4 @@
+import filecmp
 import json
 import math
 import os
@@ -220,6 +221,7 @@ class TestClass():
         for _, run_mode in  enumerate(run_modes):
             cmd = "{} --model {} --device {} --input {} --run_mode {}".format(TestCommonClass.cmd_prefix, model_path,
                                                                 TestCommonClass.default_device_id, input_path, run_mode)
+            print("run cmd:{}".format(cmd))
             ret = os.system(cmd)
             assert ret == 0
 
@@ -242,6 +244,7 @@ class TestClass():
         os.makedirs(output_path)
         cmd = "{} --model {} --device {} --input {}  --debug true --output {}  --output_dirname {} > {}".format(TestCommonClass.cmd_prefix, model_path,
             TestCommonClass.default_device_id, input_path, output_parent_path, output_dirname, log_path)
+        print("run cmd:{}".format(cmd))
         ret = os.system(cmd)
         assert ret == 0
         assert os.path.exists(log_path)
@@ -271,6 +274,121 @@ class TestClass():
             EPSILON = 1e-6
             assert math.fabs(time_array.mean() - json_mean) <= EPSILON
             assert math.fabs(np.percentile(time_array, 99) - json_percentile) <= EPSILON
+
+    def test_general_inference_normal_warmup_count(self):
+        batch_size = 1
+        num_input_file = 10
+        static_model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
+
+        input_size = TestCommonClass.get_model_inputs_size(static_model_path)[0]
+        input_path = TestCommonClass.get_inputs_path(input_size, os.path.join(self.model_base_path, "input"),
+                                                     num_input_file)
+
+        model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
+        output_parent_path = os.path.join(self.model_base_path,  "output")
+        output_dirname = "warmup_output"
+        output_path = os.path.join(output_parent_path, output_dirname)
+        log_path = os.path.join(output_path, "log.txt")
+        warmups = [-1, 0, 100]
+        for i, warmup_num in enumerate(warmups):
+            if os.path.exists(output_path):
+                shutil.rmtree(output_path)
+            os.makedirs(output_path)
+            cmd = "{} --model {} --device {} --input {}  --debug true --output {}  --output_dirname {} --warmup_count {} > {}".format(TestCommonClass.cmd_prefix, model_path,
+                TestCommonClass.default_device_id, input_path, output_parent_path, output_dirname,  warmup_num, log_path)
+            print("run cmd:{}".format(cmd))
+            ret = os.system(cmd)
+            if i == 0:
+                assert ret != 0
+            else:
+                assert ret == 0
+                assert os.path.exists(log_path)
+
+                try:
+                    cmd = "cat {} |grep 'cost :' | wc -l".format(log_path)
+                    outval = os.popen(cmd).read()
+                except Exception as e:
+                    raise Exception("raise an exception: {}".format(e))
+
+                assert int(outval) == (num_input_file + warmup_num)
+
+                sumary_json_path = os.path.join(output_path, "sumary.json")
+                with open(sumary_json_path,'r',encoding='utf8') as fp:
+                    json_data = json.load(fp)
+                    NPU_compute_time_count = json_data["NPU_compute_time"]["count"]
+                    assert NPU_compute_time_count == num_input_file
+
+    def test_general_inference_normal_warmup_count_200(self):
+        batch_size = 1
+        model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
+        output_parent_path = os.path.join(self.model_base_path,  "output")
+        output_dirname = "warmup_output"
+        output_path = os.path.join(output_parent_path, output_dirname)
+        log_path = os.path.join(output_path, "log.txt")
+        warmup_num = 200
+        loop_num = 10
+
+        if os.path.exists(output_path):
+            shutil.rmtree(output_path)
+        os.makedirs(output_path)
+        cmd = "{} --model {} --device {} --debug true --output {}  --output_dirname {} --warmup_count {} --loop {} > {}".format(TestCommonClass.cmd_prefix, model_path,
+            TestCommonClass.default_device_id, output_parent_path, output_dirname,  warmup_num, loop_num, log_path)
+
+        print("run cmd:{}".format(cmd))
+        ret = os.system(cmd)
+        assert ret == 0
+        assert os.path.exists(log_path)
+
+        try:
+            cmd = "cat {} |grep 'cost :' | wc -l".format(log_path)
+            outval = os.popen(cmd).read()
+        except Exception as e:
+            raise Exception("raise an exception: {}".format(e))
+
+        assert int(outval) == (loop_num + warmup_num)
+        sumary_json_path = os.path.join(output_path, "sumary.json")
+        with open(sumary_json_path,'r',encoding='utf8') as fp:
+            json_data = json.load(fp)
+            NPU_compute_time_count = json_data["NPU_compute_time"]["count"]
+            assert NPU_compute_time_count == loop_num
+        shutil.rmtree(output_path)
+
+
+    def test_general_inference_normal_pure_data_type(self):
+        batch_size = 1
+        pure_data_types = ["zero", "random"]
+        loop_num = 3
+        model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
+        output_parent_path = os.path.join(self.model_base_path,  "output")
+        output_dirname = "pure_data_type"
+        output_path = os.path.join(output_parent_path, output_dirname)
+        log_path = os.path.join(output_path, "log.txt")
+        for pure_data_type in pure_data_types:
+            if os.path.exists(output_path):
+                shutil.rmtree(output_path)
+            os.makedirs(output_path)
+            cmd = "{} --model {} --device {}  --debug true --output {}  --output_dirname {} --pure_data_type {} --loop {} > {}".format(TestCommonClass.cmd_prefix, model_path,
+                TestCommonClass.default_device_id, output_parent_path, output_dirname, pure_data_type, loop_num, log_path)
+            print("run cmd:{}".format(cmd))
+            ret = os.system(cmd)
+            assert ret == 0
+
+            bin_files = []
+            for output_file in os.listdir(output_path):
+                if output_file.endswith('json') or output_file.endswith('txt'):
+                    continue
+                bin_files.append(output_file)
+
+            first_output_bin_file_path = os.path.join(output_path, bin_files[0])
+            for i, bin_file in enumerate(bin_files):
+                bin_file_path = os.path.join(output_path, bin_file)
+                if i > 0:
+                    if pure_data_type == "zero":
+                        assert filecmp.cmp(first_output_bin_file_path, bin_file_path)
+                    else:
+                        assert filecmp.cmp(first_output_bin_file_path, bin_file_path) == False
+
+        shutil.rmtree(output_path)
 
 if __name__ == '__main__':
     pytest.main(['test_infer_resnet50.py', '-vs'])

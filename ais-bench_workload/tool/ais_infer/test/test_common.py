@@ -27,16 +27,19 @@ class TestCommonClass:
         return os.path.join(_current_dir, "../test/testdata")
 
     @staticmethod
-    def create_inputs_file(input_path, size):
+    def create_inputs_file(input_path, size, pure_data_type=random):
         file_path = os.path.join(input_path, "{}.bin".format(size))
-        lst = [random.randrange(0, 256) for _ in range(size)]
+        if pure_data_type == "zero":
+            lst = [0 for _ in range(size)]
+        else:
+            lst = [random.randrange(0, 256) for _ in range(size)]
         barray = bytearray(lst)
         ndata = np.frombuffer(barray, dtype=np.uint8)
         ndata.tofile(file_path)
         return file_path
 
     @classmethod
-    def get_inputs_path(cls, size, input_path, input_file_num):
+    def get_inputs_path(cls, size, input_path, input_file_num, pure_data_type=random):
         """generate input files
         folder structure as follows.
         test/testdata/resnet50/input
@@ -50,7 +53,7 @@ class TestCommonClass:
 
         base_size_file_path = os.path.join(size_path, "{}.bin".format(size))
         if not os.path.exists(base_size_file_path):
-            cls.create_inputs_file(size_path, size)
+            cls.create_inputs_file(size_path, size, pure_data_type)
 
         size_folder_path = os.path.join(input_path, str(input_file_num))
 
