@@ -157,6 +157,7 @@ class MqttConfig:
         self.send_thread_pool_size: int = kwargs.get("send_thread_pool_size", 15)
         self.connect_retry_interval: int = kwargs.get("connect_retry_interval", 5)
         self.using_tls_config: bool = kwargs.get("using_tls_config", True)
+        self.module_name: str = kwargs.get("module_name", "edge_om")
 
     def init_edge_mqtt_config(self, work_dir):
         edge_om_path = os.path.join(os.path.realpath(work_dir), "edge_work_dir/edge_om")
