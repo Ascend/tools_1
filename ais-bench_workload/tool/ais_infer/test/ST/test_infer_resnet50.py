@@ -316,9 +316,14 @@ class TestClass():
                 with open(sumary_json_path,'r',encoding='utf8') as fp:
                     json_data = json.load(fp)
                     NPU_compute_time_count = json_data["NPU_compute_time"]["count"]
+                    h2d_num = json_data["H2D_latency"]["count"]
+                    d2h_num = json_data["D2H_latency"]["count"]
                     assert NPU_compute_time_count == num_input_file
+                    assert h2d_num == num_input_file
+                    assert d2h_num == num_input_file
+        shutil.rmtree(output_path)
 
-    def test_general_inference_normal_warmup_count_200(self):
+    def test_pure_inference_normal_warmup_count_200(self):
         batch_size = 1
         model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
         output_parent_path = os.path.join(self.model_base_path,  "output")
@@ -350,11 +355,15 @@ class TestClass():
         with open(sumary_json_path,'r',encoding='utf8') as fp:
             json_data = json.load(fp)
             NPU_compute_time_count = json_data["NPU_compute_time"]["count"]
+            h2d_num = json_data["H2D_latency"]["count"]
+            d2h_num = json_data["D2H_latency"]["count"]
             assert NPU_compute_time_count == loop_num
+            assert h2d_num == 1
+            assert d2h_num == 1
         shutil.rmtree(output_path)
 
 
-    def test_general_inference_normal_pure_data_type(self):
+    def test_pure_inference_normal_pure_data_type(self):
         batch_size = 1
         pure_data_types = ["zero", "random"]
         loop_num = 3
