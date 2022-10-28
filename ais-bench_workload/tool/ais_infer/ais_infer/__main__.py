@@ -97,10 +97,12 @@ def warmup(session, args, intensors_desc, infiles):
     for j, files in enumerate(infiles):
         narray = get_narray_from_files_list(files, intensors_desc[j].realsize, args.pure_data_type)
         innarrays.append(narray)
+    session.set_loop_count(1)
     # warmup
     for i in range(args.warmup_count):
         outputs = run_inference(session, innarrays, out_array=True)
-        logger.debug("warm up {} run".format(i))
+
+    session.set_loop_count(args.loop)
 
     # reset summary info
     summary.reset()
