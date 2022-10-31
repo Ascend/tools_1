@@ -27,8 +27,8 @@ class TestCommonClass:
         return os.path.join(_current_dir, "../test/testdata")
 
     @staticmethod
-    def create_inputs_file(input_path, size, pure_data_type=random):
-        file_path = os.path.join(input_path, "{}.bin".format(size))
+    def create_inputs_file(input_path, size, pure_data_type=random, file_name_prefix=""):
+        file_path = os.path.join(input_path, "{}{}.bin".format(file_name_prefix, size))
         if pure_data_type == "zero":
             lst = [0 for _ in range(size)]
         else:
@@ -75,6 +75,71 @@ class TestCommonClass:
         os.system(cmd)
 
         return size_folder_path
+
+    @classmethod
+    def get_bert_inputs_path(cls, size, input_path, input_file_num, pure_data_type=random):
+        """generate input files
+        folder structure as follows.
+        test/testdata/bert/input          # input_path
+                        |_ 1536           # size_path
+                            |- input_ids_1536.bin     # input_ids_base_size_file_path
+                            |- input_mask_1536.bin    # input_mask_base_size_file_path
+                            |- segment_ids_3072.bin   # segment_ids_base_size_file_path
+                            |_ 5                      # input_file_num_path_in_size_folder_path
+        """
+        input_size = size
+        size_path = os.path.join(input_path,  str(size))
+        input_file_num_path_in_size_folder_path = os.path.join(size_path, str(input_file_num))
+        if not os.path.exists(input_file_num_path_in_size_folder_path):
+            os.makedirs(input_file_num_path_in_size_folder_path)
+
+        input_ids_base_size_file_path = os.path.join(size_path, "input_ids_{}.bin".format(size))
+        input_mask_base_size_file_path = os.path.join(size_path, "input_mask_{}.bin".format(size))
+        segment_ids_base_size_file_path = os.path.join(size_path, "segment_ids_{}.bin".format(size))
+
+        if not os.path.exists(input_ids_base_size_file_path):
+            input_ids_base_size_file_path = cls.create_inputs_file(size_path, input_size, pure_data_type, "input_ids_")
+
+        if not os.path.exists(input_mask_base_size_file_path):
+            input_mask_base_size_file_path = cls.create_inputs_file(size_path, input_size, pure_data_type, "input_mask_")
+
+        if not os.path.exists(segment_ids_base_size_file_path):
+            segment_ids_base_size_file_path = cls.create_inputs_file(size_path, input_size, pure_data_type, "segment_ids_")
+
+        size_folder_sub_input_ids_dir_path = os.path.join(input_file_num_path_in_size_folder_path, "input_ids")
+        size_folder_sub_input_mask__dir_path = os.path.join(input_file_num_path_in_size_folder_path, "input_mask")
+        size_folder_sub_segment_ids_dir_path = os.path.join(input_file_num_path_in_size_folder_path, "segment_ids")
+
+        if os.path.exists(input_file_num_path_in_size_folder_path):
+            if os.path.exists(size_folder_sub_input_ids_dir_path) and len(os.listdir(size_folder_sub_input_ids_dir_path)) == input_file_num \
+                and os.path.exists(size_folder_sub_input_mask__dir_path) and len(os.listdir(size_folder_sub_input_mask__dir_path)) and \
+                os.path.exists(size_folder_sub_segment_ids_dir_path) and len(os.listdir(size_folder_sub_segment_ids_dir_path)):
+                return input_file_num_path_in_size_folder_path
+            else:
+                shutil.rmtree(input_file_num_path_in_size_folder_path)
+
+        os.makedirs(size_folder_sub_input_ids_dir_path)
+        os.makedirs(size_folder_sub_input_mask__dir_path)
+        os.makedirs(size_folder_sub_segment_ids_dir_path)
+        # create soft link to input_ids_base_size_file_path, input_mask_base_size_file_path, segment_ids_base_size_file_path
+        cmd_strs = []
+        for i in range(input_file_num):
+            input_ids_file_name = "input_ids_{}-{}.bin".format(input_size, i)
+            input_ids_file_path = os.path.join(size_folder_sub_input_ids_dir_path, input_ids_file_name)
+            cmd_strs.append("ln -s {} {}".format(input_ids_base_size_file_path, input_ids_file_path))
+
+            input_mask_file_name = "input_mask_{}-{}.bin".format(input_size, i)
+            input_mask_file_path = os.path.join(size_folder_sub_input_mask__dir_path, input_mask_file_name)
+            cmd_strs.append("ln -s {} {}".format(input_mask_base_size_file_path, input_mask_file_path))
+
+            segment_ids_file_name = "segment_ids_{}-{}.bin".format(input_size, i)
+            segment_ids_file_path = os.path.join(size_folder_sub_segment_ids_dir_path, segment_ids_file_name)
+            cmd_strs.append("ln -s {} {}".format(segment_ids_base_size_file_path, segment_ids_file_path))
+
+        cmd = ';'.join(cmd_strs)
+        os.system(cmd)
+
+        return input_file_num_path_in_size_folder_path
 
     @classmethod
     def get_model_static_om_path(cls, batchsize, modelname):
