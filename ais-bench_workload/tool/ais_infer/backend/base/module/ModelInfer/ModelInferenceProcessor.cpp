@@ -190,7 +190,7 @@ APP_ERROR ModelInferenceProcessor::CheckInMapAndFillBaseTensor(const std::map<st
     for (size_t i = 0; i < modelDesc_.inTensorsDesc.size(); ++i) {
         auto iter = feeds.find(modelDesc_.inTensorsDesc[i].name);
         if (feeds.end() == iter) {
-            ERROR_LOG("intensors i:%lld name:%s not find\n", i, modelDesc_.inTensorsDesc[i].name);
+            ERROR_LOG("intensors i:%lld name:%s not find\n", i, modelDesc_.inTensorsDesc[i].name.c_str());
             return APP_ERR_ACL_FAILURE;
         }
 
