@@ -189,5 +189,4 @@ class TestClass():
 
 
 if __name__ == '__main__':
-    print("++++++++++++++++++++++++++good")
     pytest.main(['test_infer_bert.py', '-vs'])
