@@ -29,8 +29,8 @@ class TestCommonClass:
         return os.path.join(_current_dir, "../test/testdata")
 
     @staticmethod
-    def create_inputs_file(input_path, size, pure_data_type=random, file_name_prefix=""):
-        file_path = os.path.join(input_path, "{}_{}.bin".format(file_name_prefix, size))
+    def create_inputs_file(input_path, size, pure_data_type=random):
+        file_path = os.path.join(input_path, "{}.bin".format(size))
         if pure_data_type == "zero":
             lst = [0 for _ in range(size)]
         else:
@@ -41,63 +41,58 @@ class TestCommonClass:
         return file_path
 
     @classmethod
-    def get_inputs_path(cls, size, input_path, input_file_num, pure_data_type=random, base_size_file_prefix=""):
+    def get_inputs_path(cls, size, input_path, input_file_num, pure_data_type=random):
         """generate input files
         folder structure as follows.
         test/testdata/resnet50/input        # input_path
                         |_ 196608           # size_path
                             |- 196608.bin   # base_size_file
                             |_ 5            # size_folder_path
+
+        test/testdata/bert/input
+                        |_input_ids                         # input_path
+                        |    |_ 1536                        # size_path
+                        |        |- 1536.bin
+                        |        |_ 5                       # input_file number
+                        |input_mask                         # input_path
+                        |    |_ 1536                        # size_path
+                        |        |- 1536.bin
+                        |        |_ 5                       # input_file number
+                        |_segment_ids                       # input_path
+                             |_ 1536                        # size_path
+                                 |- 1536.bin
+                                 |_ 5                       # input_file number
         """
         size_path = os.path.join(input_path,  str(size))
         if not os.path.exists(size_path):
             os.makedirs(size_path)
 
-        if base_size_file_prefix == "":
-            base_size_file_path = os.path.join(size_path, "{}.bin".format(size))
-        else:
-            base_size_file_path = os.path.join(size_path, "{}_{}.bin".format(base_size_file_prefix, size))
-
+        base_size_file_path = os.path.join(size_path, "{}.bin".format(size))
         if not os.path.exists(base_size_file_path):
-            cls.create_inputs_file(size_path, size, pure_data_type, base_size_file_prefix)
+            cls.create_inputs_file(size_path, size, pure_data_type)
 
-        size_folder_path = os.path.join(size_path, str(input_file_num))
-        sub_folder_path = size_folder_path
+        input_file_num_folder_path = os.path.join(size_path, str(input_file_num))
 
-        if os.path.exists(size_folder_path):
-            if base_size_file_prefix == "":
-                if len(os.listdir(size_folder_path)) == input_file_num:
-                    return size_folder_path
-                else:
-                    shutil.rmtree(size_folder_path)
+        if os.path.exists(input_file_num_folder_path):
+            if len(os.listdir(input_file_num_folder_path)) == input_file_num:
+                return input_file_num_folder_path
             else:
-                sub_folder_path = os.path.join(size_folder_path, base_size_file_prefix)
-                if os.path.exists(sub_folder_path):
-                    if len(os.listdir(sub_folder_path)) == input_file_num:
-                        return sub_folder_path
-                    else:
-                        shutil.rmtree(sub_folder_path)
-        if not os.path.exists(size_folder_path):
-            os.makedirs(size_folder_path)
+                shutil.rmtree(input_file_num_folder_path)
 
-        if not os.path.exists(sub_folder_path):
-            os.makedirs(sub_folder_path)
+        if not os.path.exists(input_file_num_folder_path):
+            os.makedirs(input_file_num_folder_path)
+
         strs = []
         # create soft link to base_size_file
         for i in range(input_file_num):
             file_name = "{}-{}.bin".format(size, i)
-            if len(base_size_file_prefix) != 0:
-                file_name =  base_size_file_prefix  + "_" + file_name
-            file_path = os.path.join(size_folder_path, base_size_file_prefix, file_name)
+            file_path = os.path.join(input_file_num_folder_path, file_name)
             strs.append("ln -s {} {}".format(base_size_file_path, file_path))
 
         cmd = ';'.join(strs)
-
         os.system(cmd)
-        return_input_path = size_folder_path
-        if len(base_size_file_prefix) != 0:
-            return_input_path = os.path.join(size_folder_path, base_size_file_prefix)
-        return return_input_path
+
+        return input_file_num_folder_path
 
     @classmethod
     def get_model_static_om_path(cls, batchsize, modelname):
@@ -130,21 +125,3 @@ class TestCommonClass:
 
         return int(outval.replace('\n', ''))
 
-    @staticmethod
-    def compare_file_list(file_list, require_same=True):
-        if len(file_list) == 0:
-            return  False
-
-        file_0 = file_list[0]
-        for file in file_list:
-            if file == file_0:
-                continue
-            else:
-                if require_same:
-                     if not  filecmp.cmp(file_0, file):
-                         return False
-                else:
-                    if filecmp.cmp(file_0, file) == True:
-                        return False
-
-        return True
