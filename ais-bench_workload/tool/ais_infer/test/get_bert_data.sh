@@ -59,12 +59,12 @@ main()
 {
     SOC_VERSION="Ascend310"
     PYTHON_COMMAND="python3.7"
-    TESTDATA_PATH=$CUR_PATH/testdata/
-    [ -d $TESTDATA_PATH ] || mkdir $TESTDATA_PATH
-    [ -d $TESTDATA_PATH/tmp ] || mkdir $TESTDATA_PATH/tmp/
+    TESTDATA_PATH=$CUR_PATH/testdata/bert/model
+    [ -d $TESTDATA_PATH ] || mkdir -p $TESTDATA_PATH
+    [ -d $TESTDATA_PATH/tmp ] || mkdir -p $TESTDATA_PATH/tmp/
 
     model_url="https://ascend-repo-modelzoo.obs.myhuaweicloud.com/model/ATC%20BERT_BASE_SQuAD1.1%28FP16%29%20from%20Tensorflow-Ascend310/zh/1.1/ATC%20BERT_BASE_SQuAD1.1%28FP16%29%20from%20Tensorflow-Ascend310.zip"
-    bert_pb_file="$TESTDATA_PATH/bert.pb"
+    bert_pb_file="$TESTDATA_PATH/pth_bert.pb"
     if [ ! -f $bert_pb_file ]; then
         try_download_url $model_url $TESTDATA_PATH/tmp/a.zip || { echo "donwload stubs failed";return 1; }
         unzip $TESTDATA_PATH/tmp/a.zip -d $TESTDATA_PATH/tmp/

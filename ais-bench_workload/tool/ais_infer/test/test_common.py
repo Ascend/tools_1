@@ -1,8 +1,10 @@
+import filecmp
 import math
 import os
 import random
 import shutil
 import sys
+from fileinput import filename
 
 import aclruntime
 import numpy as np
@@ -42,10 +44,11 @@ class TestCommonClass:
     def get_inputs_path(cls, size, input_path, input_file_num, pure_data_type=random):
         """generate input files
         folder structure as follows.
-        test/testdata/resnet50/input
-                        |_ 196608           # size
-                            |- 196608.bin   # base_size_file
-                            |_ 5            # input_file_num
+        input_path
+                |_ 196608           # size_path
+                    |- 196608.bin   # base_size_file
+                    |_ 5            # input_file_num_folder_path
+
         """
         size_path = os.path.join(input_path,  str(size))
         if not os.path.exists(size_path):
@@ -55,26 +58,28 @@ class TestCommonClass:
         if not os.path.exists(base_size_file_path):
             cls.create_inputs_file(size_path, size, pure_data_type)
 
-        size_folder_path = os.path.join(input_path, str(input_file_num))
+        input_file_num_folder_path = os.path.join(size_path, str(input_file_num))
 
-        if os.path.exists(size_folder_path):
-            if len(os.listdir(size_folder_path)) == input_file_num:
-                return size_folder_path
+        if os.path.exists(input_file_num_folder_path):
+            if len(os.listdir(input_file_num_folder_path)) == input_file_num:
+                return input_file_num_folder_path
             else:
-                shutil.rmtree(size_folder_path)
+                shutil.rmtree(input_file_num_folder_path)
 
-        # create soft link to base_size_file
-        os.mkdir(size_folder_path)
+        if not os.path.exists(input_file_num_folder_path):
+            os.makedirs(input_file_num_folder_path)
+
         strs = []
+        # create soft link to base_size_file
         for i in range(input_file_num):
             file_name = "{}-{}.bin".format(size, i)
-            file_path = os.path.join(size_folder_path, file_name)
+            file_path = os.path.join(input_file_num_folder_path, file_name)
             strs.append("ln -s {} {}".format(base_size_file_path, file_path))
 
         cmd = ';'.join(strs)
         os.system(cmd)
 
-        return size_folder_path
+        return input_file_num_folder_path
 
     @classmethod
     def get_model_static_om_path(cls, batchsize, modelname):
@@ -106,3 +111,4 @@ class TestCommonClass:
             return 0
 
         return int(outval.replace('\n', ''))
+

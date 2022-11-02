@@ -1,5 +1,6 @@
-import os
 import math
+import os
+
 import pytest
 from test_common import TestCommonClass
 
