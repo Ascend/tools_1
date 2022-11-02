@@ -44,24 +44,11 @@ class TestCommonClass:
     def get_inputs_path(cls, size, input_path, input_file_num, pure_data_type=random):
         """generate input files
         folder structure as follows.
-        test/testdata/resnet50/input        # input_path
-                        |_ 196608           # size_path
-                            |- 196608.bin   # base_size_file
-                            |_ 5            # size_folder_path
+        input_path
+                |_ 196608           # size_path
+                    |- 196608.bin   # base_size_file
+                    |_ 5            # input_file_num_folder_path
 
-        test/testdata/bert/input
-                        |_input_ids                         # input_path
-                        |    |_ 1536                        # size_path
-                        |        |- 1536.bin
-                        |        |_ 5                       # input_file number
-                        |input_mask                         # input_path
-                        |    |_ 1536                        # size_path
-                        |        |- 1536.bin
-                        |        |_ 5                       # input_file number
-                        |_segment_ids                       # input_path
-                             |_ 1536                        # size_path
-                                 |- 1536.bin
-                                 |_ 5                       # input_file number
         """
         size_path = os.path.join(input_path,  str(size))
         if not os.path.exists(size_path):
