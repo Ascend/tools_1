@@ -149,3 +149,6 @@ class TestClass():
 
         for output_path in output_paths:
             shutil.rmtree(output_path)
+
+if __name__ == '__main__':
+    pytest.main(['test_infer_yolov3.py', '-vs'])
