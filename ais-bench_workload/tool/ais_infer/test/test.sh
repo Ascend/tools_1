@@ -39,6 +39,7 @@ main() {
     #bash -x $CUR_PATH/get_pth_inception_v3_data.sh
     bash -x $CUR_PATH/get_bert_data.sh
     bash -x $CUR_PATH/get_yolo_data.sh
+    bash -x $CUR_PATH/get_pth_crnn_data.sh
     ${PYTHON_COMMAND} -m pytest -s $CUR_PATH/ST/
     ${PYTHON_COMMAND} -m pytest -s $CUR_PATH/UT/
 

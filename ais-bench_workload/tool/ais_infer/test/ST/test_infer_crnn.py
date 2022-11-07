@@ -10,6 +10,7 @@ from test_common import TestCommonClass
 
 
 class TestClass():
+
     @classmethod
     def setup_class(cls):
         """
@@ -27,13 +28,13 @@ class TestClass():
         self.output_file_num = 5
 
     def get_model_name(self):
-        return "yolov3"
+        return "crnn"
 
     def get_model_base_path(self):
         """
-        supported model names as yolo, resnet50, resnet101,...。folder struct as follows
+        supported model names as crnn, resnet50, resnet101,...。folder struct as follows
         testdata
-         └── yolo   # model base
+         └── crnn   # model base
             ├── input
             ├── model
             └── output
@@ -41,28 +42,31 @@ class TestClass():
         return os.path.join(TestCommonClass.base_path, self.model_name)
 
     def get_dynamic_batch_om_path(self):
-        return os.path.join(self.model_base_path, "model", "pth_yolov3_dymbatch.om")
+        return os.path.join(self.model_base_path, "model", "pth_crnn_dymbatch.om")
 
     def test_pure_inference_normal_static_batch(self):
         """
         batch size 1,2,4,8
         """
-        batch_list = [1, 2, 4, 8]
+        batch_list = [1, 2, 4, 8, 16]
 
         for _, batch_size in enumerate(batch_list):
-            model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
-            cmd = "{} --model {} --device {}".format(TestCommonClass.cmd_prefix, model_path,
-                                                     TestCommonClass.default_device_id)
+            model_path = TestCommonClass.get_model_static_om_path(
+                batch_size, self.model_name)
+            cmd = "{} --model {} --device {}".format(
+                TestCommonClass.cmd_prefix, model_path,
+                TestCommonClass.default_device_id)
             print("run cmd:{}".format(cmd))
             ret = os.system(cmd)
             assert ret == 0
 
     def test_pure_inference_normal_dynamic_batch(self):
-        batch_list = [1, 2, 4, 8]
+        batch_list = [1, 2, 4, 8, 16]
         model_path = self.get_dynamic_batch_om_path()
         for _, dys_batch_size in enumerate(batch_list):
-            cmd = "{} --model {} --device {} --dymBatch {}".format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id,
-                                                                dys_batch_size)
+            cmd = "{} --model {} --device {} --dymBatch {}".format(
+                TestCommonClass.cmd_prefix, model_path,
+                TestCommonClass.default_device_id, dys_batch_size)
             print("run cmd:{}".format(cmd))
             ret = os.system(cmd)
             assert ret == 0
@@ -73,7 +77,7 @@ class TestClass():
         input_size = TestCommonClass.get_model_inputs_size(static_model_path)[0]
         input_path = TestCommonClass.get_inputs_path(input_size, os.path.join(self.model_base_path, "input"),
                                                      self.output_file_num)
-        batch_list = [1, 2, 4, 8]
+        batch_list = [1, 2, 4, 8, 16]
         base_output_path = os.path.join(self.model_base_path, "output")
         output_paths = []
 
@@ -84,13 +88,14 @@ class TestClass():
             if os.path.exists(tmp_output_path):
                 shutil.rmtree(tmp_output_path)
             os.makedirs(tmp_output_path)
-            cmd = "{} --model {} --device {} --input {} --output {} --output_dirname {}".format(TestCommonClass.cmd_prefix, model_path,
-                                                                TestCommonClass.default_device_id, input_path, base_output_path, output_dirname)
+            output_batchsize_axis = 1
+            cmd = "{} --model {} --device {} --input {} --output {} --output_dirname {} --output_batchsize_axis {}".format(TestCommonClass.cmd_prefix, model_path,
+                                                                TestCommonClass.default_device_id, input_path, base_output_path, output_dirname, output_batchsize_axis)
             print("run cmd:{}".format(cmd))
             ret = os.system(cmd)
             assert ret == 0
             output_bin_file_num = len(os.listdir(tmp_output_path)) - 1
-            assert(output_bin_file_num == 3 * self.output_file_num)
+            assert(output_bin_file_num == self.output_file_num)
             output_paths.append(tmp_output_path)
 
         # compare different batchsize inference bin files
@@ -114,7 +119,7 @@ class TestClass():
         input_size = TestCommonClass.get_model_inputs_size(static_model_path)[0]
         input_path = TestCommonClass.get_inputs_path(input_size, os.path.join(self.model_base_path, "input"),
                                                      self.output_file_num)
-        batch_list = [1, 2, 4, 8]
+        batch_list = [1, 2, 4, 8, 16]
         base_output_path = os.path.join(self.model_base_path, "output")
         output_paths = []
 
@@ -126,13 +131,14 @@ class TestClass():
             if os.path.exists(tmp_output_path):
                 shutil.rmtree(tmp_output_path)
             os.makedirs(tmp_output_path)
-            cmd = "{} --model {} --device {} --input {} --output {} --output_dirname {} --dymBatch {}".format(TestCommonClass.cmd_prefix, model_path,
-                                                                TestCommonClass.default_device_id, input_path, base_output_path, output_dirname, dys_batch_size)
+            output_batchsize_axis = 1
+            cmd = "{} --model {} --device {} --input {} --output {} --output_dirname {} --output_batchsize_axis {} --dymBatch {}".format(TestCommonClass.cmd_prefix, model_path,
+                                                                TestCommonClass.default_device_id, input_path, base_output_path, output_dirname, output_batchsize_axis, dys_batch_size)
             print("run cmd:{}".format(cmd))
             ret = os.system(cmd)
             assert ret == 0
             output_bin_file_num = len(os.listdir(tmp_output_path)) - 1
-            assert(output_bin_file_num == 3 * self.output_file_num)
+            assert(output_bin_file_num == self.output_file_num)
             output_paths.append(tmp_output_path)
 
         # compare different batchsize inference bin files
@@ -150,5 +156,37 @@ class TestClass():
         for output_path in output_paths:
             shutil.rmtree(output_path)
 
+    def test_general_inference_abnormal_output_batchsize_axis(self):
+        batch_size = 1
+        static_model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
+        input_size = TestCommonClass.get_model_inputs_size(static_model_path)[0]
+        input_path = TestCommonClass.get_inputs_path(input_size, os.path.join(self.model_base_path, "input"),
+                                                     self.output_file_num)
+
+        dys_batch_size = 4
+        base_output_path = os.path.join(self.model_base_path, "output")
+
+        model_path = self.get_dynamic_batch_om_path()
+
+        output_dirname = "{}_0".format("static_batch")
+        tmp_output_path = os.path.join(base_output_path, output_dirname)
+        if os.path.exists(tmp_output_path):
+            shutil.rmtree(tmp_output_path)
+        os.makedirs(tmp_output_path)
+        output_batchsize_axis = 2
+        cmd = "{} --model {} --device {} --input {} --output {} --output_dirname {} --output_batchsize_axis {} --dymBatch {}".format(TestCommonClass.cmd_prefix, model_path,
+                                                            TestCommonClass.default_device_id, input_path, base_output_path, output_dirname, output_batchsize_axis, dys_batch_size)
+        print("run cmd:{}".format(cmd))
+        ret = os.system(cmd)
+        assert ret != 0
+        shutil.rmtree(tmp_output_path)
+
+
 if __name__ == '__main__':
-    pytest.main(['test_infer_yolov3.py', '-vs'])
+    pytest.main(['test_infer_crnn.py', '-vs'])
+
+
+
+
+
+

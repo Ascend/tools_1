@@ -209,4 +209,5 @@ sumary:{'NPU_compute_time': {'min': 2.4385452270507812, 'max': 2.587556838989258
 | --profiler | profiler开关，true或者false, 可选参数，默认false。<br>--output参数必须提供。profiler数据在--output参数指定的目录下的profiler文件夹内。不能与--dump同时为true。|
 | --dump |dump开关，true或者false, 可选参数，默认false。<br>--output参数必须提供。dump数据在--output参数指定的目录下的dump文件夹内。不能与--profiler同时为true。|
 | --acl_json_path | acl json文件 profiling或者dump时设置。当该参数设置时，--dump和--profiler参数无效。      |
+| --output_batchsize_axis |输出tensor的batchsize轴，默认0。输出结果保存文件时，根据哪个轴进行切割推理结果，比如batchsize为2，表示2个输入文件进行组batch进行推理，那输出结果的batch维度是在哪个轴。默认为0轴，按照0轴进行切割为2份，但是部分模型的输出batch为1轴，所以要设置该值为1。|
 | --help| 工具使用帮助信息                  |
