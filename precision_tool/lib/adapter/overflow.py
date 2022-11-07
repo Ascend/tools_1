@@ -81,6 +81,8 @@ class Overflow(object):
             detail = json_txt['L2 Atomic Add']
             res.append(' - [L2 Atomic Add][Status:%s][TaskId:%s] %s' % (
                 detail['status'], detail['task_id'], self._decode_l2_atomic_add_status(detail['status'])))
+        if str(detail['task_id']) == '-1':
+            detail['task_id'] = debug_file.task_id
         dump_file_info = self._find_dump_files_by_task_id(detail['task_id'], debug_file.dir_path)
         res.append(' - First overflow file timestamp [%s] -' % debug_file.timestamp)
         if dump_file_info is None:
