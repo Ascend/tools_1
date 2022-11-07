@@ -175,9 +175,9 @@ main()
     AIPPCONFIG_FILE_PATH=$TESTDATA_PATH/aipp_resnet50.aippconfig
     get_aippConfig_file $AIPPCONFIG_FILE_PATH || { echo "get aipp file failed";return 1; }
 
-    staticbatch="1 2 4 8"
+    staticbatch="1 2 4 8 16"
     convert_staticbatch_om $resnet_onnx_file $SOC_VERSION "${staticbatch[*]}" $input_tensor_name $AIPPCONFIG_FILE_PATH || { echo "convert static om failed";return 1; }
-    dymbatch="1,2,4,8"
+    dymbatch="1,2,4,8,16"
     convert_dymbatch_om $resnet_onnx_file $SOC_VERSION $dymbatch $input_tensor_name $AIPPCONFIG_FILE_PATH || { echo "convert dymbatch om failed";return 1; }
     dymhw="224,224;448,448"
     unset AIPPCONFIG_FILE_PATH

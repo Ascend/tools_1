@@ -118,9 +118,9 @@ main()
     input_tensor_name="images"
     #out_nodes="Reshape_219:0;Reshape_203:0;Reshape_187:0"
 
-    staticbatch="1 2 4 8"
+    staticbatch="1 2 4 8 16"
     convert_staticbatch_om $yolo_onnx_file $SOC_VERSION "${staticbatch[*]}" $input_tensor_name || { echo "convert static om failed";return 1; }
-    dymbatch="1,2,4,8"
+    dymbatch="1,2,4,8,16"
     convert_dymbatch_om $yolo_onnx_file $SOC_VERSION $dymbatch $input_tensor_name || { echo "convert dymbatch om failed";return 1; }
     dymhw="224,224;448,448"
     convert_dymhw_om $yolo_onnx_file $SOC_VERSION $dymhw $input_tensor_name || { echo "convert dymhw om failed";return 1; }
