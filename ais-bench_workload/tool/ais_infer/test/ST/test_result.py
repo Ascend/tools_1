@@ -40,7 +40,7 @@ class TestClass:
         """
         warmup_num = 1
         output_file_num = 17
-        batch_list = [1, 2, 4, 8]
+        batch_list = [1, 2, 4, 8, 16]
         output_path = os.path.join(TestCommonClass.base_path, "tmp")
         TestCommonClass.prepare_dir(output_path)
         log_path = os.path.join(output_path, "log.txt")

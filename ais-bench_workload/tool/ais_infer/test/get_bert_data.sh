@@ -77,9 +77,9 @@ main()
     mask_name="input_mask"
     seg_name="segment_ids"
 
-    staticbatch="1 2 4 8"
+    staticbatch="1 2 4 8 16"
     convert_staticbatch_om $bert_pb_file $input_tensor_name $SOC_VERSION "${staticbatch[*]}" || { echo "convert static om failed";return 1; }
-    dymbatch="1,2,4,8"
+    dymbatch="1,2,4,8,16"
     convert_dymbatch_om $bert_pb_file $input_tensor_name $SOC_VERSION $dymbatch || { echo "convert dymbatch om failed";return 1; }
 }
 

@@ -50,7 +50,7 @@ class TestClass():
         """
         batch size 1,2,4,8
         """
-        batch_list = [1, 2, 4, 8]
+        batch_list = [1, 2, 4, 8, 16]
 
         for _, batch_size in enumerate(batch_list):
             model_path = TestCommonClass.get_model_static_om_path(
@@ -64,7 +64,7 @@ class TestClass():
 
 
     def test_pure_inference_normal_dynamic_batch(self):
-        batch_list = [1, 2, 4, 8]
+        batch_list = [1, 2, 4, 8, 16]
         model_path = self.get_dynamic_batch_om_path()
         for _, dys_batch_size in enumerate(batch_list):
             cmd = "{} --model {} --device {} --dymBatch {}".format(
@@ -94,7 +94,7 @@ class TestClass():
         input_paths.append(input_mask_dir_path)
         input_paths.append(segment_ids_dir_path)
         input_path = ','.join(input_paths)
-        batch_list = [1, 2, 4, 8]
+        batch_list = [1, 2, 4, 8, 16]
 
         base_output_path = os.path.join(self.model_base_path, "output")
         output_paths = []
@@ -152,7 +152,7 @@ class TestClass():
         input_paths.append(input_mask_dir_path)
         input_paths.append(segment_ids_dir_path)
         input_path = ','.join(input_paths)
-        batch_list = [1, 2, 4, 8]
+        batch_list = [1, 2, 4, 8, 16]
         base_output_path = os.path.join(self.model_base_path, "output")
         model_path = self.get_dynamic_batch_om_path()
         output_paths = []
