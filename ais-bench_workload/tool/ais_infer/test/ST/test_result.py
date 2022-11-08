@@ -42,7 +42,7 @@ class TestClass:
         output_path = os.path.join(TestCommonClass.base_path, "tmp")
         TestCommonClass.prepare_dir(output_path)
         log_path = os.path.join(output_path, "log.txt")
-        exclude_file = "sumary.json"
+        exclude_file = "summary.json"
         result_paths = []
         batch_size = 1
         static_model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
@@ -84,7 +84,7 @@ class TestClass:
         batch_size = 1
         warmup_num = 1
         output_file_num = 17
-        exclude_file = "sumary.json"
+        exclude_file = "summary.json"
         result_paths = []
         output_path = os.path.join(TestCommonClass.base_path, "tmp")
         TestCommonClass.prepare_dir(output_path)
