@@ -30,7 +30,7 @@ def infer_simple():
         out.to_host()
         # convert acltensor to numpy array
         outarray.append(np.array(out))
-    # sumary inference throughput
+    # summary inference throughput
     print("infer avg:{} ms".format(np.mean(session.sumary().exec_time_list)))
 
 # 获取模型信息
@@ -83,7 +83,7 @@ def infer_dynamicshape():
         out.to_host()
         # convert acltensor to numpy array
         outarray.append(np.array(out))
-    # sumary inference throughput
+    # summary inference throughput
     print("infer avg:{} ms".format(np.mean(session.sumary().exec_time_list)))
 
 
@@ -133,7 +133,7 @@ def infer_run_simultaneous():
         out.to_host()
         # convert acltensor to numpy array
         outarray.append(np.array(out))
-    # sumary inference throughput
+    # summary inference throughput
     print("infer avg:{} ms".format(np.mean(session.sumary().exec_time_list)))
 
     # another run
@@ -146,7 +146,7 @@ def infer_run_simultaneous():
         out.to_host()
         # convert acltensor to numpy array
         outarray1.append(np.array(out))
-    # sumary inference throughput
+    # summary inference throughput
     print("infer avg:{} ms".format(np.mean(session1.sumary().exec_time_list)))
 
 def infer_dynamic_dims():
@@ -176,7 +176,7 @@ def infer_dynamic_dims():
         out.to_host()
         # convert acltensor to numpy array
         outarray.append(np.array(out))
-    # sumary inference throughput
+    # summary inference throughput
     print("infer avg:{} ms".format(np.mean(session.sumary().exec_time_list)))
 
 def infer_dynamics_hw():
@@ -206,7 +206,7 @@ def infer_dynamics_hw():
         out.to_host()
         # convert acltensor to numpy array
         outarray.append(np.array(out))
-    # sumary inference throughput
+    # summary inference throughput
     print("infer avg:{} ms".format(np.mean(session.sumary().exec_time_list)))
 
 def infer_dynamic_batchsize():
@@ -237,7 +237,7 @@ def infer_dynamic_batchsize():
         out.to_host()
         # convert acltensor to numpy array
         outarray.append(np.array(out))
-    # sumary inference throughput
+    # summary inference throughput
     print("infer avg:{} ms".format(np.mean(session.sumary().exec_time_list)))
 
 infer_simple()
