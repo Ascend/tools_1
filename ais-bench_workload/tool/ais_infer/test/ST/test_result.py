@@ -1,5 +1,6 @@
-import os
 import math
+import os
+
 import pytest
 from test_common import TestCommonClass
 
@@ -42,7 +43,6 @@ class TestClass:
         output_path = os.path.join(TestCommonClass.base_path, "tmp")
         TestCommonClass.prepare_dir(output_path)
         log_path = os.path.join(output_path, "log.txt")
-        exclude_file = "summary.json"
         result_paths = []
         batch_size = 1
         static_model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
@@ -76,7 +76,7 @@ class TestClass:
 
         # bin file compare for batch size [1, 2,4,8], should be same
         for _, result_path in enumerate(result_paths[1:]):
-            cmd = "diff -x {} {}  {}".format(exclude_file, result_paths[0], result_path)
+            cmd = "diff  {}  {}".format(result_paths[0], result_path)
             ret = os.system(cmd)
             assert ret == 0
 
@@ -84,7 +84,6 @@ class TestClass:
         batch_size = 1
         warmup_num = 1
         output_file_num = 17
-        exclude_file = "summary.json"
         result_paths = []
         output_path = os.path.join(TestCommonClass.base_path, "tmp")
         TestCommonClass.prepare_dir(output_path)
@@ -121,7 +120,7 @@ class TestClass:
 
         # bin file compare for batch size [1, 2,4,8], should be same
         for _, result_path in enumerate(result_paths[1:]):
-            cmd = "diff -x {} {}  {}".format(exclude_file, result_paths[0], result_path)
+            cmd = "diff {}  {}".format(result_paths[0], result_path)
             ret = os.system(cmd)
             assert ret == 0
 
