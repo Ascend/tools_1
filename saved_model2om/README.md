@@ -4,7 +4,7 @@
 支持将TensorFlow1.15存储的saved_model转换为om
 
 ## 使用环境
-1. 安装了CANN包的Linux机器
+1. 用户环境中安装了CANN包的Linux机器
 
 2. 已经安装TensorFlow
 
@@ -43,7 +43,7 @@ tf.saved_model.simple_save(sess, 'models/',
 
     pip3 install tensorflow==1.15
 	
-### 2. 配置CANN包中的环境变量  
+### 2. 安装CANN包，配置CANN包中的环境变量  
 
     在Ascend/ascend-toolkit目录下执行source set_env.sh
 
