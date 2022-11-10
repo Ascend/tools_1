@@ -57,11 +57,15 @@ tf.saved_model.simple_save(sess, 'models/',
 ​       参数说明：
 
 ​       --input_path:  saved_model的存储目录，saved_model按如下目录格式存储：
+
+```
 					  输入目录：
 						|--save-model.pb
 						|--variable
 						   |--variables.data-00000-of-00001
 						   |--variables.index
+
+```
 
 ​       --output_path: 输出的om文件，会自动补齐后缀，例如设置为/xxx/output/model时，输出文件为/xxx/output/model.om
 
