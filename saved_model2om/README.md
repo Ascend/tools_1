@@ -54,6 +54,11 @@ tf.saved_model.simple_save(sess, 'models/',
    python3 saved_model2om.py --input_path=/xxx/xxx/saved_model --output_path=/xxx/output/model --input_shape "input:16,224,224,3" --soc_version Ascend310
    ```
 
+需要调优时
+
+   ```
+   python3 saved_model2om.py --input_path=/xxx/xxx/saved_model --output_path=/xxx/output/model --input_shape "input:16,224,224,3" --profiling 1
+   ```
 ​       参数说明：
 
 ​       --input_path:  saved_model的存储目录，saved_model按如下目录格式存储：
