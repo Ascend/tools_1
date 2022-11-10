@@ -64,14 +64,13 @@ tf.saved_model.simple_save(sess, 'models/',
 ​       --input_path:  saved_model的存储目录，saved_model按如下目录格式存储：
 
 ```
-		输入目录：
-		   |--save-model.pb
-	           |--variable
+               输入目录：
+                   |--save-model.pb
+                   |--variable
                          |--variables.data-00000-of-00001
                          |--variables.index
 
 ```
-
 ​       --output_path: 输出的om文件，会自动补齐后缀，例如设置为/xxx/output/model时，输出文件为/xxx/output/model.om
 
 ​       --input_shape: 模型输入shape, 格式为"name1:shape;name2:shape;name3:shape", 当为设置input_shape时，模型输入shape中未明确定义的维度会被自动设置为1
