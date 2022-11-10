@@ -109,22 +109,22 @@ def gen_pb_txt(pb_file_path):
     subprocess.run(("python3", func2graph_path, "-m", pb_file_path), stdout=subprocess.PIPE)
 
 
-def pb_to_om(pb_file_path, output_path, soc_version, input_shape):
+def pb_to_om(pb_file_path, output_path, soc_version, input_shape, rest_args):
     atc_path_in_home = os.path.join("Ascend", "ascend-toolkit", "latest", "bin", "atc")
     atc_path = os.path.join(os.getenv("HOME"), atc_path_in_home)
     if not os.path.exists(atc_path):
         atc_path = os.path.join("/usr/local", atc_path_in_home)
     subprocess.run((atc_path, "--framework", "3", "--model", pb_file_path, "--output", output_path, "--soc_version",
-                    soc_version, "--input_shape", input_shape))
+                    soc_version, "--input_shape", input_shape, *rest_args))
 
 
-def pb_to_om_with_profiling(pb_file_path, output_path, input_shape, profiling):
+def pb_to_om_with_profiling(pb_file_path, output_path, input_shape, profiling, rest_args):
     aoe_path_in_home = os.path.join("Ascend", "ascend-toolkit", "latest", "bin", "aoe")
     aoe_path = os.path.join(os.getenv("HOME"), aoe_path_in_home)
     if not os.path.exists(aoe_path):
         aoe_path = os.path.join("/usr/local", aoe_path_in_home)
     subprocess.run((aoe_path, "--framework", "3", "--model", pb_file_path, "--output",
-                    output_path, "--input_shape", input_shape, "--job_type", profiling))
+                    output_path, "--input_shape", input_shape, "--job_type", profiling, *rest_args))
 
 
 def get_input_shape(input_nodes):
@@ -136,7 +136,7 @@ def get_input_shape(input_nodes):
     return input_shape_param
 
 
-def main(input_path, output_path, input_shape, soc_version, profiling):
+def main(input_path, output_path, input_shape, soc_version, profiling, rest_args):
     tmp_path = os.path.join("/tmp", f"pb_dir_{int(time.time())}")
     os.makedirs(tmp_path, exist_ok=True)
     tmp_pb_name = "model.pb"
@@ -147,9 +147,9 @@ def main(input_path, output_path, input_shape, soc_version, profiling):
     gen_pb_txt(tmp_pb_file)
 
     if profiling is not None:
-        pb_to_om_with_profiling(tmp_pb_file, output_path, input_shape, profiling)
+        pb_to_om_with_profiling(tmp_pb_file, output_path, input_shape, profiling, rest_args)
     else:
-        pb_to_om(tmp_pb_file, output_path, soc_version, input_shape)
+        pb_to_om(tmp_pb_file, output_path, soc_version, input_shape, rest_args)
     shutil.rmtree(tmp_path)
 
 
@@ -167,9 +167,9 @@ def get_args():
                                              "This parameter is not required when profiling is set.")
     group.add_argument("--profiling", choices=['1', '2'], help="Set this parameter when profiling is required."
                                                                "(sgat: 1, opat: 2).")
-    return parser.parse_args()
+    return parser.parse_known_args()
 
 
 if __name__ == "__main__":
-    args = get_args()
-    main(args.input_path, args.output_path, args.input_shape, args.soc_version, args.profiling)
+    args, unknown_args = get_args()
+    main(args.input_path, args.output_path, args.input_shape, args.soc_version, args.profiling, unknown_args)
