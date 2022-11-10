@@ -67,8 +67,8 @@ tf.saved_model.simple_save(sess, 'models/',
 		输入目录：
 		   |--save-model.pb
 	           |--variable
-			 |--variables.data-00000-of-00001
-			 |--variables.index
+                         |--variables.data-00000-of-00001
+                         |--variables.index
 
 ```
 
