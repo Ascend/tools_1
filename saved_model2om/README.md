@@ -59,11 +59,11 @@ tf.saved_model.simple_save(sess, 'models/',
 ​       --input_path:  saved_model的存储目录，saved_model按如下目录格式存储：
 
 ```
-					  输入目录：
-						|--save-model.pb
-						|--variable
-						   |--variables.data-00000-of-00001
-						   |--variables.index
+		输入目录：
+		   |--save-model.pb
+	           |--variable
+			 |--variables.data-00000-of-00001
+			 |--variables.index
 
 ```
 
