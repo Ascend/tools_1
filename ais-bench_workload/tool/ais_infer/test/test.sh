@@ -33,6 +33,20 @@ main() {
         return $ret_invalid_args
     }
     echo "python packet aclruntime valid"
+    # compile msame
+    export DDK_PATH=/usr/local/Ascend/ascend-toolkit/latest/
+    export NPU_HOST_LIB=/usr/local/Ascend/ascend-toolkit/latest/runtime/lib64/stub/
+    MSAME_BIN_PATH=$CUR_PATH/msame
+    MSAME_PATH=$CUR_PATH/../../../../msame/
+
+    if [ ! -f $MSAME_BIN_PATH ];then
+        cd $MSAME_PATH
+        bash $MSAME_PATH/build.sh g++ $MSAME_PATH/out/
+        cp $MSAME_PATH/out/msame $CUR_PATH/
+        cd -
+    fi
+
+    export MSAME_BIN_PATH=$CUR_PATH/msame
 
     bash -x $CUR_PATH/get_pth_resnet50_data.sh
     #bash -x $CUR_PATH/get_pth_resnet101_data.sh

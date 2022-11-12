@@ -12,8 +12,10 @@ import numpy as np
 
 class TestCommonClass:
     default_device_id = 0
+    EPSILON = 1e-6
     cmd_prefix = sys.executable + " " + os.path.join(os.path.dirname(os.path.realpath(__file__)), "../ais_infer.py")
     base_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../test/testdata")
+    msame_bin_path = os.getenv('MSAME_BIN_PATH')
 
     @staticmethod
     def get_cmd_prefix():

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+import json
+import math
 import os
 import shutil
 
@@ -149,6 +150,65 @@ class TestClass():
 
         for output_path in output_paths:
             shutil.rmtree(output_path)
+
+    def test_general_inference_prformance_comparison_with_msame_static_batch(self):
+        batch_size = 1
+        input_file_num = 100
+        static_model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
+        input_size = TestCommonClass.get_model_inputs_size(static_model_path)[0]
+        input_path = TestCommonClass.get_inputs_path(input_size, os.path.join(self.model_base_path, "input"),
+                                                     input_file_num)
+
+        output_path = os.path.join(self.model_base_path, "output")
+        output_paths = []
+
+        model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
+        output_dir_name = "static_batch"
+        output_dir_path = os.path.join(output_path, output_dir_name)
+        if os.path.exists(output_dir_path):
+            shutil.rmtree(output_dir_path)
+        os.makedirs(output_dir_path)
+        summary_json_path = os.path.join(output_path, output_dir_name, "sumary.json")
+        cmd = "{} --model {} --device {} --input {} --output {} --output_dirname {}".format(TestCommonClass.cmd_prefix, model_path,
+                                                            TestCommonClass.default_device_id, input_path, output_path, output_dir_name)
+        print("run cmd:{}".format(cmd))
+        ret = os.system(cmd)
+        assert ret == 0
+
+        with open(summary_json_path,'r',encoding='utf8') as fp:
+            json_data = json.load(fp)
+            ais_inference_time_ms = json_data["NPU_compute_time"]["mean"]
+
+        assert math.fabs(ais_inference_time_ms) > TestCommonClass.EPSILON
+
+        output_bin_file_num = len(os.listdir(output_dir_path)) - 1
+        assert(output_bin_file_num == 3 * input_file_num)
+
+        # get msame inference  average time without first time
+        msame_infer_log_path = os.path.join(output_path, output_dir_name, "msame_infer.log")
+        cmd = "{} --model {} --input {} > {}".format(TestCommonClass.msame_bin_path, model_path, input_path, msame_infer_log_path)
+        print("run cmd:{}".format(cmd))
+        ret = os.system(cmd)
+        assert ret == 0
+        assert os.path.exists(msame_infer_log_path)
+
+        msame_inference_time_ms = 0
+        with open(msame_infer_log_path) as f:
+            for line in f:
+                if "Inference average time without first time" not in line:
+                    continue
+
+                sub_str = line[(line.rfind(':') + 1):]
+                sub_str = sub_str.replace('ms\n','')
+                msame_inference_time_ms = float(sub_str)
+
+        assert math.fabs(msame_inference_time_ms) > TestCommonClass.EPSILON
+        # compare
+        allowable_performance_deviation = 0.01
+        assert math.fabs(msame_inference_time_ms - ais_inference_time_ms)/msame_inference_time_ms < allowable_performance_deviation
+        os.remove(msame_infer_log_path)
+        shutil.rmtree(output_dir_path)
+
 
 if __name__ == '__main__':
     pytest.main(['test_infer_yolov3.py', '-vs'])
