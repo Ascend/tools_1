@@ -12,6 +12,19 @@ from ais_infer.utils import (get_file_content, get_file_datasize,
 pure_infer_fake_file = "pure_infer_data"
 padding_infer_fake_file = "padding_infer_fake_file"
 
+def convert_real_files(files):
+    real_files = [ ]
+    for file in files:
+        if file == pure_infer_fake_file:
+            raise RuntimeError("not support pure infer")
+        elif file.endswith(".npy") or file.endswith(".NPY"):
+            raise RuntimeError("not support npy file:{}".format(file))
+        elif file == padding_infer_fake_file:
+            real_files.append(files[0])
+        else:
+            real_files.append(file)
+    return real_files
+
 def get_pure_infer_data(size, pure_data_type):
     lst = []
     if pure_data_type == "random":
@@ -76,17 +89,6 @@ def get_files_count_per_batch(intensors_desc, fileslist, auto_set_dymshape_mode=
     logger.info("get filesperbatch files0 size:{} tensor0size:{} filesperbatch:{} runcount:{}".format(
         filesize, tensorsize, files_count_per_batch, runcount))
     return files_count_per_batch, runcount
-
-# out api create empty data
-def create_intensors_zerodata(session, pure_data_type):
-    intensors = []
-    intensors_desc = session.get_inputs()
-    for info in intensors_desc:
-        logger.debug("info shape:{} type:{} val:{} realsize:{} size:{}".format(info.shape, info.datatype, int(info.datatype), info.realsize, info.size))
-        ndata = get_pure_infer_data(info.realsize, pure_data_type)
-        tensor = session.create_tensor_from_arrays_to_device(ndata)
-        intensors.append(tensor)
-    return intensors
 
 # Obtain tensor information and files information according to the input filelist. Create intensor form files list
 # len(files_list) should equal len(intensors_desc)
