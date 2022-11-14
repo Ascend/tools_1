@@ -335,7 +335,7 @@ class TestClass():
                     assert h2d_num == num_input_file
                     assert d2h_num == num_input_file
         shutil.rmtree(output_path)
-    @pytest.mark.skip(reason="no way of currently testing this")
+
     def test_pure_inference_normal_warmup_count_200(self):
         batch_size = 1
         model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
@@ -375,7 +375,6 @@ class TestClass():
             assert d2h_num == 1
         shutil.rmtree(output_path)
 
-    @pytest.mark.skip(reason="no way of currently testing this")
     def test_pure_inference_normal_pure_data_type(self):
         batch_size = 1
         pure_data_types = ["zero", "random"]
