@@ -175,16 +175,16 @@ python3 ais_infer.py  --model /home/model/resnet50_v1.om --output ./ --dump
 python3 ais_infer.py  --model /home/model/resnet50_v1.om --output ./ --profiler
 ```
 
-### 结果sumary功能
+### 结果summary功能
 
-针对结果输出，本程序增加sumary.json文件打印参数值，便于汇总统计
+针对结果输出，本程序增加summary.json文件打印参数值，便于汇总统计
 具体结果信息如下
 NPU_compute_time: 推理调用总时间
 H2D_latency: 推理host到device延迟时间(ms)
 D2H_latency: 推理device到host延迟时间(ms)
 throughput: 吞吐率。吞吐率计算公式：1000 *batchsize/npu_compute_time.mean
 打印如下:
-sumary:{'NPU_compute_time': {'min': 2.4385452270507812, 'max': 2.587556838989258, 'mean': 2.5239520602756076, 'median': 2.529621124267578, 'percentile(99%)': 2.585916519165039}, 'H2D_latency': {'min': 0.5118846893310547, 'max': 1.0373592376708984, 'mean': 0.6650818718804253, 'median': 0.6296634674072266, 'percentile(99%)': 1.0063838958740234}, 'D2H_latency': {'min': 0.027894973754882812, 'max': 0.05745887756347656, 'mean': 0.04508760240342882, 'median': 0.04744529724121094, 'percentile(99%)': 0.05671501159667969}, 'throughput': 396.2040387925606}
+summary:{'NPU_compute_time': {'min': 2.4385452270507812, 'max': 2.587556838989258, 'mean': 2.5239520602756076, 'median': 2.529621124267578, 'percentile(99%)': 2.585916519165039}, 'H2D_latency': {'min': 0.5118846893310547, 'max': 1.0373592376708984, 'mean': 0.6650818718804253, 'median': 0.6296634674072266, 'percentile(99%)': 1.0063838958740234}, 'D2H_latency': {'min': 0.027894973754882812, 'max': 0.05745887756347656, 'mean': 0.04508760240342882, 'median': 0.04744529724121094, 'percentile(99%)': 0.05671501159667969}, 'throughput': 396.2040387925606}
 
 ## 参数说明
 

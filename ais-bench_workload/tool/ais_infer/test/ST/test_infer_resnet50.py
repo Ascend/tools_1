@@ -67,6 +67,20 @@ class TestClass():
             np.save(file, x)
             i += 1
 
+    def get_dynamic_shape_om_file_size(self, shape):
+        """"
+        dym_shape = "actual_input_1:1,3,224,224"
+        """
+        if len(shape) == 0:
+            return 0
+
+        sub_str = shape[(shape.rfind(':') + 1):]
+        sub_str = sub_str.replace('\n','')
+        num_arr = sub_str.split(',')
+        fix_num = 4
+        size = int(num_arr[0]) * int(num_arr[1]) * int(num_arr[2]) * int(num_arr[3]) * fix_num
+        return size
+
     def test_pure_inference_normal_static_batch(self):
         """
         batch size 1,2,4,8
@@ -249,7 +263,7 @@ class TestClass():
         assert ret == 0
         assert os.path.exists(log_path)
 
-        # ignore of warmup inference time, get  inferening times from log file and  sumary.json, compare them and assert
+        # ignore of warmup inference time, get  inferening times from log file and  summary.json, compare them and assert
         infer_time_lists = []
         with open(log_path) as f:
             i = 0
@@ -265,15 +279,17 @@ class TestClass():
                 infer_time_lists.append(float(sub_str))
 
         time_array = np.array(infer_time_lists)
-        sumary_json_path = os.path.join(output_path, "sumary.json")
-        with open(sumary_json_path,'r',encoding='utf8') as fp:
+        summary_json_path = os.path.join(output_parent_path, "{}_summary.json".format(output_dirname))
+        with open(summary_json_path,'r',encoding='utf8') as fp:
             json_data = json.load(fp)
             json_mean = json_data["NPU_compute_time"]["mean"]
             json_percentile = json_data["NPU_compute_time"]["percentile(99%)"]
 
-            EPSILON = 1e-6
-            assert math.fabs(time_array.mean() - json_mean) <= EPSILON
-            assert math.fabs(np.percentile(time_array, 99) - json_percentile) <= EPSILON
+            assert math.fabs(time_array.mean() - json_mean) <= TestCommonClass.EPSILON
+            assert math.fabs(np.percentile(time_array, 99) - json_percentile) <= TestCommonClass.EPSILON
+        os.remove(summary_json_path)
+        os.remove(log_path)
+        shutil.rmtree(output_path)
 
     def test_general_inference_normal_warmup_count(self):
         batch_size = 1
@@ -312,8 +328,8 @@ class TestClass():
 
                 assert int(outval) == (num_input_file + warmup_num)
 
-                sumary_json_path = os.path.join(output_path, "sumary.json")
-                with open(sumary_json_path,'r',encoding='utf8') as fp:
+                summary_json_path = os.path.join(output_parent_path, "{}_summary.json".format(output_dirname))
+                with open(summary_json_path,'r',encoding='utf8') as fp:
                     json_data = json.load(fp)
                     NPU_compute_time_count = json_data["NPU_compute_time"]["count"]
                     h2d_num = json_data["H2D_latency"]["count"]
@@ -321,6 +337,7 @@ class TestClass():
                     assert NPU_compute_time_count == num_input_file
                     assert h2d_num == num_input_file
                     assert d2h_num == num_input_file
+                os.remove(summary_json_path)
         shutil.rmtree(output_path)
 
     def test_pure_inference_normal_warmup_count_200(self):
@@ -351,8 +368,8 @@ class TestClass():
             raise Exception("raise an exception: {}".format(e))
 
         assert int(outval) == (loop_num + warmup_num)
-        sumary_json_path = os.path.join(output_path, "sumary.json")
-        with open(sumary_json_path,'r',encoding='utf8') as fp:
+        summary_json_path = os.path.join(output_parent_path, "{}_summary.json".format(output_dirname))
+        with open(summary_json_path,'r',encoding='utf8') as fp:
             json_data = json.load(fp)
             NPU_compute_time_count = json_data["NPU_compute_time"]["count"]
             h2d_num = json_data["H2D_latency"]["count"]
@@ -361,7 +378,7 @@ class TestClass():
             assert h2d_num == 1
             assert d2h_num == 1
         shutil.rmtree(output_path)
-
+        os.remove(summary_json_path)
 
     def test_pure_inference_normal_pure_data_type(self):
         batch_size = 1
@@ -398,6 +415,114 @@ class TestClass():
                         assert filecmp.cmp(first_output_bin_file_path, bin_file_path) == False
 
         shutil.rmtree(output_path)
+
+    def test_general_inference_prformance_comparison_with_msame_static_batch(self):
+        batch_size = 1
+        input_file_num = 100
+        static_model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
+        input_size = TestCommonClass.get_model_inputs_size(static_model_path)[0]
+        input_path = TestCommonClass.get_inputs_path(input_size, os.path.join(self.model_base_path, "input"), input_file_num)
+        model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
+        output_path = os.path.join(self.model_base_path, "output")
+        output_dir_name = "ais_infer_output"
+        output_dir_path = os.path.join(output_path, output_dir_name)
+        if os.path.exists(output_dir_path):
+            shutil.rmtree(output_dir_path)
+        os.makedirs(output_dir_path)
+        summary_json_path = os.path.join(output_path,  "{}_summary.json".format(output_dir_name))
+
+        cmd = "{} --model {} --device {} --input {} --output {} --output_dirname {}".format(TestCommonClass.cmd_prefix, model_path,
+                                                                TestCommonClass.default_device_id, input_path, output_path, output_dir_name)
+        print("run cmd:{}".format(cmd))
+        ret = os.system(cmd)
+        assert ret == 0
+
+        with open(summary_json_path,'r',encoding='utf8') as fp:
+            json_data = json.load(fp)
+            ais_inference_time_ms = json_data["NPU_compute_time"]["mean"]
+
+        assert math.fabs(ais_inference_time_ms) > TestCommonClass.EPSILON
+        # get msame inference  average time without first time
+        msame_infer_log_path = os.path.join(output_path, output_dir_name, "msame_infer.log")
+        cmd = "{} --model {} --input {} > {}".format(TestCommonClass.msame_bin_path, model_path, input_path, msame_infer_log_path)
+        print("run cmd:{}".format(cmd))
+        ret = os.system(cmd)
+        assert ret == 0
+        assert os.path.exists(msame_infer_log_path)
+
+        msame_inference_time_ms = 0
+        with open(msame_infer_log_path) as f:
+            for line in f:
+                if "Inference average time without first time" not in line:
+                    continue
+
+                sub_str = line[(line.rfind(':') + 1):]
+                sub_str = sub_str.replace('ms\n','')
+                msame_inference_time_ms = float(sub_str)
+
+        assert math.fabs(msame_inference_time_ms) > TestCommonClass.EPSILON
+        # compare
+        allowable_performance_deviation = 0.03
+        reference_deviation = math.fabs(msame_inference_time_ms - ais_inference_time_ms)/msame_inference_time_ms
+
+        assert reference_deviation < allowable_performance_deviation
+        os.remove(msame_infer_log_path)
+        shutil.rmtree(output_dir_path)
+
+    def test_general_inference_prformance_comparison_with_msame_dynamic_shape(self):
+        dym_shape = "actual_input_1:1,3,224,224"
+        input_file_num = 100
+        output_size = 10000
+
+        model_path = self.get_dynamic_shape_om_path()
+        input_size = self.get_dynamic_shape_om_file_size(dym_shape)
+
+        input_path = TestCommonClass.get_inputs_path(input_size, os.path.join(self.model_base_path, "input"), input_file_num)
+        output_path = os.path.join(self.model_base_path, "output")
+        output_dir_name = "ais_infer_dym_output"
+        output_dir_path = os.path.join(output_path, output_dir_name)
+        if os.path.exists(output_dir_path):
+            shutil.rmtree(output_dir_path)
+        os.makedirs(output_dir_path)
+        summary_json_path = os.path.join(output_path,  "{}_summary.json".format(output_dir_name))
+
+        cmd = "{} --model {}  --outputSize {} --dymShape {} --input {} --output {} --output_dirname {}".format(TestCommonClass.cmd_prefix, model_path,
+            output_size, dym_shape, input_path, output_path, output_dir_name)
+        print("run cmd:{}".format(cmd))
+        ret = os.system(cmd)
+        assert ret == 0
+
+        with open(summary_json_path,'r',encoding='utf8') as fp:
+            json_data = json.load(fp)
+            ais_inference_time_ms = json_data["NPU_compute_time"]["mean"]
+
+        assert math.fabs(ais_inference_time_ms) > TestCommonClass.EPSILON
+        # get msame inference  average time without first time
+        msame_infer_log_path = os.path.join(output_path, output_dir_name, "msame_infer.log")
+        cmd = "{} --model {} --outputSize {} --dymShape {} --input {} > {}".format(TestCommonClass.msame_bin_path, model_path,
+            output_size, dym_shape, input_path, msame_infer_log_path)
+        print("run cmd:{}".format(cmd))
+        ret = os.system(cmd)
+        assert ret == 0
+        assert os.path.exists(msame_infer_log_path)
+
+        msame_inference_time_ms = 0
+        with open(msame_infer_log_path) as f:
+            for line in f:
+                if "Inference average time without first time" not in line:
+                    continue
+
+                sub_str = line[(line.rfind(':') + 1):]
+                sub_str = sub_str.replace('ms\n','')
+                msame_inference_time_ms = float(sub_str)
+
+        assert math.fabs(msame_inference_time_ms) > TestCommonClass.EPSILON
+        # compare
+        allowable_performance_deviation = 0.04
+        reference_deviation = math.fabs(msame_inference_time_ms - ais_inference_time_ms)/msame_inference_time_ms
+        assert reference_deviation < allowable_performance_deviation
+        os.remove(msame_infer_log_path)
+        shutil.rmtree(output_dir_path)
 
 if __name__ == '__main__':
     pytest.main(['test_infer_resnet50.py', '-vs'])

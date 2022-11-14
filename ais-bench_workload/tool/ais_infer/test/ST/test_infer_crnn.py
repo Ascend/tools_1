@@ -94,19 +94,16 @@ class TestClass():
             print("run cmd:{}".format(cmd))
             ret = os.system(cmd)
             assert ret == 0
-            output_bin_file_num = len(os.listdir(tmp_output_path)) - 1
+            output_bin_file_num = len(os.listdir(tmp_output_path))
             assert(output_bin_file_num == self.output_file_num)
             output_paths.append(tmp_output_path)
 
         # compare different batchsize inference bin files
         base_compare_path = output_paths[0]
-        exclude_file_name = "sumary.json"
         for i, cur_output_path in enumerate(output_paths):
             if i == 0:
                 continue
-            cmd = "diff -x {} {}  {}".format(exclude_file_name,
-                                             base_compare_path,
-                                             cur_output_path)
+            cmd = "diff {}  {}".format(base_compare_path, cur_output_path)
             ret = os.system(cmd)
             assert ret == 0
 
@@ -137,19 +134,16 @@ class TestClass():
             print("run cmd:{}".format(cmd))
             ret = os.system(cmd)
             assert ret == 0
-            output_bin_file_num = len(os.listdir(tmp_output_path)) - 1
+            output_bin_file_num = len(os.listdir(tmp_output_path))
             assert(output_bin_file_num == self.output_file_num)
             output_paths.append(tmp_output_path)
 
         # compare different batchsize inference bin files
         base_compare_path = output_paths[0]
-        exclude_file_name = "sumary.json"
         for i, cur_output_path in enumerate(output_paths):
             if i == 0:
                 continue
-            cmd = "diff -x {} {}  {}".format(exclude_file_name,
-                                             base_compare_path,
-                                             cur_output_path)
+            cmd = "diff {}  {}".format(base_compare_path, cur_output_path)
             ret = os.system(cmd)
             assert ret == 0
 

@@ -1,5 +1,6 @@
 import math
 import os
+import shutil
 
 import pytest
 from test_common import TestCommonClass
@@ -41,11 +42,11 @@ class TestClass:
         warmup_num = 1
         output_file_num = 17
         batch_list = [1, 2, 4, 8, 16]
-        output_path = os.path.join(TestCommonClass.base_path, "tmp")
+        output_path = os.path.join(TestCommonClass.base_path, self.model_name, "output")
         TestCommonClass.prepare_dir(output_path)
         log_path = os.path.join(output_path, "log.txt")
-        exclude_file = "sumary.json"
         result_paths = []
+        summary_json_paths = []
         batch_size = 1
         static_model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
         input_size = TestCommonClass.get_model_inputs_size(static_model_path)[0]
@@ -76,21 +77,27 @@ class TestClass:
 
             result_path = os.path.join(output_path, outval.split(':')[1].replace('\n', ''))
             result_paths.append(result_path)
+            summary_json_name = result_path.split("/")[-1]
+            summary_json_paths.append(os.path.join(output_path, "{}_summary.json".format(summary_json_name)))
 
         # bin file compare for batch size [1, 2,4,8], should be same
         for _, result_path in enumerate(result_paths[1:]):
-            cmd = "diff -x {} {}  {}".format(exclude_file, result_paths[0], result_path)
+            cmd = "diff  {}  {}".format(result_paths[0], result_path)
             print("run cmd:{}".format(cmd))
             ret = os.system(cmd)
             assert ret == 0
+        for output_dir_path in result_paths:
+            shutil.rmtree(output_dir_path)
+        for summary_json_path in summary_json_paths:
+            os.remove(summary_json_path)
 
     def test_general_inference_normal_dynamic_batch(self):
         batch_size = 1
         warmup_num = 1
         output_file_num = 17
-        exclude_file = "sumary.json"
         result_paths = []
-        output_path = os.path.join(TestCommonClass.base_path, "tmp")
+        summary_json_paths = []
+        output_path = os.path.join(TestCommonClass.base_path, self.model_name, "output")
         TestCommonClass.prepare_dir(output_path)
         log_path = os.path.join(output_path, "log.txt")
         static_model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
@@ -123,13 +130,20 @@ class TestClass:
 
             result_path = os.path.join(output_path, outval.split(':')[1].replace('\n', ''))
             result_paths.append(result_path)
+            summary_json_name = result_path.split("/")[-1]
+            summary_json_paths.append(os.path.join(output_path, "{}_summary.json".format(summary_json_name)))
 
         # bin file compare for batch size [1, 2,4,8], should be same
         for _, result_path in enumerate(result_paths[1:]):
-            cmd = "diff -x {} {}  {}".format(exclude_file, result_paths[0], result_path)
+            cmd = "diff {}  {}".format(result_paths[0], result_path)
             print("run cmd:{}".format(cmd))
             ret = os.system(cmd)
             assert ret == 0
+
+        for output_dir_path in result_paths:
+            shutil.rmtree(output_dir_path)
+        for summary_json_path in summary_json_paths:
+            os.remove(summary_json_path)
 
 
 if __name__ == '__main__':
