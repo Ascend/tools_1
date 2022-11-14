@@ -157,6 +157,7 @@ class MqttConfig:
         self.send_thread_pool_size: int = kwargs.get("send_thread_pool_size", 15)
         self.connect_retry_interval: int = kwargs.get("connect_retry_interval", 5)
         self.using_tls_config: bool = kwargs.get("using_tls_config", True)
+        self.module_name: str = kwargs.get("module_name", "edge_om")
 
     def init_edge_mqtt_config(self, work_dir):
         edge_om_path = os.path.join(os.path.realpath(work_dir), "edge_work_dir/edge_om")
@@ -400,10 +401,11 @@ class PodOperator:
 
         payload_dict = json.loads(ret.data.payload)
         if payload_dict.get("result") != "success":
-            logger.error(f'create container failed: {payload_dict.get("content")}')
+            logger.error(f'execute create container command failed: {payload_dict.get("content")}')
             return False
 
-        logger.info("create container success")
+        logger.info("execute create container command success, please execute 'docker ps' check the container status "
+                    "by few moments")
 
         return True
 
@@ -454,10 +456,11 @@ class PodOperator:
 
         payload_dict = json.loads(ret.data.payload)
         if payload_dict.get("result") != "success":
-            logger.error(f'delete container failed: {payload_dict.get("content")}')
+            logger.error(f'execute delete container command failed: {payload_dict.get("content")}')
             return False
 
-        logger.info("delete container success")
+        logger.info("execute delete container command success, please execute 'docker ps' check the container status "
+                    "by few moments")
         return True
 
 
