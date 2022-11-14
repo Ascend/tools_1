@@ -63,6 +63,9 @@ class InferSession:
     def set_custom_outsize(self, custom_sizes):
         self.session.set_custom_outsize(custom_sizes)
 
+    def create_tensor_from_fileslist(self, desc, files):
+        return self.session.create_tensor_from_fileslist(desc, files)
+
     def create_tensor_from_arrays_to_device(self, arrays):
         tensor = aclruntime.Tensor(arrays)
         tensor.to_device(self.device_id)
@@ -79,8 +82,8 @@ class InferSession:
             arrays.append(np.array(tensor))
         return arrays
 
-    def run(self, feeds, out_array=False):     
-        if len(feeds) > 0 and not isinstance(feeds[0], aclruntime.Tensor):
+    def run(self, feeds, out_array=False):
+        if len(feeds) > 0 and isinstance(feeds[0], np.ndarray):
             # if feeds is ndarray list, convert to baseTensor
             inputs = []
             for array in feeds:
@@ -102,6 +105,8 @@ class InferSession:
 
     def sumary(self):
         return self.session.sumary()
+    def finalize(self):
+        self.session.finalize()
 
 class MemorySummary:
     @staticmethod

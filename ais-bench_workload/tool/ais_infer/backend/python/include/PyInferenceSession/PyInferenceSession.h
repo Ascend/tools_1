@@ -70,14 +70,20 @@ public:
     int SetDynamicShape(std::string dymshapeStr);
     int SetCustomOutTensorsSize(std::vector<int> customOutSize);
 
+    TensorBase CreateTensorFromFilesList(Base::TensorDesc &dstTensorDesc, std::vector<std::string>& filesList);
+
+    int Finalize();
+
     Base::ModelInferenceProcessor modelInfer_ = {};
 
 private:
     void Init(const std::string &modelPath, std::shared_ptr<SessionOptions> options);
+    int Destroy();
 
 private:
     uint32_t deviceId_ = 0;
     Base::ModelDesc modelDesc_ = {};
+    bool InitFlag_ = false;
 };
 }
 
@@ -86,4 +92,3 @@ private:
 #endif
 
 #endif
-

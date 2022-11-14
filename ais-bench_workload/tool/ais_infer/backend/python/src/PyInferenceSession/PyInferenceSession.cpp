@@ -30,15 +30,51 @@ PyInferenceSession::PyInferenceSession(const std::string &modelPath, const uint3
     Init(modelPath, options);
 }
 
-PyInferenceSession::~PyInferenceSession()
+int PyInferenceSession::Destroy()
+{
+    if (InitFlag_ == false) {
+        return APP_ERR_OK;
+    }
+    APP_ERROR ret = TensorContext::GetInstance()->SetContext(deviceId_);
+    if (ret != APP_ERR_OK) {
+        ERROR_LOG("TensorContext::SetContext failed. ret=", ret);
+        return ret;
+    }
+    ret = modelInfer_.DeInit();
+    if (ret != APP_ERR_OK) {
+        ERROR_LOG("ModelInfer Deinit failed. ret=", ret);
+        return ret;
+    }
+    DEBUG_LOG("PyInferSession DestroySession successfully!");
+    InitFlag_ = false;
+    return APP_ERR_OK;
+}
+
+int PyInferenceSession::Finalize()
 {
     APP_ERROR ret = TensorContext::GetInstance()->SetContext(deviceId_);
     if (ret != APP_ERR_OK) {
         ERROR_LOG("TensorContext::SetContext failed. ret=", ret);
+        return ret;
     }
 
-    modelInfer_.DeInit();
-    DEBUG_LOG("model DeInit successfully!");
+    ret = Destroy();
+    if (ret != APP_ERR_OK) {
+        ERROR_LOG("TensorContext::Finalize. ret=", ret);
+        return ret;
+    }
+    ret = TensorContext::GetInstance()->Finalize();
+    if (ret != APP_ERR_OK) {
+        ERROR_LOG("TensorContext::Finalize. ret=", ret);
+        return ret;
+    }
+    DEBUG_LOG("PyInferSession Finalize successfully!");
+    return APP_ERR_OK;
+}
+
+PyInferenceSession::~PyInferenceSession()
+{
+    Destroy();
 }
 
 void PyInferenceSession::Init(const std::string &modelPath, std::shared_ptr<SessionOptions> options)
@@ -54,6 +90,8 @@ void PyInferenceSession::Init(const std::string &modelPath, std::shared_ptr<Sess
     if (ret != APP_ERR_OK) {
         throw std::runtime_error(GetError(ret));
     }
+    InitFlag_ = true;
+
 }
 
 std::vector<TensorBase> PyInferenceSession::InferMap(std::vector<std::string>& output_names, std::map<std::string, TensorBase>& feeds)
@@ -235,6 +273,34 @@ std::vector<TensorBase> PyInferenceSession::InferBaseTensorVector(std::vector<st
     return outputs;
 }
 
+TensorBase PyInferenceSession::CreateTensorFromFilesList(Base::TensorDesc &dstTensorDesc, std::vector<std::string>& filesList)
+{
+    std::vector<uint32_t> u32shape;
+    for (size_t j = 0; j < dstTensorDesc.shape.size(); ++j) {
+        u32shape.push_back((uint32_t)(dstTensorDesc.shape[j]));
+    }
+    // malloc
+    TensorBase dstTensor = TensorBase(u32shape, dstTensorDesc.datatype,
+        MemoryData::MemoryType::MEMORY_HOST, -1);
+    APP_ERROR ret = Base::TensorBase::TensorBaseMalloc(dstTensor);
+    if (ret != APP_ERR_OK) {
+        ERROR_LOG("TensorBaseMalloc failed ret:%d", ret);
+        throw std::runtime_error(GetError(ret));
+    }
+    // copy
+    size_t offset = 0;
+    char *ptr = (char *)dstTensor.GetBuffer();
+    for (uint32_t i = 0; i < filesList.size(); i++) {
+        Result ret = Utils::FillFileContentToMemory(filesList[i], ptr, dstTensor.GetByteSize(), offset);
+        if (ret != SUCCESS) {
+            ERROR_LOG("TensorBaseMalloc i:%d file:%s failed ret:%d", i, filesList[i].c_str(), ret);
+            throw std::runtime_error(GetError(ret));
+        }
+    }
+    dstTensor.ToDevice(deviceId_);
+    return dstTensor;
+}
+
 }
 
 std::shared_ptr<Base::PyInferenceSession> CreateModelInstance(const std::string &modelPath, const uint32_t &deviceId, std::shared_ptr<Base::SessionOptions> options)
@@ -292,6 +358,9 @@ void RegistInferenceSession(py::module &m)
     model.def("set_dynamic_dims", &Base::PyInferenceSession::SetDynamicDims);
     model.def("set_dynamic_shape", &Base::PyInferenceSession::SetDynamicShape);
     model.def("set_custom_outsize", &Base::PyInferenceSession::SetCustomOutTensorsSize);
+
+    model.def("create_tensor_from_fileslist", &Base::PyInferenceSession::CreateTensorFromFilesList);
+    model.def("finalize", &Base::PyInferenceSession::Finalize);
 
     m.def("model", &CreateModelInstance, "modelPath"_a, "deviceId"_a = 0, "options"_a=py::none());
 }

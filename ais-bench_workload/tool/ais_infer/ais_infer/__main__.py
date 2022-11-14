@@ -11,9 +11,9 @@ from tqdm import tqdm
 from ais_infer.interface import InferSession, MemorySummary
 from ais_infer.io_oprations import (create_infileslist_from_inputs_list,
                                     create_intensors_from_infileslist,
-                                    create_intensors_zerodata,
                                     get_narray_from_files_list,
                                     get_tensor_from_files_list,
+                                    convert_real_files,
                                     pure_infer_fake_file, save_tensors_to_file)
 from ais_infer.summary import summary
 from ais_infer.utils import logger
@@ -116,12 +116,25 @@ def run_inference(session, inputs, out_array=False):
     outputs = session.run(inputs, out_array)
     return outputs
 
-# Rotation training operation reference
-def infer_loop_run(session, args, intensors_desc, infileslist, output_prefix):
+# tensor to loop infer
+def infer_loop_tensor_run(session, args, intensors_desc, infileslist, output_prefix):
     for i, infiles in enumerate(tqdm(infileslist, file=sys.stdout, desc='Inference tensor Processing')):
         intensors = []
         for j, files in enumerate(infiles):
             tensor = get_tensor_from_files_list(files, session, intensors_desc[j].realsize, args.pure_data_type, args.auto_set_dymshape_mode)
+            intensors.append(tensor)
+        outputs = run_inference(session, intensors)
+        session.convert_tensors_to_host(outputs)
+        if output_prefix != None:
+            save_tensors_to_file(outputs, output_prefix, infiles, args.outfmt, i, args.output_batchsize_axis)
+
+# files to loop iner
+def infer_loop_files_run(session, args, intensors_desc, infileslist, output_prefix):
+    for i, infiles in enumerate(tqdm(infileslist, file=sys.stdout, desc='Inference files Processing')):
+        intensors = []
+        for j, files in enumerate(infiles):
+            real_files = convert_real_files(files)  
+            tensor = session.create_tensor_from_fileslist(intensors_desc[j], real_files)
             intensors.append(tensor)
         outputs = run_inference(session, intensors)
         session.convert_tensors_to_host(outputs)
@@ -205,8 +218,8 @@ def get_args():
     parser.add_argument("--profiler", type=str2bool, default=False, help="profiler switch")
     parser.add_argument("--dump", type=str2bool, default=False, help="dump switch")
     parser.add_argument("--acl_json_path", type=str, default=None, help="acl json path for profiling or dump")
-    parser.add_argument("--output_batchsize_axis",  type=check_nonnegative_integer, default=0, help="splitting axis number when outputing tensor results, such as --output_batchsize_axis 1")
-    parser.add_argument("--run_mode", type=str, default="array", choices=["array", "tensor"], help="run mode")
+    parser.add_argument("--output_batchsize_axis",  type=check_nonnegative_integer, default=0, help="splitting axis number when outputing tensor results, such as --output_batchsize_axis 12")
+    parser.add_argument("--run_mode", type=str, default="array", choices=["array", "files", "tensor", "full"], help="run mode")
     parser.add_argument("--warmup_count",  type=check_nonnegative_integer, default=1, help="warmup count before inference")
     args = parser.parse_args()
 
@@ -256,8 +269,14 @@ if __name__ == "__main__":
 
     if args.run_mode == "array":
         infer_loop_array_run(session, args, intensors_desc, infileslist, output_prefix)
+    elif args.run_mode == "files":
+        infer_loop_files_run(session, args, intensors_desc, infileslist, output_prefix)
+    elif args.run_mode == "full":
+        infer_fulltensors_run(session, args, intensors_desc, infileslist, output_prefix)
+    elif args.run_mode == "tensor":
+        infer_loop_tensor_run(session, args, intensors_desc, infileslist, output_prefix)
     else:
-        infer_loop_run(session, args, intensors_desc, infileslist, output_prefix)
+        raise RuntimeError('wrong run_mode:{}'.format(args.run_mode))
 
     summary.add_args(sys.argv)
     s = session.sumary()
@@ -265,3 +284,5 @@ if __name__ == "__main__":
     summary.h2d_latency_list = MemorySummary.get_H2D_time_list()
     summary.d2h_latency_list = MemorySummary.get_D2H_time_list()
     summary.report(args.batchsize, output_prefix)
+
+    session.finalize()
