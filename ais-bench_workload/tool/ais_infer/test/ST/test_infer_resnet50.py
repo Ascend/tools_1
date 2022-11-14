@@ -263,7 +263,7 @@ class TestClass():
         assert ret == 0
         assert os.path.exists(log_path)
 
-        # ignore of warmup inference time, get  inferening times from log file and  sumary.json, compare them and assert
+        # ignore of warmup inference time, get  inferening times from log file and  summary.json, compare them and assert
         infer_time_lists = []
         with open(log_path) as f:
             i = 0
@@ -279,14 +279,17 @@ class TestClass():
                 infer_time_lists.append(float(sub_str))
 
         time_array = np.array(infer_time_lists)
-        sumary_json_path = os.path.join(output_path, "sumary.json")
-        with open(sumary_json_path,'r',encoding='utf8') as fp:
+        summary_json_path = os.path.join(output_parent_path, "{}_summary.json".format(output_dirname))
+        with open(summary_json_path,'r',encoding='utf8') as fp:
             json_data = json.load(fp)
             json_mean = json_data["NPU_compute_time"]["mean"]
             json_percentile = json_data["NPU_compute_time"]["percentile(99%)"]
 
             assert math.fabs(time_array.mean() - json_mean) <= TestCommonClass.EPSILON
             assert math.fabs(np.percentile(time_array, 99) - json_percentile) <= TestCommonClass.EPSILON
+        os.remove(summary_json_path)
+        os.remove(log_path)
+        shutil.rmtree(output_path)
 
     def test_general_inference_normal_warmup_count(self):
         batch_size = 1
@@ -325,8 +328,8 @@ class TestClass():
 
                 assert int(outval) == (num_input_file + warmup_num)
 
-                sumary_json_path = os.path.join(output_path, "sumary.json")
-                with open(sumary_json_path,'r',encoding='utf8') as fp:
+                summary_json_path = os.path.join(output_parent_path, "{}_summary.json".format(output_dirname))
+                with open(summary_json_path,'r',encoding='utf8') as fp:
                     json_data = json.load(fp)
                     NPU_compute_time_count = json_data["NPU_compute_time"]["count"]
                     h2d_num = json_data["H2D_latency"]["count"]
@@ -334,6 +337,7 @@ class TestClass():
                     assert NPU_compute_time_count == num_input_file
                     assert h2d_num == num_input_file
                     assert d2h_num == num_input_file
+                os.remove(summary_json_path)
         shutil.rmtree(output_path)
 
     def test_pure_inference_normal_warmup_count_200(self):
@@ -364,8 +368,8 @@ class TestClass():
             raise Exception("raise an exception: {}".format(e))
 
         assert int(outval) == (loop_num + warmup_num)
-        sumary_json_path = os.path.join(output_path, "sumary.json")
-        with open(sumary_json_path,'r',encoding='utf8') as fp:
+        summary_json_path = os.path.join(output_parent_path, "{}_summary.json".format(output_dirname))
+        with open(summary_json_path,'r',encoding='utf8') as fp:
             json_data = json.load(fp)
             NPU_compute_time_count = json_data["NPU_compute_time"]["count"]
             h2d_num = json_data["H2D_latency"]["count"]
@@ -374,6 +378,7 @@ class TestClass():
             assert h2d_num == 1
             assert d2h_num == 1
         shutil.rmtree(output_path)
+        os.remove(summary_json_path)
 
     def test_pure_inference_normal_pure_data_type(self):
         batch_size = 1
@@ -424,7 +429,7 @@ class TestClass():
         if os.path.exists(output_dir_path):
             shutil.rmtree(output_dir_path)
         os.makedirs(output_dir_path)
-        summary_json_path = os.path.join(output_path, output_dir_name, "sumary.json")
+        summary_json_path = os.path.join(output_path,  "{}_summary.json".format(output_dir_name))
 
         cmd = "{} --model {} --device {} --input {} --output {} --output_dirname {}".format(TestCommonClass.cmd_prefix, model_path,
                                                                 TestCommonClass.default_device_id, input_path, output_path, output_dir_name)
@@ -479,7 +484,7 @@ class TestClass():
         if os.path.exists(output_dir_path):
             shutil.rmtree(output_dir_path)
         os.makedirs(output_dir_path)
-        summary_json_path = os.path.join(output_path, output_dir_name, "sumary.json")
+        summary_json_path = os.path.join(output_path,  "{}_summary.json".format(output_dir_name))
 
         cmd = "{} --model {}  --outputSize {} --dymShape {} --input {} --output {} --output_dirname {}".format(TestCommonClass.cmd_prefix, model_path,
             output_size, dym_shape, input_path, output_path, output_dir_name)

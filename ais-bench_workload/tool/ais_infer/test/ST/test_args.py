@@ -1,5 +1,6 @@
 import json
 import os
+import shutil
 
 import pytest
 from test_common import TestCommonClass
@@ -129,7 +130,7 @@ class TestClass:
 
     def test_args_profiler_ok(self):
         model_path = TestCommonClass.get_model_static_om_path(1, self.model_name)
-        output_path = os.path.join(TestCommonClass.base_path, "tmp")
+        output_path = os.path.join(TestCommonClass.base_path, self.model_name, "output")
         TestCommonClass.prepare_dir(output_path)
         profiler_path = os.path.join(output_path, "profiler")
         TestCommonClass.prepare_dir(output_path)
@@ -164,7 +165,7 @@ class TestClass:
                         `-- 5
         """
         model_path = TestCommonClass.get_model_static_om_path(1, self.model_name)
-        output_path = os.path.join(TestCommonClass.base_path, "tmp")
+        output_path = os.path.join(TestCommonClass.base_path, self.model_name, "output")
         TestCommonClass.prepare_dir(output_path)
         dump_path = os.path.join(output_path, "dump")
 
@@ -183,21 +184,30 @@ class TestClass:
 
     def test_args_output_ok(self):
         model_path = TestCommonClass.get_model_static_om_path(1, self.model_name)
-        output_path = os.path.join(TestCommonClass.base_path, "tmp")
+        output_path = os.path.join(TestCommonClass.base_path, self.model_name, "output")
+        log_path = os.path.join(output_path, "log.txt")
         TestCommonClass.prepare_dir(output_path)
-        cmd = "{} --model {} --device {}  --output {} ".format(TestCommonClass.cmd_prefix, model_path,
-                                                               TestCommonClass.default_device_id, output_path)
+        cmd = "{} --model {} --device {}  --output {} > {}".format(TestCommonClass.cmd_prefix, model_path,
+                                                               TestCommonClass.default_device_id, output_path, log_path)
         print("run cmd:{}".format(cmd))
         ret = os.system(cmd)
         assert ret == 0
 
-        paths = os.listdir(output_path)
-        bin_path = os.path.join(output_path, paths[0], "pure_infer_data_0.bin")
+        try:
+            cmd = "cat {} |grep 'output path'".format(log_path)
+            outval = os.popen(cmd).read()
+        except Exception as e:
+            raise Exception("grep action raises an exception: {}".format(e))
+
+        result_path = os.path.join(output_path, outval.split(':')[1].replace('\n', ''))
+        bin_path = os.path.join(result_path, "pure_infer_data_0.bin")
         assert os.path.exists(bin_path)
+        os.remove(log_path)
+        shutil.rmtree(result_path)
 
     def test_args_acljson_ok(self):
         model_path = TestCommonClass.get_model_static_om_path(1, self.model_name)
-        output_path = os.path.join(TestCommonClass.base_path, "tmp")
+        output_path = os.path.join(TestCommonClass.base_path, self.model_name, "output")
         TestCommonClass.prepare_dir(output_path)
         profiler_path = os.path.join(output_path, "profiler")
         TestCommonClass.prepare_dir(profiler_path)
@@ -212,7 +222,6 @@ class TestClass:
                                                                                 out_json_file_path, output_path)
         print("run cmd:{}".format(cmd))
         ret = os.system(cmd)
-        #assert ret == 139
         assert os.path.exists(profiler_path)
 
         paths = os.listdir(profiler_path)
@@ -227,45 +236,63 @@ class TestClass:
         there are two output files and one file with bin suffix in output folder path.
         """
         model_path = TestCommonClass.get_model_static_om_path(1, self.model_name)
-        output_path = os.path.join(TestCommonClass.base_path, "tmp")
+        output_path = os.path.join(TestCommonClass.base_path, self.model_name, "output")
         TestCommonClass.prepare_dir(output_path)
+        log_path = os.path.join(output_path, "log.txt")
 
-        cmd = "{} --model {} --device {} --output {}".format(TestCommonClass.cmd_prefix, model_path,
+        cmd = "{} --model {} --device {} --output {} > {}".format(TestCommonClass.cmd_prefix, model_path,
                                                              TestCommonClass.default_device_id,
-                                                             output_path)
+                                                             output_path, log_path)
         print("run cmd:{}".format(cmd))
         ret = os.system(cmd)
         assert ret == 0
-        paths = os.listdir(output_path)
-        bin_path = os.path.join(output_path, paths[0], "pure_infer_data_0.bin")
+
+        try:
+            cmd = "cat {} |grep 'output path'".format(log_path)
+            outval = os.popen(cmd).read()
+        except Exception as e:
+            raise Exception("grep action raises an exception: {}".format(e))
+
+        result_path = os.path.join(output_path, outval.split(':')[1].replace('\n', ''))
+        bin_path = os.path.join(result_path, "pure_infer_data_0.bin")
         assert os.path.exists(bin_path)
+        os.remove(log_path)
+        shutil.rmtree(result_path)
 
     def test_args_outfmt_ok(self):
         """test supported output file suffix cases
         there are two output files and one file with given suffix in output folder path.
         2022_08_05-10_37_41
-        |-- pure_infer_data_0.bin
-        `-- sumary.json
+        |    |-- pure_infer_data_0.bin
+        `-- 2022_08_05-10_37_41_summary.json
         """
         model_path = TestCommonClass.get_model_static_om_path(1, self.model_name)
 
         output_file_suffixs = ["NPY", "BIN", "TXT"]
 
         for _, output_file_suffix in enumerate(output_file_suffixs):
-            output_path = os.path.join(TestCommonClass.base_path, "tmp")
+            output_path = os.path.join(TestCommonClass.base_path, self.model_name, "output")
+            log_path = os.path.join(output_path, "log.txt")
             TestCommonClass.prepare_dir(output_path)
-            cmd = "{} --model {} --device {} --output {} --outfmt {}".format(TestCommonClass.cmd_prefix,
+            cmd = "{} --model {} --device {} --output {} --outfmt {} > {}".format(TestCommonClass.cmd_prefix,
                                                                              model_path,
                                                                              TestCommonClass.default_device_id,
-                                                                             output_path, output_file_suffix)
+                                                                             output_path, output_file_suffix, log_path)
             print("run cmd:{}".format(cmd))
             ret = os.system(cmd)
             assert ret == 0
 
-            paths = os.listdir(output_path)
-            suffix_file_path = os.path.join(output_path, paths[0],
-                                            "pure_infer_data_0.{}".format(output_file_suffix.lower()))
+            try:
+                cmd = "cat {} |grep 'output path'".format(log_path)
+                outval = os.popen(cmd).read()
+            except Exception as e:
+                raise Exception("grep action raises an exception: {}".format(e))
+
+            result_path = os.path.join(output_path, outval.split(':')[1].replace('\n', ''))
+
+            suffix_file_path = os.path.join(result_path, "pure_infer_data_0.{}".format(output_file_suffix.lower()))
             assert os.path.exists(suffix_file_path)
+            shutil.rmtree(result_path)
 
 
 if __name__ == '__main__':

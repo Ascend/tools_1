@@ -90,19 +90,16 @@ class TestClass():
             print("run cmd:{}".format(cmd))
             ret = os.system(cmd)
             assert ret == 0
-            output_bin_file_num = len(os.listdir(tmp_output_path)) - 1
+            output_bin_file_num = len(os.listdir(tmp_output_path))
             assert(output_bin_file_num == 3 * self.output_file_num)
             output_paths.append(tmp_output_path)
 
         # compare different batchsize inference bin files
         base_compare_path = output_paths[0]
-        exclude_file_name = "sumary.json"
         for i, cur_output_path in enumerate(output_paths):
             if i == 0:
                 continue
-            cmd = "diff -x {} {}  {}".format(exclude_file_name,
-                                             base_compare_path,
-                                             cur_output_path)
+            cmd = "diff {}  {}".format(base_compare_path, cur_output_path)
             ret = os.system(cmd)
             assert ret == 0
 
@@ -132,19 +129,16 @@ class TestClass():
             print("run cmd:{}".format(cmd))
             ret = os.system(cmd)
             assert ret == 0
-            output_bin_file_num = len(os.listdir(tmp_output_path)) - 1
+            output_bin_file_num = len(os.listdir(tmp_output_path))
             assert(output_bin_file_num == 3 * self.output_file_num)
             output_paths.append(tmp_output_path)
 
         # compare different batchsize inference bin files
         base_compare_path = output_paths[0]
-        exclude_file_name = "sumary.json"
         for i, cur_output_path in enumerate(output_paths):
             if i == 0:
                 continue
-            cmd = "diff -x {} {}  {}".format(exclude_file_name,
-                                             base_compare_path,
-                                             cur_output_path)
+            cmd = "diff {}  {}".format(base_compare_path, cur_output_path)
             ret = os.system(cmd)
             assert ret == 0
 
@@ -168,7 +162,7 @@ class TestClass():
         if os.path.exists(output_dir_path):
             shutil.rmtree(output_dir_path)
         os.makedirs(output_dir_path)
-        summary_json_path = os.path.join(output_path, output_dir_name, "sumary.json")
+        summary_json_path = os.path.join(output_path,  "{}_summary.json".format(output_dir_name))
         cmd = "{} --model {} --device {} --input {} --output {} --output_dirname {}".format(TestCommonClass.cmd_prefix, model_path,
                                                             TestCommonClass.default_device_id, input_path, output_path, output_dir_name)
         print("run cmd:{}".format(cmd))
@@ -181,7 +175,7 @@ class TestClass():
 
         assert math.fabs(ais_inference_time_ms) > TestCommonClass.EPSILON
 
-        output_bin_file_num = len(os.listdir(output_dir_path)) - 1
+        output_bin_file_num = len(os.listdir(output_dir_path))
         assert(output_bin_file_num == 3 * input_file_num)
 
         # get msame inference  average time without first time

@@ -119,13 +119,10 @@ class TestClass():
 
         # compare different batchsize inference bin files
         base_compare_path = output_paths[0]
-        exclude_file_name = "sumary.json"
         for i, cur_output_path in enumerate(output_paths):
             if i == 0:
                 continue
-            cmd = "diff -x {} {}  {}".format(exclude_file_name,
-                                             base_compare_path,
-                                             cur_output_path)
+            cmd = "diff  {}  {}".format(base_compare_path, cur_output_path)
             ret = os.system(cmd)
             assert ret == 0
 
@@ -175,13 +172,10 @@ class TestClass():
 
         # compare different batchsize inference bin files
         base_compare_path = output_paths[0]
-        exclude_file_name = "sumary.json"
         for i, cur_output_path in enumerate(output_paths):
             if i == 0:
                 continue
-            cmd = "diff -x {} {}  {}".format(exclude_file_name,
-                                             base_compare_path,
-                                             cur_output_path)
+            cmd = "diff {}  {}".format(base_compare_path, cur_output_path)
             ret = os.system(cmd)
             assert ret == 0
 
@@ -215,7 +209,7 @@ class TestClass():
         model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
         output_dir_name = "static_batch"
         output_dir_path = os.path.join(output_path, output_dir_name)
-        summary_json_path = os.path.join(output_path, output_dir_name, "sumary.json")
+        summary_json_path = os.path.join(output_path, "{}_summary.json".format(output_dir_name))
         if os.path.exists(output_dir_path):
             shutil.rmtree(output_dir_path)
         os.makedirs(output_dir_path)

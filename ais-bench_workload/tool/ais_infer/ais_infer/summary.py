@@ -2,7 +2,6 @@ import json
 import os
 
 import numpy as np
-
 from ais_infer.utils import logger
 
 
@@ -76,7 +75,7 @@ class Summary(object):
         self.infodict['npu_compute_time_list'] = self.npu_compute_time_list
         self.infodict['pid'] = os.getpid()
 
-        # logger.debug("infer finish (ms) sumary:{}".format(self.infodict))
+        # logger.debug("infer finish (ms) summary:{}".format(self.infodict))
         logger.info("-----------------Performance Summary------------------")
         logger.info("H2D_latency (ms): min = {0}, max = {1}, mean = {2}, median = {3}, percentile({4}%) = {5}"
                     .format(h2d_latency.min, h2d_latency.max, h2d_latency.mean, h2d_latency.median, scale,
@@ -92,7 +91,7 @@ class Summary(object):
         logger.info("------------------------------------------------------")
 
         if output_prefix is not None:
-            with open(os.path.join(output_prefix, "sumary.json"), 'w') as f:
+            with open(output_prefix + "_summary.json", 'w') as f:
                 json.dump(self.infodict, f)
 
 
