@@ -5,6 +5,7 @@ import logging
 import os
 import sys
 import time
+import shutil
 
 from tqdm import tqdm
 
@@ -255,8 +256,24 @@ def get_args():
         args.no_combine_tensor_mode = True
     return args
 
+def msprof_run_profiling(args):
+    cmd = sys.executable + " " + ' '.join(sys.argv) + " --profiler=0"
+    msprof_cmd="{} --output={}/profiler --application=\"{}\" --sys-hardware-mem=on --sys-cpu-profiling=on --sys-profiling=on --sys-pid-profiling=on --dvpp-profiling=on --runtime-api=on --task-time=on --aicpu=on".format(
+        msprof_bin, args.output, cmd)
+    logger.info("msprof cmd:{} begin run".format(msprof_cmd))
+    ret = os.system(msprof_cmd)
+    logger.info("msprof cmd:{} end run ret:{}".format(msprof_cmd, ret))
+
 if __name__ == "__main__":
     args = get_args()
+
+    if args.profiler == True:
+        msprof_bin = shutil.which('msprof')
+        if msprof_bin == None:
+            logger.info("find no msprof continue use acl.json mode")
+        else:
+            msprof_run_profiling(args)
+            exit(0)
 
     if args.debug == True:
         logger.setLevel(logging.DEBUG)
