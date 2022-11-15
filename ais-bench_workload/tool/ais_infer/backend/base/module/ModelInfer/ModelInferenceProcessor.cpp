@@ -127,7 +127,7 @@ APP_ERROR ModelInferenceProcessor::DestroyOutMemoryData(std::vector<MemoryData>&
 
 APP_ERROR ModelInferenceProcessor::CreateOutMemoryData(std::vector<MemoryData>& outputs)
 {
-    int size;
+    size_t size;
     int customIndex = 0;
     for (size_t i = 0; i < modelDesc_.outTensorsDesc.size(); ++i) {
         size = modelDesc_.outTensorsDesc[i].size;
@@ -138,7 +138,7 @@ APP_ERROR ModelInferenceProcessor::CreateOutMemoryData(std::vector<MemoryData>& 
             ERROR_LOG("out i:%d size is zero custom:%d %d", size, customIndex, customOutTensorSize_.size());
             return APP_ERR_ACL_FAILURE;
         }
-        DEBUG_LOG("Create OutMemory i:%d name:%s size:%d", i, modelDesc_.outTensorsDesc[i].name.c_str(), size);
+        DEBUG_LOG("Create OutMemory i:%d name:%s size:%zu", i, modelDesc_.outTensorsDesc[i].name.c_str(), size);
         Base::MemoryData memorydata(size, MemoryData::MemoryType::MEMORY_DEVICE, deviceId_);
         auto ret = MemoryHelper::MxbsMalloc(memorydata);
         if (ret != APP_ERR_OK) {
