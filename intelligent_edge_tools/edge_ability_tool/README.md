@@ -56,7 +56,9 @@
 
  ```./site_ability_policy.sh allow --create_container --download_model_file```
 
-5. 重启中间件使配置生效，执行如下命令：
+5. 执行如下命令重启中间件使配置生效：
 ```
 AtlasEdge软件安装路径/run.sh restart
 ```
+
+----结束

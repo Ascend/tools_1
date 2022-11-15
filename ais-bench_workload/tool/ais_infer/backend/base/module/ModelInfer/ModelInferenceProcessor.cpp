@@ -127,7 +127,7 @@ APP_ERROR ModelInferenceProcessor::DestroyOutMemoryData(std::vector<MemoryData>&
 
 APP_ERROR ModelInferenceProcessor::CreateOutMemoryData(std::vector<MemoryData>& outputs)
 {
-    int size;
+    size_t size;
     int customIndex = 0;
     for (size_t i = 0; i < modelDesc_.outTensorsDesc.size(); ++i) {
         size = modelDesc_.outTensorsDesc[i].size;
@@ -135,14 +135,14 @@ APP_ERROR ModelInferenceProcessor::CreateOutMemoryData(std::vector<MemoryData>& 
             size = customOutTensorSize_[customIndex++];
         }
         if (size == 0){
-            ERROR_LOG("out i:%d size is zero custom:%d %d", size, customIndex, customOutTensorSize_.size());
+            ERROR_LOG("out i:%d size is zero", i);
             return APP_ERR_ACL_FAILURE;
         }
-        DEBUG_LOG("Create OutMemory i:%d name:%s size:%d", i, modelDesc_.outTensorsDesc[i].name.c_str(), size);
+        DEBUG_LOG("Create OutMemory i:%d name:%s size:%zu", i, modelDesc_.outTensorsDesc[i].name.c_str(), size);
         Base::MemoryData memorydata(size, MemoryData::MemoryType::MEMORY_DEVICE, deviceId_);
         auto ret = MemoryHelper::MxbsMalloc(memorydata);
         if (ret != APP_ERR_OK) {
-            ERROR_LOG("MemoryHelper::MxbsMalloc failed.i:%d name:%s size:%d ret:%d", \
+            ERROR_LOG("MemoryHelper::MxbsMalloc failed.i:%d name:%s size:%zu ret:%d", \
                     i, modelDesc_.outTensorsDesc[i].name.c_str(), size, ret);
             return ret;
         }
@@ -167,7 +167,7 @@ APP_ERROR ModelInferenceProcessor::AddOutTensors(std::vector<MemoryData>& output
             // 针对于动态shape场景 如果无法获取真实的输出shape 先填写一个一维的值 以便后续内存可以导出
             i64shape.push_back(realLen / aclDataTypeSize(static_cast<aclDataType>(modelDesc_.outTensorsDesc[index].datatype)));
         }
-        DEBUG_LOG("AddOutTensors name:%s index:%d len:%d outdescsize:%d shapesize:%d",
+        DEBUG_LOG("AddOutTensors name:%s index:%d len:%d outdescsize:%zu shapesize:%zu",
             name.c_str(), index, realLen, modelDesc_.outTensorsDesc[index].size, i64shape.size());
         outputs[index].size = realLen;
         bool isBorrowed = false;
@@ -191,7 +191,7 @@ APP_ERROR ModelInferenceProcessor::CheckInVectorAndFillBaseTensor(const std::vec
         baseTensor.buf = feeds[i].buf;
         baseTensor.size = feeds[i].size;
         if (baseTensor.size != modelDesc_.inTensorsDesc[i].realsize){
-            ERROR_LOG("Check i:%d name:%s in size:%d needsize:%d not match",
+            ERROR_LOG("Check i:%d name:%s in size:%d needsize:%zu not match",
                 i, modelDesc_.inTensorsDesc[i].name.c_str(), baseTensor.size, modelDesc_.inTensorsDesc[i].realsize);
             return APP_ERR_ACL_FAILURE;
         }
@@ -219,7 +219,7 @@ APP_ERROR ModelInferenceProcessor::Inference(const std::vector<BaseTensor>& feed
 APP_ERROR ModelInferenceProcessor::CheckInMapAndFillBaseTensor(const std::map<std::string, TensorBase>& feeds, std::vector<BaseTensor> &inputs)
 {
     if (feeds.size() != modelDesc_.inTensorsDesc.size()){
-        ERROR_LOG("intensors size:%d need size:%d not match", feeds.size(), modelDesc_.inTensorsDesc.size());
+        ERROR_LOG("intensors size:%zu need size:%zu not match", feeds.size(), modelDesc_.inTensorsDesc.size());
         return APP_ERR_ACL_FAILURE;
     }
 
@@ -234,7 +234,7 @@ APP_ERROR ModelInferenceProcessor::CheckInMapAndFillBaseTensor(const std::map<st
         baseTensor.buf = iter->second.GetBuffer();
         baseTensor.size = iter->second.GetByteSize();
         if (baseTensor.size != modelDesc_.inTensorsDesc[i].realsize){
-            ERROR_LOG("Check i:%d name:%s in size:%d needsize:%d not match",
+            ERROR_LOG("Check i:%d name:%s in size:%zu needsize:%zu not match",
                 i, modelDesc_.inTensorsDesc[i].name.c_str(), baseTensor.size, modelDesc_.inTensorsDesc[i].realsize);
             return APP_ERR_ACL_FAILURE;
         }
@@ -266,7 +266,7 @@ APP_ERROR ModelInferenceProcessor::CheckInVectorAndFillBaseTensor(const std::vec
         baseTensor.buf = feeds[i].GetBuffer();
         baseTensor.size = feeds[i].GetByteSize();
         if (baseTensor.size != modelDesc_.inTensorsDesc[i].realsize){
-            ERROR_LOG("Check i:%d name:%s in size:%d needsize:%d not match",
+            ERROR_LOG("Check i:%d name:%s in size:%zu needsize:%zu not match",
                 i, modelDesc_.inTensorsDesc[i].name.c_str(), baseTensor.size, modelDesc_.inTensorsDesc[i].realsize);
             return APP_ERR_ACL_FAILURE;
         }
@@ -305,7 +305,7 @@ APP_ERROR ModelInferenceProcessor::SetInputsData(std::vector<BaseTensor> &inputs
     DestroyInferCacheData();
 
     if (inputs.size() != modelDesc_.inTensorsDesc.size()){
-        WARN_LOG("intensors in:%d need:%d not match", inputs.size(), modelDesc_.inTensorsDesc.size());
+        WARN_LOG("intensors in:%zu need:%zu not match", inputs.size(), modelDesc_.inTensorsDesc.size());
         return APP_ERR_ACL_FAILURE;
     }
 

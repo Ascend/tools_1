@@ -5,6 +5,7 @@ import logging
 import os
 import sys
 import time
+import shutil
 
 from tqdm import tqdm
 
@@ -78,18 +79,32 @@ def init_inference_session(args):
     session = InferSession(args.device, args.model, acl_json_path, args.debug, args.loop)
 
     set_session_options(session, args)
-    logger.debug("session info:{}".format(session))
+    logger.debug("session info:{}".format(session.session))
     return session
 
 def set_dymshape_shape(session, inputs):
-    dyshape=""
+    l = []
     intensors_desc = session.get_inputs()
     for i, input in enumerate(inputs):
         if -1 in intensors_desc[i].shape:
             str_shape = [ str(shape) for shape in input.shape ]
             dyshape = "{}:{}".format(intensors_desc[i].name, ",".join(str_shape))
-    logger.debug("set dymshape shape:{}".format(dyshape))
-    session.set_dynamic_shape(dyshape)
+            l.append(dyshape)
+    dyshapes = ';'.join(l)
+    logger.debug("set dymshape shape:{}".format(dyshapes))
+    session.set_dynamic_shape(dyshapes)
+
+def set_dymdims_shape(session, inputs):
+    l = []
+    intensors_desc = session.get_inputs()
+    for i, input in enumerate(inputs):
+        if -1 in intensors_desc[i].shape:
+            str_shape = [ str(shape) for shape in input.shape ]
+            dydim = "{}:{}".format(intensors_desc[i].name, ",".join(str_shape))
+            l.append(dydim)
+    dydims = ';'.join(l)
+    logger.debug("set dymdims shape:{}".format(dydims))
+    session.set_dynamic_dims(dydims)
 
 def warmup(session, args, intensors_desc, infiles):
     # prepare input data
@@ -113,6 +128,8 @@ def warmup(session, args, intensors_desc, infiles):
 def run_inference(session, inputs, out_array=False):
     if args.auto_set_dymshape_mode == True:
         set_dymshape_shape(session, inputs)
+    elif args.auto_set_dymdims_mode == True:
+        set_dymdims_shape(session, inputs)
     outputs = session.run(inputs, out_array)
     return outputs
 
@@ -121,7 +138,7 @@ def infer_loop_tensor_run(session, args, intensors_desc, infileslist, output_pre
     for i, infiles in enumerate(tqdm(infileslist, file=sys.stdout, desc='Inference tensor Processing')):
         intensors = []
         for j, files in enumerate(infiles):
-            tensor = get_tensor_from_files_list(files, session, intensors_desc[j].realsize, args.pure_data_type, args.auto_set_dymshape_mode)
+            tensor = get_tensor_from_files_list(files, session, intensors_desc[j].realsize, args.pure_data_type, args.no_combine_tensor_mode)
             intensors.append(tensor)
         outputs = run_inference(session, intensors)
         session.convert_tensors_to_host(outputs)
@@ -144,7 +161,7 @@ def infer_loop_files_run(session, args, intensors_desc, infileslist, output_pref
 # First prepare the data, then execute the reference, and then write the file uniformly
 def infer_fulltensors_run(session, args, intensors_desc, infileslist, output_prefix):
     outtensors = []
-    intensorslist = create_intensors_from_infileslist(infileslist, intensors_desc, session, args.pure_data_type, args.auto_set_dymshape_mode)
+    intensorslist = create_intensors_from_infileslist(infileslist, intensors_desc, session, args.pure_data_type, args.no_combine_tensor_mode)
 
     #for inputs in intensorslist:
     for inputs in tqdm(intensorslist, file=sys.stdout, desc='Inference Processing full'):
@@ -213,6 +230,7 @@ def get_args():
     parser.add_argument("--dymShape", type=str, help="dynamic shape param, such as --dymShape \"data:1,600;img_info:1,600\"")
     parser.add_argument("--outputSize", type=str, default=None, help="output size for dynamic shape mode")
     parser.add_argument("--auto_set_dymshape_mode", type=str2bool, default=False, help="auto_set_dymshape_mode")
+    parser.add_argument("--auto_set_dymdims_mode", type=str2bool, default=False, help="auto_set_dymdims_mode")
     parser.add_argument("--batchsize", type=check_positive_integer, default=1, help="batch size of input tensor")
     parser.add_argument("--pure_data_type", type=str, default="zero", choices=["zero", "random"], help="null data type for pure inference(zero or random)")
     parser.add_argument("--profiler", type=str2bool, default=False, help="profiler switch")
@@ -220,6 +238,7 @@ def get_args():
     parser.add_argument("--acl_json_path", type=str, default=None, help="acl json path for profiling or dump")
     parser.add_argument("--output_batchsize_axis",  type=check_nonnegative_integer, default=0, help="splitting axis number when outputing tensor results, such as --output_batchsize_axis 12")
     parser.add_argument("--run_mode", type=str, default="array", choices=["array", "files", "tensor", "full"], help="run mode")
+    parser.add_argument("--display_all_summary", type=str2bool, default=False, help="display all summary include h2d d2h info")
     parser.add_argument("--warmup_count",  type=check_nonnegative_integer, default=1, help="warmup count before inference")
     args = parser.parse_args()
 
@@ -231,10 +250,30 @@ def get_args():
         logger.error("when dump or profiler, miss output path, please check them!")
         raise RuntimeError('miss output parameter!')
 
+    if args.auto_set_dymshape_mode == False and args.auto_set_dymdims_mode == False:
+        args.no_combine_tensor_mode = False
+    else:
+        args.no_combine_tensor_mode = True
     return args
+
+def msprof_run_profiling(args):
+    cmd = sys.executable + " " + ' '.join(sys.argv) + " --profiler=0"
+    msprof_cmd="{} --output={}/profiler --application=\"{}\" --sys-hardware-mem=on --sys-cpu-profiling=on --sys-profiling=on --sys-pid-profiling=on --dvpp-profiling=on --runtime-api=on --task-time=on --aicpu=on".format(
+        msprof_bin, args.output, cmd)
+    logger.info("msprof cmd:{} begin run".format(msprof_cmd))
+    ret = os.system(msprof_cmd)
+    logger.info("msprof cmd:{} end run ret:{}".format(msprof_cmd, ret))
 
 if __name__ == "__main__":
     args = get_args()
+
+    if args.profiler == True:
+        msprof_bin = shutil.which('msprof')
+        if msprof_bin == None:
+            logger.info("find no msprof continue use acl.json mode")
+        else:
+            msprof_run_profiling(args)
+            exit(0)
 
     if args.debug == True:
         logger.setLevel(logging.DEBUG)
@@ -263,7 +302,7 @@ if __name__ == "__main__":
         # Pure reference scenario. Create input zero data
         infileslist = [[ [ pure_infer_fake_file ] for index in intensors_desc ]]
     else:
-        infileslist = create_infileslist_from_inputs_list(inputs_list, intensors_desc, args.auto_set_dymshape_mode)
+        infileslist = create_infileslist_from_inputs_list(inputs_list, intensors_desc, args.no_combine_tensor_mode)
 
     warmup(session, args, intensors_desc, infileslist[0])
 
@@ -283,6 +322,6 @@ if __name__ == "__main__":
     summary.npu_compute_time_list = s.exec_time_list
     summary.h2d_latency_list = MemorySummary.get_H2D_time_list()
     summary.d2h_latency_list = MemorySummary.get_D2H_time_list()
-    summary.report(args.batchsize, output_prefix)
+    summary.report(args.batchsize, output_prefix, args.display_all_summary)
 
     session.finalize()

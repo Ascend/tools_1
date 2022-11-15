@@ -43,6 +43,7 @@ void* Utils::ReadBinFile(std::string fileName, uint32_t& fileSize)
     if (!g_is_device) {
         ret = aclrtMallocHost(&binFileBufferData, binFileBufferLen);
         if (binFileBufferData == nullptr) {
+            cout << aclGetRecentErrMsg() << endl;
             ERROR_LOG("malloc binFileBufferData failed");
             binFile.close();
             return nullptr;

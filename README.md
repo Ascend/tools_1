@@ -53,6 +53,9 @@ Ascend tools，昇腾工具仓库。
     
 13. [auto-optimizer](https://gitee.com/ascend/tools/tree/master/auto-optimizer)  
     **auto-optimizer**： 提供基于ONNX的改图、自动优化及端到端推理流程。
+    
+13. [saved_model2om](https://gitee.com/ascend/tools/tree/master/saved_model2om)  
+    **TensorFlow1.15 saved_model模型转om模型工具**：输入TensorFlow存储的saved_model模型，转换为pb模型，再转换为om模型
 
 #### 贡献
 

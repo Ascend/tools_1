@@ -73,6 +73,7 @@ APP_ERROR DeviceManager::InitDevices(std::string configFilePath)
     if (ret != APP_ERR_OK) {
         initCounter_ = 0;
         aclFinalize();
+        cout << aclGetRecentErrMsg() << endl;
         LogError << "Failed to get all devices count: " << GetAppErrCodeInfo(ret) << ".\n";
         return ret;
     }
@@ -148,6 +149,7 @@ APP_ERROR DeviceManager::GetCurrentDevice(DeviceContext& device)
     aclrtContext currentContext = nullptr;
     APP_ERROR ret = aclrtGetCurrentContext(&currentContext);
     if (ret != APP_ERR_OK) {
+        cout << aclGetRecentErrMsg() << endl;
         LogError << "aclrtGetCurrentContext failed. ret=" << ret << std::endl;
         return ret;
     }

@@ -39,7 +39,7 @@ def get_pure_infer_data(size, pure_data_type):
     return ndata
 
 # get numpy array from files list combile all files
-def get_narray_from_files_list(files_list, size, pure_data_type, auto_set_dymshape_mode=False):
+def get_narray_from_files_list(files_list, size, pure_data_type, no_combine_tensor_mode=False):
     ndatalist = []
     for i, file_path in enumerate(files_list):
         logger.debug("get tensor from filepath:{} i:{} of all:{}".format(file_path, i, len(files_list)))
@@ -58,25 +58,25 @@ def get_narray_from_files_list(files_list, size, pure_data_type, auto_set_dymsha
         return ndatalist[0]
     else:
         ndata = np.concatenate(ndatalist)
-        if auto_set_dymshape_mode == False and ndata.nbytes != size:
+        if no_combine_tensor_mode == False and ndata.nbytes != size:
             logger.error('ndata size:{} not match {}'.format(ndata.nbytes, size))
             raise RuntimeError()
         return ndata
 
 # get tensors from files list combile all files
-def get_tensor_from_files_list(files_list, session, size, pure_data_type, auto_set_dymshape_mode=False):
-    ndata = get_narray_from_files_list(files_list, size, pure_data_type, auto_set_dymshape_mode)
+def get_tensor_from_files_list(files_list, session, size, pure_data_type, no_combine_tensor_mode=False):
+    ndata = get_narray_from_files_list(files_list, size, pure_data_type, no_combine_tensor_mode)
     tensor = session.create_tensor_from_arrays_to_device(ndata)
     return tensor
 
 # Obtain filesperbatch runcount information according to file information and input description information
 # The strategy is as follows:  Judge according to the realsize and file size of input 0. If the judgment fails,
 # you need to force the desired value to be set
-def get_files_count_per_batch(intensors_desc, fileslist, auto_set_dymshape_mode=False):
+def get_files_count_per_batch(intensors_desc, fileslist, no_combine_tensor_mode=False):
     # get filesperbatch
     filesize = get_file_datasize(fileslist[0][0])
     tensorsize = intensors_desc[0].realsize
-    if auto_set_dymshape_mode == True:
+    if no_combine_tensor_mode == True:
         files_count_per_batch = 1
     else:
         if filesize == 0 or tensorsize % filesize != 0:
@@ -92,11 +92,11 @@ def get_files_count_per_batch(intensors_desc, fileslist, auto_set_dymshape_mode=
 
 # Obtain tensor information and files information according to the input filelist. Create intensor form files list
 # len(files_list) should equal len(intensors_desc)
-def create_infileslist_from_fileslist(fileslist, intensors_desc, auto_set_dymshape_mode=False):
+def create_infileslist_from_fileslist(fileslist, intensors_desc, no_combine_tensor_mode=False):
     if len(intensors_desc) != len(fileslist):
         logger.error('fileslist:{} intensor:{} not match'.format(len(fileslist), len(intensors_desc)))
         raise RuntimeError()
-    files_count_per_batch, runcount = get_files_count_per_batch(intensors_desc, fileslist, auto_set_dymshape_mode)
+    files_count_per_batch, runcount = get_files_count_per_batch(intensors_desc, fileslist, no_combine_tensor_mode)
 
     files_perbatch_list = [ list(list_split(fileslist[j], files_count_per_batch, padding_infer_fake_file)) for j in range(len(intensors_desc)) ]
 
@@ -110,12 +110,12 @@ def create_infileslist_from_fileslist(fileslist, intensors_desc, auto_set_dymsha
     return infileslist
 
 #  outapi. Obtain tensor information and files information according to the input filelist. Create intensor form files list
-def create_intensors_from_infileslist(infileslist, intensors_desc, session, pure_data_type, auto_set_dymshape_mode=False):
+def create_intensors_from_infileslist(infileslist, intensors_desc, session, pure_data_type, no_combine_tensor_mode=False):
     intensorslist = []
     for i, infiles in enumerate(infileslist):
         intensors = []
         for j, files in enumerate(infiles):
-            tensor = get_tensor_from_files_list(files, session, intensors_desc[j].realsize, pure_data_type, auto_set_dymshape_mode)
+            tensor = get_tensor_from_files_list(files, session, intensors_desc[j].realsize, pure_data_type, no_combine_tensor_mode)
             intensors.append(tensor)
         intensorslist.append(intensors)
     return intensorslist
@@ -147,7 +147,7 @@ def check_input_parameter(inputs_list, intensors_desc):
 
 
 # outapi. get by input parameters of  inputs_List.
-def create_infileslist_from_inputs_list(inputs_list, intensors_desc, auto_set_dymshape_mode=False):
+def create_infileslist_from_inputs_list(inputs_list, intensors_desc, no_combine_tensor_mode=False):
     check_input_parameter(inputs_list, intensors_desc)
     fileslist = []
     inputlistcount = len(inputs_list)
@@ -165,7 +165,7 @@ def create_infileslist_from_inputs_list(inputs_list, intensors_desc, auto_set_dy
         logger.error('create intensors list filelists:{} intensorcont:{} error create'.format(inputlistcount, intensorcount))
         raise RuntimeError()
 
-    infileslist = create_infileslist_from_fileslist(fileslist, intensors_desc, auto_set_dymshape_mode)
+    infileslist = create_infileslist_from_fileslist(fileslist, intensors_desc, no_combine_tensor_mode)
     if len(infileslist) == 0:
         logger.error('create_infileslist_from_fileslist return infileslist size: {}'.format(len(infileslist)))
         raise RuntimeError()
