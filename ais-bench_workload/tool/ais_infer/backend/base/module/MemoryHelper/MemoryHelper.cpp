@@ -53,14 +53,23 @@ APP_ERROR MemoryHelper::Malloc(MemoryData& data)
         case MemoryData::MEMORY_HOST:
             ret = aclrtMallocHost(&(data.ptrData), data.size);
             data.free = aclrtFreeHost;
+            if (ret != APP_ERR_OK) {
+                cout << aclGetRecentErrMsg() << endl;
+            }
             break;
         case MemoryData::MEMORY_DEVICE:
             ret = aclrtMalloc(&(data.ptrData), data.size, ACL_MEM_MALLOC_HUGE_FIRST);
             data.free = aclrtFree;
+            if (ret != APP_ERR_OK) {
+                cout << aclGetRecentErrMsg() << endl;
+            }
             break;
         case MemoryData::MEMORY_DVPP:
             ret = acldvppMalloc(&(data.ptrData), data.size);
             data.free = acldvppFree;
+            if (ret != APP_ERR_OK) {
+                cout << aclGetRecentErrMsg() << endl;
+            }
             break;
         case MemoryData::MEMORY_HOST_MALLOC:
             data.ptrData = malloc(data.size);
@@ -108,12 +117,21 @@ APP_ERROR MemoryHelper::Free(MemoryData& data)
     switch (data.type) {
         case MemoryData::MEMORY_HOST:
             ret = aclrtFreeHost(data.ptrData);
+            if (ret != APP_ERR_OK) {
+                cout << aclGetRecentErrMsg() << endl;
+            }
             break;
         case MemoryData::MEMORY_DEVICE:
             ret = aclrtFree(data.ptrData);
+            if (ret != APP_ERR_OK) {
+                cout << aclGetRecentErrMsg() << endl;
+            }
             break;
         case MemoryData::MEMORY_DVPP:
             ret = acldvppFree(data.ptrData);
+            if (ret != APP_ERR_OK) {
+                cout << aclGetRecentErrMsg() << endl;
+            }
             break;
         case MemoryData::MEMORY_HOST_MALLOC:
             free(data.ptrData);
@@ -146,6 +164,7 @@ APP_ERROR MemoryHelper::Memset(MemoryData& data, int32_t value, size_t count)
     }
     APP_ERROR ret = aclrtMemset(data.ptrData, data.size, value, count);
     if (ret != APP_ERR_OK) {
+        cout << aclGetRecentErrMsg() << endl;
         LogError << GetError(ret) << "Memset ptrData failed.";
     }
     return ret;
@@ -180,6 +199,7 @@ APP_ERROR MemoryHelper::Memcpy(MemoryData& dest, const MemoryData& src, size_t c
         g_MemorySummary.H2DTimeList.push_back(costTime);
     }
     if (ret != APP_ERR_OK) {
+        cout << aclGetRecentErrMsg() << endl;
         LogError << GetError(ret) << "Memcpy ptrData failed.";
         return APP_ERR_ACL_BAD_COPY;
     }
