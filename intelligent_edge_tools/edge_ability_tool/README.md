@@ -20,7 +20,7 @@
 
 3. 执行命令切换到入口脚本路径
 
-    ```cd AtlasEdge软件安装路径/AtlasEdge/edge_work_dir/edge_om/bin/```
+    ```cd AtlasEdge软件安装路径/edge_work_dir/edge_om/bin/```
 
 4. 根据需要使用以下命令：
 
@@ -37,10 +37,13 @@
 
 表1  disable_all子命令参数说明
 
-| 参数   | 说明                 |
-|:-----|:-------------------|
-| --on | 禁止能力项总开关打开，禁止所有能力项 |
+| 参数   | 说明               |
+|:-----|:-----------------|
+| --on | 禁止能力项总开关，禁止所有能力项 |
 
+### 关闭所有能力示例：
+
+```./site_ability_policy.sh disable_all --on```
 
 表2 allow子命令参数说明
 
@@ -49,23 +52,13 @@
 | --create_container    | 开启Web部署容器能力项 |
 | --download_model_file | 开启模型文件下载能力项  |
 
-5. 重启中间件使配置生效，执行如下命令：
+### 开启部署容器和模型文件能力示例：
+
+ ```./site_ability_policy.sh allow --create_container --download_model_file```
+
+5. 执行如下命令重启中间件使配置生效：
 ```
 AtlasEdge软件安装路径/run.sh restart
 ```
 
-## 能力项配置文件内容说明
-能力项安全配置文件：AtlasEdge软件安装路径/edge_work_dir/edge_om/config/high_risk_ops_policy.json，配置文件内容如下：
-
-{
-    "disable_all": true,
-    "allow": {
-        "create_container": false,
-        "download_model_file": false
-    }
-}
-
-参数说明
-disable_all：禁止能力项总开关，默认打开，即禁止所有能力项。
-create_container：Web部署容器能力项开关。
-download_model_file：模型文件下载能力项开关。
+----结束

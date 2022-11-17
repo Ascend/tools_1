@@ -35,7 +35,7 @@ ACCURACY_COMPARISON_NOT_SUPPORT_ERROR = 15
 ACCURACY_COMPARISON_NET_OUTPUT_ERROR = 16
 ACCURACY_COMPARISON_INVALID_DEVICE_ERROR = 17
 MODEL_TYPE = ['.onnx', '.pb', '.om']
-DIM_PATTERN = r"^(-?[0-9]+,)+-?[0-9]+$"
+DIM_PATTERN = r"^(-?[0-9]+)(,-?[0-9]+)*"
 MAX_DEVICE_ID = 255
 SEMICOLON = ";"
 COLON = ":"
@@ -296,7 +296,7 @@ def _check_colon_exist(input_shape):
 def _check_shape_number(input_shape_value):
     dim_pattern = re.compile(DIM_PATTERN)
     match = dim_pattern.match(input_shape_value)
-    if match is None:
+    if match.group() is not input_shape_value:
         print_error_log(get_shape_not_match_message(InputShapeError.VALUE_TYPE_NOT_MATCH, input_shape_value))
         raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
 

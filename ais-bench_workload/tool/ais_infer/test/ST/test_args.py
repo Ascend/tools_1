@@ -1,5 +1,6 @@
 import json
 import os
+import shutil
 
 import pytest
 from test_common import TestCommonClass
@@ -65,6 +66,7 @@ class TestClass:
         model_path = TestCommonClass.get_model_static_om_path(1, self.model_name)
         cmd = "{} --model {} --device {}".format(TestCommonClass.cmd_prefix, model_path,
                                                  TestCommonClass.default_device_id)
+        print("cmd: {}".format(cmd))
         ret = os.system(cmd)
         assert ret == 0
 
@@ -79,7 +81,7 @@ class TestClass:
 
     def test_args_loop_ok(self):
         """
-        'aclExec const' log record num = warmup  + loop
+        'cost :' log record num = warmup  + loop
         """
         model_path = TestCommonClass.get_model_static_om_path(1, self.model_name)
         loops = [3, 300]
@@ -93,7 +95,7 @@ class TestClass:
             assert ret == 0
 
             try:
-                cmd = "cat {} |grep 'aclExec const' | wc -l".format(log_path)
+                cmd = "cat {} |grep 'cost :' | wc -l".format(log_path)
                 outval = os.popen(cmd).read()
             except Exception as e:
                 raise Exception("raise an exception: {}".format(e))
@@ -173,16 +175,19 @@ class TestClass:
 
     def test_args_output_ok(self):
         model_path = TestCommonClass.get_model_static_om_path(1, self.model_name)
-        output_path = os.path.join(TestCommonClass.base_path, "tmp")
+        output_base_path = os.path.join(TestCommonClass.base_path, self.model_name, "output")
+        output_dir_name = "test_args_output"
+        output_path = os.path.join(output_base_path, output_dir_name)
         TestCommonClass.prepare_dir(output_path)
-        cmd = "{} --model {} --device {}  --output {} ".format(TestCommonClass.cmd_prefix, model_path,
-                                                               TestCommonClass.default_device_id, output_path)
+        cmd = "{} --model {} --device {}  --output {} --output_dirname {}".format(TestCommonClass.cmd_prefix, model_path,
+                                                               TestCommonClass.default_device_id, output_base_path, output_dir_name)
+        print("cmd:{}".format(cmd))
         ret = os.system(cmd)
         assert ret == 0
 
-        paths = os.listdir(output_path)
-        bin_path = os.path.join(output_path, paths[0], "pure_infer_data_0.bin")
+        bin_path = os.path.join(output_path, "pure_infer_data_0.bin")
         assert os.path.exists(bin_path)
+        shutil.rmtree(output_path)
 
     def test_args_acljson_ok(self):
         model_path = TestCommonClass.get_model_static_om_path(1, self.model_name)
@@ -215,43 +220,51 @@ class TestClass:
         there are two output files and one file with bin suffix in output folder path.
         """
         model_path = TestCommonClass.get_model_static_om_path(1, self.model_name)
-        output_path = os.path.join(TestCommonClass.base_path, "tmp")
+        output_base_path = os.path.join(TestCommonClass.base_path, self.model_name, "output")
+        output_dir_name = "test_args_default_outfmt"
+        output_path = os.path.join(output_base_path, output_dir_name)
         TestCommonClass.prepare_dir(output_path)
 
-        cmd = "{} --model {} --device {} --output {}".format(TestCommonClass.cmd_prefix, model_path,
+        cmd = "{} --model {} --device {} --output {} --output_dirname {}".format(TestCommonClass.cmd_prefix, model_path,
                                                              TestCommonClass.default_device_id,
-                                                             output_path)
+                                                             output_base_path, output_dir_name)
+        print("cmd:{}".format(cmd))
         ret = os.system(cmd)
         assert ret == 0
-        paths = os.listdir(output_path)
-        bin_path = os.path.join(output_path, paths[0], "pure_infer_data_0.bin")
+
+        bin_path = os.path.join(output_path, "pure_infer_data_0.bin")
         assert os.path.exists(bin_path)
+        shutil.rmtree(output_path)
 
     def test_args_outfmt_ok(self):
         """test supported output file suffix cases
         there are two output files and one file with given suffix in output folder path.
-        2022_08_05-10_37_41
-        |-- pure_infer_data_0.bin
-        `-- sumary.json
+        output_dir_name
+        └── pure_infer_data_0.bin
+        {output_dir_name}_summary.json
         """
         model_path = TestCommonClass.get_model_static_om_path(1, self.model_name)
-
+        output_base_path = os.path.join(TestCommonClass.base_path, self.model_name, "output")
         output_file_suffixs = ["NPY", "BIN", "TXT"]
-
-        for _, output_file_suffix in enumerate(output_file_suffixs):
-            output_path = os.path.join(TestCommonClass.base_path, "tmp")
-            TestCommonClass.prepare_dir(output_path)
-            cmd = "{} --model {} --device {} --output {} --outfmt {}".format(TestCommonClass.cmd_prefix,
+        output_paths = []
+        TestCommonClass.prepare_dir(output_base_path)
+        for i, output_file_suffix in enumerate(output_file_suffixs):
+            output_dir_name = "test_args_outfmt_{}".format(i)
+            output_path = os.path.join(output_base_path, output_dir_name)
+            cmd = "{} --model {} --device {} --output {} --output_dirname {} --outfmt {}".format(TestCommonClass.cmd_prefix,
                                                                              model_path,
                                                                              TestCommonClass.default_device_id,
-                                                                             output_path, output_file_suffix)
+                                                                             output_base_path, output_dir_name, output_file_suffix)
+            print("cmd_{}:{}\n".format(i, cmd))
             ret = os.system(cmd)
             assert ret == 0
 
-            paths = os.listdir(output_path)
-            suffix_file_path = os.path.join(output_path, paths[0],
-                                            "pure_infer_data_0.{}".format(output_file_suffix.lower()))
+            suffix_file_path = os.path.join(output_path, "pure_infer_data_0.{}".format(output_file_suffix.lower()))
             assert os.path.exists(suffix_file_path)
+            output_paths.append(output_path)
+
+        for path in output_paths:
+            shutil.rmtree(path)
 
 
 if __name__ == '__main__':

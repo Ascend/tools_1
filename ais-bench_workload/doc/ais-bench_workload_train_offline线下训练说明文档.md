@@ -16,6 +16,8 @@ ais-bench标准化性能测试软件，又称AI Server Benchmark软件，是根�
 
 1. Atals训练设备（搭载Ascend NPU以及Ascend 910芯片等昇腾硬件环境），可以搭建单卡、单机、线下集群、容器集群场景，相关硬件产品文档请参见[昇腾硬件产品文档](https://www.hiascend.com/document?data=hardware)。
 2. 根据需要测试的模型类型安装MindSpore或TensorFlow框架；参见《[CANN 软件安装指南](https://www.hiascend.com/document/detail/zh/canncommercial/51RC1/envdeployment/instg/instg_000002.html)》安装CANN软件包。MindSpore或TensorFlow框架需要根据《ais-bench_workload构建教程》所选择的模型版本来安装对应版本的框架。
+3. 集群测试时需要安装依赖软件--sshpass，版本无要求。
+4. 容器环境测试时，容器制作请参照《制作可ssh登录镜像ascend-mindspore-arm的方法》
 
 ### 数据集
 
@@ -53,9 +55,9 @@ tar xvf train_huawei_train_mindspore_resnet-Ais-Benchmark-Stubs-aarch64-1.0-r1.3
 │   │   ├── mindspore_env.sh  // Mindspore框架模型测试时的环境变量，可根据实际需求补充环境变量
 │   │   ├── modelarts_config.py  // 线上训练性能测试时配置
 │   │   └── tensorflow_env.sh  // TensorFlow框架模型测试时的环境变量，可根据实际需求补充环境变量
-│   ├── config.json  // tester服务器信息配置文件，配置后可自动将测试结果上报到tester服务器上。本地测试模式下不需要填写
+│   ├── config.json  // tester服务器信息配置文件，配置后可自动将测试结果上报到tester服务器上。本地离线测试模式下不需要填写
 │   ├── doc  // 指导文档存放目录
-│   └── system.json  // 性能测试系统信息配置文件，仅当需要将测试结果上报到tester服务器时需要配置。本地测试模式下不需要填写
+│   └── system.json  // 性能测试系统信息配置文件，仅当需要将测试结果上报到tester服务器时需要配置。本地离线测试模式下不需要填写
 ├── log  // 日志输出目录
 ├── README.md  // 离线性能测试指导
 └── result  // 测试结果输出目录
@@ -90,13 +92,13 @@ system.json 性能测试系统信息配置文件，位于性能测试软件包�
 
 ### 运行测试
 
-完成配置文件配置后执行性能测试操作，命令如下：
+完成配置文件配置后执行性能测试操作，本地测试命令如下：
 
 ```
-./ais-bench-stubs
+./ais-bench-stubs test
 ```
 
-
+连接tester服务器测试时，无需test参数。
 
 ## 附录
 
