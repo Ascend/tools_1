@@ -31,4 +31,5 @@ def reporter(name, category=None):
         else:
             _categories_to_reporter_names[category].append(name)
         _categories_to_reporter_names["all"].append(name)
+        return cls
     return register_reporter
