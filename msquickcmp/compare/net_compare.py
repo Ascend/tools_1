@@ -10,6 +10,7 @@ import csv
 import os
 import stat
 import re
+import sys
 import subprocess
 
 from common import utils
@@ -26,7 +27,7 @@ NPU_DUMP_TAG = "NPUDump"
 GROUND_TRUTH_TAG = "GroundTruth"
 MIN_ELEMENT_NUM = 3
 ADVISOR_ARGS = "-advisor"
-PYTHON_CMD = ["python3", "-V"]
+
 
 class NetCompare(object):
     """
@@ -40,7 +41,7 @@ class NetCompare(object):
         self.arguments = arguments
         self.msaccucmp_command_dir_path = os.path.join(self.arguments.cann_path, MSACCUCMP_DIR_PATH)
         self.msaccucmp_command_file_path = self._check_msaccucmp_file(self.msaccucmp_command_dir_path)
-        self.python_version = self._check_python_command_valid(PYTHON_CMD)
+        self.python_version = sys.executable.split('/')[-1]
 
     def accuracy_network_compare(self):
         """
@@ -94,21 +95,6 @@ class NetCompare(object):
                         raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR)
                     file_index += 1
         return
-
-    @staticmethod
-    def _check_python_command_valid(cmd):
-        try:
-            output_bytes = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
-            output_text = output_bytes.decode("utf-8")
-            if "Python 3" not in output_text:
-                utils.print_error_log(
-                    "The python version only supports the python 3 version family, %s" % " ".join(cmd))
-                raise AccuracyCompareException(utils.ACCURACY_COMPARISON_PYTHON_VERSION_ERROR)
-            python_version = output_text.split(" ")[1].strip()
-            return python_version
-        except subprocess.CalledProcessError as check_output_except:
-            print(str(check_output_except))
-            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_PYTHON_COMMAND_ERROR)
 
     @staticmethod
     def _check_msaccucmp_file(msaccucmp_command_dir_path):
