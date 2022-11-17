@@ -273,6 +273,7 @@ class NpuDumpData(DumpData):
                                           % self.arguments.output_size)
                     raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
             msame_cmd.append(OUTPUT_SIZE)
+            msame_cmd.append(self.arguments.output_size)
 
     def _convert_net_output_to_numpy(self, npu_net_output_data_path, npu_dump_data_path):
         net_output_data = None
