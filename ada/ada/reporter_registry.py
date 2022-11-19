@@ -27,9 +27,9 @@ def reporter(name, category=None):
             return
         _reporters[name] = cls
         if category is None:
-            _files_to_reporter_names[os.path.realpath(inspect.getfile(cls))].append(name)
+            _categories_to_reporter_names["basic"].append(name)
         else:
             _categories_to_reporter_names[category].append(name)
-        _categories_to_reporter_names["all"].append(name)
+        _files_to_reporter_names[os.path.realpath(inspect.getfile(cls))].append(name)
         return cls
     return register_reporter

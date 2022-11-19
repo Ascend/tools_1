@@ -12,7 +12,7 @@ def parse_args(str_args):
     parser.add_argument("-o", "--output", help="output file path")
     parser.add_argument("--reporter", action="append",
                         help="Specify one or more reporters, current available reporters: {}. ".format(
-                            ",".join(pdav2.get_all_reporters())) + "By default all reporters will be used.")
+                            ",".join(pdav2.get_all_reporters())) + "By default basic reporters will be used.")
 
     return parser.parse_args(str_args)
 

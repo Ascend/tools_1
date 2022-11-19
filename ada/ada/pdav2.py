@@ -118,8 +118,8 @@ class Reporters:
     def add_reporter(self, category, reporter_builder):
         self.categories_to_reporter_builders[category].append(reporter_builder)
 
-    def is_dump_all(self):
-        return "all" in self.categories_to_reporter_builders
+    def only_dump_basic(self):
+        return "basic" in self.categories_to_reporter_builders and len(self.categories_to_reporter_builders) == 1
 
     @staticmethod
     def get_names_from_type(reporter_type):
@@ -134,7 +134,7 @@ class Reporters:
     def create_from_types(types):
         reporters = Reporters()
         if types is None:
-            types = ["all", ]
+            types = ["basic", ]
 
         found_names = set()
         not_found_categories = set()
@@ -166,7 +166,7 @@ def main_ge(args):
         reporters = Reporters.create_from_types(reporter_categories)
         for category in reporters.categories_to_reporter_builders:
             indent = ''
-            if not reporters.is_dump_all():
+            if not reporters.only_dump_basic():
                 print("Dump {}:".format(category))
                 indent = '  '
             for reporter_builder in reporters.categories_to_reporter_builders[category]:
