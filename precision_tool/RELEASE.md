@@ -1,3 +1,9 @@
+#Release 0.1.6
+## Update
+* 支持获取profiling数据
+* 兼容一些溢出监测dump数据的修改 
+* 修复溢出检测数据解析问题
+
 # Release 0.1.5
 ## Update
 * 修复PT命令重复打屏的问题
