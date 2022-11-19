@@ -47,15 +47,14 @@ class ProfilingDataAnalyzer:
                     pd.add_record(rec)
                     continue
                 # logging.warning("Skip unrecognized line {}".format(line))
+            pd.records.sort(key=lambda tmp_rec: tmp_rec.timestamp)
         return pds
 
     @staticmethod
     def read_in_event_records(pds: [ProfilingData]):
         for pd in pds:
-            records = pd.records[:]
-            records.sort(key=lambda tmp_rec: tmp_rec.timestamp)
             keys_to_starts = defaultdict(list)
-            for rec in records:
+            for rec in pd.records:
                 name = get_name(rec)
                 if rec.et == 'Start':
                     keys_to_starts[name].append(rec)
@@ -72,6 +71,7 @@ class ProfilingDataAnalyzer:
             for starts in keys_to_starts.values():
                 for no_end_start_rec in starts:
                     print("WARNING: Drop record {}, because can not find a end event for it".format(no_end_start_rec))
+            pd.event_records.sort(key=lambda ev_rec: ev_rec.start)
 
     def read_in_profiling_file(self):
         pds = self.read_in_records()
@@ -91,12 +91,14 @@ def load_all_builtin_reporters():
         module_name = file_name[:-3]
         if importlib.util.find_spec(module_name) is not None:
             continue
-        importlib.util.spec_from_file_location(module_name, file_path).loader.load_module(module_name)
+        spec = importlib.util.spec_from_file_location(module_name, file_path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.load_module(module_name)
 
 
 def get_all_reporters():
     load_all_builtin_reporters()
-    return reporter_registry.get_all_reporter_names()
+    return reporter_registry.get_all_reporter_categories()
 
 
 class ReporterBuilder:
@@ -136,19 +138,28 @@ class Reporters:
         if types is None:
             types = ["basic", ]
 
+        basic_names = Reporters.get_names_from_type("basic")
+        include_basics = True
+
         found_names = set()
         not_found_categories = set()
         for report_type in types:
+            if report_type in basic_names:
+                include_basics = False
+
             names = Reporters.get_names_from_type(report_type)
             if len(names) == 0:
                 not_found_categories.add(report_type)
                 continue
 
             for name in names:
-                if name in found_names:
-                    reporters.add_reporter(report_type, ReporterBuilder.duplicate(name))
-                else:
+                if name not in found_names:
                     reporters.add_reporter(report_type, ReporterBuilder(name, reporter_registry.get_reporter(name)))
+
+        if include_basics:
+            for name in basic_names:
+                if name not in found_names:
+                    reporters.add_reporter("basic", ReporterBuilder(name, reporter_registry.get_reporter(name)))
 
         # todo not support external reporters, print error when reporters not found
         if len(not_found_categories) != 0:
@@ -158,25 +169,25 @@ class Reporters:
 
 def main_ge(args):
     try:
-        path, tracing_path, reporter_categories = args.input_file, args.output, args.reporter
+        path, base_path, reporter_categories = args.input_file, args.output, args.reporter
         analyzer = ProfilingDataAnalyzer(path)
         pds = analyzer.read_in_profiling_file()
 
         load_all_builtin_reporters()
         reporters = Reporters.create_from_types(reporter_categories)
         for category in reporters.categories_to_reporter_builders:
-            indent = ''
-            if not reporters.only_dump_basic():
-                print("Dump {}:".format(category))
-                indent = '  '
             for reporter_builder in reporters.categories_to_reporter_builders[category]:
                 if reporter_builder.builder is None:
-                    print("{}{}".format(indent, reporter_builder.message))
+                    print("{}".format(reporter_builder.message))
                 else:
-                    print("{}Begin to generate report {}...".format(indent, reporter_builder.name), end='')
                     reporter = reporter_builder.builder(pds)
-                    reporter.report(tracing_path)
-                    print("done")
+                    report_path = base_path
+                    if category != "basic":
+                        category_dir = os.path.join(os.path.dirname(base_path), category)
+                        if not os.path.isdir(category_dir):
+                            os.mkdir(category_dir)
+                        report_path = os.path.join(category_dir, os.path.basename(base_path))
+                    reporter.report(report_path)
         return 0
     except AdaError as e:
         print("Error: {}".format(e.message))

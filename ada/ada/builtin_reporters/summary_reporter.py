@@ -4,7 +4,7 @@ from collections import defaultdict
 import csv
 
 
-STANDARD_EVENTS = ["[AclCompileAndExecute]", "[OpExecute]"]
+STANDARD_EVENTS = ["[AclCompileAndExecute]", "[OpExecute]", "[Execute]"]
 
 
 @reporter("summary")
@@ -15,8 +15,6 @@ class SummaryReporter:
 
     def __init__(self, pds: [ProfilingData]):
         self._pds = pds[:]
-        for pd in self._pds:
-            pd.records.sort(key=lambda rec: rec.timestamp)
 
     def read_in_events(self):
         events = []

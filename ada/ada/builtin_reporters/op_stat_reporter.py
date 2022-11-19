@@ -38,7 +38,6 @@ class OpStatisticReporter:
         7. 遍历到一个无node_name的event时，如果unfinished_events不为空，则取其中第一个event的node_name
         """
         for pd in self._pds:
-            pd.event_records.sort(key=lambda rec: rec.start)
             threads_to_unfinished_events = defaultdict(list)
             for event in pd.event_records:
                 thread_id = OpStatisticReporter.thread_id(event)

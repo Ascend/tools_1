@@ -8,7 +8,7 @@ class TestReporter1:
     def __init__(self, pds):
         self._pds = pds
 
-    def report(self):
+    def report(self, path):
         return "pds: {}".format(self._pds)
 
 
