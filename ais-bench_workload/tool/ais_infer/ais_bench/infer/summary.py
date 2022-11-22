@@ -4,7 +4,6 @@ import os
 import numpy as np
 from ais_bench.infer.utils import logger
 
-
 class ListInfo(object):
     def __init__(self):
         self.min = 0.0

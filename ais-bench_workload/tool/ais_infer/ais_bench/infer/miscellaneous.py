@@ -3,9 +3,7 @@ import sys
 import numpy as np
 import itertools
 
-import logging
-logging.basicConfig(stream=sys.stdout, level = logging.INFO,format = '[%(levelname)s] %(message)s')
-logger = logging.getLogger(__name__)
+from ais_bench.infer.utils import logger
 
 def get_range_list(ranges):
     elems = ranges.split(';')
