@@ -83,6 +83,7 @@ APP_ERROR ModelInferenceProcessor::Init(const std::string& modelPath, std::share
         processModel->PrintDesc();
     }
 
+    processModel->SetExceptionCallBack();
     return APP_ERR_OK;
 }
 
