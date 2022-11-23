@@ -7,8 +7,6 @@ import sys
 import time
 
 import aclruntime
-from tqdm import tqdm
-
 from frontend.io_oprations import (create_infileslist_from_inputs_list,
                                    create_intensors_from_infileslist,
                                    create_intensors_zerodata,
@@ -17,6 +15,7 @@ from frontend.io_oprations import (create_infileslist_from_inputs_list,
                                    save_tensors_to_file)
 from frontend.summary import summary
 from frontend.utils import logger
+from tqdm import tqdm
 
 
 def set_session_options(session, args):
@@ -290,7 +289,7 @@ if __name__ == "__main__":
         else:
             output_prefix = os.path.join(args.output, args.output_dirname)
         if not os.path.exists(output_prefix):
-            os.mkdir(output_prefix, 0o755)
+            os.makedirs(output_prefix, 0o755)
         logger.info("output path:{}".format(output_prefix))
     else:
         output_prefix = None
