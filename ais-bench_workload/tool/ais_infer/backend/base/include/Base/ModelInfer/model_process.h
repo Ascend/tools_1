@@ -205,6 +205,7 @@ public:
 
     Result GetMaxDynamicHWSize(size_t &outsize);
 
+    void SetExceptionCallBack();
 private:
     uint32_t modelId_;
     bool loadFlag_; // model load flag

@@ -5,14 +5,15 @@ with open('requirements.txt', encoding='utf-8') as f:
 
 with open('README.md', encoding='utf-8') as f:
     long_description = f.read()
+
 setup(
-    name='ais_infer',
+    name='ais_bench',
     version='0.0.2',
-    description='ais-bench inference tool',
+    description='ais_bench tool',
     long_description=long_description,
-    url='https://gitee.com/ascend/tools/ais-bench_workload/tool/tools/ais_infer',
-    packages=find_packages(exclude='ais_infer.py'),
-    keywords='ais-bench inference tool',
+    url='ais_bench url',
+    packages=find_packages(),
+    keywords='ais_bench tool',
     install_requires=required,
     python_requires='>=3.7'
 )

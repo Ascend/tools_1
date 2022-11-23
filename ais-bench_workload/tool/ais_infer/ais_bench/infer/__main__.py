@@ -9,16 +9,16 @@ import shutil
 
 from tqdm import tqdm
 
-from ais_infer.interface import InferSession, MemorySummary
-from ais_infer.io_oprations import (create_infileslist_from_inputs_list,
+from ais_bench.infer.interface import InferSession, MemorySummary
+from ais_bench.infer.io_oprations import (create_infileslist_from_inputs_list,
                                     create_intensors_from_infileslist,
                                     get_narray_from_files_list,
                                     get_tensor_from_files_list,
                                     convert_real_files,
                                     pure_infer_fake_file, save_tensors_to_file)
-from ais_infer.summary import summary
-from ais_infer.utils import logger
-
+from ais_bench.infer.summary import summary
+from ais_bench.infer.utils import logger
+from ais_bench.infer.miscellaneous import dymshape_range_run
 
 def set_session_options(session, args):
     # 增加校验
@@ -227,7 +227,7 @@ def get_args():
     parser.add_argument("--dymBatch", type=int, default=0, help="dynamic batch size param，such as --dymBatch 2")
     parser.add_argument("--dymHW", type=str, default=None, help="dynamic image size param, such as --dymHW \"300,500\"")
     parser.add_argument("--dymDims", type=str, default=None, help="dynamic dims param, such as --dymDims \"data:1,600;img_info:1,600\"")
-    parser.add_argument("--dymShape", type=str, help="dynamic shape param, such as --dymShape \"data:1,600;img_info:1,600\"")
+    parser.add_argument("--dymShape", type=str, default=None, help="dynamic shape param, such as --dymShape \"data:1,600;img_info:1,600\"")
     parser.add_argument("--outputSize", type=str, default=None, help="output size for dynamic shape mode")
     parser.add_argument("--auto_set_dymshape_mode", type=str2bool, default=False, help="auto_set_dymshape_mode")
     parser.add_argument("--auto_set_dymdims_mode", type=str2bool, default=False, help="auto_set_dymdims_mode")
@@ -240,6 +240,7 @@ def get_args():
     parser.add_argument("--run_mode", type=str, default="array", choices=["array", "files", "tensor", "full"], help="run mode")
     parser.add_argument("--display_all_summary", type=str2bool, default=False, help="display all summary include h2d d2h info")
     parser.add_argument("--warmup_count",  type=check_nonnegative_integer, default=1, help="warmup count before inference")
+    parser.add_argument("--dymShape_range", type=str, default=None, help="dynamic shape range, such as --dymShape_range \"data:1,600~700;img_info:1,600-700\"")
     args = parser.parse_args()
 
     if args.profiler is True and args.dump is True:
@@ -254,34 +255,27 @@ def get_args():
         args.no_combine_tensor_mode = False
     else:
         args.no_combine_tensor_mode = True
+
+    if args.profiler is True and args.warmup_count != 0 and args.input != None:
+        logger.info("profiler mode with input change warmup_count to 0")
+        args.warmup_count = 0
     return args
 
 def msprof_run_profiling(args):
-    cmd = sys.executable + " " + ' '.join(sys.argv) + " --profiler=0"
+    cmd = sys.executable + " " + ' '.join(sys.argv) + " --profiler=0 --warmup_count=0"
     msprof_cmd="{} --output={}/profiler --application=\"{}\" --sys-hardware-mem=on --sys-cpu-profiling=on --sys-profiling=on --sys-pid-profiling=on --dvpp-profiling=on --runtime-api=on --task-time=on --aicpu=on".format(
         msprof_bin, args.output, cmd)
     logger.info("msprof cmd:{} begin run".format(msprof_cmd))
     ret = os.system(msprof_cmd)
     logger.info("msprof cmd:{} end run ret:{}".format(msprof_cmd, ret))
 
-if __name__ == "__main__":
-    args = get_args()
-
-    if args.profiler == True:
-        msprof_bin = shutil.which('msprof')
-        if msprof_bin == None:
-            logger.info("find no msprof continue use acl.json mode")
-        else:
-            msprof_run_profiling(args)
-            exit(0)
-
+def main(args):
     if args.debug == True:
         logger.setLevel(logging.DEBUG)
 
     session = init_inference_session(args)
 
     intensors_desc = session.get_inputs()
-    outtensors_desc = session.get_outputs()
 
     if args.output != None:
         if args.output_dirname is None:
@@ -325,3 +319,22 @@ if __name__ == "__main__":
     summary.report(args.batchsize, output_prefix, args.display_all_summary)
 
     session.finalize()
+
+if __name__ == "__main__":
+    args = get_args()
+
+    if args.profiler == True:
+        # try use msprof to run
+        msprof_bin = shutil.which('msprof')
+        if msprof_bin == None:
+            logger.info("find no msprof continue use acl.json mode")
+        else:
+            msprof_run_profiling(args)
+            exit(0)
+
+    if args.dymShape_range != None and args.dymShape == None:
+        # dymshape range run,according range to run each shape infer get best shape
+        dymshape_range_run(args)
+        exit(0)
+
+    main(args)

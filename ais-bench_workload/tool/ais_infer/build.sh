@@ -1,7 +1,7 @@
 #!/bin/bash
 CURDIR=$(dirname $(readlink -f $0))
 PLATFORM=`uname -i`
-PACKET_NAME="ais_infer_$PLATFORM"
+PACKET_NAME="ais_bench_$PLATFORM"
 OUTPUT_PATH="$CURDIR/$PACKET_NAME/"
 
 main()
@@ -15,7 +15,7 @@ main()
     which pip3.8 && { pip3.8 wheel -v $CURDIR/backend/ || { echo "pip run failed"; return 1; } }
     which pip3.9 && { pip3.9 wheel -v $CURDIR/backend/ || { echo "pip run failed"; return 1; } }
 
-    cp $CURDIR/ais_infer -rf $OUTPUT_PATH/
+    cp $CURDIR/ais_bench -rf $OUTPUT_PATH/
     cp $CURDIR/requirements.txt $OUTPUT_PATH/
     cp $CURDIR/README.md $OUTPUT_PATH/
     cp $CURDIR/ais_infer.py $OUTPUT_PATH/

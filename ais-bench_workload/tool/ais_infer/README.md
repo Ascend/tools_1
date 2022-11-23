@@ -1,4 +1,4 @@
-# ais_infer 推理工具使用文档
+# ais_bench 推理工具使用文档
 
 ## 介绍
 本文介绍AisBench推理工具，该工具包含前端和后端两部分。
@@ -10,9 +10,9 @@
 
 ## 一键安装
 安装aclruntime包
-pip3  install -v --force-reinstall 'git+https://gitee.com/ascend/tools.git@develop#egg=aclruntime&subdirectory=ais-bench_workload/tool/ais_infer/backend'
-安装ais_infer程序包
-pip3  install -v --force-reinstall 'git+https://gitee.com/ascend/tools.git@develop#egg=ais_infer&subdirectory=ais-bench_workload/tool/ais_infer'
+pip3  install -v --force-reinstall 'git+https://gitee.com/ascend/tools.git#egg=aclruntime&subdirectory=ais-bench_workload/tool/ais_infer/backend'
+安装ais_bench推理程序包
+pip3  install -v --force-reinstall 'git+https://gitee.com/ascend/tools.git#egg=ais_infer&subdirectory=ais-bench_workload/tool/ais_infer'
 
 ## 源代码构建与安装
 1. 本推理工具编译需要安装好CANN环境。用户可以设置CANN_PATH环境变量指定安装的CANN版本路径，比如export CANN_PATH=/xxx/nnae/latest/.
@@ -202,7 +202,7 @@ summary:{'NPU_compute_time': {'min': 2.4385452270507812, 'max': 2.58755683898925
 | --dymHW  | 动态分辨率参数，指定模型输入的实际H、W，可选参数。 <br>如atc模型转换时设置 --input_shape="data:8,3,-1,-1;img_info:8,4,-1,-1"  --dynamic_image_size="300,500;600,800" , dymHW参数可设置为：--dymHW 300,500|
 | --dymDims| 动态维度参数，指定模型输入的实际shape，可选参数。 <br>如atc模型转换时设置 --input_shape="data:1,-1;img_info:1,-1" --dynamic_dims="224,224;600,600" , dymDims参数可设置为：--dymDims "data:1,600;img_info:1,600"|
 | --dymShape| 动态shape参数，指定模型输入的实际shape，可选参数。 <br>如atc模型转换时设置 --input_shape_range="input1:\[8\~20,3,5,-1\];input2:\[5,3\~9,10,-1\]" , dymShape参数可设置为：--dymShape "input1:8,3,5,10;input2:5,3,10,10"<br>设置此参数时，必须设置  --outputSize。 |
-| --auto_set_dymshape_mode| 自动设置shape模式，可选参数, 默认false。<br>针对动态shape模型，根据输入的文件的信息，自动设置shape参数<br>如 --auto_set_dymshape_mode true"|
+| --auto_set_dymshape_mode| 自动设置shape模式，可选参数, 默认false。<br>针对动态shape模型，根据输入的文件的信息，自动设置shape参数 注意 输入数据只能为npy文件 因为bin文件不能读取shape信息<br>如 --auto_set_dymshape_mode true"|
 | --outputSize| 指定模型的输出size，有几个输出，就设几个值，可选参数。<br>动态shape场景下，获取模型的输出size可能为0，用户需根据输入的shape预估一个较合适的值去申请内存。<br>如 --outputSize "10000,10000,10000"|
 | --batchsize | 模型batch size 默认为1 。当前推理模块根据模型输入和文件输出自动进行组batch。参数传递的batchszie有且只用于结果吞吐率计算。请务必注意需要传入该值，以获取计算正确的吞吐率      |
 | --pure_data_type | 纯推理数据类型。可选参数，默认"zero",可取值"zero"或"random"。<br>设置为zero时，纯推理数据全部是0；设置为random时，每一个推理数据是[0,255]之间的随机整数|

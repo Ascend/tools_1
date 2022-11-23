@@ -2,7 +2,7 @@ import json
 import os
 
 import numpy as np
-from ais_infer.utils import logger
+from ais_bench.infer.utils import logger
 
 
 class ListInfo(object):
