@@ -15,6 +15,10 @@ main()
     which pip3.8 && { pip3.8 wheel -v $CURDIR/backend/ || { echo "pip run failed"; return 1; } }
     which pip3.9 && { pip3.9 wheel -v $CURDIR/backend/ || { echo "pip run failed"; return 1; } }
 
+    which pip3.7 && { pip3.7 wheel -v $CURDIR/ || { echo "pip run failed"; return 1; } }
+    which pip3.8 && { pip3.8 wheel -v $CURDIR/ || { echo "pip run failed"; return 1; } }
+    which pip3.9 && { pip3.9 wheel -v $CURDIR/ || { echo "pip run failed"; return 1; } }
+
     cp $CURDIR/ais_bench -rf $OUTPUT_PATH/
     cp $CURDIR/requirements.txt $OUTPUT_PATH/
     cp $CURDIR/README.md $OUTPUT_PATH/
