@@ -1,3 +1,7 @@
+#Release 0.1.7
+## Update
+* 兼容新平台溢出检测数据解析
+
 #Release 0.1.6
 ## Update
 * 支持获取profiling数据
