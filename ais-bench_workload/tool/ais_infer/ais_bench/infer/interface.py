@@ -106,15 +106,23 @@ class InferSession:
     def sumary(self):
         return self.session.sumary()
     def finalize(self):
-        self.session.finalize()
+        if hasattr(self.session, 'finalize'):
+            self.session.finalize()
 
 class MemorySummary:
     @staticmethod
     def get_H2D_time_list():
-        return aclruntime.MemorySummary().H2D_time_list
+        if hasattr(aclruntime, 'MemorySummary'):
+            return aclruntime.MemorySummary().H2D_time_list
+        else:
+            return []
     @staticmethod
     def get_D2H_time_list():
-        return aclruntime.MemorySummary().D2H_time_list
+        if hasattr(aclruntime, 'MemorySummary'):
+            return aclruntime.MemorySummary().D2H_time_list
+        else:
+            return []
     @staticmethod
     def reset():
-        aclruntime.MemorySummary().reset()
+        if hasattr(aclruntime, 'MemorySummary'):
+            aclruntime.MemorySummary().reset()

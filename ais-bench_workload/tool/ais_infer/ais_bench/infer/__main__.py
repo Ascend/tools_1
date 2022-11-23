@@ -18,7 +18,7 @@ from ais_bench.infer.io_oprations import (create_infileslist_from_inputs_list,
                                     pure_infer_fake_file, save_tensors_to_file)
 from ais_bench.infer.summary import summary
 from ais_bench.infer.utils import logger
-from ais_bench.infer.miscellaneous import dymshape_range_run
+from ais_bench.infer.miscellaneous import dymshape_range_run, get_acl_json_path, version_check
 
 def set_session_options(session, args):
     # 增加校验
@@ -39,40 +39,6 @@ def set_session_options(session, args):
         customsizes = [int(n) for n in args.outputSize.split(',')]
         logger.debug("set customsize:{}".format(customsizes))
         session.set_custom_outsize(customsizes)
-
-
-def get_acl_json_path(args):
-    """
-    get acl json path. when args.profiler is true or args.dump is True, create relative acl.json , default current folder
-    """
-    if args.acl_json_path is not None:
-        return args.acl_json_path
-    if not args.profiler and not args.dump:
-        return None
-
-    output_json_dict = {}
-    if args.profiler:
-        output_json_dict = {"profiler": {"switch": "on", "aicpu": "on", "output": "", "aic_metrics": ""}}
-        out_profiler_path = os.path.join(args.output, "profiler")
-
-        if not os.path.exists(out_profiler_path):
-            os.mkdir(out_profiler_path)
-        output_json_dict["profiler"]["output"] = out_profiler_path
-    elif args.dump:
-        output_json_dict = {"dump": {"dump_path": "", "dump_mode": "output", "dump_list": [{"model_name": ""}]}}
-        out_dump_path = os.path.join(args.output, "dump")
-
-        if not os.path.exists(out_dump_path):
-            os.mkdir(out_dump_path)
-
-        model_name = args.model.split("/")[-1]
-        output_json_dict["dump"]["dump_path"] = out_dump_path
-        output_json_dict["dump"]["dump_list"][0]["model_name"] = model_name.split('.')[0]
-
-    out_json_file_path = os.path.join(args.output, "acl.json")
-    with open(out_json_file_path, "w") as f:
-        json.dump(output_json_dict, f, indent=4, separators=(", ", ": "), sort_keys=True)
-    return out_json_file_path
 
 def init_inference_session(args):
     acl_json_path = get_acl_json_path(args)
@@ -108,14 +74,18 @@ def set_dymdims_shape(session, inputs):
 
 def warmup(session, args, intensors_desc, infiles):
     # prepare input data
-    innarrays = []
+    infeeds = []
     for j, files in enumerate(infiles):
-        narray = get_narray_from_files_list(files, intensors_desc[j].realsize, args.pure_data_type)
-        innarrays.append(narray)
+        if args.run_mode == "tensor":
+            tensor = get_tensor_from_files_list(files, session, intensors_desc[j].realsize, args.pure_data_type, args.no_combine_tensor_mode)
+            infeeds.append(tensor)
+        else:
+            narray = get_narray_from_files_list(files, intensors_desc[j].realsize, args.pure_data_type, args.no_combine_tensor_mode)
+            infeeds.append(narray)
     session.set_loop_count(1)
     # warmup
     for i in range(args.warmup_count):
-        outputs = run_inference(session, innarrays, out_array=True)
+        outputs = run_inference(session, infeeds, out_array=True)
 
     session.set_loop_count(args.loop)
 
@@ -322,6 +292,8 @@ def main(args):
 
 if __name__ == "__main__":
     args = get_args()
+
+    version_check(args)
 
     if args.profiler == True:
         # try use msprof to run

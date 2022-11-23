@@ -5,6 +5,56 @@ import itertools
 
 from ais_bench.infer.utils import logger
 
+def get_modules_version(name):
+    try:
+        import pkg_resources
+        pkg = pkg_resources.get_distribution(name)
+        return pkg.version
+    except:
+        return None
+
+def version_check(args):
+    aclruntime_version = get_modules_version('aclruntime')
+    if aclruntime_version == None or aclruntime_version == "0.0.1":
+        logger.warning("aclruntime version:{} is lower please update aclruntime follow any one method".format(aclruntime_version))
+        logger.warning("1. visit https://gitee.com/ascend/tools/tree/master/ais-bench_workload/tool/ais_infer to install")
+        logger.warning("2. or run cmd: pip3  install -v --force-reinstall 'git+https://gitee.com/ascend/tools.git#egg=aclruntime&subdirectory=ais-bench_workload/tool/ais_infer/backend' to install")
+        # set old run mode to run ok
+		args.run_mode = "tensor"
+
+def get_acl_json_path(args):
+    """
+    get acl json path. when args.profiler is true or args.dump is True, create relative acl.json , default current folder
+    """
+    if args.acl_json_path is not None:
+        return args.acl_json_path
+    if not args.profiler and not args.dump:
+        return None
+
+    output_json_dict = {}
+    if args.profiler:
+        output_json_dict = {"profiler": {"switch": "on", "aicpu": "on", "output": "", "aic_metrics": ""}}
+        out_profiler_path = os.path.join(args.output, "profiler")
+
+        if not os.path.exists(out_profiler_path):
+            os.mkdir(out_profiler_path)
+        output_json_dict["profiler"]["output"] = out_profiler_path
+    elif args.dump:
+        output_json_dict = {"dump": {"dump_path": "", "dump_mode": "output", "dump_list": [{"model_name": ""}]}}
+        out_dump_path = os.path.join(args.output, "dump")
+
+        if not os.path.exists(out_dump_path):
+            os.mkdir(out_dump_path)
+
+        model_name = args.model.split("/")[-1]
+        output_json_dict["dump"]["dump_path"] = out_dump_path
+        output_json_dict["dump"]["dump_list"][0]["model_name"] = model_name.split('.')[0]
+
+    out_json_file_path = os.path.join(args.output, "acl.json")
+    with open(out_json_file_path, "w") as f:
+        json.dump(output_json_dict, f, indent=4, separators=(", ", ": "), sort_keys=True)
+    return out_json_file_path
+
 def get_range_list(ranges):
     elems = ranges.split(';')
     info_list = []
