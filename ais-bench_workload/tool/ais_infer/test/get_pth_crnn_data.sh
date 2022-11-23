@@ -82,7 +82,7 @@ convert_dymbatch_om()
 # 基准路径 https://gitee.com/ascend/ModelZoo-PyTorch/tree/master/ACL_PyTorch/built-in/cv/Resnet101_Pytorch_Infer
 main()
 {
-    SOC_VERSION=${1:-"Ascend310"}
+    SOC_VERSION=${1:-"Ascend310P3"}
     PYTHON_COMMAND=${2:-"python3"}
     TESTDATA_PATH=$CUR_PATH/testdata/crnn/model
     [ -d $TESTDATA_PATH ] || mkdir -p $TESTDATA_PATH

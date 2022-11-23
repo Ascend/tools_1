@@ -57,8 +57,8 @@ convert_dymbatch_om()
 
 main()
 {
-    SOC_VERSION="Ascend310"
-    PYTHON_COMMAND="python3.7"
+    SOC_VERSION=${1:-"Ascend310P3"}
+    PYTHON_COMMAND=${2:-"python3"}
     TESTDATA_PATH=$CUR_PATH/testdata/bert/model
     [ -d $TESTDATA_PATH ] || mkdir -p $TESTDATA_PATH
     [ -d $TESTDATA_PATH/tmp ] || mkdir -p $TESTDATA_PATH/tmp/
