@@ -72,6 +72,7 @@ root@root:/home/aclruntime-aarch64# source  /usr/local/Ascend/ascend-toolkit/set
 
 ## 使用方法
 
+ ### 使用入口
 当前入口程序有两个，可以使用原有的ais_infer.py作为入口。如下调用
 
 ```
@@ -84,17 +85,17 @@ python3 ais_infer.py --model /home/model/resnet50_v1.om
 python3 -m ais_bench --model /home/model/resnet50_v1.om
 ```
 
-为了便利使用。推荐大家使用第二种方式进行调用。这样不需要依赖具体文件，直接使用系统中的whl包。
+**为了便利使用。推荐大家使用第二种方式进行调用。这样不需要依赖具体文件夹内容，直接使用系统中的whl包。**
 
  ### 纯推理场景 会构造全为0的假数据送入模型推理
 ```
-python3 ais_infer.py  --model /home/model/resnet50_v1.om --output ./ --outfmt BIN --loop 5
+python3 -m ais_bench --model /home/model/resnet50_v1.om --output ./ --outfmt BIN --loop 5
 ```
 
 ### 调试模式开启
 debug调试模式 默认不使能。 设置为true 或1时可以开启调试模式。设置命令如下。
 ```
-python3 ais_infer.py  --model /home/model/resnet50_v1.om --output ./ --debug=1
+python3 -m ais_bench --model /home/model/resnet50_v1.om --output ./ --debug=1
 ```
 
 调试模式开启后会增加更多的打印信息，包括
@@ -118,20 +119,20 @@ output:
  本场景会根据文件输入和模型实际输入进行组batch
 
 ```
-python3 ais_infer.py --model ./resnet50_v1_bs1_fp32.om --input "./1.bin,./2.bin,./3.bin,./4.bin,./5.bin"
+python3 -m ais_bench --model ./resnet50_v1_bs1_fp32.om --input "./1.bin,./2.bin,./3.bin,./4.bin,./5.bin"
 
 ```
 
 注意针对于动态分档或动态shape场景，会根据实际模型实际需要size与输入size判断进行组batch操作
 ```
-python3 ais_infer.py --model ./resnet50_v1_dynamicbatchsize_fp32.om --input "./1.bin,./2.bin,./3.bin,./4.bin,./5.bin" --dymBatch 2
+python3 -m ais_bench --model ./resnet50_v1_dynamicbatchsize_fp32.om --input "./1.bin,./2.bin,./3.bin,./4.bin,./5.bin" --dymBatch 2
 ```
 
  ### 文件夹输入场景 input传入文件夹列表 通过,进行分隔
  本场景会根据文件输入和模型输入进行组batch 根据 模型输入size与文件输入size进行对比得出
 
 ```
-python3 ais_infer.py --model ./resnet50_v1_bs1_fp32.om --input "./"
+python3 -m ais_bench --model ./resnet50_v1_bs1_fp32.om --input "./"
 
 ```
 
@@ -142,37 +143,37 @@ python3 ais_infer.py --model ./resnet50_v1_bs1_fp32.om --input "./"
 第三个文件夹"./data/SQuAD1.1/segment_ids",  对应第三个输入"segment_ids"的输入
 
 ```
-python3 ais_infer.py --model ./save/model/BERT_Base_SQuAD_BatchSize_1.om  --input ./data/SQuAD1.1/input_ids,./data/SQuAD1.1/input_mask,./data/SQuAD1.1/segment_ids
+python3 -m ais_bench --model ./save/model/BERT_Base_SQuAD_BatchSize_1.om  --input ./data/SQuAD1.1/input_ids,./data/SQuAD1.1/input_mask,./data/SQuAD1.1/segment_ids
 ```
 
  ### 动态分档场景 主要包含动态batch 动态宽高 动态Dims三种场景，需要分别传入dymBatch dymHW dymDims指定实际档位信息
 
 #### 动态batch场景 档位为1 2 4 8档，设置档位为2 本程序将获取实际模型输入组batch 每2个输入来组一组batch进行推理
 ```
-python3 ais_infer.py --model ./resnet50_v1_dynamicbatchsize_fp32.om --input=./data/ --dymBatch 2
+python3 -m ais_bench --model ./resnet50_v1_dynamicbatchsize_fp32.om --input=./data/ --dymBatch 2
 ```
 
 #### 动态HW宽高场景 档位为224,224;448,448档，设置档位为224,224 本程序将获取实际模型输入组batch
 ```
-python3 ais_infer.py --model ./resnet50_v1_dynamichw_fp32.om --input=./data/ --dymHW 224,224
+python3 -m ais_bench --model ./resnet50_v1_dynamichw_fp32.om --input=./data/ --dymHW 224,224
 
 ```
 
 #### 动态Dims场景 设置档位为1,3,224,224 本程序将获取实际模型输入组batch
 ```
-python3 ais_infer.py --model resnet50_v1_dynamicshape_fp32.om --input=./data/ --dymDims actual_input_1:1,3,224,224
+python3 -m ais_bench --model resnet50_v1_dynamicshape_fp32.om --input=./data/ --dymDims actual_input_1:1,3,224,224
 ```
 
 ### 动态shape场景 atc设置为[1~8,3,200~300,200~300]，设置档位为1,3,224,224 本程序将获取实际模型输入组batch 注意动态shape的输出大小经常为0需要通过outputSize参数设置对应参数的内存大小
 ```
-python3 ais_infer.py --model resnet50_v1_dynamicshape_fp32.om --dymShape actual_input_1:1,3,224,224 --outputSize 10000
+python3 -m ais_bench --model resnet50_v1_dynamicshape_fp32.om --dymShape actual_input_1:1,3,224,224 --outputSize 10000
 ```
 
 ### profiler或者dump场景
 
 支持以--acl_json_path、--profiler、--dump参数形式实现：
 + acl_json_path 为指定路径的json文件，可以在该文件中修改对应的参数信息。
-+ profiler 为固化到程序中的一组acl_json配置，生成的profiling数据保存在 output路径的profiler文件夹中。**注意运行中会首先检查msprof命令是否存在，如果存在，则通过msprof拉起ais_bench推理程序，这样可以采集、处理profiling数据，更为方便。**
++ profiler 为固化到程序中的一组acl_json配置，生成的profiling数据保存在 output路径的profiler文件夹中。**注意运行中会首先检查msprof命令是否存在，如果存在，则通过msprof拉起ais_bench推理程序，这样可以采集、解析profiling数据，更为方便。**
 + acl_json_path 优先级高于 profiler dump。 同时设置时以acl_json_path为准
 + profiler参数和dump参数 必须要增加output参数。指示输出路径。
 + profiler和dump可以分别使用，但不能同时启用
@@ -180,9 +181,9 @@ python3 ais_infer.py --model resnet50_v1_dynamicshape_fp32.om --dymShape actual_
 指令示例:
 
 ```bash
-python3 ais_infer.py --model ./resnet50_v1_bs1_fp32.om --acl_json_path ./acl.json
-python3 ais_infer.py  --model /home/model/resnet50_v1.om --output ./ --dump 1
-python3 ais_infer.py  --model /home/model/resnet50_v1.om --output ./ --profiler 1
+python3 -m ais_bench --model ./resnet50_v1_bs1_fp32.om --acl_json_path ./acl.json
+python3 -m ais_bench  --model /home/model/resnet50_v1.om --output ./ --dump 1
+python3 -m ais_bench  --model /home/model/resnet50_v1.om --output ./ --profiler 1
 ```
 
 ### 结果summary功能
