@@ -41,14 +41,15 @@ def analyse_topk_times(args):
 
     topk_index = [ i[0] for i in topk_list ]
     print(topk_index)
-    with open("{}/topk_index.json".format(args.output), "w") as f:
-        f.write(json.dumps(topk_index))
+    if args.output != None:
+        with open("{}/topk_index.json".format(args.output), "w") as f:
+            f.write(json.dumps(topk_index))
 
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--summary_path", help="the sumary path")
     parser.add_argument("--plog", help="plog path")
-    parser.add_argument("--output", default="./", help="the output path")
+    parser.add_argument("--output", default=None, help="the output path")
     parser.add_argument("--mode", default="times", choices=["times", "plog"], help="mode (times or plog)")
     
     args = parser.parse_args()

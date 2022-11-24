@@ -2,8 +2,7 @@ import json
 import os
 
 import numpy as np
-from frontend.utils import logger
-
+from ais_bench.infer.utils import logger
 
 class ListInfo(object):
     def __init__(self):
@@ -63,11 +62,14 @@ class Summary(object):
             throughput = 1000*batchsize/npu_compute_time.mean
 
         self.infodict['NPU_compute_time'] = {"min": npu_compute_time.min, "max": npu_compute_time.max, "mean": npu_compute_time.mean,
-                                    "median": npu_compute_time.median, "percentile({}%)".format(scale): npu_compute_time.percentile}
+                                    "median": npu_compute_time.median, "percentile({}%)".format(scale): npu_compute_time.percentile,
+                                    "count": len(self.npu_compute_time_list)}
         self.infodict['H2D_latency'] = {"min": h2d_latency.min, "max": h2d_latency.max, "mean": h2d_latency.mean,
-                               "median": h2d_latency.median, "percentile({}%)".format(scale): h2d_latency.percentile}
+                               "median": h2d_latency.median, "percentile({}%)".format(scale): h2d_latency.percentile,
+                               "count": len(self.h2d_latency_list)}
         self.infodict['D2H_latency'] = {"min": d2h_latency.min, "max": d2h_latency.max, "mean": d2h_latency.mean,
-                               "median": d2h_latency.median, "percentile({}%)".format(scale): d2h_latency.percentile}
+                               "median": d2h_latency.median, "percentile({}%)".format(scale): d2h_latency.percentile,
+                               "count": len(self.d2h_latency_list)}
         self.infodict['throughput'] = throughput
         self.infodict['npu_compute_time_list'] = self.npu_compute_time_list
         self.infodict['pid'] = os.getpid()
