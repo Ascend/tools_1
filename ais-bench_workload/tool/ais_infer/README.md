@@ -13,7 +13,7 @@
 pip3  install -v --force-reinstall 'git+https://gitee.com/ascend/tools.git#egg=aclruntime&subdirectory=ais-bench_workload/tool/ais_infer/backend'
 
 安装ais_bench推理程序包
-pip3  install -v --force-reinstall 'git+https://gitee.com/ascend/tools.git#egg=ais_infer&subdirectory=ais-bench_workload/tool/ais_infer'
+pip3  install -v --force-reinstall 'git+https://gitee.com/ascend/tools.git#egg=ais_bench&subdirectory=ais-bench_workload/tool/ais_infer'
 
 ## 源代码构建与安装
 1. 本推理工具编译需要安装好CANN环境。用户可以设置CANN_PATH环境变量指定安装的CANN版本路径，比如export CANN_PATH=/xxx/nnae/latest/.
