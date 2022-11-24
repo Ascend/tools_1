@@ -11,6 +11,7 @@
 ## 一键安装
 安装aclruntime包
 pip3  install -v --force-reinstall 'git+https://gitee.com/ascend/tools.git#egg=aclruntime&subdirectory=ais-bench_workload/tool/ais_infer/backend'
+
 安装ais_bench推理程序包
 pip3  install -v --force-reinstall 'git+https://gitee.com/ascend/tools.git#egg=ais_infer&subdirectory=ais-bench_workload/tool/ais_infer'
 
