@@ -248,3 +248,5 @@ throughput: 吞吐率。吞吐率计算公式：1000 *batchsize/npu_compute_time
 | --dymShape_range |动态shape的阈值范围。如果设置该参数，那么将根据参数中所有的shape列表进行依次推理。得到汇总推理信息。格式为 name1:1:3:200~224:224-230;name2:1,300     name为模型输入名字，~表示范围 -表示某一位的取值|
 | --help| 工具使用帮助信息                  |
 
+## FAQ
+[FAQ](FAQ.md) 
