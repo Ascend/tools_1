@@ -463,7 +463,8 @@ class TestClass():
         assert math.fabs(msame_inference_time_ms) > TestCommonClass.EPSILON
         # compare
         allowable_performance_deviation = 0.03
-        reference_deviation = math.fabs(msame_inference_time_ms - ais_inference_time_ms)/msame_inference_time_ms
+        reference_deviation = (ais_inference_time_ms - msame_inference_time_ms)/msame_inference_time_ms
+        print("static batch msame time:{} ais time:{} ref:{}".format(msame_inference_time_ms, ais_inference_time_ms, reference_deviation))
 
         assert reference_deviation < allowable_performance_deviation
         os.remove(msame_infer_log_path)
@@ -486,7 +487,8 @@ class TestClass():
         os.makedirs(output_dir_path)
         summary_json_path = os.path.join(output_path,  "{}_summary.json".format(output_dir_name))
 
-        cmd = "{} --model {}  --outputSize {} --dymShape {} --input {} --output {} --output_dirname {}".format(TestCommonClass.cmd_prefix, model_path,
+        cmd = "{} --model {}  --outputSize {} --dymShape {} --input {} --output {} --output_dirname {}".format(
+            TestCommonClass.cmd_prefix, model_path,
             output_size, dym_shape, input_path, output_path, output_dir_name)
         print("run cmd:{}".format(cmd))
         ret = os.system(cmd)
@@ -499,8 +501,9 @@ class TestClass():
         assert math.fabs(ais_inference_time_ms) > TestCommonClass.EPSILON
         # get msame inference  average time without first time
         msame_infer_log_path = os.path.join(output_path, output_dir_name, "msame_infer.log")
-        cmd = "{} --model {} --outputSize {} --dymShape {} --input {} > {}".format(TestCommonClass.msame_bin_path, model_path,
-            output_size, dym_shape, input_path, msame_infer_log_path)
+        cmd = "{} --model {} --outputSize {} --dymShape {} --input {} --output {} > {}".format(
+            TestCommonClass.msame_bin_path, model_path,
+            output_size, dym_shape, input_path, output_path, msame_infer_log_path)
         print("run cmd:{}".format(cmd))
         ret = os.system(cmd)
         assert ret == 0
@@ -519,7 +522,8 @@ class TestClass():
         assert math.fabs(msame_inference_time_ms) > TestCommonClass.EPSILON
         # compare
         allowable_performance_deviation = 0.04
-        reference_deviation = math.fabs(msame_inference_time_ms - ais_inference_time_ms)/msame_inference_time_ms
+        reference_deviation = (ais_inference_time_ms - msame_inference_time_ms)/msame_inference_time_ms
+        print("dymshape msame time:{} ais time:{} ref:{}".format(msame_inference_time_ms, ais_inference_time_ms, reference_deviation))
         assert reference_deviation < allowable_performance_deviation
         os.remove(msame_infer_log_path)
         shutil.rmtree(output_dir_path)

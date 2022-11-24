@@ -1,5 +1,6 @@
 import os
 import sys
+import json
 import numpy as np
 import itertools
 
@@ -20,7 +21,7 @@ def version_check(args):
         logger.warning("1. visit https://gitee.com/ascend/tools/tree/master/ais-bench_workload/tool/ais_infer to install")
         logger.warning("2. or run cmd: pip3  install -v --force-reinstall 'git+https://gitee.com/ascend/tools.git#egg=aclruntime&subdirectory=ais-bench_workload/tool/ais_infer/backend' to install")
         # set old run mode to run ok
-		args.run_mode = "tensor"
+        args.run_mode = "tensor"
 
 def get_acl_json_path(args):
     """

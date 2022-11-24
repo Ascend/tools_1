@@ -1,6 +1,4 @@
 import argparse
-import asyncio
-import json
 import logging
 import os
 import sys
@@ -52,10 +50,9 @@ def set_dymshape_shape(session, inputs):
     l = []
     intensors_desc = session.get_inputs()
     for i, input in enumerate(inputs):
-        if -1 in intensors_desc[i].shape:
-            str_shape = [ str(shape) for shape in input.shape ]
-            dyshape = "{}:{}".format(intensors_desc[i].name, ",".join(str_shape))
-            l.append(dyshape)
+        str_shape = [ str(shape) for shape in input.shape ]
+        dyshape = "{}:{}".format(intensors_desc[i].name, ",".join(str_shape))
+        l.append(dyshape)
     dyshapes = ';'.join(l)
     logger.debug("set dymshape shape:{}".format(dyshapes))
     session.set_dynamic_shape(dyshapes)
@@ -64,10 +61,9 @@ def set_dymdims_shape(session, inputs):
     l = []
     intensors_desc = session.get_inputs()
     for i, input in enumerate(inputs):
-        if -1 in intensors_desc[i].shape:
-            str_shape = [ str(shape) for shape in input.shape ]
-            dydim = "{}:{}".format(intensors_desc[i].name, ",".join(str_shape))
-            l.append(dydim)
+        str_shape = [ str(shape) for shape in input.shape ]
+        dydim = "{}:{}".format(intensors_desc[i].name, ",".join(str_shape))
+        l.append(dydim)
     dydims = ';'.join(l)
     logger.debug("set dymdims shape:{}".format(dydims))
     session.set_dynamic_dims(dydims)

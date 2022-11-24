@@ -109,6 +109,48 @@ class InferSession:
         if hasattr(self.session, 'finalize'):
             self.session.finalize()
 
+    def infer(self, feeds, mode, custom_sizes = 100000):
+        '''
+        Parameters:
+            feeds: input data
+            mode: static dymdims dymshapes
+        '''
+        inputs = []
+        shapes = []
+        torchTensorlist = ['torch.FloatTensor', 'torch.DoubleTensor', 'torch.ByteTensor', 'torch.CharTensor',
+            'torch.ShortTensor', 'torch.IntTensor', 'torch.LongTensor']
+        for feed in feeds:
+            if type(feed) is np.ndarray:
+                shapes.append(feed.shape)
+                tensor = self.create_tensor_from_arrays_to_device(feed)
+            elif type(feed) is np.float64:
+                shapes.append(feed.size)
+                tensor = self.create_tensor_from_arrays_to_device(feed)
+            elif type(feed) is aclruntime.Tensor:
+                shapes.append(feed.shape)
+            elif hasattr(feed, 'type') and feed.type() in torchTensorlist:
+                shapes.append(feed.numpy().shape)
+                tensor = self.create_tensor_from_arrays_to_device(feed.numpy())
+            else:
+                raise RuntimeError('type:{} invalid'.format(type(feed)))
+            inputs.append(tensor)
+        
+        if mode == 'dymshape' or mode == 'dymdims':
+            l = []
+            indesc = self.get_inputs()
+            outdesc = self.get_outputs()
+            for i, shape in enumerate(shapes):
+                str_shape = [ str(val) for val in shape ]
+                dyshape = "{}:{}".format(indesc[i].name, ",".join(str_shape))
+                l.append(dyshape)
+            dyshapes = ';'.join(l)
+            if mode == 'dymshape':
+                self.session.set_dynamic_shape(dyshapes)
+                self.session.set_custom_outsize([custom_sizes]*len(outdesc))
+            elif mode == 'dymdims':
+                self.session.set_dynamic_dims(dyshapes)
+        return self.run(inputs, out_array=True)
+
 class MemorySummary:
     @staticmethod
     def get_H2D_time_list():
