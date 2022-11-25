@@ -110,7 +110,7 @@ class OnnxPlaceHolder(PlaceHolder):
             dtype = TENSOR_TYPE_TO_NP_TYPE[tensor_type.elem_type]
             if tensor_type.HasField('shape'):
                 shape = [
-                    dim.dim_value if dim.dim_value > 0 else -1
+                    dim.dim_value if dim.HasField('dim_value') else dim.dim_param
                     for dim in tensor_type.shape.dim
                 ]
         return cls(
@@ -119,11 +119,13 @@ class OnnxPlaceHolder(PlaceHolder):
             shape = shape
         )
     
-    def proto(self, shape=None) -> ValueInfoProto:
+    def proto(self, dtype=1, shape=None) -> ValueInfoProto:
         if self.shape:
             shape = ['-1' if dim == -1 else dim for dim in self.shape]
+        if self.dtype:
+            dtype = NP_TYPE_TO_TENSOR_TYPE[self._dtype]
         return helper.make_tensor_value_info(
             self._name,
-            NP_TYPE_TO_TENSOR_TYPE[self._dtype],
+            dtype,
             shape 
         )

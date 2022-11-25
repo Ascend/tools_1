@@ -6,7 +6,7 @@
 
 **g[name] -> Union[Node, Initializer, PlaceHolder]**
 
-- 根据节点名称查询单个节点，返回该节点。
+- 根据节点名称查询单个节点，返回该节点，若不存在报错。
 - `name(str)` - 节点名称
 
 **get_nodes(op_type) -> Union[List[Node], List[PlaceHolder], List[Initializer]]**
@@ -14,7 +14,13 @@
 - 根据节点类型名称查询节点，返回由该类型节点组成的列表。
 - `op_type(str)` - 节点类型名称，如 `'Add'` 。
 
-**get_prev_node(input_name) -> Node**
+**get_node(self, name: str, node_type=Node) -> Optional[Node，Initializer，PlaceHolder]**:
+
+- 根据节点名称和节点类型名称查询单个节点， 若存在符合节点名称的该类型节点则返回，若不存在返回 `None`。默认指定类型为`Node`。
+- `name(str)` - 节点名称
+- `node_type(Type)` - 节点类型`Node`、`Initializer`或`PlaceHolder`。
+
+**get_prev_node(input_name) -> Optional[Node]**
 
 - 查询某条边的前驱节点并返回该节点。若不存在返回 `None` 。
 - `input_name(str)` - 图中存在的边的名称
@@ -41,6 +47,9 @@ node = g['Add_0']
 
 # 获取所有Add类型节点
 nodes = g.get_nodes('Add')
+
+# 获取名称为`ini_0`类型为Initializer的节点
+ini = g.get_node('ini_0', Initializer)
 
 # 获取 node 的所有前驱节点
 prev_nodes = []
@@ -92,11 +101,13 @@ value_info = g.get_value_info(node.outputs[0])
 - `name(str)` - 常量节点名称 \
   `value(np.ndarray)` - 常量值
 
-**add_node(name, op_type, attrs=None) -> Node:**
+**add_node(name, op_type, inputs=[], outputs=[], attrs=None) -> Node:**
 
 - 添加孤立的算子节点。
 - `name(str)` - 算子节点名称 \
   `op_type(str)` - 算子类型。参见 [Onnx 算子标准 IR](https://github.com/onnx/onnx/blob/main/docs/Operators.md) 。\
+  `inputs(List[str])` - 算子节点的输入列表 。\
+  `inputs(List[str])` - 算子节点的输出列表 。\
   `attrs(Dict[str, Object])` - 算子属性。参见 [Onnx 算子标准 IR](https://github.com/onnx/onnx/blob/main/docs/Operators.md) 。
 
 <details>
@@ -111,7 +122,7 @@ new_output = g.add_output('new_output', 'float32', [1,3,224,224])
 new_ini = g.add_initializer('new_ini', np.array([1,1,1]))
 
 # 添加算子节点
-new_op = g.add_node('Transpose_new', 'Transpose', {'perm':[1,0,2]})
+new_op = g.add_node('Transpose_new', 'Transpose', attrs={'perm':[1,0,2]})
 ```
 
 </details>
@@ -138,8 +149,8 @@ new_op = g.add_node('Transpose_new', 'Transpose', {'perm':[1,0,2]})
 
 ```python
 # 添加并插入单输入单输出算子
-new_cast_0 = g.add_node('new_cast_0', 'Cast', {'to':6}) 
-new_cast_1 = g.add_node('new_cast_1', 'Cast', {'to':6})
+new_cast_0 = g.add_node('new_cast_0', 'Cast', attrs={'to':6}) 
+new_cast_1 = g.add_node('new_cast_1', 'Cast', attrs={'to':6})
 g.insert_node('reference_node', new_cast_0) # 在参考节点后插入Cast算子
 g.insert_node('reference_node', new_cast_1, 1, 'before') # 在参考节点的第1条输入边插入Cast算子
 
@@ -172,13 +183,21 @@ g.connect_node(
 - `name(str)` - 待删除节点名称 \
   `maps(Dict[int])` - 可选参数。`maps` 中的`key` 值表示待删除节点的输入下标，`value` 值为待删除节点的输出下标。若不提供 `maps`，默认将前驱节点的第一个输出和后继节点的第一个输入相连；若 `maps={}`，仅删除指定节点，不连边。
 
+**remove_unused_nodes()**
+
+- 删除图中多余的无效节点（即不影响输出的多余节点）。
+
 <details>
   <summary> sample code </summary>
 
 ```python
+# 删除单个节点
 g.remove('Cast_0') # 删除节点， 默认将第0个输入和第0个输出相连
 g.remove('Split_0', {}) # 删除节点，不连边
 g.remove('Node_text', {0:0,1:1}) # 删除节点，将节点的第0个输入和第0个输出相连，第1个输入和第1个输出相连
+
+# 删除无效节点
+g.remove_unused_nodes()
 ```
 
 </details>
@@ -291,7 +310,7 @@ g.extract('extracted_model.onnx', ['5'], ['12'])
 
 | API       | 说明                                                         |
 | --------- | ------------------------------------------------------------ |
-| ini.value | 可读写属性，借助 `numpy.ndarray` 获取和修改常量节点的具体数值 |
+| ini.value | 可读写属性，借助 `numpy.ndarray` 获取和修改常量节点的具体数值<br>因此，可通过 `ini.value.shape` 和 `ini.value.dtype` 获取和修改维度信息和数据类型。 |
 
 ### 输入/输出节点
 
