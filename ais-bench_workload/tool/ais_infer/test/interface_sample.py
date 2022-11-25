@@ -14,8 +14,8 @@ def infer_simple():
     barray = bytearray(session.get_inputs()[0].realsize)
     ndata = np.frombuffer(barray)
 
-    mode = "static"
-    outputs = session.infer([ndata], mode)
+    # in is numpy list and ouput is numpy list
+    outputs = session.infer([ndata])
     print("outputs:{} type:{}".format(outputs, type(outputs)))
 
     print("static infer avg:{} ms".format(np.mean(session.sumary().exec_time_list)))
