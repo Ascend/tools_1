@@ -53,7 +53,7 @@ pattern = Pattern() \
     .set_loop(MATCH_PATTERN.MATCH_ONCE_OR_MORE)
 
 
-@KnowledgeFactory.register("KnowledgeConv1d2Conv2d")
+@KnowledgeFactory.register()
 class KnowledgeConv1d2Conv2d(KnowledgeBase):
     def __init__(self):
         super().__init__()
@@ -85,7 +85,7 @@ class KnowledgeConv1d2Conv2d(KnowledgeBase):
             return None
         self._insert_op_names.add(op_name)
         if self.__is_lower_onnx_version(graph):
-            us = graph.add_node(op_name, 'Unsqueeze', {'axes': np.array([2], dtype=np.int64)})
+            us = graph.add_node(op_name, 'Unsqueeze', attrs={'axes': np.array([2], dtype=np.int64)})
             graph.insert_node(conv.name, us, mode='before', refer_index=refer_index)
         else:
             us = graph.add_node(op_name, 'Unsqueeze')
@@ -127,12 +127,12 @@ class KnowledgeConv1d2Conv2d(KnowledgeBase):
         :param refer_index: 插入算子的输入索引
         :return: 插入的Squeeze算子对象
         """
-        op_name = f'Squeeze_{mode}_{node.name}'
+        op_name = f'Squeeze_{mode}_{node.name}_{refer_index}'
         if op_name in self._insert_op_names:
             return None
         self._insert_op_names.add(op_name)
         if self.__is_lower_onnx_version(graph):
-            sq = graph.add_node(op_name, 'Squeeze', {'axes': np.array([2], dtype=np.int64)})
+            sq = graph.add_node(op_name, 'Squeeze', attrs={'axes': np.array([2], dtype=np.int64)})
             graph.insert_node(node.name, sq, mode=mode, refer_index=refer_index)
         else:
             sq = graph.add_node(op_name, 'Squeeze')
