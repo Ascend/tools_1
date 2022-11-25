@@ -27,6 +27,7 @@ main()
     cp $CURDIR/ais_bench -rf $OUTPUT_PATH/
     cp $CURDIR/requirements.txt $OUTPUT_PATH/
     cp $CURDIR/README.md $OUTPUT_PATH/
+    cp $CURDIR/FAQ.md $OUTPUT_PATH/
     cp $CURDIR/ais_infer.py $OUTPUT_PATH/
 
     cd $CURDIR
