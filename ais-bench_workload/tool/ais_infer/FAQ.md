@@ -7,6 +7,6 @@
 如果需要该功能，可以通过如下脚本命令执行，生成某一部分的软链接的文件夹，传入到推理程序中。
 
 ```bash
-# 首先搜索src目录下的所有的JPEG的文件  然后选取前10个 然后通过软链接的方式链接dst文件夹中
-find ./src -type f -name "*.JPEG" | head -n 10 | xargs -i ln -sf {} ./dst
+# 首先搜索src目录下的所有的JPEG的文件  然后选取前100个 然后通过软链接的方式链接dst文件夹中
+find ./src -type f -name "*.JPEG" | head -n 100 | xargs -i ln -sf {} ./dst
 ```

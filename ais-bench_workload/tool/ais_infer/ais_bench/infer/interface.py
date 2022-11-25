@@ -109,7 +109,7 @@ class InferSession:
         if hasattr(self.session, 'finalize'):
             self.session.finalize()
 
-    def infer(self, feeds, mode, custom_sizes = 100000):
+    def infer(self, feeds, mode = 'static', custom_sizes = 100000):
         '''
         Parameters:
             feeds: input data
@@ -119,11 +119,12 @@ class InferSession:
         shapes = []
         torchTensorlist = ['torch.FloatTensor', 'torch.DoubleTensor', 'torch.ByteTensor', 'torch.CharTensor',
             'torch.ShortTensor', 'torch.IntTensor', 'torch.LongTensor']
+        npTypelist = [np.int8, np.int16, np.int32, np.int64, np.uint8, np.uint16, np.uint32, np.float16, np.float32, np.float64]
         for feed in feeds:
             if type(feed) is np.ndarray:
                 shapes.append(feed.shape)
                 tensor = self.create_tensor_from_arrays_to_device(feed)
-            elif type(feed) is np.float64:
+            elif type(feed) in npTypelist:
                 shapes.append(feed.size)
                 tensor = self.create_tensor_from_arrays_to_device(feed)
             elif type(feed) is aclruntime.Tensor:
