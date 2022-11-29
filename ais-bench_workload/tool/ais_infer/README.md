@@ -222,6 +222,54 @@ python3 -m ais_bench --model ./pth_resnet50_dymshape.om  --outputSize 100000 --a
 
 **注意该场景下输入必须为npy文件，如果是bin文件将获取不到真实的shape信息。**
 
+#### 动态shape模型range测试模式
+
+输入动态shape range范围。对于该范围内的shape分别进行推理。得出各自的性能指标
+
+```shell
+# 对1,3,224,224 1,3,224,225 1,3,224,226进行分别推理
+# python3 -m ais_bench --model ./pth_resnet50_dymshape.om  --outputSize 100000 --dymShape_range actual_input_1:1,3,224,224~226
+[INFO] -----------------dyshape_range Performance Summary------------------
+[INFO] run_count:3 success_count:3 avg_throughput:246.77165024828034
+[INFO] 0 dymshape:actual_input_1:1,3,224,225 bs:1 result:OK throughput:269.54177620425804
+[INFO] 1 dymshape:actual_input_1:1,3,224,226 bs:1 result:OK throughput:239.29170225734876
+[INFO] 2 dymshape:actual_input_1:1,3,224,224 bs:1 result:OK throughput:231.48147228323418
+
+
+# python3 -m ais_bench --model ./pth_resnet50_dymshape.om  --outputSize 100000 --dymShape_range actual_input_1:1~2,3,224-300,224-300
+[INFO] -----------------dyshape_range Performance Summary------------------
+[INFO] run_count:8 success_count:8 avg_throughput:398.7681101272126
+[INFO] 0 dymshape:actual_input_1:2,3,224,224 bs:2 result:OK throughput:633.5128156214085
+[INFO] 1 dymshape:actual_input_1:2,3,300,224 bs:2 result:OK throughput:534.7593569251704
+[INFO] 2 dymshape:actual_input_1:2,3,224,300 bs:2 result:OK throughput:513.2152840194153
+[INFO] 3 dymshape:actual_input_1:2,3,300,300 bs:2 result:OK throughput:448.63165496928906
+[INFO] 4 dymshape:actual_input_1:1,3,224,300 bs:1 result:OK throughput:311.42946455686143
+[INFO] 5 dymshape:actual_input_1:1,3,300,224 bs:1 result:OK throughput:292.9115377690921
+[INFO] 6 dymshape:actual_input_1:1,3,300,300 bs:1 result:OK throughput:227.94620033507945
+[INFO] 7 dymshape:actual_input_1:1,3,224,224 bs:1 result:OK throughput:227.73856682138447
+
+
+# cat dym.info
+actual_input_1:1,3,224-300,224-225
+actual_input_1:8-9,3,224-300,260-300
+# python3 -m ais_bench --model ./pth_resnet50_dymshape.om  --outputSize 100000 --dymShape_range ./dym.info
+[INFO] -----------------dyshape_range Performance Summary------------------
+[INFO] run_count:12 success_count:12 avg_throughput:701.4533561722105
+[INFO] 0 dymshape:actual_input_1:8,3,224,260 bs:8 result:OK throughput:1189.5910949365423
+[INFO] 1 dymshape:actual_input_1:8,3,224,300 bs:8 result:OK throughput:1062.4169690698604
+[INFO] 2 dymshape:actual_input_1:9,3,224,260 bs:9 result:OK throughput:1009.3080839755332
+[INFO] 3 dymshape:actual_input_1:8,3,300,260 bs:8 result:OK throughput:877.9630807069874
+[INFO] 4 dymshape:actual_input_1:8,3,300,300 bs:8 result:OK throughput:840.8660974692447
+[INFO] 5 dymshape:actual_input_1:9,3,224,300 bs:9 result:OK throughput:836.1981221927723
+[INFO] 6 dymshape:actual_input_1:9,3,300,260 bs:9 result:OK throughput:765.8922381333857
+[INFO] 7 dymshape:actual_input_1:9,3,300,300 bs:9 result:OK throughput:689.3382481843958
+[INFO] 8 dymshape:actual_input_1:1,3,300,225 bs:1 result:OK throughput:317.7629413291059
+[INFO] 9 dymshape:actual_input_1:1,3,224,224 bs:1 result:OK throughput:310.6554733134515
+[INFO] 10 dymshape:actual_input_1:1,3,224,225 bs:1 result:OK throughput:302.0235479203686
+[INFO] 11 dymshape:actual_input_1:1,3,300,224 bs:1 result:OK throughput:215.42437683487793
+
+```
+
 ### profiler或者dump场景
 
 支持以--acl_json_path、--profiler、--dump参数形式实现：
