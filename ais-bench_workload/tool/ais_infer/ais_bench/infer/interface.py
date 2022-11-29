@@ -126,7 +126,7 @@ class InferSession:
                 shapes.append(feed.shape)
                 tensor = self.create_tensor_from_arrays_to_device(feed)
             elif type(feed) in npTypelist:
-                shapes.append(feed.size)
+                shapes.append([feed.size])
                 tensor = self.create_tensor_from_arrays_to_device(feed)
             elif type(feed) is aclruntime.Tensor:
                 shapes.append(feed.shape)
