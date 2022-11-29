@@ -147,6 +147,35 @@ python3 -m ais_bench --model ./resnet50_v1_bs1_fp32.om --input "./"
 python3 -m ais_bench --model ./save/model/BERT_Base_SQuAD_BatchSize_1.om  --input ./data/SQuAD1.1/input_ids,./data/SQuAD1.1/input_mask,./data/SQuAD1.1/segment_ids
 ```
 
+ ### 输出结果保存场景
+ 默认推理结果数据不保存文件。
+
+如果设置了output参数。则保存到output目录下。默认会建立日期+时间的子文件夹保存推理输出结果 而summary文件和profiling文件将保存到output目录下
+
+ ```
+# python3 -m ais_bench --model  ./pth_resnet50_bs1.om  --output ./
+# ls ./2022_11_29-03_11_35
+pure_infer_data_0.bin
+# ls ./2022_11_29-03_11_35_summary.json
+./2022_11_29-03_11_35_summary.json
+ ```
+
+```
+python3 -m ais_bench --model  ./pth_resnet50_bs1.om  --output ./ --profiler 1
+# profiler文件保存在output目录下
+# ls profiler/PROF_000001_20221129060140649_HGPIAQEDEDPMFGAC/
+device_0
+```
+
+ 如果指定output_dirname 将保存到output_dirname的子文件夹下
+```
+ # python3 -m ais_bench --model ./pth_resnet50_bs1.om  --output ./ --output_dirname subdir
+# ls ./subdir/pure_infer_data_0.bin
+./subdir/pure_infer_data_0.bin
+# ls ./subdir_summary.json
+./subdir_summary.json
+```
+
  ### 动态分档场景 主要包含动态batch 动态宽高 动态Dims三种场景，需要分别传入dymBatch dymHW dymDims指定实际档位信息
 
 #### 动态batch场景 档位为1 2 4 8档，设置档位为2 本程序将获取实际模型输入组batch 每2个输入来组一组batch进行推理
@@ -165,10 +194,33 @@ python3 -m ais_bench --model ./resnet50_v1_dynamichw_fp32.om --input=./data/ --d
 python3 -m ais_bench --model resnet50_v1_dynamicshape_fp32.om --input=./data/ --dymDims actual_input_1:1,3,224,224
 ```
 
+#### 自动设置dims模式（动态dims模型）
+
+针对动态dims模型，增加auto_set_dymdims_mode参数，根据输入文件的shape信息自动设置模型的shape参数。
+
+针对动态dims模型。输入数据的shape可能是不固定的，比如一个输入文件shape为1,3,224,224 另一个输入文件shape为 1,3,300,300。如果两个文件要一起推理的话，需要设置两次动态shape参数，那正常的话是不支持的。针对该种场景，增加auto_set_dymdims_mode模式，根据输入文件的shape信息自动设置模型的shape参数，
+
+```
+python3 -m ais_bench --model resnet50_v1_dynamicshape_fp32.om --input=./data/ --auto_set_dymdims_mode 1
+```
+
+**注意该场景下输入必须为npy文件，如果是bin文件将获取不到真实的shape信息。**
+
 ### 动态shape场景 atc设置为[1~8,3,200~300,200~300]，设置档位为1,3,224,224 本程序将获取实际模型输入组batch 注意动态shape的输出大小经常为0需要通过outputSize参数设置对应参数的内存大小
+
 ```
 python3 -m ais_bench --model resnet50_v1_dynamicshape_fp32.om --dymShape actual_input_1:1,3,224,224 --outputSize 10000
 ```
+
+#### 自动设置shape模式（动态shape模型）
+
+针对动态shape模型。输入数据的shape可能是不固定的，比如一个输入文件shape为1,3,224,224 另一个输入文件shape为 1,3,300,300。如果两个文件要一起推理的话，需要设置两次动态shape参数，那正常的话是不支持的。针对该种场景，增加auto_set_dymshape_mode模式，根据输入文件的shape信息自动设置模型的shape参数，
+
+```
+python3 -m ais_bench --model ./pth_resnet50_dymshape.om  --outputSize 100000 --auto_set_dymshape_mode 1  --input ./dymdata
+```
+
+**注意该场景下输入必须为npy文件，如果是bin文件将获取不到真实的shape信息。**
 
 ### profiler或者dump场景
 
@@ -218,6 +270,71 @@ throughput: 吞吐率。吞吐率计算公式：1000 *batchsize/npu_compute_time
 [INFO] throughput 1000*batchsize(1)/NPU_compute_time.mean(0.6650000214576721): 1503.759349974173
 ```
 
+
+
+### 接口开放
+
+开放推理python接口。
+
+参考https://gitee.com/ascend/tools/blob/be75cf413af2238147708c46b6745dd5eee68f09/ais-bench_workload/tool/ais_infer/test/interface_sample.py
+
+可以通过如下几行命令就完成推理操作
+
+```python
+def infer_simple():
+  device_id = 0
+  session = InferSession(device_id, model_path)
+
+  *# create new numpy data according inputs info*
+  barray = bytearray(session.get_inputs()[0].realsize)
+  ndata = np.frombuffer(barray)
+
+  outputs = session.infer([ndata])
+  print("outputs:{} type:{}".format(outputs, type(outputs)))
+    
+  print("static infer avg:{} ms".format(np.mean(session.sumary().exec_time_list)))
+```
+
+动态shape推理
+
+```
+def infer_dymshape():
+  device_id = 0
+  session = InferSession(device_id, model_path)
+  ndata = np.zeros([1,3,224,224], dtype=np.float32)
+
+  mode = "dymshape"
+  outputs = session.infer([ndata], mode, custom_sizes=100000)
+  print("outputs:{} type:{}".format(outputs, type(outputs)))
+  print("dymshape infer avg:{} ms".format(np.mean(session.sumary().exec_time_list)))
+```
+
+
+### 增加异常写文件功能
+
+当出现推理异常时，会写入算子执行失败的输入输出文件到**当前目录**下。同时会打印出当前的算子执行信息。利于定位分析。
+
+```bash
+(lcm) root@4f0ab57f0243:/home/infname77/lcm/code/tools_develop/ais-bench_workload/tool/ais_infer# python3 -m ais_bench --model  ./test/testdata/bert/model/pth_bert_bs1.om --input ./random_in0.bin,random_in1.bin,random_in2.bin
+[INFO] acl init success
+[INFO] open device 0 success
+[INFO] load model ./test/testdata/bert/model/pth_bert_bs1.om success
+[INFO] create model description success
+[INFO] get filesperbatch files0 size:1536 tensor0size:1536 filesperbatch:1 runcount:1
+[INFO] exception_cb streamId:4 taskId:22 deviceId: 0 opName:bert/embeddings/GatherV2 inputCnt:3 outputCnt:1
+[INFO] exception_cb format:2 hostaddr:0x124040800000 devaddr:0x12400ac48a00 len:46881792 write to filename:exception_cb_index_0_input_0.bin
+[INFO] exception_cb format:2 hostaddr:0x124040751000 devaddr:0x12408020c000 len:1536 write to filename:exception_cb_index_0_input_1.bin
+[INFO] exception_cb format:2 hostaddr:0x124040752000 devaddr:0x12400d98e600 len:4 write to filename:exception_cb_index_0_input_2.bin
+[INFO] exception_cb format:2 hostaddr:0x124040753000 devaddr:0x12400db20400 len:589824 write to filename:exception_cb_index_0_output_0.bin
+EZ9999: Inner Error!
+EZ9999  The error from device(2), serial number is 17, there is an aicore error, core id is 0, error code = 0x800000, dump info: pc start: 0x800124080041000, current: 0x124080041100, vec error info: 0x1ff1d3ae, mte error info: 0x3022733, ifu error info: 0x7d1f3266f700, ccu error info: 0xd510fef0003608cf, cube error info: 0xfc, biu error info: 0, aic error mask: 0x65000200d000288, para base: 0x124080017040, errorStr: The DDR address of the MTE instruction is out of range.[FUNC:PrintCoreErrorInfo]
+      
+(lcm) root@4f0ab57f0243:/home/infname77/lcm/code/tools_develop/ais-bench_workload/tool/ais_infer# ls exception_cb_index_0_* -lh
+-rwxrwxrwx 1 root root  45M Nov 28 12:40 exception_cb_index_0_input_0.bin
+-rwxrwxrwx 1 root root 1.5K Nov 28 12:40 exception_cb_index_0_input_1.bin
+-rwxrwxrwx 1 root root    4 Nov 28 12:40 exception_cb_index_0_input_2.bin
+-rwxrwxrwx 1 root root 576K Nov 28 12:40 exception_cb_index_0_output_0.bin
+```
 
 
 ## 参数说明
