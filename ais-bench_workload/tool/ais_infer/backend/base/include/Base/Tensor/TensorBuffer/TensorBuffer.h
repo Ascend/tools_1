@@ -71,7 +71,7 @@ public:
     static APP_ERROR CopyBetweenDiffDevice(TensorBuffer &dst, const TensorBuffer &src);
 
 public:
-    uint32_t size = 0;
+    size_t size = 0;
     MemoryData::MemoryType type = MemoryData::MemoryType::MEMORY_HOST;
     int32_t deviceId = -1;
     std::shared_ptr<void> data = nullptr;

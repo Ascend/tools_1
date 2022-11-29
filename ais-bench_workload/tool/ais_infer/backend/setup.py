@@ -26,7 +26,7 @@ def get_cann_path():
     atlas_toolkit_path = "/usr/local/Ascend/ascend-toolkit/latest/"
     hisi_fwk_path = "/usr/local/Ascend/"
     check_file_path = "runtime/lib64/stub/libascendcl.so"
-    if os.path.exists(set_env_path+check_file_path):
+    if os.path.exists(os.path.join(set_env_path,check_file_path)):
         cann_base_path = set_env_path
     elif os.path.exists(atlas_nnae_path+check_file_path):
         cann_base_path = atlas_nnae_path
@@ -86,7 +86,7 @@ setup(
     name = "aclruntime",
     version=__version__,
     author="ais_infer",
-    author_email="aclruntime@gmail.com",
+    author_email="aclruntime",
     url="https://xxxxx",
     description="A test project using pybind11 and aclruntime",
     long_description="",

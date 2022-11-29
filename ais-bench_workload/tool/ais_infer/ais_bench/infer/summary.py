@@ -2,8 +2,7 @@ import json
 import os
 
 import numpy as np
-from ais_infer.utils import logger
-
+from ais_bench.infer.utils import logger
 
 class ListInfo(object):
     def __init__(self):
@@ -51,7 +50,7 @@ class Summary(object):
     def add_args(self, args):
         self.infodict["args"] = args
 
-    def report(self, batchsize, output_prefix):
+    def report(self, batchsize, output_prefix, display_all_summary=False):
         scale = 99
 
         npu_compute_time = Summary.get_list_info(self.npu_compute_time_list, scale)
@@ -77,15 +76,17 @@ class Summary(object):
 
         # logger.debug("infer finish (ms) summary:{}".format(self.infodict))
         logger.info("-----------------Performance Summary------------------")
-        logger.info("H2D_latency (ms): min = {0}, max = {1}, mean = {2}, median = {3}, percentile({4}%) = {5}"
-                    .format(h2d_latency.min, h2d_latency.max, h2d_latency.mean, h2d_latency.median, scale,
-                            h2d_latency.percentile))
+        if display_all_summary == True:
+            logger.info("H2D_latency (ms): min = {0}, max = {1}, mean = {2}, median = {3}, percentile({4}%) = {5}"
+                        .format(h2d_latency.min, h2d_latency.max, h2d_latency.mean, h2d_latency.median, scale,
+                                h2d_latency.percentile))
         logger.info("NPU_compute_time (ms): min = {0}, max = {1}, mean = {2}, median = {3}, percentile({4}%) = {5}"
                     .format(npu_compute_time.min, npu_compute_time.max, npu_compute_time.mean, npu_compute_time.median,
                             scale, npu_compute_time.percentile))
-        logger.info("D2H_latency (ms): min = {0}, max = {1}, mean = {2}, median = {3}, percentile({4}%) = {5}"
-                    .format(d2h_latency.min, d2h_latency.max, d2h_latency.mean, d2h_latency.median, scale,
-                            d2h_latency.percentile))
+        if display_all_summary == True:
+            logger.info("D2H_latency (ms): min = {0}, max = {1}, mean = {2}, median = {3}, percentile({4}%) = {5}"
+                        .format(d2h_latency.min, d2h_latency.max, d2h_latency.mean, d2h_latency.median, scale,
+                                d2h_latency.percentile))
         logger.info("throughput 1000*batchsize({})/NPU_compute_time.mean({}): {}".format(
             batchsize, npu_compute_time.mean, throughput))
         logger.info("------------------------------------------------------")
