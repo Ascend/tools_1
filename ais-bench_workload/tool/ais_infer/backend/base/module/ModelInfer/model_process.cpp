@@ -1272,7 +1272,7 @@ Result ModelProcess::GetOutTensorDesc(size_t i, std::string& name, int& datatype
     return SUCCESS;
 }
 
-int ModelProcess::GetOutTensorLen(size_t i, bool is_dymshape)
+size_t ModelProcess::GetOutTensorLen(size_t i, bool is_dymshape)
 {
     aclDataBuffer* dataBuffer = aclmdlGetDatasetBuffer(output_, i);
     uint64_t maxBatchSize = 0;

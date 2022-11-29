@@ -199,7 +199,7 @@ public:
     Result GetInTensorDesc(size_t i, std::string& name, int& datatype, size_t& format, std::vector<int64_t>& shape, size_t& size);
     Result GetOutTensorDesc(size_t i, std::string& name, int& datatype, size_t& format, std::vector<int64_t>& shape, size_t& size);
 
-    int GetOutTensorLen(size_t i, bool is_dymshape);
+    size_t GetOutTensorLen(size_t i, bool is_dymshape);
 
     Result GetCurOutputShape(size_t index, bool is_dymshape, std::vector<int64_t>& shape);
 
