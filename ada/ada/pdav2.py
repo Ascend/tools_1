@@ -132,30 +132,21 @@ class Reporters:
         return "basic" in self.categories_to_reporter_builders and len(self.categories_to_reporter_builders) == 1
 
     @staticmethod
-    def get_names_from_type(reporter_type):
-        names = reporter_registry.get_names_by_category(reporter_type)
-        if len(names) > 0:
-            return names
-        if reporter_registry.get_reporter(reporter_type) is not None:
-            return [reporter_type, ]
-        return []
-
-    @staticmethod
-    def create_from_types(types):
+    def create_from_categories(categories):
         reporters = Reporters()
-        if types is None:
-            types = ["basic", ]
+        if categories is None:
+            categories = ["basic", ]
 
-        basic_names = Reporters.get_names_from_type("basic")
+        basic_names = reporter_registry.get_names_by_category("basic")
         include_basics = True
 
         found_names = set()
         not_found_categories = set()
-        for report_type in types:
+        for report_type in categories:
             if report_type in basic_names:
                 include_basics = False
 
-            names = Reporters.get_names_from_type(report_type)
+            names = reporter_registry.get_names_by_category(report_type)
             if len(names) == 0:
                 not_found_categories.add(report_type)
                 continue
@@ -182,7 +173,7 @@ def main_ge(args):
         pds = analyzer.read_in_profiling_file()
 
         load_all_builtin_reporters()
-        reporters = Reporters.create_from_types(reporter_categories)
+        reporters = Reporters.create_from_categories(reporter_categories)
         for category in reporters.categories_to_reporter_builders:
             for reporter_builder in reporters.categories_to_reporter_builders[category]:
                 if reporter_builder.builder is None:
