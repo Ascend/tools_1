@@ -4,6 +4,8 @@ from collections import defaultdict
 import re
 import importlib
 import importlib.util
+import codecs
+from .time_printer import TimePrinter
 from .definitions import *
 from . import reporter_registry
 
@@ -20,9 +22,13 @@ class ProfilingDataAnalyzer:
 
     def read_in_records(self):
         pds = []
-        with open(self._file_path, 'r') as f:
+        line_count = 0
+        with codecs.open(self._file_path, 'r', encoding="utf-8") as f:
             pd = ProfilingData()
             for line in f:
+                line_count += 1
+                if line_count % 1000000 == 0:
+                    print("{} lines have been read in".format(line_count))
                 ma = ProfilingDataAnalyzer.V1_START_RE.match(line)
                 if ma is not None:
                     pd.version = ma.group('version')
@@ -74,8 +80,10 @@ class ProfilingDataAnalyzer:
             pd.event_records.sort(key=lambda ev_rec: ev_rec.start)
 
     def read_in_profiling_file(self):
-        pds = self.read_in_records()
-        ProfilingDataAnalyzer.read_in_event_records(pds)
+        with TimePrinter("Read in log file {}".format(self._file_path)):
+            pds = self.read_in_records()
+        with TimePrinter("Pair the start and end timestamps of all events"):
+            ProfilingDataAnalyzer.read_in_event_records(pds)
         return pds
 
 
@@ -92,7 +100,7 @@ def load_all_builtin_reporters():
         if importlib.util.find_spec(module_name) is not None:
             continue
         spec = importlib.util.spec_from_file_location(module_name, file_path)
-        module = importlib.util.module_from_spec(spec)
+        importlib.util.module_from_spec(spec)
         spec.loader.load_module(module_name)
 
 
@@ -187,7 +195,8 @@ def main_ge(args):
                         if not os.path.isdir(category_dir):
                             os.mkdir(category_dir)
                         report_path = os.path.join(category_dir, os.path.basename(base_path))
-                    reporter.report(report_path)
+                    with TimePrinter("Report {}".format(reporter_builder.name)):
+                        reporter.report(report_path)
         return 0
     except AdaError as e:
         print("Error: {}".format(e.message))
