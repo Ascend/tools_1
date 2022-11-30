@@ -43,7 +43,7 @@ class ProfilingDataAnalyzer:
                     rec.timestamp = int(ma.group("timestamp"))
                     rec.tid = int(ma.group("tid"))
                     rec.node_name = ma.group("element")
-                    if rec.node_name.startswith("UNKNOWN"):
+                    if rec.node_name.startswith("UNKNOWN") or rec.node_name == "[UnknownNodeName]":
                         rec.node_name = None
                     rec.event = ma.group("event")
                     if rec.event == DEVICE_EVENT:
@@ -52,7 +52,6 @@ class ProfilingDataAnalyzer:
                     rec.et = ma.group("et")
                     pd.add_record(rec)
                     continue
-                # logging.warning("Skip unrecognized line {}".format(line))
             pd.records.sort(key=lambda tmp_rec: tmp_rec.timestamp)
         return pds
 
