@@ -14,8 +14,6 @@
 # limitations under the License.
 
 
-import torch
-
 from torch.nn.functional import (
     conv1d, conv2d, conv3d, conv_transpose1d, conv_transpose2d, conv_transpose3d,
     conv_tbc, avg_pool1d, avg_pool2d, avg_pool3d, fractional_max_pool2d_with_indices,

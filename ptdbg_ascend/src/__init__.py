@@ -1,20 +1,13 @@
-# Copyright (c) 2020 Huawei Technologies Co., Ltd
-# All rights reserved.
-#
-# Licensed under the BSD 3-Clause License  (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# https://opensource.org/licenses/BSD-3-Clause
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+#!/usr/bin/env python
+# coding=utf-8
+"""
+Function:
+This class mainly involves tf common function.
+Copyright Information:
+HuaWei Technologies Co.,Ltd. All Rights Reserved © 2022
+"""
 
-
-__all__ = ["register_acc_cmp_hook", "set_dump_path", "seed_all","set_sample"]
+__all__ = ["register_acc_cmp_hook", "set_dump_path", "seed_all", "compare"]
 
 
 import os
@@ -25,6 +18,7 @@ import numpy as np
 from . import wrap_tensor, wrap_torch, wrap_functional
 from .module import register_acc_cmp_hook
 from .hooks import set_dump_path
+from .acc_compare import compare
 
 
 wrap_tensor.wrap_tensor_ops_and_bind()
@@ -50,10 +44,3 @@ def seed_all(seed=1234):
     os.environ['PYTHONHASHSEED'] = str(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
-
-def set_sample(sample = False):
-    if not sample:
-        os.environ['SAMPLE']=str(0)
-    else:
-        os.environ['SAMPLE']=str(1)
-
