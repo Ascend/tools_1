@@ -17,7 +17,7 @@
 
 ```
 git clone https://gitee.com/ascend/tools.git
-cd tools/tfdbg_ascend
+cd tools/ptdbg_ascend
 ```
 
 #### 配置安装环境
@@ -34,7 +34,7 @@ Please specify the location of python with available pytorch v1.8/v1.11 site-pac
 (You can make this quiet by set env [ADAPTER_TARGET_PYTHON_PATH]):
 ```
 
-此时，要求您输入安装了 Pytorch v1.5或者v1.11 版本的python解释器路径，如果默认路径是正确的，直接回车，否则请输入正确的 python 解释器路径。
+此时，要求您输入安装了 Pytorch v1.8或者v1.11 版本的python解释器路径，如果默认路径是正确的，直接回车，否则请输入正确的 python 解释器路径。
 > 您可以通过设置 ADAPTER_TARGET_PYTHON_PATH的环境变量，来抑制交互式窗口弹出，但是要确保路径是有效的，否则，仍然会要求您输入正确的 python 解释器路径。
 
 键入后，会耗费几秒钟以确保您的输入是有效的，配置完成后会输出如下提示信息。
@@ -84,13 +84,13 @@ pip3 install ./ptdbg_ascend/dist/ptdbg_ascend-0.1-py3-none-any.whl --upgrade --f
 
 接口函数用于dump过程的配置，如下：
 
-| 函数                    | 描述                                                                                            |
-|-----------------------|-----------------------------------------------------------------------------------------------|
-| set_dump_path         | 用于设置dump文件的路径(包含文件名)，参数示例：“/var/log/dump/npu_dump.pkl”                                        |
-| set_dump_switch       | 设置dump是能开关，参数为：“ON” 或者 "OFF"                                                                  |
-| set_seed_all          | 固定随机数，参数为随机数种子，默认种子为：1234.                                                                    |
-| register_acc_cmp_hook | 用于注册dump回调函数，例如：register_acc_cmp_hook(model).                                                 |
-| compare               | 比对接口，将GPU/CPU/NPU的dump文件进行比对，例如：compare("./npu_dump.pkl", "./gpu_dump.pkl", "./output", True) |
+| 函数                    | 描述                                                                                                |
+|-----------------------|---------------------------------------------------------------------------------------------------|
+| set_dump_path         | 用于设置dump文件的路径(包含文件名)，参数示例：“/var/log/dump/npu_dump.pkl”                                            |
+| set_dump_switch       | 设置dump使能开关，参数为：“ON” 或者 "OFF"                                                                      |
+| set_seed_all          | 固定随机数，参数为随机数种子，默认种子为：1234.                                                                        |
+| register_acc_cmp_hook | 用于注册dump回调函数，例如：register_acc_cmp_hook(model).                                                     |
+| compare               | 比对接口，将GPU/CPU/NPU的dump文件进行比对，第三个参数为存放比对结果的目录；<br/>文件名称基于时间戳自动生成，格式为：compare_result_timestamp.csv. |
 
 #### 使用示例
 
@@ -100,7 +100,7 @@ from ptdbg_ascend import set_dump_path, set_dump_switch, set_seed_all, register_
 
 #在训练/推理开始前固定随机数
 set_seed_all()
-#设置dump路径及文件名
+#设置dump路径（含文件名）
 set_dump_path(./npu_dump.pkl)
 #对模型注入精度比对的hook
 register_acc_cmp_hook(model)
