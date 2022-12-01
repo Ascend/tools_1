@@ -18,8 +18,12 @@
 
 import json
 import argparse
+import os.path
+
 import numpy as np
 import pandas as pd
+
+from ..common.utils import check_file_or_directory_path, add_time_as_suffix
 
 
 def cosine_similarity(a, b):
@@ -57,6 +61,7 @@ def merge_tensor(tensor_list):
     op_dict["output_struct"] = []
     op_dict["input_value"] = []
     op_dict["output_value"] = []
+
     for tensor in tensor_list:
         op_dict["op_name"].append(tensor[0])
         if tensor[0].find("input") != -1:
@@ -123,6 +128,7 @@ def get_accuracy(result, n_dict, b_dict):
 
 
 def compare(npu_pkl_path, bench_pkl_path, output_path, shape_flag=False):
+    check_file_or_directory_path(output_path, True)
     npu_pkl = open(npu_pkl_path, "r")
     bench_pkl = open(bench_pkl_path, "r")
     npu_ops_queue = []
@@ -145,7 +151,11 @@ def compare(npu_pkl_path, bench_pkl_path, output_path, shape_flag=False):
     result_df = pd.DataFrame(
         result, columns=["Name", "NPU Tensor Dtype", "Bench Tensor Dtype",
                          "NPU Tensor Shape", "Bench Tensor Shape", "Cosine", "RMSE", "MAPE"])
-    result_df.to_csv(output_path, index=False)
+
+    file_name = add_time_as_suffix("compare_result")
+    file_path = os.path.join(os.path.realpath(output_path), file_name)
+    result_df.to_csv(file_path, index=False)
+
     npu_pkl.close()
     bench_pkl.close()
 

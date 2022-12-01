@@ -80,21 +80,39 @@ make install
 pip3 install ./ptdbg_ascend/dist/ptdbg_ascend-0.1-py3-none-any.whl --upgrade --force-reinstall
 ```
 
+#### 接口函数
+
+接口函数用于dump过程的配置，如下：
+
+| 函数                    | 描述                                                                                            |
+|-----------------------|-----------------------------------------------------------------------------------------------|
+| set_dump_path         | 用于设置dump文件的路径(包含文件名)，参数示例：“/var/log/dump/npu_dump.pkl”                                        |
+| set_dump_switch       | 设置dump是能开关，参数为：“ON” 或者 "OFF"                                                                  |
+| set_seed_all          | 固定随机数，参数为随机数种子，默认种子为：1234.                                                                    |
+| register_acc_cmp_hook | 用于注册dump回调函数，例如：register_acc_cmp_hook(model).                                                 |
+| compare               | 比对接口，将GPU/CPU/NPU的dump文件进行比对，例如：compare("./npu_dump.pkl", "./gpu_dump.pkl", "./output", True) |
+
 #### 使用示例
 
 以训练场景为例，在你需要dump数据的step启动之前，设置使能开关和dump路径。
 ```
-from ptdbg_ascend import set_dump_path, fix_seed_all, register_acc_cmp_hook, compare
+from ptdbg_ascend import set_dump_path, set_dump_switch, set_seed_all, register_acc_cmp_hook, compare
 
 #在训练/推理开始前固定随机数
-fix_seed_all()
-
+set_seed_all()
+#设置dump路径及文件名
+set_dump_path(./npu_dump.pkl)
 #对模型注入精度比对的hook
 register_acc_cmp_hook(model)
-set_dump_path(./npu_dump.pkl)
 
-#数据dump完成,比对dump的NPU vs GPU/CPU数据
-compare("./npu_dump.pkl", "./gpu_dump.pkl", "./compare_result.csv", True)
+#在期望dump的迭代开始前打开dump开关
+set_dump_switch(“ON”)
+...
+#在期望dump的迭代结束后关闭dump开关
+set_dump_switch(“OFF”)
+
+#数据dump完成后,比对dump的NPU vs GPU/CPU数据, 比对结果存放的目录必须存在
+compare("./npu_dump.pkl", "./gpu_dump.pkl", "./output", True)
 ```
 
 ## 贡献

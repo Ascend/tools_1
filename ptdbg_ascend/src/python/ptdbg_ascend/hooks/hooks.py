@@ -20,37 +20,57 @@ import json
 import stat
 import torch
 
+from ..common.utils import check_file_or_directory_path
+
 
 def set_dump_path(fpath=None):
     if fpath is None:
         return
-    os.environ["DUMP_PATH"] = fpath
+    real_path = os.path.realpath(fpath)
+    check_file_or_directory_path(os.path.dirname(real_path), True)
+    os.environ["DUMP_PATH"] = real_path
+
+
+def set_dump_switch(switch=None):
+    if switch is None:
+        return
+    assert switch in ["ON", "OFF"], "Please set dump switch with 'ON' or 'OFF'."
+    os.environ["PYTORCH_DUMP_SWITCH"] = switch
+
+
+def get_dump_switch():
+    assert "PYTORCH_DUMP_SWITCH" in os.environ, "Please set dump switch for ptdbg_ascend tools."
+    switch = os.environ.get("DUMP_PATH")
+    if switch == "ON":
+        return True
+    else:
+        return False
 
 
 def get_dump_path():
-    assert "DUMP_PATH" in os.environ, "Please set dump path for hook tools."
+    assert "DUMP_PATH" in os.environ, "Please set dump path for ptdbg_ascend tools."
     return os.environ.get("DUMP_PATH")
 
 
 def dump_tensor(x, prefix=""):
     if "DUMP_PATH" not in os.environ:
         return
+    if get_dump_switch():
+        f = os.fdopen(os.open(get_dump_path(), os.O_RDWR | os.O_CREAT, stat.S_IWUSR|stat.S_IRUSR), "a")
+        if isinstance(x, (tuple, list)) and x:
+            for i, item in enumerate(x):
+                dump_tensor(item, prefix="{}.{}".format(prefix, i))
+        elif isinstance(x, torch.Tensor):
+            list_tensor = x.contiguous().view(-1).cpu().detach().float().numpy().tolist()
+            json.dump([prefix, list_tensor, str(x.dtype), tuple(x.shape)], f)
+            f.write('\n')
 
-    f = os.fdopen(os.open(get_dump_path(), os.O_RDWR|os.O_CREAT, stat.S_IWUSR|stat.S_IRUSR), "a")
-    if isinstance(x, (tuple, list)) and x:
-        for i, item in enumerate(x):
-            dump_tensor(item, prefix="{}.{}".format(prefix, i))
-    elif isinstance(x, torch.Tensor):
-        list_tensor = x.contiguous().view(-1).cpu().detach().float().numpy().tolist()
-        json.dump([prefix, list_tensor, str(x.dtype), tuple(x.shape)], f)
-        f.write('\n')
-    
-    f.close()
+        f.close()
 
 
 def warp_acc_cmp_hook(name):
     def acc_cmp_hook(module, in_feat, out_feat):
-        name_template = f"{name}"+ "_{}"
+        name_template = f"{name}" + "_{}"
         dump_tensor(in_feat, name_template.format("input"))
         dump_tensor(out_feat, name_template.format("output"))
 

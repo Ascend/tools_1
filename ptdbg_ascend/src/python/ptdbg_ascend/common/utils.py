@@ -107,7 +107,7 @@ def print_warn_log(warn_msg):
     Function Description:
         print warn log.
     Parameter:
-        warn_msg: the warn message.
+        warn_msg: the warning message.
     """
     _print_log("WARNING", warn_msg)
 
@@ -123,17 +123,26 @@ def check_file_or_directory_path(path, isdir=False):
         when invalid data throw exception
     """
     if isdir:
+        if not os.path.exists(path):
+            print_error_log('The path {} is not exist. Please check the path'.format(path))
+            raise CompareException(CompareException.INVALID_PATH_ERROR)
+
         if not os.path.isdir(path):
-            print_error_log('The path {} is not a directory.Please check the path'.format(path))
+            print_error_log('The path {} is not a directory. Please check the path'.format(path))
+            raise CompareException(CompareException.INVALID_PATH_ERROR)
+
+        if not os.access(path, os.W_OK):
+            print_error_log(
+                'The path{} does not have permission to read. Please check the path permission'.format(path))
             raise CompareException(CompareException.INVALID_PATH_ERROR)
     else:
         if not os.path.isfile(path):
-            print_error_log('The path {} is not a file.Please check the path'.format(path))
+            print_error_log('The path {} is not a file. Please check the path'.format(path))
             raise CompareException(CompareException.INVALID_PATH_ERROR)
 
     if not os.access(path, os.R_OK):
         print_error_log(
-            'The path{} does not have permission to read.Please check the path permission'.format(path))
+            'The path{} does not have permission to read. Please check the path permission'.format(path))
         raise CompareException(CompareException.INVALID_PATH_ERROR)
 
 
@@ -241,3 +250,7 @@ def get_data_len_by_shape(shape):
             return -1
         data_len = data_len * item
     return data_len
+
+
+def add_time_as_suffix(name):
+    return '{}_{}.csv'.format(name, time.strftime("%Y%m%d%H%M%S", time.localtime(time.time())))
