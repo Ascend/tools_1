@@ -16,7 +16,7 @@
 # ==============================================================================
 """
 
-__all__ = ["register_acc_cmp_hook", "set_dump_path", "seed_all", "compare"]
+__all__ = ["register_acc_cmp_hook", "set_dump_path", "fix_seed_all", "compare"]
 
 
 import os
@@ -48,7 +48,7 @@ for attr_name in dir(wrap_functional.HOOKFunctionalOP):
         setattr(torch.nn.functional, attr_name[5:], getattr(wrap_functional.HOOKFunctionalOP, attr_name))
 
 
-def seed_all(seed=1234):
+def fix_seed_all(seed=1234):
     random.seed(seed)
     os.environ['PYTHONHASHSEED'] = str(seed)
     np.random.seed(seed)
