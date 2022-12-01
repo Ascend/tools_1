@@ -45,7 +45,7 @@ class VersionCheck:
     @staticmethod
     def check_torch_version(version):
         torch_version = torch.__version__
-        if torch_version.startstwith(version):
+        if torch_version.startswith(version):
             return True
         else:
             return False
