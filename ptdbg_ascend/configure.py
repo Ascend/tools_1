@@ -74,7 +74,7 @@ def setup_python(env_path):
         try:
             compile_args = run_command([
                 python_bin_path, '-c',
-                'import distutils.sysconfig; import torch; print(torch.__version__ +'
+                'import distutils.sysconfig; import torch; print(torch.__version__ + "|" +'
                 ' "|".join(torch.__path__) + "|" + distutils.sysconfig.get_python_inc())']).split("|")
             if (not compile_args[0].startswith(_PYTORCH_VERSION_1_8)) and \
                     (not compile_args[0].startswith(_PYTORCH_VERSION_1_11)):
