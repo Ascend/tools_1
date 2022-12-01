@@ -24,7 +24,7 @@ import random
 import torch
 import numpy as np
 
-from .hooks import module, wrap_tensor, wrap_torch, wrap_functional
+from .hooks import wrap_tensor, wrap_torch, wrap_functional
 from .hooks.module import register_acc_cmp_hook
 from .hooks.hooks import set_dump_path
 from .compare.acc_compare import compare

@@ -13,7 +13,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ==============================================================================
 """
 import os
 import subprocess
@@ -46,7 +45,7 @@ class VersionCheck:
     @staticmethod
     def check_torch_version(version):
         torch_version = torch.__version__
-        if torch_version.starstwith(version):
+        if torch_version.startstwith(version):
             return True
         else:
             return False

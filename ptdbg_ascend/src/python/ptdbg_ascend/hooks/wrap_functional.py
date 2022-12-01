@@ -13,9 +13,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ==============================================================================
 """
 
+import torch
 
 from torch.nn.functional import (
     conv1d, conv2d, conv3d, conv_transpose1d, conv_transpose2d, conv_transpose3d,
