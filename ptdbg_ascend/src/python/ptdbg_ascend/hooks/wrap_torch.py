@@ -1,22 +1,25 @@
-# Copyright (c) 2020 Huawei Technologies Co., Ltd
-# All rights reserved.
-#
-# Licensed under the BSD 3-Clause License  (the "License");
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+# Copyright (C) 2019-2020. Huawei Technologies Co., Ltd. All rights reserved.
+# Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-# https://opensource.org/licenses/BSD-3-Clause
+# http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# ==============================================================================
+"""
 
 
 import torch
 
-from common.utils import TorchVersion
+from ..common.utils import VersionCheck
 from .module import HOOKModule
 
 WrapTorchOps = [
@@ -92,9 +95,9 @@ WrapTorchOps = [
     'unsafe_split_with_sizes', 'unsqueeze', 'var_mean', 'vstack', 'where', 'xlogy_'
 ]
 
-if torch.__version__.startwith(TorchVersion.V1_11):
-    global WrapTorchOps
-    WrapTorchOps.extend(['arange', 'stack', '_addmv_impl_'])
+if VersionCheck.check_torch_version(VersionCheck.V1_11):
+    pass
+    # WrapTorchOps.extend(['arange', 'stack', '_addmv_impl_'])
 
 
 def get_torch_ops():

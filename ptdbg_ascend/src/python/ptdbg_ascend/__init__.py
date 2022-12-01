@@ -1,10 +1,19 @@
-#!/usr/bin/env python
-# coding=utf-8
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
-Function:
-This class mainly involves tf common function.
-Copyright Information:
-HuaWei Technologies Co.,Ltd. All Rights Reserved © 2022
+# Copyright (C) 2019-2020. Huawei Technologies Co., Ltd. All rights reserved.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
 """
 
 __all__ = ["register_acc_cmp_hook", "set_dump_path", "seed_all", "compare"]
@@ -15,10 +24,10 @@ import random
 import torch
 import numpy as np
 
-from . import wrap_tensor, wrap_torch, wrap_functional
-from .module import register_acc_cmp_hook
-from .hooks import set_dump_path
-from .acc_compare import compare
+from .hooks import module, wrap_tensor, wrap_torch, wrap_functional
+from .hooks.module import register_acc_cmp_hook
+from .hooks.hooks import set_dump_path
+from .compare.acc_compare import compare
 
 
 wrap_tensor.wrap_tensor_ops_and_bind()
