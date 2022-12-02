@@ -61,6 +61,7 @@ def merge_tensor(tensor_list):
     op_dict["output_struct"] = []
     op_dict["input_value"] = []
     op_dict["output_value"] = []
+    op_dict["summery"] = []
 
     for tensor in tensor_list:
         op_dict["op_name"].append(tensor[0])
