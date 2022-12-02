@@ -83,9 +83,11 @@ def read_op(ops_queue, pkl_file_handle):
     read_flag = True
     while True:
         tensor_line = pkl_file_handle.readline()
-        if len(tensor_line) == 0 or tensor_line == '\n':
+        if len(tensor_line) == 0:
             read_flag = False
             break
+        if tensor_line == '\n':
+            continue
         tensor_data = json.loads(tensor_line)
         tensor_list.append(tensor_data)
         if tensor_data[0].find("output") != -1:
