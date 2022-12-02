@@ -88,11 +88,11 @@ def dump_process(x, prefix, dump_mode):
         if dump_mode == Const.DUMP_MODE.get("SUMMERY"):
             tensor_sum = torch._C._VariableFunctionsClass.sum(x).cpu().detach().float().numpy().tolist()
             tensor_mean = torch._C._VariableFunctionsClass.mean(x).cpu().detach().float().numpy().tolist()
-            saved_tensor = x.contiguous().view(-1)[:10].cpu().detach().float().numpy().tolist()
+            saved_tensor = x.contiguous().view(-1)[:Const.SUMMERY_DATA_NUMS].cpu().detach().float().numpy().tolist()
             summery_data.extend([tensor_sum, tensor_mean])
         elif dump_mode == Const.DUMP_MODE.get("SAMPLE"):
             np.random.seed(int(os.environ['PYTHONHASHSEED']))
-            sample_ratio = x.shape[0] // 16 if x.shape[0] >= 16 else x.shape[0]
+            sample_ratio = x.shape[0] // Const.SUMMERY_DATA_NUMS if x.shape[0] >= Const.SUMMERY_DATA_NUMS else x.shape[0]
             sample_index = np.sort(np.random.choice(x.shape[0], sample_ratio, replace='False'))
             saved_tensor = x.contiguous()[sample_index].view(-1).cpu().detach().float().numpy().tolist()
         elif dump_mode == Const.DUMP_MODE.get("ALL"):
