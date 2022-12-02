@@ -54,7 +54,7 @@ def set_dump_switch(switch=None):
 
 def get_dump_switch():
     assert "PYTORCH_DUMP_SWITCH" in os.environ, "Please set dump switch for ptdbg_ascend tools."
-    switch = os.environ.get("DUMP_PATH")
+    switch = os.environ.get("PYTORCH_DUMP_SWITCH")
     if switch == "ON":
         return True
     else:
@@ -78,7 +78,7 @@ def dump_tensor(x, prefix, dump_mode):
 def dump_process(x, prefix, dump_mode):
     if isinstance(x, (tuple, list)) and x:
         for i, item in enumerate(x):
-            dump_process(item, prefix="{}.{}".format(prefix, i))
+            dump_process(item, "{}.{}".format(prefix, i), dump_mode)
     elif isinstance(x, torch.Tensor):
         if len(x.shape) == 0 or not x.is_floating_point():
             return
