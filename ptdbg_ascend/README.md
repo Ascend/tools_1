@@ -96,7 +96,7 @@ pip3 install ./ptdbg_ascend/dist/ptdbg_ascend-0.1-py3-none-any.whl --upgrade --f
 
 以训练场景为例，在你需要dump数据的step启动之前，设置使能开关和dump路径。
 ```
-from ptdbg_ascend import set_dump_path, set_dump_switch, set_seed_all, register_acc_cmp_hook, compare
+from ptdbg_ascend import set_dump_path, set_dump_switch, set_seed_all, register_hook, compare
 
 # 在训练/推理开始前固定随机数
 set_seed_all()
