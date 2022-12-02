@@ -22,10 +22,11 @@ import yaml
 
 from .module import HOOKModule
 
+cur_path = os.path.dirname(os.path.realpath(__file__))
+yaml_path = os.path.join(cur_path, "support_wrap_opts.yaml")
+
 
 def get_tensor_ops():
-    cur_path = os.path.dirname(os.path.realpath(__file__))
-    yaml_path = os.path.join(cur_path, "support_wrap_opts.yaml")
     with open(yaml_path, 'r') as f:
         tensor_ops_need_wrap = yaml.safe_load(f).get('tensor')
     _tensor_ops = dir(torch._C._TensorBase)

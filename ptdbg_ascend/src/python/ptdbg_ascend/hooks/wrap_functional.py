@@ -27,10 +27,11 @@ from .module import HOOKModule
 for f in dir(torch.nn.functional):
     locals().update({f: getattr(torch.nn.functional, f)})
 
+cur_path = os.path.dirname(os.path.realpath(__file__))
+yaml_path = os.path.join(cur_path, "support_wrap_opts.yaml")
+
 
 def get_functional_ops():
-    cur_path = os.path.dirname(os.path.realpath(__file__))
-    yaml_path = os.path.join(cur_path, "support_wrap_opts.yaml")
     with open(yaml_path, 'r') as f:
         functional_ops_need_wrap = yaml.safe_load(f).get('functional')
     _all_functional_ops = dir(torch.nn.functional)
