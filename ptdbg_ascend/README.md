@@ -105,11 +105,9 @@ set_dump_path(./npu_dump.pkl)
 ”“”
 # 对模型注入精度比对的hook,第三个参数为dump模式
 # dump模式有三种：
-{
-"SUMMERY": 1, 摘要模式，每个tensor dump最多10个数，同时dump出tensor的sum, mean;
-"SAMPLE": 2,  采样模式，tensor数据按16倍下采样后dump
-"ALL": 3      全dump，dump出tensor的完整数据
-}
+    "SUMMERY": 1, 摘要模式，每个tensor dump最多10个数，同时dump出tensor的sum, mean;
+    "SAMPLE": 2,  采样模式，tensor数据按16倍下采样后dump
+    "ALL": 3      全dump，dump出tensor的完整数据
 “”“
 register_hook(model, wrap_acc_cmp_hook, 1)
 
