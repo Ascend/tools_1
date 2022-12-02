@@ -133,10 +133,10 @@ def get_accuracy(result, n_dict, b_dict, summery_flag):
         n_summary = summery_flag[0]
         b_summary = summery_flag[1]
         if n_summary:
-            summery_data = n_dict.get("summery")
+            summery_data = n_dict.get("summery")[index]
             result_item.extend([summery_data[0], summery_data[1]])
         if b_summary:
-            summery_data = b_dict.get("summery")
+            summery_data = b_dict.get("summery")[index]
             result_item.extend([summery_data[0], summery_data[1]])
         result.append(result_item)
 
