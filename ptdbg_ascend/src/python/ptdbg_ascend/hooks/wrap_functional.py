@@ -15,7 +15,6 @@
 # limitations under the License.
 """
 
-import ast
 import os
 
 import torch
@@ -50,7 +49,7 @@ class FunctionalOPTemplate(HOOKModule):
         super().__init__(hook)
 
     def forward(self, *args, **kwargs):
-        return ast.literal_eval(self.op_name_)(*args, **kwargs)
+        return eval(self.op_name_)(*args, **kwargs)
 
 
 def wrap_functional_op(op_name, hook):
