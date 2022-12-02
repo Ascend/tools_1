@@ -23,20 +23,19 @@ import yaml
 
 from .module import HOOKModule
 
-cur_path = os.path.dirname(os.path.realpath(__file__))
-yaml_path = os.path.join(cur_path, "support_wrap_opts.yaml")
-with open(yaml_path, 'r') as f:
-    WrapFunctionalOps = yaml.safe_load(f).get('functional')
 
 for f in dir(torch.nn.functional):
     locals().update({f: getattr(torch.nn.functional, f)})
 
 
 def get_functional_ops():
-    global WrapFunctionalOps
+    cur_path = os.path.dirname(os.path.realpath(__file__))
+    yaml_path = os.path.join(cur_path, "support_wrap_opts.yaml")
+    with open(yaml_path, 'r') as f:
+        functional_ops_need_wrap = yaml.safe_load(f).get('functional')
     _all_functional_ops = dir(torch.nn.functional)
-    assert set(WrapFunctionalOps) <= set(_all_functional_ops)
-    return WrapFunctionalOps
+    assert set(functional_ops_need_wrap) <= set(_all_functional_ops)
+    return functional_ops_need_wrap
 
 
 class HOOKFunctionalOP(object):

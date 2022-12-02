@@ -39,9 +39,9 @@ def get_input(question):
     return answer
 
 
-def config_path(file):
+def config_path(file_name):
     """config_path."""
-    return os.path.join("tools", file)
+    return os.path.join("tools", file_name)
 
 
 def setup_python(env_path):
