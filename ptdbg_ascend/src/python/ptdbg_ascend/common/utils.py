@@ -33,6 +33,7 @@ class Const:
     EQUAL = "="
     COMMA = ","
     DOT = "."
+    DUMP_MODE = {"SUMMERY": 1, "SAMPLE": 2, "ALL": 3}
 
 
 class VersionCheck:
@@ -67,7 +68,9 @@ class CompareException(Exception):
     NO_DUMP_FILE_ERROR = 9
     INVALID_DATA_ERROR = 10
     INVALID_PARAM_ERROR = 11
-    UNKNOWN_ERROR = 12
+    INVALID_DUMP_MODE = 12
+    INVALID_DUMP_FILE = 13
+    UNKNOWN_ERROR = 14
 
     def __init__(self, code, error_info: str = ""):
         super(CompareException, self).__init__()
@@ -133,7 +136,7 @@ def check_file_or_directory_path(path, isdir=False):
 
         if not os.access(path, os.W_OK):
             print_error_log(
-                'The path{} does not have permission to read. Please check the path permission'.format(path))
+                'The path{} does not have permission to write. Please check the path permission'.format(path))
             raise CompareException(CompareException.INVALID_PATH_ERROR)
     else:
         if not os.path.isfile(path):
