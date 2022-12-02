@@ -114,10 +114,10 @@ def get_accuracy(result, n_dict, b_dict, summery_flag):
             n_struct = n_dict["input_struct"][index]
             b_struct = b_dict["input_struct"][index]
         else:
-            n_value = np.array(n_dict["output_value"][index])
-            b_value = np.array(b_dict["output_value"][index])
-            n_struct = n_dict["output_struct"][index]
-            b_struct = b_dict["output_struct"][index]
+            n_value = np.array(n_dict["output_value"][0])
+            b_value = np.array(b_dict["output_value"][0])
+            n_struct = n_dict["output_struct"][0]
+            b_struct = b_dict["output_struct"][0]
         if n_struct[1] != b_struct[1]:
             cos_sim = "cannot be calculated "
             rmse = "cannot be calculated"
