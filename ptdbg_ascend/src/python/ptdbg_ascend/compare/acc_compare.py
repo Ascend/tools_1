@@ -130,12 +130,10 @@ def get_accuracy(result, n_dict, b_dict, summery_flag):
             mape = get_mape(n_value, b_value)
 
         result_item = [name, n_struct[0], b_struct[0], n_struct[1], b_struct[1], cos_sim, rmse, mape]
-        n_summary = summery_flag[0]
-        b_summary = summery_flag[1]
-        if n_summary:
+        if summery_flag[0]:
             summery_data = n_dict.get("summery")[index]
             result_item.extend([summery_data[0], summery_data[1]])
-        if b_summary:
+        if summery_flag[1]:
             summery_data = b_dict.get("summery")[index]
             result_item.extend([summery_data[0], summery_data[1]])
         result.append(result_item)
@@ -145,25 +143,11 @@ def compare(npu_pkl_path, bench_pkl_path, output_path, shape_flag=False):
     check_file_or_directory_path(output_path, True)
     npu_pkl = open(npu_pkl_path, "r")
     bench_pkl = open(bench_pkl_path, "r")
-    npu_ops_queue = []
-    bench_ops_queue = []
-    result = []
-    npu_summary = get_summery_mode(npu_pkl, npu_pkl_path)
-    bench_summary = get_summery_mode(bench_pkl, bench_pkl_path)
-    while True:
-        npu_file_flag = read_op(npu_ops_queue, npu_pkl)
-        bench_file_flag = read_op(bench_ops_queue, bench_pkl)
-        if (not npu_file_flag and not bench_file_flag) \
-                or (len(npu_ops_queue) == 0 or len(bench_ops_queue) == 0):
-            break
-        n_match_point, b_match_point = match_op(npu_ops_queue, bench_ops_queue, shape_flag)
-        if n_match_point == -1 and b_match_point == -1:
-            continue
-        n_match_data = npu_ops_queue[n_match_point]
-        b_match_data = bench_ops_queue[b_match_point]
-        get_accuracy(result, n_match_data, b_match_data, [npu_summary, bench_summary])
-        del npu_ops_queue[0: n_match_point + 1]
-        del bench_ops_queue[0: b_match_point + 1]
+    npu_summary = _get_summery_mode(npu_pkl, npu_pkl_path)
+    bench_summary = _get_summery_mode(bench_pkl, bench_pkl_path)
+    result = compare_process(npu_pkl, bench_pkl, [npu_summary, bench_summary], shape_flag)
+    npu_pkl.close()
+    bench_pkl.close()
 
     columns = ["Name", "NPU Tensor Dtype", "Bench Tensor Dtype",
                "NPU Tensor Shape", "Bench Tensor Shape", "Cosine", "RMSE", "MAPE"]
@@ -177,20 +161,35 @@ def compare(npu_pkl_path, bench_pkl_path, output_path, shape_flag=False):
     file_path = os.path.join(os.path.realpath(output_path), file_name)
     result_df.to_csv(file_path, index=False)
 
-    npu_pkl.close()
-    bench_pkl.close()
+
+def compare_process(npu_pkl_handle, bench_pkl_handle, summary_flag, shape_flag):
+    npu_ops_queue = []
+    bench_ops_queue = []
+    result = []
+    while True:
+        npu_file_flag = read_op(npu_ops_queue, npu_pkl_handle)
+        bench_file_flag = read_op(bench_ops_queue, bench_pkl_handle)
+        if (not npu_file_flag and not bench_file_flag) \
+                or (len(npu_ops_queue) == 0 or len(bench_ops_queue) == 0):
+            break
+        n_match_point, b_match_point = match_op(npu_ops_queue, bench_ops_queue, shape_flag)
+        if n_match_point == -1 and b_match_point == -1:
+            continue
+        n_match_data = npu_ops_queue[n_match_point]
+        b_match_data = bench_ops_queue[b_match_point]
+        get_accuracy(result, n_match_data, b_match_data, summary_flag)
+        del npu_ops_queue[0: n_match_point + 1]
+        del bench_ops_queue[0: b_match_point + 1]
+    return result
 
 
-def get_summery_mode(pkl_file_handle, file_name):
+def _get_summery_mode(pkl_file_handle, file_name):
     tensor_line = pkl_file_handle.readline()
     if len(tensor_line) == 0:
         print_error_log("dump file {} have empty line!".format(file_name))
         raise CompareException(CompareException.INVALID_DUMP_FILE)
     tensor_data = json.loads(tensor_line)
-    if tensor_data[1] == Const.DUMP_MODE.get("SUMMERY"):
-        return True
-    else:
-        return False
+    return tensor_data[1] == Const.DUMP_MODE.get("SUMMERY")
 
 
 if __name__ == "__main__":
@@ -202,4 +201,3 @@ if __name__ == "__main__":
                     help='Enforce tensor.shape is same when op matches')
     args = parser.parse_args()
     compare(args.npu_pkl, args.bench_pkl, args.out_path, args.shape)
-

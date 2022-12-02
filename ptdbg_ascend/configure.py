@@ -39,8 +39,8 @@ def get_input(question):
     return answer
 
 
-def real_config_path(file):
-    """real_config_path."""
+def config_path(file):
+    """config_path."""
     return os.path.join("tools", file)
 
 
@@ -60,7 +60,6 @@ def setup_python(env_path):
             custom_python_bin_path = None
         if not python_bin_path:
             python_bin_path = default_python_bin_path
-            pass
         # Check if the path is valid
         if os.path.isfile(python_bin_path) and os.access(python_bin_path, os.X_OK):
             pass
@@ -85,9 +84,9 @@ def setup_python(env_path):
             print('Pytorch is not installed or does not work properly.')
             continue
         # Write tools/python_bin_path.sh
-        with open(real_config_path('PYTHON_BIN_PATH'), 'w') as f:
+        with open(config_path('PYTHON_BIN_PATH'), 'w') as f:
             f.write(python_bin_path)
-        with open(real_config_path('PYTORCH_INSTALLED_PATH'), 'w') as f:
+        with open(config_path('PYTORCH_INSTALLED_PATH'), 'w') as f:
             f.write(compile_args[1])
         break
 
