@@ -32,8 +32,8 @@ yaml_path = os.path.join(cur_path, "support_wrap_opts.yaml")
 
 
 def get_functional_ops():
-    with open(yaml_path, 'r') as f:
-        functional_ops_need_wrap = yaml.safe_load(f).get('functional')
+    with open(yaml_path, 'r') as yaml_handle:
+        functional_ops_need_wrap = yaml.safe_load(yaml_handle).get('functional')
     _all_functional_ops = dir(torch.nn.functional)
     assert set(functional_ops_need_wrap) <= set(_all_functional_ops)
     return functional_ops_need_wrap
