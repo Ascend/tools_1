@@ -24,14 +24,14 @@ from .module import HOOKModule
 
 cur_path = os.path.dirname(os.path.realpath(__file__))
 yaml_path = os.path.join(cur_path, "support_wrap_opts.yaml")
+with open(yaml_path, 'r') as f:
+    WrapTensorOps = yaml.safe_load(f).get('tensor')
 
 
 def get_tensor_ops():
-    with open(yaml_path, 'r') as f:
-        tensor_ops_need_wrap = yaml.safe_load(f).get('tensor')
     _tensor_ops = dir(torch._C._TensorBase)
-    assert set(tensor_ops_need_wrap) <= set(_tensor_ops)
-    return tensor_ops_need_wrap
+    assert set(WrapTensorOps) <= set(_tensor_ops)
+    return WrapTensorOps
 
 
 class HOOKTensor(object):
