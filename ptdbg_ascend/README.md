@@ -84,13 +84,13 @@ pip3 install ./ptdbg_ascend/dist/ptdbg_ascend-0.1-py3-none-any.whl --upgrade --f
 
 接口函数用于dump过程的配置，如下：
 
-| 函数                    | 描述                                                                                                |
-|-----------------------|---------------------------------------------------------------------------------------------------|
-| set_dump_path         | 用于设置dump文件的路径(包含文件名)，参数示例：“/var/log/dump/npu_dump.pkl”                                            |
-| set_dump_switch       | 设置dump使能开关，参数为：“ON” 或者 "OFF"                                                                      |
-| set_seed_all          | 固定随机数，参数为随机数种子，默认种子为：1234.                                                                        |
-| register_acc_cmp_hook | 用于注册dump回调函数，例如：register_acc_cmp_hook(model).                                                     |
-| compare               | 比对接口，将GPU/CPU/NPU的dump文件进行比对，第三个参数为存放比对结果的目录；<br/>文件名称基于时间戳自动生成，格式为：compare_result_timestamp.csv. |
+| 函数              | 描述                                                                                                |
+|-----------------|---------------------------------------------------------------------------------------------------|
+| set_dump_path   | 用于设置dump文件的路径(包含文件名)，参数示例：“/var/log/dump/npu_dump.pkl”                                            |
+| set_dump_switch | 设置dump使能开关，参数为：“ON” 或者 "OFF"                                                                      |
+| set_seed_all    | 固定随机数，参数为随机数种子，默认种子为：1234.                                                                        |
+| register_hook   | 用于注册dump回调函数，例如：注册精度比对hook：register_hook(model, wrap_acc_cmp_hook).                               |
+| compare         | 比对接口，将GPU/CPU/NPU的dump文件进行比对，第三个参数为存放比对结果的目录；<br/>文件名称基于时间戳自动生成，格式为：compare_result_timestamp.csv. |
 
 #### 使用示例
 
@@ -98,20 +98,31 @@ pip3 install ./ptdbg_ascend/dist/ptdbg_ascend-0.1-py3-none-any.whl --upgrade --f
 ```
 from ptdbg_ascend import set_dump_path, set_dump_switch, set_seed_all, register_acc_cmp_hook, compare
 
-#在训练/推理开始前固定随机数
+# 在训练/推理开始前固定随机数
 set_seed_all()
-#设置dump路径（含文件名）
+# 设置dump路径（含文件名）
 set_dump_path(./npu_dump.pkl)
-#对模型注入精度比对的hook
-register_acc_cmp_hook(model)
+”“”
+# 对模型注入精度比对的hook,第三个参数为dump模式
+# dump模式有三种：
+{
+"SUMMERY": 1, 摘要模式，每个tensor dump最多10个数，同时dump出tensor的sum, mean;
+"SAMPLE": 2,  采样模式，tensor数据按16倍下采样后dump
+"ALL": 3      全dump，dump出tensor的完整数据
+}
+“”“
+register_hook(model, wrap_acc_cmp_hook, 1)
 
-#在期望dump的迭代开始前打开dump开关
+# 注册溢出检测回调函数，只有两个参数
+register_hook(model, wrap_checkoverflow_hook)
+
+# 在期望dump的迭代开始前打开dump开关
 set_dump_switch(“ON”)
 ...
-#在期望dump的迭代结束后关闭dump开关
+# 在期望dump的迭代结束后关闭dump开关
 set_dump_switch(“OFF”)
 
-#数据dump完成后,比对dump的NPU vs GPU/CPU数据, 比对结果存放的目录必须存在
+# 数据dump完成后,比对dump的NPU vs GPU/CPU数据, 比对结果存放的目录必须存在
 compare("./npu_dump.pkl", "./gpu_dump.pkl", "./output", True)
 ```
 

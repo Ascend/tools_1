@@ -68,14 +68,14 @@ def set_seed_all(seed=1234):
     torch.manual_seed(seed)
 
 
-def dump_tensor(x, prefix="", dump_mode=True):
+def dump_tensor(x, prefix, dump_mode):
     if "DUMP_PATH" not in os.environ:
         return
     if get_dump_switch():
         dump_process(x, prefix, dump_mode)
 
 
-def dump_process(x, prefix="", dump_mode=True):
+def dump_process(x, prefix, dump_mode):
     if isinstance(x, (tuple, list)) and x:
         for i, item in enumerate(x):
             dump_process(item, prefix="{}.{}".format(prefix, i))
@@ -109,7 +109,7 @@ def dump_process(x, prefix="", dump_mode=True):
 
 
 def wrap_acc_cmp_hook(name, **kwargs):
-    dump_mode = kwargs.get('sample', True)
+    dump_mode = kwargs.get('dump_mode', 1)
 
     def acc_cmp_hook(module, in_feat, out_feat):
         name_template = f"{name}" + "_{}"

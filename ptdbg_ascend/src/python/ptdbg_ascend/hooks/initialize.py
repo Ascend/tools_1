@@ -42,7 +42,7 @@ def initialize_hook(hook):
 def register_hook(model, hook, **kwargs):
     assert hasattr(model, "named_modules"), "Please register hooks to nn.Module."
 
-    dump_mode = kwargs.get('dump_mode', True)
+    dump_mode = kwargs.get('dump_mode', 1)
     hook = functools.partial(hook, dump_mode=dump_mode)
     initialize_hook(hook)
     for _, module in model.named_modules():
