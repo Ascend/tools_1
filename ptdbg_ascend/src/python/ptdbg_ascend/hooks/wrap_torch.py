@@ -24,14 +24,14 @@ from .module import HOOKModule
 
 cur_path = os.path.dirname(os.path.realpath(__file__))
 yaml_path = os.path.join(cur_path, "support_wrap_opts.yaml")
+with open(yaml_path, 'r') as f:
+    WrapTorchOps = yaml.safe_load(f).get('torch')
 
 
 def get_torch_ops():
-    with open(yaml_path, 'r') as f:
-        torch_ops_need_wrap = yaml.safe_load(f).get('torch')
     _torch_ops = dir(torch._C._VariableFunctionsClass)
-    assert set(torch_ops_need_wrap) <= set(_torch_ops)
-    return torch_ops_need_wrap
+    assert set(WrapTorchOps) <= set(_torch_ops)
+    return WrapTorchOps
 
 
 class HOOKTorchOP(object):

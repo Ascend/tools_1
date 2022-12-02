@@ -15,7 +15,6 @@
 # limitations under the License.
 """
 
-import ast
 import os
 
 import torch
@@ -24,19 +23,19 @@ import yaml
 from .module import HOOKModule
 
 
+cur_path = os.path.dirname(os.path.realpath(__file__))
+yaml_path = os.path.join(cur_path, "support_wrap_opts.yaml")
+with open(yaml_path, 'r') as f:
+    WrapFunctionalOps = yaml.safe_load(f).get('functional')
+
 for f in dir(torch.nn.functional):
     locals().update({f: getattr(torch.nn.functional, f)})
 
-cur_path = os.path.dirname(os.path.realpath(__file__))
-yaml_path = os.path.join(cur_path, "support_wrap_opts.yaml")
-
 
 def get_functional_ops():
-    with open(yaml_path, 'r') as yaml_handle:
-        functional_ops_need_wrap = yaml.safe_load(yaml_handle).get('functional')
     _all_functional_ops = dir(torch.nn.functional)
-    assert set(functional_ops_need_wrap) <= set(_all_functional_ops)
-    return functional_ops_need_wrap
+    assert set(WrapFunctionalOps) <= set(_all_functional_ops)
+    return WrapFunctionalOps
 
 
 class HOOKFunctionalOP(object):
@@ -50,7 +49,7 @@ class FunctionalOPTemplate(HOOKModule):
         super().__init__(hook)
 
     def forward(self, *args, **kwargs):
-        return ast.literal_eval(self.op_name_)(*args, **kwargs)
+        return eval(self.op_name_)(*args, **kwargs)
 
 
 def wrap_functional_op(op_name, hook):
