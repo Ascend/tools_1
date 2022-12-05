@@ -91,6 +91,6 @@ tf.saved_model.simple_save(sess, 'models/',
       
 --method_name： 用于配置tf-serving运行时的接口路径
     
-   该工具同时支持对atc/aoe的参数进行透传，如果需要使用其余的参数，当--profiling未被指定时请参考ATC使用文档，当指定--profiling参数时请参考Aoe使用文档、
+该工具同时支持对atc/aoe的参数进行透传，如果需要使用其余的参数，当--profiling未被指定时请参考ATC使用文档，当指定--profiling参数时请参考Aoe使用文档
 
 转换成功后，会在指定的output_path下生成对应的om文件，并在指定output_path的父目录下生成对应的HW saved_model，路径为 ${output_path_dir}/{om_name}_{timestamp}
