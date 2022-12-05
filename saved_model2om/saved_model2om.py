@@ -187,7 +187,7 @@ def save_hw_saved_model(input_node_dict: dict, output_node_dict: dict, output_pa
     try:
         from npu_bridge.helper import helper
     except ImportError:
-        print("[ERROR] npu_bridge is not found, HW Saved Model will not be generated.")
+        print("[ERROR]: npu_bridge is not found, HW Saved Model will not be generated.")
         return
 
     tf.disable_eager_execution()
@@ -296,6 +296,7 @@ def main(input_path, output_path, input_shape, soc_version, profiling, method_na
             ret = pb_to_om(tmp_pb_file, output_path, soc_version, input_shape, out_nodes, rest_args)
         if ret.returncode != 0:
             return
+        print(f"[INFO]: The om model has been converted and the HW Saved Model is ready to be generated.")
         save_hw_saved_model(input_nodes, output_nodes, output_path, method_name)
     finally:
         shutil.rmtree(tmp_path)
