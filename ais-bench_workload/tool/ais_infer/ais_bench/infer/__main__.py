@@ -162,6 +162,9 @@ def str2bool(v):
         raise argparse.ArgumentTypeError('Boolean value expected true, 1, false, 0 with case insensitive.')
 
 def check_positive_integer(value):
+    str_value = str(value)
+    if str.startswith('0'):
+        raise argparse.ArgumentTypeError("%s is an invalid int value" % str_value)
     ivalue = int(value)
     if ivalue <= 0:
         raise argparse.ArgumentTypeError("%s is an invalid positive int value" % value)
@@ -169,12 +172,18 @@ def check_positive_integer(value):
 
 
 def check_nonnegative_integer(value):
+    str_value = str(value)
+    if str.startswith('0'):
+        raise argparse.ArgumentTypeError("%s is an invalid int value" % str_value)
     ivalue = int(value)
     if ivalue < 0:
         raise argparse.ArgumentTypeError("%s is an invalid nonnegative int value" % value)
     return ivalue
 
 def check_device_range_valid(value):
+    str_value = str(value)
+    if str.startswith('0'):
+        raise argparse.ArgumentTypeError("%s is an invalid int value" % str_value)
     ivalue = int(value)
     if ivalue < 0 and ivalue > 255:
         raise argparse.ArgumentTypeError("%s is invalid. valid value range is [0, 255]" % value)
@@ -209,6 +218,7 @@ def get_args():
     parser.add_argument("--dymShape_range", type=str, default=None, help="dynamic shape range, such as --dymShape_range \"data:1,600~700;img_info:1,600-700\"")
     args = parser.parse_args()
 
+    print("================args.device:{}".format(args.device))
     if args.profiler is True and args.dump is True:
         logger.error("parameter --profiler cannot be true at the same time as parameter --dump, please check them!\n")
         raise RuntimeError('error bad parameters --profiler and --dump')
@@ -225,6 +235,10 @@ def get_args():
     if args.profiler is True and args.warmup_count != 0 and args.input != None:
         logger.info("profiler mode with input change warmup_count to 0")
         args.warmup_count = 0
+
+    if args.output is None and args.output_dirname is not None:
+        logger.error("parameter --output_dirname cann't be used alone. Please use it together with the parameter --output!\n")
+        raise RuntimeError('error bad parameters --output_dirname')
     return args
 
 def msprof_run_profiling(args):
