@@ -10,7 +10,7 @@ import tensorflow as tf
 from tensorflow.python.tools import saved_model_cli
 from tensorflow.python.saved_model import tag_constants
 from tensorflow.python.saved_model import signature_constants
-from tensorflow.core.framework import types_pb2, graph_pb2, node_def_pb2, attr_value_pb2, tensor_shape_pb2
+from tensorflow.core.framework import types_pb2, graph_pb2, node_def_pb2, attr_value_pb2
 from tensorflow.compat.v1 import graph_util
 
 from six import StringIO
@@ -184,8 +184,11 @@ def parse_new_output_nodes_string(new_nodes_string):
 
 
 def save_hw_saved_model(input_node_dict: dict, output_node_dict: dict, output_path, method_name):
-    import numpy as np
-    from npu_bridge.helper import helper
+    try:
+        from npu_bridge.helper import helper
+    except ImportError:
+        print("[ERROR] npu_bridge is not Found, will not generate HW Saved Model.")
+        return
 
     tf.disable_eager_execution()
     from tensorflow.core.protobuf.rewriter_config_pb2 import RewriterConfig
@@ -208,6 +211,7 @@ def save_hw_saved_model(input_node_dict: dict, output_node_dict: dict, output_pa
                                                   om_path=f"{output_path}.om")
 
         # test run pattern
+        # import numpy as np
         # input_list = list(hw_saved_model_input_dict.values())
         # print(sess.run(outputs, feed_dict={input_list[0]: np.random.randn(1, 128).astype(np.int32),
         #                                    input_list[1]: np.random.randn(1, 128).astype(np.int32),
@@ -307,17 +311,17 @@ def get_args():
                                                           'Use double quotation marks (") to enclose each argument.'
                                                           'E.g.: "input_name1:n1,c1,h1,w1;input_name2:n2,c2,h2,w2"')
     parser.add_argument("--method_name", help='Method name for TF-Serving.')
-    parser.add_argument("--new_input_nodes",
-                        help='Configure this to reselect the input node.'
-                             'the node format is name:type_pb:node_name'
-                             'Separate multiple nodes with semicolons (;).'
-                             'Use double quotation marks (") to enclose each argument.'
-                             'E.g.: "embedding:DT_FLOAT:bert/embedding/word_embeddings:0;add:DT_INT:bert/embedding/add:0"')
-    parser.add_argument("--new_output_nodes",
-                        help='Configure this to reselect the output node.'
-                        'Separate multiple nodes with semicolons (;).'
-                        'Use double quotation marks (") to enclose each argument.'
-                        'E.g.: "loss:loss/Softmax:0"')
+    # parser.add_argument("--new_input_nodes",
+    #                     help='Configure this to reselect the input node.'
+    #                          'the node format is name:type_pb:node_name'
+    #                          'Separate multiple nodes with semicolons (;).'
+    #                          'Use double quotation marks (") to enclose each argument.'
+    #                          'E.g.: "embedding:DT_FLOAT:bert/embedding/word_embeddings:0;add:DT_INT:bert/embedding/add:0"')
+    # parser.add_argument("--new_output_nodes",
+    #                     help='Configure this to reselect the output node.'
+    #                     'Separate multiple nodes with semicolons (;).'
+    #                     'Use double quotation marks (") to enclose each argument.'
+    #                     'E.g.: "loss:loss/Softmax:0"')
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--soc_version", help="The soc version. "
                                              "This parameter is not required when profiling is set.")
@@ -329,4 +333,4 @@ def get_args():
 if __name__ == "__main__":
     args, unknown_args = get_args()
     main(args.input_path, args.output_path, args.input_shape, args.soc_version, args.profiling, args.method_name,
-         args.new_input_nodes, args.new_output_nodes, unknown_args)
+         None, None, unknown_args)
