@@ -59,12 +59,6 @@ tf.saved_model.simple_save(sess, 'models/',
    ```
    python3 saved_model2om.py --input_path=/xxx/xxx/saved_model --output_path=/xxx/output/model --input_shape "input:16,224,224,3" --profiling 1
    ```
-
-需要生成子图的om时：
-   ```
-   python3 saved_model2om.py --input_path=/xxx/xxx/saved_model --output_path=/xxx/output/model --input_shape "new_input:16,224,224,3" 
---new_input_nodes "new_input:DT_FLOAT:bert/embeding/word_embeddings:0" --new_output_nodes "loss:loss/Softmax:0"
-   ```
 ​       参数说明：
 
 ​       --input_path:  saved_model的存储目录，saved_model按如下目录格式存储：
@@ -84,10 +78,6 @@ tf.saved_model.simple_save(sess, 'models/',
 --soc_version：输出om的soc_version。当--profiling参数启用时无需配置该项，此时的soc_version根据所在设备决定
 
 --profiling:   可选参数:1, 2。该项被设置则会开启aoe调优，配置为1时启用子图调优，配置为2时启用算子调优。（该参数配置后无需再指定job_type）
-
---new_input_nodes： 当需要从原始saved_model中筛选一个子图时，此参数用于指定新的输入节点，输入格式为："name1:type_pb1:node_name1;name2:type_pb2:node_name2", 例如"new_input:DT_FLOAT:bert/embeding/word_embeddings:0"。
-
---new_output_nodes： 当需要从原始saved_model中筛选一个子图时，此参数用于指定新的输出节点，输入格式为："name1:node_name1;name2:node_name2", 例如"loss:loss/Softmax:0"。
       
 --method_name： 用于配置tf-serving运行时的接口路径
     
