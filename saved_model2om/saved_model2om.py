@@ -187,7 +187,7 @@ def save_hw_saved_model(input_node_dict: dict, output_node_dict: dict, output_pa
     try:
         from npu_bridge.helper import helper
     except ImportError:
-        print("[ERROR] npu_bridge is not Found, will not generate HW Saved Model.")
+        print("[ERROR] npu_bridge is not found, HW Saved Model will not be generated.")
         return
 
     tf.disable_eager_execution()
