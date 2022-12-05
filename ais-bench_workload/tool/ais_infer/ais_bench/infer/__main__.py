@@ -162,9 +162,6 @@ def str2bool(v):
         raise argparse.ArgumentTypeError('Boolean value expected true, 1, false, 0 with case insensitive.')
 
 def check_positive_integer(value):
-    str_value = str(value)
-    if str.startswith('0'):
-        raise argparse.ArgumentTypeError("%s is an invalid int value" % str_value)
     ivalue = int(value)
     if ivalue <= 0:
         raise argparse.ArgumentTypeError("%s is an invalid positive int value" % value)
@@ -172,18 +169,12 @@ def check_positive_integer(value):
 
 
 def check_nonnegative_integer(value):
-    str_value = str(value)
-    if str.startswith('0'):
-        raise argparse.ArgumentTypeError("%s is an invalid int value" % str_value)
     ivalue = int(value)
     if ivalue < 0:
         raise argparse.ArgumentTypeError("%s is an invalid nonnegative int value" % value)
     return ivalue
 
 def check_device_range_valid(value):
-    str_value = str(value)
-    if str.startswith('0'):
-        raise argparse.ArgumentTypeError("%s is an invalid int value" % str_value)
     ivalue = int(value)
     if ivalue < 0 and ivalue > 255:
         raise argparse.ArgumentTypeError("%s is invalid. valid value range is [0, 255]" % value)
