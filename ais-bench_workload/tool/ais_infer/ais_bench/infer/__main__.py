@@ -225,6 +225,10 @@ def get_args():
     if args.profiler is True and args.warmup_count != 0 and args.input != None:
         logger.info("profiler mode with input change warmup_count to 0")
         args.warmup_count = 0
+
+    if args.output is None and args.output_dirname is not None:
+        logger.error("parameter --output_dirname cann't be used alone. Please use it together with the parameter --output!\n")
+        raise RuntimeError('error bad parameters --output_dirname')
     return args
 
 def msprof_run_profiling(args):
