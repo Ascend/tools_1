@@ -134,10 +134,10 @@ def get_accuracy(result, n_dict, b_dict, summery_flag):
         result_item = [name, n_struct[0], b_struct[0], n_struct[1], b_struct[1], cos_sim, rmse, mape]
         if summery_flag[0]:
             summery_data = n_dict.get("summery")[index]
-            result_item.extend([summery_data[0], summery_data[1]])
+            result_item.extend(summery_data)
         if summery_flag[1]:
             summery_data = b_dict.get("summery")[index]
-            result_item.extend([summery_data[0], summery_data[1]])
+            result_item.extend(summery_data)
         result.append(result_item)
 
 
@@ -154,9 +154,9 @@ def compare(npu_pkl_path, bench_pkl_path, output_path, shape_flag=False):
     columns = ["Name", "NPU Tensor Dtype", "Bench Tensor Dtype",
                "NPU Tensor Shape", "Bench Tensor Shape", "Cosine", "RMSE", "MAPE"]
     if npu_summary:
-        columns.extend(["NPU sum", "NPU mean"])
+        columns.extend(["NPU max", "NPU min", "NPU mean"])
     if bench_summary:
-        columns.extend(["Bench sum", "Bench mean"])
+        columns.extend(["Bench max", "Bench min", "Bench mean"])
     result_df = pd.DataFrame(result, columns=columns)
 
     file_name = add_time_as_suffix("compare_result")

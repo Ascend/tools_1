@@ -22,9 +22,11 @@ import stat
 
 import numpy as np
 import torch
-import torch_npu
 
-from ..common.utils import check_file_or_directory_path, print_error_log, CompareException, Const
+if not torch.cuda.is_available():
+    import torch_npu
+
+from ..common.utils import check_file_or_directory_path, print_error_log, print_warn_log, CompareException, Const
 
 
 def set_dump_path(fpath=None):
@@ -86,10 +88,11 @@ def dump_process(x, prefix, dump_mode):
         f = os.fdopen(os.open(get_dump_path(), os.O_RDWR|os.O_CREAT, stat.S_IWUSR|stat.S_IRUSR), "a")
         summery_data = []
         if dump_mode == Const.DUMP_MODE.get("SUMMERY"):
-            tensor_sum = torch._C._VariableFunctionsClass.sum(x).cpu().detach().float().numpy().tolist()
+            tensor_max = torch._C._VariableFunctionsClass.max(x).cpu().detach().float().numpy().tolist()
+            tensor_min = torch._C._VariableFunctionsClass.min(x).cpu().detach().float().numpy().tolist()
             tensor_mean = torch._C._VariableFunctionsClass.mean(x).cpu().detach().float().numpy().tolist()
             saved_tensor = x.contiguous().view(-1)[:Const.SUMMERY_DATA_NUMS].cpu().detach().float().numpy().tolist()
-            summery_data.extend([tensor_sum, tensor_mean])
+            summery_data.extend([tensor_max, tensor_min, tensor_mean])
         elif dump_mode == Const.DUMP_MODE.get("SAMPLE"):
             np.random.seed(int(os.environ['PYTHONHASHSEED']))
             sample_ratio = x.shape[0] // Const.SUMMERY_DATA_NUMS if x.shape[0] >= Const.SUMMERY_DATA_NUMS else x.shape[0]
@@ -108,7 +111,7 @@ def dump_process(x, prefix, dump_mode):
         f.close()
 
 
-def wrap_acc_cmp_hook(name, **kwargs):
+def acc_cmp_dump(name, **kwargs):
     dump_mode = kwargs.get('dump_mode', 1)
 
     def acc_cmp_hook(module, in_feat, out_feat):
@@ -119,11 +122,14 @@ def wrap_acc_cmp_hook(name, **kwargs):
     return acc_cmp_hook
 
 
-def wrap_checkoverflow_hook(name, **kwargs):
-    def checkoverflow_hook(module, in_feat, out_feat):
+def overflow_check(name, **kwargs):
+    def overflowcheck_hook(module, in_feat, out_feat):
+        if torch.cuda.is_available():
+            print_warn_log("Overflow detection is not supported in the GPU environment.")
+            return
         module_name = name
         module.has_overflow = torch_npu._C._check_overflow_npu()
         if module.has_overflow:
             raise ValueError("[check overflow]:module name :'{}' is overflow!".format(module_name))
 
-    return checkoverflow_hook
+    return overflowcheck_hook
