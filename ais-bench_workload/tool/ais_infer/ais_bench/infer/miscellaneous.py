@@ -56,6 +56,20 @@ def get_acl_json_path(args):
         json.dump(output_json_dict, f, indent=4, separators=(", ", ": "), sort_keys=True)
     return out_json_file_path
 
+def get_batchsize(session, args):
+    intensors_desc = session.get_inputs()
+    batchsize = intensors_desc[0].shape[0]
+    if args.dymBatch != 0:
+        batchsize = int(args.dymBatch)
+    elif args.dymDims !=None or args.dymShape !=None:
+        instr = args.dymDims if args.dymDims !=None else args.dymShape
+        elems = instr.split(';')
+        for elem in elems:
+            name, shapestr = elem.split(':')
+            if name == intensors_desc[0].name:
+                batchsize = int(shapestr.split(',')[0])
+    return batchsize
+
 def get_range_list(ranges):
     elems = ranges.split(';')
     info_list = []

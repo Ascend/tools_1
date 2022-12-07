@@ -473,7 +473,7 @@ class TestClass():
     def test_general_inference_prformance_comparison_with_msame_dynamic_shape(self):
         dym_shape = "actual_input_1:1,3,224,224"
         input_file_num = 100
-        output_size = 10000
+        output_size = 100000
 
         model_path = self.get_dynamic_shape_om_path()
         input_size = self.get_dynamic_shape_om_file_size(dym_shape)
@@ -527,6 +527,210 @@ class TestClass():
         assert reference_deviation < allowable_performance_deviation
         os.remove(msame_infer_log_path)
         shutil.rmtree(output_dir_path)
+
+
+    def test_pure_inference_batchsize_is_none_normal_static_batch(self):
+        """
+        batch size 1,2,4,8,16
+        """
+        batch_list = [1,2,4,8,16]
+        output_parent_path = os.path.join(self.model_base_path,  "output")
+        output_paths = []
+        summary_paths = []
+        for i, batch_size in enumerate(batch_list):
+            output_dirname = "static_batch_{}".format(i)
+            output_path = os.path.join(output_parent_path, output_dirname)
+            log_path = os.path.join(output_path, "log.txt")
+            if os.path.exists(output_path):
+                shutil.rmtree(output_path)
+            os.makedirs(output_path)
+            summary_json_path = os.path.join(output_parent_path,  "{}_summary.json".format(output_dirname))
+            model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
+            cmd = "{} --model {} --device {} --output {} --output_dirname {} > {}".format(TestCommonClass.cmd_prefix, model_path,
+                TestCommonClass.default_device_id, output_parent_path, output_dirname, log_path)
+            print("run cmd:{}".format(cmd))
+            output_paths.append(output_path)
+            summary_paths.append(summary_json_path)
+            ret = os.system(cmd)
+            assert ret == 0
+
+            with open(log_path) as f:
+                for line in f:
+                    if "1000*batchsize" not in line:
+                        continue
+
+                    sub_str = line.split('/')[0].split('(')[1].strip(')')
+                    cur_batchsize = int(sub_str)
+                    assert batch_size == cur_batchsize
+
+        for output_path in output_paths:
+            shutil.rmtree(output_path)
+        for summary_path in summary_paths:
+            os.remove(summary_path)
+
+    def test_general_inference_batchsize_is_none_normal_dynamic_batch(self):
+        """
+        batch size 1,2,4,8,16
+        """
+        batch_size = 1
+        batch_list = [1,2,4,8]
+        static_model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
+        input_size = TestCommonClass.get_model_inputs_size(static_model_path)[0]
+        input_path = TestCommonClass.get_inputs_path(input_size, os.path.join(self.model_base_path, "input"),
+                                                     self.output_file_num)
+        output_parent_path = os.path.join(self.model_base_path,  "output")
+        output_paths = []
+        summary_paths = []
+        for i, dys_batch_size in enumerate(batch_list):
+            output_dirname = "dynamic_batch_{}".format(i)
+            output_path = os.path.join(output_parent_path, output_dirname)
+            log_path = os.path.join(output_path, "log.txt")
+            if os.path.exists(output_path):
+                shutil.rmtree(output_path)
+            os.makedirs(output_path)
+            summary_json_path = os.path.join(output_parent_path,  "{}_summary.json".format(output_dirname))
+            model_path = self.get_dynamic_batch_om_path()
+            cmd = "{} --model {} --device {} --input {} --output {} --output_dirname {} --dymBatch {} > {}".format(TestCommonClass.cmd_prefix, model_path,
+                TestCommonClass.default_device_id, input_path, output_parent_path, output_dirname, dys_batch_size, log_path)
+            print("run cmd:{}".format(cmd))
+            output_paths.append(output_path)
+            summary_paths.append(summary_json_path)
+            ret = os.system(cmd)
+            assert ret == 0
+
+            with open(log_path) as f:
+                for line in f:
+                    if "1000*batchsize" not in line:
+                        continue
+
+                    sub_str = line.split('/')[0].split('(')[1].strip(')')
+                    cur_batchsize = int(sub_str)
+                    assert dys_batch_size == cur_batchsize
+                    break
+
+        for output_path in output_paths:
+            shutil.rmtree(output_path)
+        for summary_path in summary_paths:
+            os.remove(summary_path)
+
+    def test_pure_inference_batchsize_is_none_normal_dynamic_dims(self):
+        dym_dims = ["actual_input_1:1,3,224,224", "actual_input_1:8,3,448,448"]
+        bs_sizes = [1, 8]
+        model_path = self.get_dynamic_dim_om_path()
+        output_parent_path = os.path.join(self.model_base_path,  "output")
+        output_paths = []
+        summary_paths = []
+        for i, dym_dim in enumerate(dym_dims):
+            output_dirname = "dynamic_dims_{}".format(i)
+            output_path = os.path.join(output_parent_path, output_dirname)
+            log_path = os.path.join(output_path, "log.txt")
+            if os.path.exists(output_path):
+                shutil.rmtree(output_path)
+            os.makedirs(output_path)
+            summary_json_path = os.path.join(output_parent_path,  "{}_summary.json".format(output_dirname))
+            cmd = "{} --model {} --device {} --dymDims {} --output {} --output_dirname {} > \
+                {}".format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id, dym_dim,
+                           output_parent_path, output_dirname, log_path)
+            print("run cmd:{}".format(cmd))
+            output_paths.append(output_path)
+            summary_paths.append(summary_json_path)
+            ret = os.system(cmd)
+            assert ret == 0
+
+            with open(log_path) as f:
+                for line in f:
+                    if "1000*batchsize" not in line:
+                        continue
+
+                    sub_str = line.split('/')[0].split('(')[1].strip(')')
+                    cur_batchsize = int(sub_str)
+                    assert bs_sizes[i] == cur_batchsize
+                    break
+
+        for output_path in output_paths:
+            shutil.rmtree(output_path)
+        for summary_path in summary_paths:
+            os.remove(summary_path)
+
+    def test_pure_inference_batchsize_is_none_normal_dynamic_hw(self):
+        batchsize = 1
+        hw_list = ["224,224", "448,448"]
+        model_path = self.get_dynamic_hw_om_path()
+        output_parent_path = os.path.join(self.model_base_path,  "output")
+        output_paths = []
+        summary_paths = []
+        for i, dym_hw in enumerate(hw_list):
+            output_dirname = "dynamic_dims_{}".format(i)
+            output_path = os.path.join(output_parent_path, output_dirname)
+            log_path = os.path.join(output_path, "log.txt")
+            if os.path.exists(output_path):
+                shutil.rmtree(output_path)
+            os.makedirs(output_path)
+            summary_json_path = os.path.join(output_parent_path,  "{}_summary.json".format(output_dirname))
+            cmd = "{} --model {} --device {} --dymHW {} --output {} --output_dirname {} > \
+                {}".format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id,
+                           dym_hw, output_parent_path, output_dirname, log_path)
+            print("run cmd:{}".format(cmd))
+            output_paths.append(output_path)
+            summary_paths.append(summary_json_path)
+            ret = os.system(cmd)
+            assert ret == 0
+
+            with open(log_path) as f:
+                for line in f:
+                    if "1000*batchsize" not in line:
+                        continue
+
+                    sub_str = line.split('/')[0].split('(')[1].strip(')')
+                    cur_batchsize = int(sub_str)
+                    assert batchsize == cur_batchsize
+                    break
+
+        for output_path in output_paths:
+            shutil.rmtree(output_path)
+        for summary_path in summary_paths:
+            os.remove(summary_path)
+
+    def test_pure_inference_batchsize_is_none_normal_dynamic_shape(self):
+        dym_shapes = ["actual_input_1:1,3,224,224", "actual_input_1:1,3,300,300", "actual_input_1:2,3,224,224", "actual_input_1:2,3,300,300",\
+            "actual_input_1:4,3,224,224", "actual_input_1:4,3,300,300", "actual_input_1:8,3,300,300", "actual_input_1:8,3,300,300", \
+            "actual_input_1:16,3,224,224", "actual_input_1:16,3,300,300"]
+        batchsizes = [1, 1, 2, 2, 4, 4, 8, 8, 16, 16]
+        output_size = 100000
+        model_path = self.get_dynamic_shape_om_path()
+        output_parent_path = os.path.join(self.model_base_path,  "output")
+        output_paths = []
+        summary_paths = []
+        for i, dym_shape in enumerate(dym_shapes):
+            output_dirname = "dynamic_shape_{}".format(i)
+            output_path = os.path.join(output_parent_path, output_dirname)
+            log_path = os.path.join(output_path, "log.txt")
+            if os.path.exists(output_path):
+                shutil.rmtree(output_path)
+            os.makedirs(output_path)
+            summary_json_path = os.path.join(output_parent_path,  "{}_summary.json".format(output_dirname))
+            cmd = "{} --model {} --device {} --outputSize {} --dymShape {} --output {} --output_dirname {} > {}".format(TestCommonClass.cmd_prefix, model_path,
+                TestCommonClass.default_device_id, output_size, dym_shape, output_parent_path, output_dirname, log_path)
+            print("run cmd:{}".format(cmd))
+            output_paths.append(output_path)
+            summary_paths.append(summary_json_path)
+            ret = os.system(cmd)
+            assert ret == 0
+
+            with open(log_path) as f:
+                for line in f:
+                    if "1000*batchsize" not in line:
+                        continue
+
+                    sub_str = line.split('/')[0].split('(')[1].strip(')')
+                    cur_batchsize = int(sub_str)
+                    assert batchsizes[i] == cur_batchsize
+                    break
+
+        for output_path in output_paths:
+            shutil.rmtree(output_path)
+        for summary_path in summary_paths:
+            os.remove(summary_path)
 
 if __name__ == '__main__':
     pytest.main(['test_infer_resnet50.py', '-vs'])

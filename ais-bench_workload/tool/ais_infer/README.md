@@ -404,7 +404,7 @@ EZ9999  The error from device(2), serial number is 17, there is an aicore error,
 | --auto_set_dymshape_mode| 自动设置动态shape模式，可选参数, 默认false。<br>针对动态shape模型，根据输入的文件的信息，自动设置shape参数 注意 输入数据只能为npy文件 因为bin文件不能读取shape信息<br>如 --auto_set_dymshape_mode true" |
 | --auto_set_dymdims_mode | 自动设置动态dims模式，可选参数, 默认false。<br/>针对动态档位dims模型，根据输入的文件的信息，自动设置shape参数 注意 输入数据只能为npy文件 因为bin文件不能读取shape信息<br/>如 --auto_set_dymdims_mode true" |
 | --outputSize| 指定模型的输出size，有几个输出，就设几个值，可选参数。<br>动态shape场景下，获取模型的输出size可能为0，用户需根据输入的shape预估一个较合适的值去申请内存。<br>如 --outputSize "10000,10000,10000"|
-| --batchsize | 模型batch size 默认为1 。当前推理模块根据模型输入和文件输出自动进行组batch。参数传递的batchszie有且只用于结果吞吐率计算。请务必注意需要传入该值，以获取计算正确的吞吐率      |
+| --batchsize | 模型batch size 默认为None 。当前推理模块根据模型输入和文件输出自动进行组batch。参数传递的batchszie有且只用于结果吞吐率计算。请务必注意需要传入该值，以获取计算正确的吞吐率。尝试获取模型的batchsize时，首先获取第参数的最高维作为batchsize。 如果是动态Batch的话，更新为动态batch的值。如果是动态dims和动态shape 更新为设置的第一个参数的最高维      |
 | --pure_data_type | 纯推理数据类型。可选参数，默认"zero",可取值"zero"或"random"。<br>设置为zero时，纯推理数据全部是0；设置为random时，每一个推理数据是[0,255]之间的随机整数|
 | --profiler | profiler开关，true或者false, 可选参数，默认false。<br>--output参数必须提供。profiler数据在--output参数指定的目录下的profiler文件夹内。不能与--dump同时为true。|
 | --dump |dump开关，true或者false, 可选参数，默认false。<br>--output参数必须提供。dump数据在--output参数指定的目录下的dump文件夹内。不能与--profiler同时为true。|

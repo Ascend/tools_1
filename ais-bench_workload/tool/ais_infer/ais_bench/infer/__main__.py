@@ -16,7 +16,7 @@ from ais_bench.infer.io_oprations import (create_infileslist_from_inputs_list,
                                     pure_infer_fake_file, save_tensors_to_file)
 from ais_bench.infer.summary import summary
 from ais_bench.infer.utils import logger
-from ais_bench.infer.miscellaneous import dymshape_range_run, get_acl_json_path, version_check
+from ais_bench.infer.miscellaneous import dymshape_range_run, get_acl_json_path, version_check, get_batchsize
 
 def set_session_options(session, args):
     # 增加校验
@@ -31,6 +31,10 @@ def set_session_options(session, args):
         session.set_dynamic_shape(args.dymShape)
     else:
         session.set_staticbatch()
+
+    if args.batchsize == None:
+        args.batchsize = get_batchsize(session, args)
+        logger.info("try get model batchsize:{}".format(args.batchsize))
 
     # 设置custom out tensors size
     if args.outputSize != None:
@@ -167,6 +171,13 @@ def check_positive_integer(value):
         raise argparse.ArgumentTypeError("%s is an invalid positive int value" % value)
     return ivalue
 
+def check_batchsize_valid(value):
+    # default value is None
+    if value == None:
+        return value
+    # input value no None
+    else:
+        return check_positive_integer(value)
 
 def check_nonnegative_integer(value):
     ivalue = int(value)
@@ -197,7 +208,7 @@ def get_args():
     parser.add_argument("--outputSize", type=str, default=None, help="output size for dynamic shape mode")
     parser.add_argument("--auto_set_dymshape_mode", type=str2bool, default=False, help="auto_set_dymshape_mode")
     parser.add_argument("--auto_set_dymdims_mode", type=str2bool, default=False, help="auto_set_dymdims_mode")
-    parser.add_argument("--batchsize", type=check_positive_integer, default=1, help="batch size of input tensor")
+    parser.add_argument("--batchsize", type=check_batchsize_valid, default=None, help="batch size of input tensor")
     parser.add_argument("--pure_data_type", type=str, default="zero", choices=["zero", "random"], help="null data type for pure inference(zero or random)")
     parser.add_argument("--profiler", type=str2bool, default=False, help="profiler switch")
     parser.add_argument("--dump", type=str2bool, default=False, help="dump switch")
