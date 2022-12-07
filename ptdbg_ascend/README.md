@@ -96,7 +96,7 @@ pip3 install ./ptdbg_ascend/dist/ptdbg_ascend-0.1-py3-none-any.whl --upgrade --f
 
 以训练场景为例，在你需要dump数据的step启动之前，设置使能开关和dump路径。
 ```
-from ptdbg_ascend import set_dump_path, set_dump_switch, set_seed_all, register_hook, wrap_acc_cmp_hook, wrap_checkoverflow_hook, compare
+from ptdbg_ascend import *
 
 # 在训练/推理开始前固定随机数
 set_seed_all()
@@ -109,16 +109,16 @@ set_dump_path(./npu_dump.pkl)
     "SAMPLE": 2,  采样模式，tensor数据按16倍下采样后dump
     "ALL": 3      全dump，dump出tensor的完整数据
 “”“
-register_hook(model, wrap_acc_cmp_hook, 1)
+register_hook(model, acc_cmp_dump, dump_mode=1)
 
 # 注册溢出检测回调函数，只有两个参数
-register_hook(model, wrap_checkoverflow_hook)
+register_hook(model, overflow_check)
 
 # 在期望dump的迭代开始前打开dump开关
-set_dump_switch(“ON”)
+set_dump_switch("ON")
 ...
 # 在期望dump的迭代结束后关闭dump开关
-set_dump_switch(“OFF”)
+set_dump_switch("OFF")
 
 # 数据dump完成后,比对dump的NPU vs GPU/CPU数据, 比对结果存放的目录必须存在
 compare("./npu_dump.pkl", "./gpu_dump.pkl", "./output", True)

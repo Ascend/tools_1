@@ -34,7 +34,7 @@ class Const:
     COMMA = ","
     DOT = "."
     DUMP_MODE = {"SUMMERY": 1, "SAMPLE": 2, "ALL": 3}
-    SUMMERY_DATA_NUMS = 32
+    SUMMERY_DATA_NUMS = 16
 
 
 class VersionCheck:
