@@ -16,7 +16,7 @@ from ais_bench.infer.io_oprations import (create_infileslist_from_inputs_list,
                                     pure_infer_fake_file, save_tensors_to_file)
 from ais_bench.infer.summary import summary
 from ais_bench.infer.utils import logger
-from ais_bench.infer.miscellaneous import dymshape_range_run, get_acl_json_path, version_check
+from ais_bench.infer.miscellaneous import dymshape_range_run, get_acl_json_path, version_check, get_batchsize
 
 def set_session_options(session, args):
     # 增加校验
@@ -31,6 +31,10 @@ def set_session_options(session, args):
         session.set_dynamic_shape(args.dymShape)
     else:
         session.set_staticbatch()
+
+    if args.batchsize == None:
+        args.batchsize = get_batchsize(session, args)
+        logger.info("try get model batchsize:{}".format(args.batchsize))
 
     # 设置custom out tensors size
     if args.outputSize != None:
@@ -167,6 +171,13 @@ def check_positive_integer(value):
         raise argparse.ArgumentTypeError("%s is an invalid positive int value" % value)
     return ivalue
 
+def check_batchsize_valid(value):
+    # default value is None
+    if value is None:
+        return value
+    # input value no None
+    else:
+        return check_positive_integer(value)
 
 def check_nonnegative_integer(value):
     ivalue = int(value)
@@ -197,7 +208,7 @@ def get_args():
     parser.add_argument("--outputSize", type=str, default=None, help="output size for dynamic shape mode")
     parser.add_argument("--auto_set_dymshape_mode", type=str2bool, default=False, help="auto_set_dymshape_mode")
     parser.add_argument("--auto_set_dymdims_mode", type=str2bool, default=False, help="auto_set_dymdims_mode")
-    parser.add_argument("--batchsize", type=check_positive_integer, default=1, help="batch size of input tensor")
+    parser.add_argument("--batchsize", type=check_batchsize_valid, default=None, help="batch size of input tensor")
     parser.add_argument("--pure_data_type", type=str, default="zero", choices=["zero", "random"], help="null data type for pure inference(zero or random)")
     parser.add_argument("--profiler", type=str2bool, default=False, help="profiler switch")
     parser.add_argument("--dump", type=str2bool, default=False, help="dump switch")
@@ -233,7 +244,7 @@ def get_args():
 
 def msprof_run_profiling(args):
     cmd = sys.executable + " " + ' '.join(sys.argv) + " --profiler=0 --warmup_count=0"
-    msprof_cmd="{} --output={}/profiler --application=\"{}\" --sys-hardware-mem=on --sys-cpu-profiling=on --sys-profiling=on --sys-pid-profiling=on --dvpp-profiling=on --runtime-api=on --task-time=on --aicpu=on".format(
+    msprof_cmd="{} --output={}/profiler --application=\"{}\" --model-execution=on --sys-hardware-mem=on --sys-cpu-profiling=off --sys-profiling=off --sys-pid-profiling=off --dvpp-profiling=on --runtime-api=on --task-time=on --aicpu=on".format(
         msprof_bin, args.output, cmd)
     logger.info("msprof cmd:{} begin run".format(msprof_cmd))
     ret = os.system(msprof_cmd)
@@ -259,7 +270,7 @@ def main(args):
     else:
         output_prefix = None
 
-    inputs_list = [] if args.input == None else args.input.split(',')
+    inputs_list = [] if args.input is None else args.input.split(',')
 
     # create infiles list accord inputs list
     if len(inputs_list) == 0:
@@ -298,13 +309,13 @@ if __name__ == "__main__":
     if args.profiler == True:
         # try use msprof to run
         msprof_bin = shutil.which('msprof')
-        if msprof_bin == None:
+        if msprof_bin is None:
             logger.info("find no msprof continue use acl.json mode")
         else:
             msprof_run_profiling(args)
             exit(0)
 
-    if args.dymShape_range != None and args.dymShape == None:
+    if args.dymShape_range != None and args.dymShape is None:
         # dymshape range run,according range to run each shape infer get best shape
         dymshape_range_run(args)
         exit(0)

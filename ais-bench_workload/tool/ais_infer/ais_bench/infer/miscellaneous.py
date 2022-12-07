@@ -16,7 +16,7 @@ def get_modules_version(name):
 
 def version_check(args):
     aclruntime_version = get_modules_version('aclruntime')
-    if aclruntime_version == None or aclruntime_version == "0.0.1":
+    if aclruntime_version is None or aclruntime_version == "0.0.1":
         logger.warning("aclruntime version:{} is lower please update aclruntime follow any one method".format(aclruntime_version))
         logger.warning("1. visit https://gitee.com/ascend/tools/tree/master/ais-bench_workload/tool/ais_infer to install")
         logger.warning("2. or run cmd: pip3  install -v --force-reinstall 'git+https://gitee.com/ascend/tools.git#egg=aclruntime&subdirectory=ais-bench_workload/tool/ais_infer/backend' to install")
@@ -55,6 +55,20 @@ def get_acl_json_path(args):
     with open(out_json_file_path, "w") as f:
         json.dump(output_json_dict, f, indent=4, separators=(", ", ": "), sort_keys=True)
     return out_json_file_path
+
+def get_batchsize(session, args):
+    intensors_desc = session.get_inputs()
+    batchsize = intensors_desc[0].shape[0]
+    if args.dymBatch != 0:
+        batchsize = int(args.dymBatch)
+    elif args.dymDims !=None or args.dymShape !=None:
+        instr = args.dymDims if args.dymDims !=None else args.dymShape
+        elems = instr.split(';')
+        for elem in elems:
+            name, shapestr = elem.split(':')
+            if name == intensors_desc[0].name:
+                batchsize = int(shapestr.split(',')[0])
+    return batchsize
 
 def get_range_list(ranges):
     elems = ranges.split(';')
@@ -123,7 +137,7 @@ def get_throughtput_from_log(log_path):
 def dymshape_range_run(args):
     dymshape_list = get_dymshape_list(args.dymShape_range)
     results = []
-    log_path = "./dym.log" if args.output == None else args.output + "/dym.log"
+    log_path = "./dym.log" if args.output is None else args.output + "/dym.log"
     for dymshape in dymshape_list:
         # get first inargs shape[0] as batchsize
         batchsize = int(dymshape.split(':')[1].split(",")[0])

@@ -18,6 +18,9 @@ If not set, the referencing tool will get the information from the following pat
 + /usr/local/Ascend/ascend-toolkit/latest
 
 ### Install by source codes
+
+Please note that the centos platform does not support this build and installation method.
+
 1. clone source codes
 ```Bash
 git clone https://gitee.com/ascend/ais-bench.git
@@ -197,7 +200,7 @@ summary:{'NPU_compute_time': {'min': 2.4385452270507812, 'max': 2.58755683898925
 | --dymShape| (Optional) Dynamic shape parameter， specifies the actual shape of the model input. <br>If ATC model conversion settings --input_shape_range="input1:\[8\~20,3,5,-1\];input2:\[5,3\~9,10,-1\]" , the dymShape parameter can be set to --dymShape "input1:8,3,5,10;input2:5,3,10,10". <br>This parameter must be used with --input and --outputSize. |
 | --auto_set_dymshape_mode| (Optional)Automatically set shape mode, default false。<br>For the dynamic shape model, automatically set the shape parameters according to the information of the input file<br> --auto_set_dymshape_mode true"|
 | --outputSize| (Optional)Specify the output size of the model. If there are several outputs, set several values. <br>In the dynamic shape scenario, the output size of the acquired model may be 0. The user needs to estimate an appropriate value according to the input shape to apply for memory.<br>Example： --outputSize "10000,10000,10000".|
-| --batchsize | model batch size.            |
+| --batchsize | model batch size. The model batch size is None by default. The current reasoning module automatically performs group batching according to model input and file output. The batchszie passed by the parameter has and is only used for the result throughput calculation. It is important to note that this value needs to be passed in to get the correct throughput calculated. When trying to obtain the batchsize of the model, first obtain the highest dimension of the parameter as the batchsize. If it is a dynamic batch, it is updated to the value of dynamic batch. In case of dynamic dims and dynamic shape, update to the highest dimension of the first parameter set |
 | --pure_data_type | (Optional)Pure inference data type。Default "zero", can be set to "zero" or "random"。<br>When set to zero, all pure reasoning data are 0; When set to random, each legend data is a random integer between [0, 255]      |
 | --profiler | (Optional)profiler switch。either true or false. Defaults to false.<br>--Output parameter must be provided. The profiler data is in the profiler folder under the directory specified by the --output parameter. Cannot be true at the same time as --dump      |
 | --dump | (Optional)dump switch。either true or false. Defaults to false.<br>--Output parameter must be provided. Dump data is in the dump folder under the directory specified by the --output parameter. Cannot be true at the same time as --profiler      |

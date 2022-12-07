@@ -251,6 +251,87 @@ class TestClass():
         os.remove(msame_infer_log_path)
         shutil.rmtree(output_dir_path)
 
+    def test_pure_inference_batchsize_is_none_normal_static_batch(self):
+        batch_list = [1, 2, 4, 8, 16]
+
+        output_parent_path = os.path.join(self.model_base_path, "output")
+        output_paths = []
+        summary_paths = []
+
+        for i, batch_size in enumerate(batch_list):
+            model_path = TestCommonClass.get_model_static_om_path(
+                batch_size, self.model_name)
+            output_dirname = "{}_{}".format("static_batch", i)
+            output_path = os.path.join(output_parent_path, output_dirname)
+            log_path = os.path.join(output_path, "log.txt")
+            summary_json_path = os.path.join(output_parent_path,  "{}_summary.json".format(output_dirname))
+            if os.path.exists(output_path):
+                shutil.rmtree(output_path)
+            os.makedirs(output_path)
+            cmd = "{} --model {} --device {} --output {} --output_dirname {} > {}".format(
+                TestCommonClass.cmd_prefix, model_path,
+                TestCommonClass.default_device_id,
+                output_parent_path, output_dirname, log_path)
+            print("run cmd:{}".format(cmd))
+            ret = os.system(cmd)
+            assert ret == 0
+            output_paths.append(output_path)
+            summary_paths.append(summary_json_path)
+
+            with open(log_path) as f:
+                for line in f:
+                    if "1000*batchsize" not in line:
+                        continue
+
+                    sub_str = line.split('/')[0].split('(')[1].strip(')')
+                    cur_batchsize = int(sub_str)
+                    assert batch_size == cur_batchsize
+                    break
+
+        for output_path in output_paths:
+            shutil.rmtree(output_path)
+        for summary_path in summary_paths:
+            os.remove(summary_path)
+
+    def test_pure_inference_batchsize_is_none_normal_dynamic_batch(self):
+        batch_list = [1, 2, 4, 8, 16]
+        output_parent_path = os.path.join(self.model_base_path, "output")
+        model_path = self.get_dynamic_batch_om_path()
+        output_paths = []
+        summary_paths = []
+
+        for i, dys_batch_size in enumerate(batch_list):
+            output_dirname = "{}_{}".format("dynamic_batch", i)
+            output_path = os.path.join(output_parent_path, output_dirname)
+            log_path = os.path.join(output_path, "log.txt")
+            summary_json_path = os.path.join(output_parent_path,  "{}_summary.json".format(output_dirname))
+            if os.path.exists(output_path):
+                shutil.rmtree(output_path)
+            os.makedirs(output_path)
+            cmd = "{} --model {} --device {} --dymBatch {} --output {} --output_dirname {} > {}".format(
+                TestCommonClass.cmd_prefix, model_path,
+                TestCommonClass.default_device_id, dys_batch_size,
+                output_parent_path, output_dirname, log_path)
+            print("run cmd:{}".format(cmd))
+            ret = os.system(cmd)
+            assert ret == 0
+            output_paths.append(output_path)
+            summary_paths.append(summary_json_path)
+
+            with open(log_path) as f:
+                for line in f:
+                    if "1000*batchsize" not in line:
+                        continue
+
+                    sub_str = line.split('/')[0].split('(')[1].strip(')')
+                    cur_batchsize = int(sub_str)
+                    assert dys_batch_size == cur_batchsize
+                    break
+
+        for output_path in output_paths:
+            shutil.rmtree(output_path)
+        for summary_path in summary_paths:
+            os.remove(summary_path)
 
 if __name__ == '__main__':
     pytest.main(['test_infer_bert.py', '-vs'])
