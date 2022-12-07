@@ -18,6 +18,9 @@ If not set, the referencing tool will get the information from the following pat
 + /usr/local/Ascend/ascend-toolkit/latest
 
 ### Install by source codes
+
+Please note that the centos platform does not support this build and installation method.
+
 1. clone source codes
 ```Bash
 git clone https://gitee.com/ascend/ais-bench.git

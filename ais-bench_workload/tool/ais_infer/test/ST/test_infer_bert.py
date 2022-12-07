@@ -251,26 +251,7 @@ class TestClass():
         os.remove(msame_infer_log_path)
         shutil.rmtree(output_dir_path)
 
-    def test_general_inference_batchsize_is_none_normal_static_batch(self):
-        batch_size = 1
-        static_model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
-        input_size = TestCommonClass.get_model_inputs_size(static_model_path)[0]
-        input_ids_dir_path = TestCommonClass.get_inputs_path(
-            input_size, os.path.join(self.model_base_path, "input",
-                                     "input_ids"), self.output_file_num, "zero")
-        input_mask_dir_path = TestCommonClass.get_inputs_path(
-            input_size,
-            os.path.join(self.model_base_path, "input", "input_mask"),
-            self.output_file_num, "zero")
-        segment_ids_dir_path = TestCommonClass.get_inputs_path(
-            input_size,
-            os.path.join(self.model_base_path, "input", "segment_ids"),
-            self.output_file_num, "zero")
-        input_paths = []
-        input_paths.append(input_ids_dir_path)
-        input_paths.append(input_mask_dir_path)
-        input_paths.append(segment_ids_dir_path)
-        input_path = ','.join(input_paths)
+    def test_pure_inference_batchsize_is_none_normal_static_batch(self):
         batch_list = [1, 2, 4, 8, 16]
 
         output_parent_path = os.path.join(self.model_base_path, "output")
@@ -287,9 +268,9 @@ class TestClass():
             if os.path.exists(output_path):
                 shutil.rmtree(output_path)
             os.makedirs(output_path)
-            cmd = "{} --model {} --device {} --input {} --output {} --output_dirname {} > {}".format(
+            cmd = "{} --model {} --device {} --output {} --output_dirname {} > {}".format(
                 TestCommonClass.cmd_prefix, model_path,
-                TestCommonClass.default_device_id, input_path,
+                TestCommonClass.default_device_id,
                 output_parent_path, output_dirname, log_path)
             print("run cmd:{}".format(cmd))
             ret = os.system(cmd)
@@ -312,27 +293,7 @@ class TestClass():
         for summary_path in summary_paths:
             os.remove(summary_path)
 
-    def test_general_inference_batchsize_is_none_normal_dynamic_batch(self):
-        batch_size = 1
-        static_model_path = TestCommonClass.get_model_static_om_path(
-            batch_size, self.model_name)
-        input_size = TestCommonClass.get_model_inputs_size(static_model_path)[0]
-        input_ids_dir_path = TestCommonClass.get_inputs_path(
-            input_size, os.path.join(self.model_base_path, "input",
-                                     "input_ids"), self.output_file_num, "zero")
-        input_mask_dir_path = TestCommonClass.get_inputs_path(
-            input_size,
-            os.path.join(self.model_base_path, "input", "input_mask"),
-            self.output_file_num, "zero")
-        segment_ids_dir_path = TestCommonClass.get_inputs_path(
-            input_size,
-            os.path.join(self.model_base_path, "input", "segment_ids"),
-            self.output_file_num, "zero")
-        input_paths = []
-        input_paths.append(input_ids_dir_path)
-        input_paths.append(input_mask_dir_path)
-        input_paths.append(segment_ids_dir_path)
-        input_path = ','.join(input_paths)
+    def test_pure_inference_batchsize_is_none_normal_dynamic_batch(self):
         batch_list = [1, 2, 4, 8, 16]
         output_parent_path = os.path.join(self.model_base_path, "output")
         model_path = self.get_dynamic_batch_om_path()

@@ -176,11 +176,6 @@ class TestClass():
         shutil.rmtree(tmp_output_path)
 
     def test_general_inference_batchsize_is_none_normal_static_batch(self):
-        batch_size = 1
-        static_model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
-        input_size = TestCommonClass.get_model_inputs_size(static_model_path)[0]
-        input_path = TestCommonClass.get_inputs_path(input_size, os.path.join(self.model_base_path, "input"),
-                                                     self.output_file_num)
         batch_list = [1, 2, 4, 8, 16]
         output_parent_path = os.path.join(self.model_base_path, "output")
         output_paths = []
@@ -196,8 +191,8 @@ class TestClass():
             os.makedirs(output_path)
             output_batchsize_axis = 1
             summary_json_path = os.path.join(output_parent_path,  "{}_summary.json".format(output_dirname))
-            cmd = "{} --model {} --device {} --input {} --output {} --output_dirname {} --output_batchsize_axis {} > {}".format(TestCommonClass.cmd_prefix, model_path,
-                TestCommonClass.default_device_id, input_path, output_parent_path, output_dirname, output_batchsize_axis, log_path)
+            cmd = "{} --model {} --device {} --output {} --output_dirname {} --output_batchsize_axis {} > {}".format(TestCommonClass.cmd_prefix, model_path,
+                TestCommonClass.default_device_id,  output_parent_path, output_dirname, output_batchsize_axis, log_path)
             print("run cmd:{}".format(cmd))
             ret = os.system(cmd)
             assert ret == 0
@@ -220,12 +215,7 @@ class TestClass():
         for summary_path in summary_paths:
             os.remove(summary_path)
 
-    def test_general_inference_batchsize_is_none_normal_dynamic_batch(self):
-        batch_size = 1
-        static_model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
-        input_size = TestCommonClass.get_model_inputs_size(static_model_path)[0]
-        input_path = TestCommonClass.get_inputs_path(input_size, os.path.join(self.model_base_path, "input"),
-                                                     self.output_file_num)
+    def test_pure_inference_batchsize_is_none_normal_dynamic_batch(self):
         batch_list = [1, 2, 4, 8, 16]
         output_parent_path = os.path.join(self.model_base_path, "output")
         output_paths = []
@@ -242,8 +232,8 @@ class TestClass():
             os.makedirs(output_path)
             output_batchsize_axis = 1
             summary_json_path = os.path.join(output_parent_path,  "{}_summary.json".format(output_dirname))
-            cmd = "{} --model {} --device {} --input {} --output {} --output_dirname {} --output_batchsize_axis {} --dymBatch {} > {}".format(TestCommonClass.cmd_prefix, model_path,
-                TestCommonClass.default_device_id, input_path, output_parent_path, output_dirname, output_batchsize_axis, dys_batch_size, log_path)
+            cmd = "{} --model {} --device {} --output {} --output_dirname {} --output_batchsize_axis {} --dymBatch {} > {}".format(TestCommonClass.cmd_prefix, model_path,
+                TestCommonClass.default_device_id,  output_parent_path, output_dirname, output_batchsize_axis, dys_batch_size, log_path)
             print("run cmd:{}".format(cmd))
             ret = os.system(cmd)
             assert ret == 0

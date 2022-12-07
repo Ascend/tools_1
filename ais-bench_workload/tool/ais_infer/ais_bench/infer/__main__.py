@@ -173,7 +173,7 @@ def check_positive_integer(value):
 
 def check_batchsize_valid(value):
     # default value is None
-    if value == None:
+    if value is None:
         return value
     # input value no None
     else:
@@ -270,7 +270,7 @@ def main(args):
     else:
         output_prefix = None
 
-    inputs_list = [] if args.input == None else args.input.split(',')
+    inputs_list = [] if args.input is None else args.input.split(',')
 
     # create infiles list accord inputs list
     if len(inputs_list) == 0:
@@ -309,13 +309,13 @@ if __name__ == "__main__":
     if args.profiler == True:
         # try use msprof to run
         msprof_bin = shutil.which('msprof')
-        if msprof_bin == None:
+        if msprof_bin is None:
             logger.info("find no msprof continue use acl.json mode")
         else:
             msprof_run_profiling(args)
             exit(0)
 
-    if args.dymShape_range != None and args.dymShape == None:
+    if args.dymShape_range != None and args.dymShape is None:
         # dymshape range run,according range to run each shape infer get best shape
         dymshape_range_run(args)
         exit(0)
