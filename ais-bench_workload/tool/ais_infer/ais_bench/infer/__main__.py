@@ -244,7 +244,7 @@ def get_args():
 
 def msprof_run_profiling(args):
     cmd = sys.executable + " " + ' '.join(sys.argv) + " --profiler=0 --warmup_count=0"
-    msprof_cmd="{} --output={}/profiler --application=\"{}\" --sys-hardware-mem=on --sys-cpu-profiling=on --sys-profiling=on --sys-pid-profiling=on --dvpp-profiling=on --runtime-api=on --task-time=on --aicpu=on".format(
+    msprof_cmd="{} --output={}/profiler --application=\"{}\" --model-execution=on --sys-hardware-mem=on --sys-cpu-profiling=off --sys-profiling=off --sys-pid-profiling=off --dvpp-profiling=on --runtime-api=on --task-time=on --aicpu=on".format(
         msprof_bin, args.output, cmd)
     logger.info("msprof cmd:{} begin run".format(msprof_cmd))
     ret = os.system(msprof_cmd)
