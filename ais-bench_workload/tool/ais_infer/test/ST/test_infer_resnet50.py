@@ -727,5 +727,133 @@ class TestClass():
         for summary_path in summary_paths:
             os.remove(summary_path)
 
+    def get_dynamic_shape_range_mode_inference_result_info(self, log_path):
+        run_count = 0
+        result_OK_num = 0
+        shape_status = dict()
+        with open(log_path) as f:
+            for line in f:
+                if 'run_count' in line:
+                    str_list = line.split()
+                    tmp_str = str_list[1]
+                    num_str = tmp_str[(tmp_str.rfind(':') + 1):]
+                    num_str = num_str.replace('\n','')
+                    run_count = int(num_str)
+                if "result:OK throughput" in line:
+                    result_OK_num += 1
+                    str_list = line.split()
+                    tmp_str = str_list[2]
+                    shape_str = tmp_str[(tmp_str.find(':') + 1):]
+                    shape_str = shape_str.replace('\n','')
+                    shape_status[shape_str] = True
+
+        return run_count, result_OK_num,  shape_status
+
+    def test_pure_inference_normal_dynamic_shape_range_mode(self):
+        dymShape_range = "actual_input_1:1,3,224,224~226"
+        dymshapes = ["actual_input_1:1,3,224,224", "actual_input_1:1,3,224,225", "actual_input_1:1,3,224,226"]
+        model_path = self.get_dynamic_shape_om_path()
+        output_size = 100000
+        output_parent_path = os.path.join(self.model_base_path,  "output")
+        output_dirname = "dynamic_shape_range"
+        output_path = os.path.join(output_parent_path, output_dirname)
+        if os.path.exists(output_path):
+            shutil.rmtree(output_path)
+        os.makedirs(output_path)
+        summary_json_path = os.path.join(output_parent_path,  "{}_summary.json".format(output_dirname))
+        log_path = os.path.join(output_path, "log.txt")
+
+        cmd = "{} --model {} --outputSize {} --dymShape_range {} --output {} --output_dirname {} > \
+            {}".format(TestCommonClass.cmd_prefix, model_path, output_size, dymShape_range, output_parent_path,
+                       output_dirname, log_path)
+        print("run cmd:{}".format(cmd))
+        ret = os.system(cmd)
+        assert ret == 0
+
+        run_count, result_OK_num, shape_status = self.get_dynamic_shape_range_mode_inference_result_info(log_path)
+        assert run_count == len(dymshapes)
+        assert run_count == result_OK_num
+        assert len(dymshapes) == len(shape_status.keys())
+        for k, v in shape_status.items():
+            assert k in dymshapes
+            assert v is True
+
+        shutil.rmtree(output_path)
+        os.remove(summary_json_path)
+
+    def test_pure_inference_normal_dynamic_shape_range_mode_2(self):
+        dymShape_range = "actual_input_1:1~2,3,224-300,224-300"
+        dymshapes = ["actual_input_1:1,3,224,224", "actual_input_1:1,3,224,300", "actual_input_1:1,3,300,224", "actual_input_1:1,3,300,300",
+                     "actual_input_1:2,3,224,224", "actual_input_1:2,3,224,300", "actual_input_1:2,3,300,224", "actual_input_1:2,3,300,300"]
+        model_path = self.get_dynamic_shape_om_path()
+        output_size = 100000
+        output_parent_path = os.path.join(self.model_base_path,  "output")
+        output_dirname = "dynamic_shape_range"
+        output_path = os.path.join(output_parent_path, output_dirname)
+        if os.path.exists(output_path):
+            shutil.rmtree(output_path)
+        os.makedirs(output_path)
+        summary_json_path = os.path.join(output_parent_path,  "{}_summary.json".format(output_dirname))
+        log_path = os.path.join(output_path, "log.txt")
+
+        cmd = "{} --model {} --outputSize {} --dymShape_range {} --output {} --output_dirname {} > \
+            {}".format(TestCommonClass.cmd_prefix, model_path, output_size, dymShape_range, output_parent_path,
+                       output_dirname, log_path)
+        print("run cmd:{}".format(cmd))
+        ret = os.system(cmd)
+        assert ret == 0
+
+        run_count, result_OK_num, shape_status = self.get_dynamic_shape_range_mode_inference_result_info(log_path)
+        assert run_count == len(dymshapes)
+        assert run_count == result_OK_num
+        assert len(dymshapes) == len(shape_status.keys())
+        for k, v in shape_status.items():
+            assert k in dymshapes
+            assert v is True
+
+        shutil.rmtree(output_path)
+        os.remove(summary_json_path)
+
+    def test_pure_inference_normal_dynamic_shape_range_mode_3(self):
+        range_file_parent_path = os.path.join(self.model_base_path,  "input")
+        dymShape_range_file = os.path.join(range_file_parent_path, "dymshape_range.info")
+        with open(dymShape_range_file, 'w') as f:
+            f.write("actual_input_1:1,3,224-300,224-225\n")
+            f.write("actual_input_1:8-9,3,224-300,260-300")
+
+        dymshapes = ["actual_input_1:1,3,224,224", "actual_input_1:1,3,224,225", "actual_input_1:1,3,300,224", "actual_input_1:1,3,300,225",
+                     "actual_input_1:8,3,224,260", "actual_input_1:8,3,224,300", "actual_input_1:8,3,300,260", "actual_input_1:8,3,300,300",
+                     "actual_input_1:9,3,224,260", "actual_input_1:9,3,224,300", "actual_input_1:9,3,300,260", "actual_input_1:9,3,300,300"]
+        model_path = self.get_dynamic_shape_om_path()
+        output_size = 100000
+        output_parent_path = os.path.join(self.model_base_path,  "output")
+        output_dirname = "dynamic_shape_range"
+        output_path = os.path.join(output_parent_path, output_dirname)
+        if os.path.exists(output_path):
+            shutil.rmtree(output_path)
+        os.makedirs(output_path)
+        summary_json_path = os.path.join(output_parent_path,  "{}_summary.json".format(output_dirname))
+        log_path = os.path.join(output_path, "log.txt")
+
+        cmd = "{} --model {} --outputSize {} --dymShape_range {} --output {} --output_dirname {} > \
+            {}".format(TestCommonClass.cmd_prefix, model_path, output_size, dymShape_range_file, output_parent_path,
+                       output_dirname,log_path)
+        print("run cmd:{}".format(cmd))
+        ret = os.system(cmd)
+        assert ret == 0
+
+        run_count, result_OK_num, shape_status = self.get_dynamic_shape_range_mode_inference_result_info(log_path)
+        assert run_count == len(dymshapes)
+        assert run_count == result_OK_num
+        assert len(dymshapes) == len(shape_status.keys())
+
+        for k, v in shape_status.items():
+            assert k in dymshapes
+            assert v is True
+
+        shutil.rmtree(output_path)
+        os.remove(summary_json_path)
+        os.remove(dymShape_range_file)
+
 if __name__ == '__main__':
     pytest.main(['test_infer_resnet50.py', '-vs'])
