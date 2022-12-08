@@ -94,7 +94,7 @@ def get_range_list(ranges):
         info = [ "{}:{}".format(name, s) for s in shape_list ]
         info_list.append(info)
         logger.debug("name:{} shapes:{} info:{}".format(name, shapes, info))
-    
+
     res = [ ';'.join(s) for s in list(itertools.product(*info_list)) ]
     logger.debug("range list:{}".format(res))
     return res
@@ -139,23 +139,21 @@ def dymshape_range_run(args):
     results = []
     log_path = "./dym.log" if args.output is None else args.output + "/dym.log"
     for dymshape in dymshape_list:
-        # get first inargs shape[0] as batchsize
-        batchsize = int(dymshape.split(':')[1].split(",")[0])
         cmd = "rm -rf {};{} {} {}".format(log_path, sys.executable, ' '.join(sys.argv),
-            "--dymShape={} --batchsize={} | tee {}".format(dymshape, batchsize, log_path))
-        result = { "dymshape" : dymshape, "batchsize": batchsize, "cmd": cmd, "result": "Failed", "throughput" : 0 }
+            "--dymShape={}  | tee {}".format(dymshape,  log_path))
+        result = { "dymshape" : dymshape, "cmd": cmd, "result": "Failed", "throughput" : 0 }
         logger.debug("cmd:{}".format(cmd))
         os.system(cmd)
         result["result"], result["throughput"] = get_throughtput_from_log(log_path)
         logger.info("dymshape:{} end run result:{}".format(dymshape, result["result"]))
         results.append(result)
-    
+
     tlist = [ result["throughput"] for result in results if result["result"] == "OK" ]
     logger.info("-----------------dyshape_range Performance Summary------------------")
     logger.info("run_count:{} success_count:{} avg_throughput:{}".format(
         len(results), len(tlist), np.mean(tlist)))
     results.sort(key=lambda x: x['throughput'], reverse=True)
     for i, result in enumerate(results):
-        logger.info("{} dymshape:{} bs:{} result:{} throughput:{}".format(
-            i, result["dymshape"],result["batchsize"], result["result"], result["throughput"]))
+        logger.info("{} dymshape:{}  result:{} throughput:{}".format(
+            i, result["dymshape"], result["result"], result["throughput"]))
     logger.info("------------------------------------------------------")
