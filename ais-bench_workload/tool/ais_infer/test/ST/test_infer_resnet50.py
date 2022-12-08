@@ -855,5 +855,35 @@ class TestClass():
         os.remove(summary_json_path)
         os.remove(dymShape_range_file)
 
+    def test_pure_inference_abnormal_dynamic_shape_range_mode(self):
+        dymShape_range = "actual_input_1:1,3~4,224-300,224"
+        dymshapes = ["actual_input_1:1,3,224,224", "actual_input_1:1,3,300,224", "actual_input_1:1,4,224,224", "actual_input_1:1,4,300,224"]
+        model_path = self.get_dynamic_shape_om_path()
+        output_size = 100000
+        output_parent_path = os.path.join(self.model_base_path,  "output")
+        output_dirname = "dynamic_shape_range"
+        output_path = os.path.join(output_parent_path, output_dirname)
+        if os.path.exists(output_path):
+            shutil.rmtree(output_path)
+        os.makedirs(output_path)
+        summary_json_path = os.path.join(output_parent_path,  "{}_summary.json".format(output_dirname))
+        log_path = os.path.join(output_path, "log.txt")
+        try:
+            cmd = "{} --model {} --outputSize {} --dymShape_range {} --output {} --output_dirname {} > \
+                {}".format(TestCommonClass.cmd_prefix, model_path, output_size, dymShape_range, output_parent_path,
+                        output_dirname, log_path)
+            print("run cmd:{}".format(cmd))
+            ret = os.system(cmd)
+            assert ret != 0
+        except Exception as e:
+            print("some case run failure")
+
+        run_count, result_OK_num, shape_status = self.get_dynamic_shape_range_mode_inference_result_info(log_path)
+        assert run_count == len(dymshapes)
+        assert 2 == result_OK_num
+
+        shutil.rmtree(output_path)
+        os.remove(summary_json_path)
+
 if __name__ == '__main__':
     pytest.main(['test_infer_resnet50.py', '-vs'])
