@@ -124,7 +124,7 @@ class InferSession:
         for feed in feeds:
             if type(feed) is np.ndarray:
                 shapes.append(feed.shape)
-                tensor = self.create_tensor_from_arrays_to_device(feed)
+                tensor = feed
             elif type(feed) in npTypelist:
                 shapes.append([feed.size])
                 tensor = self.create_tensor_from_arrays_to_device(feed)
