@@ -8,6 +8,7 @@ import aclruntime
 import numpy as np
 import pytest
 from test_common import TestCommonClass
+from ais_bench.infer.interface import InferSession
 
 
 class TestClass():
@@ -943,24 +944,15 @@ class TestClass():
             os.remove(log_path)
 
     def test_general_inference_interface_simple(self):
-        # interface
         batch_size = 1
         model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
-        options = aclruntime.session_options()
-        session = aclruntime.InferenceSession(model_path, TestCommonClass.default_device_id, options)
-
+        # interface
+        session = InferSession(TestCommonClass.default_device_id, model_path)
         barray = bytearray(session.get_inputs()[0].realsize)
         ndata = np.frombuffer(barray)
-        tensor = aclruntime.Tensor(ndata)
-        tensor.to_device(TestCommonClass.default_device_id)
-
-        outnames = [ session.get_outputs()[0].name ]
-        feeds = { session.get_inputs()[0].name : tensor}
-
-        outputs = session.run(outnames, feeds)
+        outputs = session.infer([ndata])
         outarray = []
         for out in outputs:
-            out.to_host()
             outarray.append(np.array(out))
 
         # cmd
@@ -993,27 +985,16 @@ class TestClass():
         os.remove(infer_sample_output_path)
 
     def test_general_inference_interface_dynamicshape(self):
-        # interface
         model_path = self.get_dynamic_shape_om_path()
-        options = aclruntime.session_options()
-        session = aclruntime.InferenceSession(model_path, TestCommonClass.default_device_id, options)
-
-        session.set_dynamic_shape("actual_input_1:1,3,224,224")
-        session.set_custom_outsize([10000])
-        barray = bytearray(session.get_inputs()[0].realsize)
-        ndata = np.frombuffer(barray)
-        tensor = aclruntime.Tensor(ndata)
-        tensor.to_device(TestCommonClass.default_device_id)
-
-        outnames = [ session.get_outputs()[0].name ]
-        feeds = { session.get_inputs()[0].name : tensor}
-
-        outputs = session.run(outnames, feeds)
-        print("outputs:", outputs)
+        output_size = 100000
+        # interface
+        session = InferSession(TestCommonClass.default_device_id, model_path)
+        ndata = np.zeros([1,3,224,224], dtype=np.float32)
+        mode = "dymshape"
+        outputs = session.infer([ndata], mode, custom_sizes=output_size)
 
         outarray = []
         for out in outputs:
-            out.to_host()
             outarray.append(np.array(out))
 
         # cmd
@@ -1022,7 +1003,6 @@ class TestClass():
         out.tofile(infer_dynamicshape_output_path)
 
         dym_shape = "actual_input_1:1,3,224,224"
-        output_size = 10000
         output_parent_path = os.path.join(self.model_base_path,  "output")
         output_dirname = "interface_dynamicshape"
         output_path = os.path.join(output_parent_path, output_dirname)
@@ -1045,34 +1025,25 @@ class TestClass():
         os.remove(infer_dynamicshape_output_path)
 
     def test_general_inference_interface_dynamic_dims(self):
-        # interface
         model_path = self.get_dynamic_dim_om_path()
-        options = aclruntime.session_options()
-        session = aclruntime.InferenceSession(model_path, TestCommonClass.default_device_id, options)
-        dynamic_dims = "actual_input_1:1,3,224,224"
-        session.set_dynamic_dims(dynamic_dims)
-        barray = bytearray(session.get_inputs()[0].realsize)
-        ndata = np.frombuffer(barray)
+        # interface
+        device_id = 0
+        session = InferSession(device_id, model_path)
 
-        tensor = aclruntime.Tensor(ndata)
-        tensor.to_device(TestCommonClass.default_device_id)
+        ndata = np.zeros([1,3,224,224], dtype=np.float32)
 
-        outnames = [ session.get_outputs()[0].name ]
-        feeds = { session.get_inputs()[0].name : tensor}
-
-        outputs = session.run(outnames, feeds)
-
+        mode = "dymdims"
+        outputs = session.infer([ndata], mode)
         outarray = []
         for out in outputs:
-            out.to_host()
             outarray.append(np.array(out))
 
         # cmd
+        dynamic_dims = "actual_input_1:1,3,224,224"
         infer_dynamic_dims_output_path = os.path.join(self.model_base_path,  "output", "infer_dynamic_dims_output.bin")
         out = np.array(outarray)
         out.tofile(infer_dynamic_dims_output_path)
 
-        model_path = self.get_dynamic_dim_om_path()
         output_parent_path = os.path.join(self.model_base_path,  "output")
         output_dirname = "interface_dynamic_dims"
         output_path = os.path.join(output_parent_path, output_dirname)
@@ -1094,106 +1065,6 @@ class TestClass():
         shutil.rmtree(output_path)
         os.remove(summary_path)
         os.remove(infer_dynamic_dims_output_path)
-
-    def test_general_inference_interface_dynamic_hw(self):
-        # interface
-        model_path = self.get_dynamic_hw_om_path()
-        options = aclruntime.session_options()
-        session = aclruntime.InferenceSession(model_path, TestCommonClass.default_device_id, options)
-
-        session.set_dynamic_hw(224,224)
-        barray = bytearray(session.get_inputs()[0].realsize)
-        ndata = np.frombuffer(barray)
-        tensor = aclruntime.Tensor(ndata)
-        tensor.to_device(TestCommonClass.default_device_id)
-
-        outnames = [ session.get_outputs()[0].name ]
-        feeds = { session.get_inputs()[0].name : tensor}
-
-        outputs = session.run(outnames, feeds)
-        outarray = []
-        for out in outputs:
-            out.to_host()
-            outarray.append(np.array(out))
-
-        # cmd
-        infer_dynamic_hw_output_path = os.path.join(self.model_base_path,  "output", "infer_dynamic_hw_output.bin")
-        out = np.array(outarray)
-        out.tofile(infer_dynamic_hw_output_path)
-        dym_hw = "224,224"
-        output_parent_path = os.path.join(self.model_base_path,  "output")
-        output_dirname = "interface_dynamic_hw"
-        output_path = os.path.join(output_parent_path, output_dirname)
-        summary_path = os.path.join(output_parent_path,  "{}_summary.json".format(output_dirname))
-        if os.path.exists(output_path):
-            shutil.rmtree(output_path)
-        os.makedirs(output_path)
-
-        cmd = "{} --model {} --device {} --dymHW {} --output {} --output_dirname {} \
-            --outfmt BIN".format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id,
-                                 dym_hw, output_parent_path, output_dirname)
-        print("run cmd:{}".format(cmd))
-        ret = os.system(cmd)
-        assert ret == 0
-        output_bin_file_path = os.path.join(output_path, "pure_infer_data_0.bin")
-
-        # compare bin file
-        assert filecmp.cmp(infer_dynamic_hw_output_path, output_bin_file_path)
-
-        shutil.rmtree(output_path)
-        os.remove(summary_path)
-        os.remove(infer_dynamic_hw_output_path)
-
-    def test_general_inference_interface_dynamic_batchsize(self):
-        dys_batch_size = 2
-        # interface
-        model_path = self.get_dynamic_batch_om_path()
-        options = aclruntime.session_options()
-        session = aclruntime.InferenceSession(model_path, TestCommonClass.default_device_id, options)
-
-        session.set_dynamic_batchsize(dys_batch_size)
-        barray = bytearray(session.get_inputs()[0].realsize)
-        ndata = np.frombuffer(barray)
-        tensor = aclruntime.Tensor(ndata)
-        tensor.to_device(TestCommonClass.default_device_id)
-
-        outnames = [ session.get_outputs()[0].name ]
-        feeds = { session.get_inputs()[0].name : tensor}
-
-        outputs = session.run(outnames, feeds)
-
-        outarray = []
-        for out in outputs:
-            out.to_host()
-            outarray.append(np.array(out))
-
-        # cmd
-        infer_dynamic_batchsize_output_path = os.path.join(self.model_base_path,  "output", "infer_dynamic_batchsize_output.bin")
-        out = np.array(outarray)
-        out.tofile(infer_dynamic_batchsize_output_path)
-
-        output_parent_path = os.path.join(self.model_base_path,  "output")
-        output_dirname = "interface_dynamic_batchsize"
-        output_path = os.path.join(output_parent_path, output_dirname)
-        summary_path = os.path.join(output_parent_path,  "{}_summary.json".format(output_dirname))
-        if os.path.exists(output_path):
-            shutil.rmtree(output_path)
-        os.makedirs(output_path)
-
-        cmd = "{} --model {} --device {} --dymBatch {} --output {} --output_dirname {} \
-            --outfmt BIN".format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id,
-            dys_batch_size, output_parent_path, output_dirname)
-        print("run cmd:{}".format(cmd))
-        ret = os.system(cmd)
-        assert ret == 0
-        output_bin_file_path = os.path.join(output_path, "pure_infer_data_0.bin")
-
-        # compare bin file
-        assert filecmp.cmp(infer_dynamic_batchsize_output_path, output_bin_file_path)
-
-        shutil.rmtree(output_path)
-        os.remove(summary_path)
-        os.remove(infer_dynamic_batchsize_output_path)
 
 if __name__ == '__main__':
     pytest.main(['test_infer_resnet50.py', '-vs'])
