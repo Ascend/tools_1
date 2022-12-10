@@ -8,6 +8,7 @@ import aclruntime
 import numpy as np
 import pytest
 from test_common import TestCommonClass
+from ais_bench.infer.interface import InferSession
 
 
 class TestClass():
@@ -884,6 +885,186 @@ class TestClass():
 
         shutil.rmtree(output_path)
         os.remove(summary_json_path)
+
+    def get_model_batchsize_from_inference_result(self, log_path):
+        batch_size = 0
+        if os.path.exists(log_path) is False:
+            return batch_size
+
+        key_words = "1000*batchsize"
+        with open(log_path) as f:
+            for line in f:
+                if key_words not in line:
+                    continue
+
+                sub_str = line.split('/')[0].split('(')[1].strip(')')
+                cur_batchsize = int(sub_str)
+                batch_size = int(cur_batchsize)
+                break
+        return batch_size
+
+    def test_pure_inference_batchsize(self):
+        batch_sizes = [1, 2, 4, 8, 16]
+        para_batch_size = 16
+
+        output_parent_path = os.path.join(self.model_base_path,  "output")
+
+        output_paths = []
+        summary_paths = []
+        log_paths = []
+
+        for i, batch_size in enumerate(batch_sizes):
+            model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
+            output_dirname = "batchsize_{}".format(i)
+            output_path = os.path.join(output_parent_path, output_dirname)
+            summary_json_path = os.path.join(output_parent_path,  "{}_summary.json".format(output_dirname))
+            log_path = os.path.join(output_parent_path, "log_{}.txt".format(i))
+            if os.path.exists(output_path):
+                shutil.rmtree(output_path)
+            os.makedirs(output_path)
+
+            cmd = "{} --model {} --batchsize {} --output {} --output_dirname {} > {}".format(TestCommonClass.cmd_prefix,
+                model_path, para_batch_size, output_parent_path, output_dirname, log_path)
+            print("run cmd:{}".format(cmd))
+            ret = os.system(cmd)
+            assert ret == 0
+            output_paths.append(output_path)
+            summary_paths.append(summary_json_path)
+            log_paths.append(log_path)
+
+            batch_size_from_reference_result = self.get_model_batchsize_from_inference_result(log_path)
+            assert batch_size_from_reference_result > 0
+            assert batch_size_from_reference_result == para_batch_size
+
+        for output_path in output_paths:
+            shutil.rmtree(output_path)
+        for summary_path in summary_paths:
+            os.remove(summary_path)
+        for log_path in log_paths:
+            os.remove(log_path)
+
+    def test_general_inference_interface_simple(self):
+        batch_size = 1
+        model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
+        # interface
+        session = InferSession(TestCommonClass.default_device_id, model_path)
+        barray = bytearray(session.get_inputs()[0].realsize)
+        ndata = np.frombuffer(barray)
+        outputs = session.infer([ndata])
+        outarray = []
+        for out in outputs:
+            outarray.append(np.array(out))
+
+        # cmd
+        input_path = os.path.join(self.model_base_path,  "input", "interface_simple.npy")
+        np.save(input_path, ndata)
+        infer_sample_output_path = os.path.join(self.model_base_path,  "output", "infer_sample_output.bin")
+        out = np.array(outarray)
+        out.tofile(infer_sample_output_path)
+
+        output_parent_path = os.path.join(self.model_base_path,  "output")
+        output_dirname = "interface_simple"
+        output_path = os.path.join(output_parent_path, output_dirname)
+        summary_path = os.path.join(output_parent_path,  "{}_summary.json".format(output_dirname))
+        if os.path.exists(output_path):
+            shutil.rmtree(output_path)
+        os.makedirs(output_path)
+        cmd = "{} --model {} --input {} --output {} --output_dirname {} --outfmt BIN".format(TestCommonClass.cmd_prefix,
+                    model_path, input_path, output_parent_path, output_dirname)
+        print("run cmd:{}".format(cmd))
+        ret = os.system(cmd)
+        assert ret == 0
+        output_npy_file_path = os.path.join(output_path, "{}_0.bin".format(output_dirname))
+
+        # compare bin file
+        assert filecmp.cmp(infer_sample_output_path, output_npy_file_path)
+
+        shutil.rmtree(output_path)
+        os.remove(summary_path)
+        os.remove(input_path)
+        os.remove(infer_sample_output_path)
+
+    def test_general_inference_interface_dynamicshape(self):
+        model_path = self.get_dynamic_shape_om_path()
+        output_size = 100000
+        # interface
+        session = InferSession(TestCommonClass.default_device_id, model_path)
+        ndata = np.zeros([1,3,224,224], dtype=np.float32)
+        mode = "dymshape"
+        outputs = session.infer([ndata], mode, custom_sizes=output_size)
+
+        outarray = []
+        for out in outputs:
+            outarray.append(np.array(out))
+
+        # cmd
+        infer_dynamicshape_output_path = os.path.join(self.model_base_path,  "output", "infer_dynamicshape_output.bin")
+        out = np.array(outarray)
+        out.tofile(infer_dynamicshape_output_path)
+
+        dym_shape = "actual_input_1:1,3,224,224"
+        output_parent_path = os.path.join(self.model_base_path,  "output")
+        output_dirname = "interface_dynamicshape"
+        output_path = os.path.join(output_parent_path, output_dirname)
+        summary_path = os.path.join(output_parent_path,  "{}_summary.json".format(output_dirname))
+        if os.path.exists(output_path):
+            shutil.rmtree(output_path)
+        os.makedirs(output_path)
+        cmd = "{} --model {} --outputSize {} --dymShape {} --output {} --output_dirname {} --outfmt BIN".format(TestCommonClass.cmd_prefix,
+                    model_path,  output_size, dym_shape, output_parent_path, output_dirname)
+        print("run cmd:{}".format(cmd))
+        ret = os.system(cmd)
+        assert ret == 0
+        output_bin_file_path = os.path.join(output_path, "pure_infer_data_0.bin")
+
+        # compare bin file
+        assert filecmp.cmp(infer_dynamicshape_output_path, output_bin_file_path)
+
+        shutil.rmtree(output_path)
+        os.remove(summary_path)
+        os.remove(infer_dynamicshape_output_path)
+
+    def test_general_inference_interface_dynamic_dims(self):
+        model_path = self.get_dynamic_dim_om_path()
+        # interface
+        device_id = 0
+        session = InferSession(device_id, model_path)
+
+        ndata = np.zeros([1,3,224,224], dtype=np.float32)
+
+        mode = "dymdims"
+        outputs = session.infer([ndata], mode)
+        outarray = []
+        for out in outputs:
+            outarray.append(np.array(out))
+
+        # cmd
+        dynamic_dims = "actual_input_1:1,3,224,224"
+        infer_dynamic_dims_output_path = os.path.join(self.model_base_path,  "output", "infer_dynamic_dims_output.bin")
+        out = np.array(outarray)
+        out.tofile(infer_dynamic_dims_output_path)
+
+        output_parent_path = os.path.join(self.model_base_path,  "output")
+        output_dirname = "interface_dynamic_dims"
+        output_path = os.path.join(output_parent_path, output_dirname)
+        summary_path = os.path.join(output_parent_path,  "{}_summary.json".format(output_dirname))
+        if os.path.exists(output_path):
+            shutil.rmtree(output_path)
+        os.makedirs(output_path)
+        cmd = "{} --model {} --device {} --dymDims {} --output {} --output_dirname {} \
+            --outfmt BIN".format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id,
+                                 dynamic_dims, output_parent_path, output_dirname)
+        print("run cmd:{}".format(cmd))
+        ret = os.system(cmd)
+        assert ret == 0
+        output_bin_file_path = os.path.join(output_path, "pure_infer_data_0.bin")
+
+        # compare bin file
+        assert filecmp.cmp(infer_dynamic_dims_output_path, output_bin_file_path)
+
+        shutil.rmtree(output_path)
+        os.remove(summary_path)
+        os.remove(infer_dynamic_dims_output_path)
 
 if __name__ == '__main__':
     pytest.main(['test_infer_resnet50.py', '-vs'])
