@@ -328,7 +328,6 @@ tensor:
   - geometric_
   - geqrf
   - ger
-  - get_device
   - greater
   - greater_
   - gt
@@ -642,7 +641,6 @@ torch:
   - blackman_window
   - block_diag
   - bmm
-  - broadcast_tensors
   - broadcast_to
   - cartesian_prod
   - cat
@@ -880,14 +878,12 @@ torch:
   - negative_
   - nextafter
   - nonzero
-  - norm
   - norm_except_dim
   - normal
   - not_equal
   - nuclear_norm
   - ones_like
   - pairwise_distance
-  - ones
   - pdist
   - pinverse
   - pixel_shuffle
@@ -961,7 +957,6 @@ torch:
   - stack
   - std
   - std_mean
-  - stft
   - sub
   - subtract
   - sum

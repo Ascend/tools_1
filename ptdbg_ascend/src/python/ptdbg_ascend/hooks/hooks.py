@@ -55,7 +55,9 @@ def set_dump_switch(switch=None):
 
 
 def get_dump_switch():
-    assert "PYTORCH_DUMP_SWITCH" in os.environ, "Please set dump switch for ptdbg_ascend tools."
+    if "PYTORCH_DUMP_SWITCH" not in os.environ:
+        return False
+
     switch = os.environ.get("PYTORCH_DUMP_SWITCH")
     if switch == "ON":
         return True
