@@ -134,8 +134,8 @@ export NPU_HOST_LIB=${install_path}/runtime/lib64/stub
 └── tmp # tfdbg dump data directory if the -m option specifies a .pb model.
 ```
 
-### Analysis of comparison results
-The comparison result is in the file result_2021211214657.csv, this tool only automates the inference scenario of precision comparison, and the meaning of the comparison result is identical to that of the basic precision comparison tool. The meaning of each field can visit:
+### Comparison Result Analysis
+The comparison result is stored in the result_2021211214657.csv file. This tool only automates the inference scenarios of accuracy comparison. The meaning of each field in the comparison result file is the same as that of the basic Model Accuracy Analyzer. For details, click the following link:
 https://www.hiascend.com/document/detail/en/CANNCommunityEdition/60RC1alphaX/developmenttools/devtool/atlasaccuracy_16_0039.html
 
 ### Command-line Options
