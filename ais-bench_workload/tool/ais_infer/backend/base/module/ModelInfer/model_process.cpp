@@ -1134,7 +1134,7 @@ Result SaveTensorMemoryToFile(const aclTensorDesc *desc, std::string &prefixName
     }
     std::string filename = prefixName + "_format_" + std::to_string(format) + "_dtype_" + std::to_string(dtype) + "_shape_" + shapestr + ".bin";
     INFO_LOG("exception_cb hostaddr:%p devaddr:%p len:%d write to filename:%s",
-            hostaddr, devaddr, len, filename.c_str());
+             hostaddr, devaddr, len, filename.c_str());
     ofstream outFile(filename, ios::out | ios::binary);
     outFile.write((char*)hostaddr, len);
     return SUCCESS;
@@ -1176,7 +1176,7 @@ void callback(aclrtExceptionInfo *exceptionInfo)
     for (size_t i = 0; i < inputCnt; ++i) {
         const aclTensorDesc *desc = aclGetTensorDescByIndex(inputDesc, i);
         std::string prefix_filename = "exception_cb_index_" + std::to_string(index) + \
-            + "_input_" + std::to_string(i);
+            "_input_" + std::to_string(i);
         if (SaveTensorMemoryToFile(desc, prefix_filename) != SUCCESS) {
             WARN_LOG("exception_cb input_%d save failed", i);
             break;
@@ -1185,7 +1185,7 @@ void callback(aclrtExceptionInfo *exceptionInfo)
     for (size_t i = 0; i < outputCnt; ++i) {
         const aclTensorDesc *desc = aclGetTensorDescByIndex(outputDesc, i);
         std::string prefix_filename = "exception_cb_index_" + std::to_string(index) + \
-            + "_output_" + std::to_string(i);
+            "_output_" + std::to_string(i);
         if (SaveTensorMemoryToFile(desc, prefix_filename) != SUCCESS){
             WARN_LOG("exception_cb input_%d save failed", i);
             break;
