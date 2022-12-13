@@ -3,7 +3,7 @@
 ### Overview
 
 This readme describes the **main.py** tool, or One-Click Accuracy Analyzer, for inference scenarios. This tool enables one-click network-wide accuracy analysis of TensorFlow and ONNX models. You only need to prepare the original model, offline model equivalent, and model input file. Beware that the offline model must be an .om model converted using the Ascend Tensor Compiler (ATC) tool, and the .bin input file must meet the input requirements of the model (multi-input models are supported).  
-For details about the usage restrictions of the tool, visit https://support.huaweicloud.com/intl/en-us/tg-cannApplicationDev330/atlasaccuracy_16_0011.html.
+For details about the usage restrictions of the tool, visit https://www.hiascend.com/document/detail/en/CANNCommunityEdition/60RC1alphaX/developmenttools/devtool/atlasaccuracy_16_0035.html.
 
 ### Environment Setup
 
@@ -133,6 +133,10 @@ export NPU_HOST_LIB=${install_path}/runtime/lib64/stub
 ├── result_2021211214657.csv
 └── tmp # tfdbg dump data directory if the -m option specifies a .pb model.
 ```
+
+### Analysis of comparison results
+The comparison result is in the file result_2021211214657.csv, this tool only automates the inference scenario of precision comparison, and the meaning of the comparison result is identical to that of the basic precision comparison tool. The meaning of each field can visit:
+https://www.hiascend.com/document/detail/en/CANNCommunityEdition/60RC1alphaX/developmenttools/devtool/atlasaccuracy_16_0039.html
 
 ### Command-line Options
 
