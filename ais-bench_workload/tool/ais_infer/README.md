@@ -288,9 +288,6 @@ actual_input_1:8-9,3,224-300,260-300
   msprof_cmd="{} --output={}/profiler --application=\"{}\" --model-execution=on --sys-hardware-mem=on --sys-cpu-profiling=off --sys-profiling=off --sys-pid-profiling=off --dvpp-profiling=on --runtime-api=on --task-time=on --aicpu=on".format(
           msprof_bin, args.output, cmd)
   ```
-
-  
-
 + acl_json_path 优先级高于 profiler dump。 同时设置时以acl_json_path为准
 
 + profiler参数和dump参数 必须要增加output参数。指示输出路径。
