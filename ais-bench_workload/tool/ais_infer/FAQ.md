@@ -10,3 +10,14 @@
 # 首先搜索src目录下的所有的JPEG的文件  然后选取前100个 然后通过软链接的方式链接dst文件夹中
 find ./src -type f -name "*.JPEG" | head -n 100 | xargs -i ln -sf {} ./dst
 ```
+
+2. 环境安装低版本aclruntime, 推理工具运行时使用的是高版本的ais_bench或ais_infer.py，会提示aclruntime版本匹配问题
+
+```bash
+ais_infer#  python3 ais_infer.py --model /home/lhb/code/testdata/resnet50/model/pth_resnet50_bs1.om --loop 2
+[WARNING] aclruntime version:0.0.1 is lower please update aclruntime follow any one method
+[WARNING] 1. visit https://gitee.com/ascend/tools/tree/master/ais-bench_workload/tool/ais_infer to install
+[WARNING] 2. or run cmd: pip3  install -v --force-reinstall 'git+https://gitee.com/ascend/tools.git#egg=aclruntime&subdirectory=ais-bench_workload/tool/ais_infer/backend' to install
+```
+
+解决方法：安装高版本的aclruntime
