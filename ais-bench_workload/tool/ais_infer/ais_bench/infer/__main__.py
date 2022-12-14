@@ -320,4 +320,4 @@ if __name__ == "__main__":
         dymshape_range_run(args)
         exit(0)
 
-    main()
+    main(args)
