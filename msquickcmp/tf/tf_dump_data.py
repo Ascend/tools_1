@@ -87,7 +87,7 @@ class TfDumpData(DumpData):
 
     def _run_model_tf2x(self, outputs_tensor):
         tf2x_runner_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../", "tf_debug_runner.py")
-        cmd = '%s %s -m %s -i %s --output-nodes "%s" -o %s' \
+        cmd = '%s %s -m %s -i "%s" --output-nodes "%s" -o %s' \
               % (sys.executable, tf2x_runner_path, self.args.model_path, self.input_path,
                  ";".join(outputs_tensor), self.tf_dump_data_dir)
         for _, tensor_name in enumerate(outputs_tensor):
@@ -98,7 +98,7 @@ class TfDumpData(DumpData):
 
     def _run_model_tf1x(self, outputs_tensor):
         tf_debug_runner_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../", "tf_debug_runner.py")
-        cmd = '%s %s -m %s -i %s --output-nodes %s -o %s' \
+        cmd = '%s %s -m %s -i "%s" --output-nodes "%s" -o %s' \
               % (sys.executable, tf_debug_runner_path, self.args.model_path, self.input_path,
                  ";".join(outputs_tensor), os.path.join(self.tmp_dir, "tf_dbg"))
         for _, tensor_name in enumerate(outputs_tensor):
