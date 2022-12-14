@@ -11,13 +11,17 @@
 find ./src -type f -name "*.JPEG" | head -n 100 | xargs -i ln -sf {} ./dst
 ```
 
-2. 环境安装低版本aclruntime, 推理工具运行时使用的是高版本的ais_bench或ais_infer.py，会提示aclruntime版本匹配问题
-
+## 2. 推理工具运行时，会出现aclruntime版本不匹配告警
+**故障现象**
+运行推理工具进行推理时屏幕输出如下告警：
 ```bash
 ais_infer#  python3 ais_infer.py --model /home/lhb/code/testdata/resnet50/model/pth_resnet50_bs1.om --loop 2
 [WARNING] aclruntime version:0.0.1 is lower please update aclruntime follow any one method
 [WARNING] 1. visit https://gitee.com/ascend/tools/tree/master/ais-bench_workload/tool/ais_infer to install
 [WARNING] 2. or run cmd: pip3  install -v --force-reinstall 'git+https://gitee.com/ascend/tools.git#egg=aclruntime&subdirectory=ais-bench_workload/tool/ais_infer/backend' to install
 ```
+**故障原因：**  
+环境安装低版本aclruntime, 推理工具运行时使用的是高版本的ais_bench或ais_infer.py
 
-解决方法：安装高版本的aclruntime
+**处理步骤：**  
+安装与ais_bench或ais_infer.py匹配的高版本的aclruntime  

@@ -9,7 +9,7 @@
 已安装开发运行环境的昇腾AI推理设备。需要安装python3,  不支持python2
 
 ## 一键安装
-安装aclruntime包。要求安装过程中下载相关依赖时网络畅通  
+安装aclruntime包。要求网络畅通  
 pip3  install -v --force-reinstall 'git+https://gitee.com/ascend/tools.git#egg=aclruntime&subdirectory=ais-bench_workload/tool/ais_infer/backend'
 
 安装ais_bench推理程序包  
