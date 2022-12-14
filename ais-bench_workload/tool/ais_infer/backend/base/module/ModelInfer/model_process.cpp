@@ -1094,10 +1094,10 @@ Result GetDescShape(const aclTensorDesc *desc, std::vector<int64_t>& shape)
 Result GetDescShapeStr(const aclTensorDesc *desc, std::string &shapestr) {
     std::vector<int64_t> shape;
     Result result = GetDescShape(desc, shape);
-    if (result != SUCCESS){
+    if (result != SUCCESS) {
         return FAILED;
     }
-    for (auto val : shape){
+    for (auto val : shape) {
         shapestr += "_" + std::to_string(val);
     }
     return SUCCESS;
@@ -1132,10 +1132,10 @@ Result SaveTensorMemoryToFile(const aclTensorDesc *desc, std::string &prefixName
             ret, hostaddr, devaddr, len);
         return FAILED;
     }
-    std::string filename = prefixName + "_format_" + std::to_string(format) + "_dtype_" + std::to_string(dtype) + "_shape_" + shapestr + ".bin";
+    std::string fileName = prefixName + "_format_" + std::to_string(format) + "_dtype_" + std::to_string(dtype) + "_shape_" + shapestr + ".bin";
     INFO_LOG("exception_cb hostaddr:%p devaddr:%p len:%d write to filename:%s",
-             hostaddr, devaddr, len, filename.c_str());
-    ofstream outFile(filename, ios::out | ios::binary);
+             hostaddr, devaddr, len, fileName.c_str());
+    ofstream outFile(fileName, ios::out | ios::binary);
     outFile.write((char*)hostaddr, len);
     return SUCCESS;
 }
