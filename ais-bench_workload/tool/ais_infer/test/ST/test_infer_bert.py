@@ -333,5 +333,58 @@ class TestClass():
         for summary_path in summary_paths:
             os.remove(summary_path)
 
+    def test_general_inference_abnormal_bad_input(self):
+        # Delete the directory with the same name to avoid test interference
+        input_ids_path = os.path.join(self.model_base_path, "input", "input_ids")
+        input_mask_path = os.path.join(self.model_base_path, "input", "input_mask")
+        segment_ids_path = os.path.join(self.model_base_path, "input", "segment_ids")
+        if os.path.exists(input_ids_path):
+            shutil.rmtree(input_ids_path)
+        if os.path.exists(input_mask_path):
+            shutil.rmtree(input_mask_path)
+        if os.path.exists(segment_ids_path):
+            shutil.rmtree(segment_ids_path)
+        os.makedirs(input_ids_path)
+        os.makedirs(input_mask_path)
+        os.makedirs(segment_ids_path)
+
+        batch_size = 1
+        static_model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
+        input_size = TestCommonClass.get_model_inputs_size(static_model_path)[0]
+        input_ids_dir_path = TestCommonClass.get_inputs_path(
+            input_size, input_ids_path, self.output_file_num, "random")
+        input_mask_dir_path = TestCommonClass.get_inputs_path(
+            input_size,  input_mask_path, self.output_file_num, "random")
+        segment_ids_dir_path = TestCommonClass.get_inputs_path(
+            input_size, segment_ids_path, self.output_file_num, "random")
+        input_paths = []
+        input_paths.append(input_ids_dir_path)
+        input_paths.append(input_mask_dir_path)
+        input_paths.append(segment_ids_dir_path)
+        input_path = ','.join(input_paths)
+        model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
+
+        cmd = "{} --model {} --device {} --input {} ".format(
+            TestCommonClass.cmd_prefix, model_path,
+            TestCommonClass.default_device_id, input_path)
+        print("run cmd:{}".format(cmd))
+        ret = os.system(cmd)
+        assert ret != 0
+
+        curr_path = os.path.dirname(os.path.abspath(__file__))
+        test_sh_path = os.path.join(curr_path, "../")
+        i = 0
+        bin_paths = []
+        for root, dirs, files in os.walk(test_sh_path):
+            for file in files:
+                if "exception_cb_index" in file:
+                    i += 1
+                    bin_paths.append(os.path.join(test_sh_path, file))
+
+        assert len(bin_paths) == 4
+        for bin_file in bin_paths:
+            os.remove(bin_file)
+
+
 if __name__ == '__main__':
     pytest.main(['test_infer_bert.py', '-vs'])
