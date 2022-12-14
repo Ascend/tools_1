@@ -83,7 +83,7 @@ class TestClass:
         """
         model_path = TestCommonClass.get_model_static_om_path(1, self.model_name)
         loops = [3, 300]
-        warmup_num = 5
+        warmup_num = 1
         log_path = os.path.join(TestCommonClass.base_path, "log.txt")
         for _, loop_num in enumerate(loops):
             cmd = "{} --model {} --device {} --loop {} --debug True > {}".format(TestCommonClass.cmd_prefix, model_path,

@@ -18,7 +18,7 @@ class ListInfo(object):
 class Summary(object):
     def __init__(self):
         self.reset()
-        self.infodict = { "filesinfo" : {} }
+        self.infodict = {"filesinfo": {}}
 
     def reset(self):
         self.h2d_latency_list = []
@@ -39,13 +39,14 @@ class Summary(object):
 
     def add_sample_id_infiles(self, sample_id, infiles):
         if self.infodict["filesinfo"].get(sample_id) == None:
-            self.infodict["filesinfo"][sample_id] = {"infiles": [], "outfiles":[] }
+            self.infodict["filesinfo"][sample_id] = {"infiles": [], "outfiles": []}
         if len(self.infodict["filesinfo"][sample_id]["infiles"]) == 0:
             for files in infiles:
                 self.infodict["filesinfo"][sample_id]["infiles"].append(files)
+
     def append_sample_id_outfile(self, sample_id, outfile):
         if self.infodict["filesinfo"].get(sample_id) == None:
-            self.infodict["filesinfo"][sample_id] = {"infiles": [], "outfiles":[] }
+            self.infodict["filesinfo"][sample_id] = {"infiles": [], "outfiles": []}
         self.infodict["filesinfo"][sample_id]["outfiles"].append(outfile)
 
     def add_args(self, args):
@@ -69,8 +70,10 @@ class Summary(object):
         self.infodict['D2H_latency'] = {"min": d2h_latency.min, "max": d2h_latency.max, "mean": d2h_latency.mean,
                                "median": d2h_latency.median, "percentile({}%)".format(scale): d2h_latency.percentile}
         self.infodict['throughput'] = throughput
+        self.infodict['npu_compute_time_list'] = self.npu_compute_time_list
+        self.infodict['pid'] = os.getpid()
 
-        #logger.debug("infer finish (ms) sumary:{}".format(self.infodict))
+        # logger.debug("infer finish (ms) sumary:{}".format(self.infodict))
         logger.info("-----------------Performance Summary------------------")
         logger.info("H2D_latency (ms): min = {0}, max = {1}, mean = {2}, median = {3}, percentile({4}%) = {5}"
                     .format(h2d_latency.min, h2d_latency.max, h2d_latency.mean, h2d_latency.median, scale,
@@ -88,5 +91,6 @@ class Summary(object):
         if output_prefix is not None:
             with open(os.path.join(output_prefix, "sumary.json"), 'w') as f:
                 json.dump(self.infodict, f)
+
 
 summary = Summary()

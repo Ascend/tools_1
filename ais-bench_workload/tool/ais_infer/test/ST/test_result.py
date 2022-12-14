@@ -36,7 +36,7 @@ class TestClass:
         """
         batch size 1,2,4,8
         """
-        warmup_num = 5
+        warmup_num = 1
         output_file_num = 17
         batch_list = [1, 2, 4, 8]
         output_path = os.path.join(TestCommonClass.base_path, "tmp")
@@ -82,7 +82,7 @@ class TestClass:
 
     def test_general_inference_normal_dynamic_batch(self):
         batch_size = 1
-        warmup_num = 5
+        warmup_num = 1
         output_file_num = 17
         exclude_file = "sumary.json"
         result_paths = []

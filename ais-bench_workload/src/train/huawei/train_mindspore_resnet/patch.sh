@@ -58,6 +58,12 @@ get_git_info(){
         commitid="b68b6bfa919465567d89bc7fdcf6d0e63967d5aa"
         git_url="https://gitee.com/mindspore/models.git"
         modelzoo_sub_dir="models/official/cv/resnet"
+    elif [ "$branch_args" == "r1.9" ];then
+        branch="master"
+        patch_file_name="r1.9"
+        commitid="04c88140d602b29423855a1a8d0dfe5a450c0f10"
+        git_url="https://gitee.com/mindspore/models.git"
+        modelzoo_sub_dir="models/official/cv/resnet"
     else
         echo "bad parameters : $1"
         return $ret_error

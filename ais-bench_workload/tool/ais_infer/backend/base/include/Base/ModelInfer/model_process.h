@@ -199,9 +199,9 @@ public:
     Result GetInTensorDesc(size_t i, std::string& name, int& datatype, size_t& format, std::vector<int64_t>& shape, size_t& size);
     Result GetOutTensorDesc(size_t i, std::string& name, int& datatype, size_t& format, std::vector<int64_t>& shape, size_t& size);
 
-    int GetOutTensorLen(size_t i, bool is_dymshape, float sizeRatio);
+    int GetOutTensorLen(size_t i, bool is_dymshape);
 
-    Result GetCurOutputShape(size_t index, std::vector<int64_t>& shape);
+    Result GetCurOutputShape(size_t index, bool is_dymshape, std::vector<int64_t>& shape);
 
     Result GetMaxDynamicHWSize(size_t &outsize);
 

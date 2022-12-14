@@ -40,7 +40,7 @@ class H5Data(object):
         return np_data
 
     def _save(self, data):
-        path = os.path.join(cfg.DUMP_DECODE_DIR, self.name)
+        path = os.path.join(cfg.PT_DUMP_DECODE_DIR, self.name)
         np.save(path, data)
 
 
@@ -181,10 +181,10 @@ class H5Util(object):
                 self._list_tensors(h5[item], idx + 1, item_name)
 
     def _dump_numpy(self, tensor_name, tensor):
-        if not os.path.exists(cfg.DUMP_DECODE_DIR):
-            util.create_dir(cfg.DUMP_DECODE_DIR)
+        if not os.path.exists(cfg.PT_DUMP_DECODE_DIR):
+            util.create_dir(cfg.PT_DUMP_DECODE_DIR)
         file_name = tensor_name.replace('/', '_').strip('_') + '.npy'
-        file_path = os.path.join(cfg.DUMP_DECODE_DIR, file_name)
+        file_path = os.path.join(cfg.PT_DUMP_DECODE_DIR, file_name)
         self.log("Dump file: %s" % file_path)
         np.save(file_path, tensor)
         return file_path

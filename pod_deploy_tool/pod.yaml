@@ -43,7 +43,6 @@ spec:
     hostNetwork: false
     restartPolicy: OnFailure
     schedulerName: default-scheduler
-    serviceAccount: default
     serviceAccountName: default
     terminationGracePeriodSeconds: 30
     tolerations:

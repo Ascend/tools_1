@@ -64,7 +64,7 @@ APP_ERROR ModelInferenceProcessor::Init(const std::string& modelPath, std::share
 
     SETLOGLEVEL(options_->log_level);
 
-    // initResource 
+    // initResource
     CHECK_RET_EQ(processModel.LoadModelFromFile(modelPath), SUCCESS);
 
     CHECK_RET_EQ(processModel.CreateDesc(), SUCCESS);
@@ -154,21 +154,18 @@ APP_ERROR ModelInferenceProcessor::AddOutTensors(std::vector<MemoryData>& output
     bool is_dymshape = (dynamicInfo_.dynamicType == DYNAMIC_SHAPE ? true : false);
     uint64_t dymbatch_size = (dynamicInfo_.dynamicType == DYNAMIC_BATCH ? dynamicInfo_.dyBatch.batchSize : 0);
     int realLen;
-    // 获取输出tensor实际size 对于动态分档场景 需要获取size的实际大小。根据第一个入参的size/realsize比值获取
-    // 对于动态shape模型 可以直接获取len
-    float sizeRatio = (float)modelDesc_.inTensorsDesc[0].size / modelDesc_.inTensorsDesc[0].realsize;
     for (const auto& name : outputNames) {
         auto index = modelDesc_.outnames2Index[name];
 
         std::vector<int64_t> i64shape;
         std::vector<uint32_t> u32shape;
-        realLen = processModel.GetOutTensorLen(index, is_dymshape, sizeRatio);
-        if (processModel.GetCurOutputShape(index, i64shape) != SUCCESS){
-            // 针对于动态shape场景 无法获取真实的输出shape 先填写一个一维的值 以便后续内存可以导出
+        realLen = processModel.GetOutTensorLen(index, is_dymshape);
+        if (processModel.GetCurOutputShape(index, is_dymshape, i64shape) != SUCCESS) {
+            // 针对于动态shape场景 如果无法获取真实的输出shape 先填写一个一维的值 以便后续内存可以导出
             i64shape.push_back(realLen / aclDataTypeSize(static_cast<aclDataType>(modelDesc_.outTensorsDesc[index].datatype)));
         }
-        DEBUG_LOG("AddOutTensors name:%s index:%d ratio:%f len:%d outdescsize:%d shapesize:%d\n",
-            name.c_str(), index, sizeRatio, realLen, modelDesc_.outTensorsDesc[index].size, i64shape.size());
+        DEBUG_LOG("AddOutTensors name:%s index:%d len:%d outdescsize:%d shapesize:%d\n",
+            name.c_str(), index, realLen, modelDesc_.outTensorsDesc[index].size, i64shape.size());
         outputs[index].size = realLen;
         bool isBorrowed = false;
         for (size_t j = 0; j < i64shape.size(); ++j) {
@@ -558,11 +555,11 @@ APP_ERROR ModelInferenceProcessor::SetDynamicDims(std::string dymdimsStr)
         return APP_ERR_ACL_FAILURE;
     }
 
-    INFO_LOG("prepare dynamic dims successful");
+    DEBUG_LOG("prepare dynamic dims successful");
 
     // update realsize according real shapes
     vector<string> dymdims_tmp;
-    Utils::SplitStringWithPunctuation(dymdimsStr, dymdims_tmp, ';'); 
+    Utils::SplitStringWithPunctuation(dymdimsStr, dymdims_tmp, ';');
 
     std::map<string, int64_t> namedimsmap;
     ret = Utils::SplitStingGetNameDimsMulMap(dymdims_tmp, namedimsmap);
@@ -590,7 +587,7 @@ APP_ERROR ModelInferenceProcessor::SetDynamicDims(std::string dymdimsStr)
 APP_ERROR ModelInferenceProcessor::SetDynamicShape(std::string dymshapeStr)
 {
     vector<string> dym_shape_tmp;
-    Utils::SplitStringWithPunctuation(dymshapeStr, dym_shape_tmp, ';'); 
+    Utils::SplitStringWithPunctuation(dymshapeStr, dym_shape_tmp, ';');
 
     FreeDymInfoMem();
     if (dynamicInfo_.dyShape.pShapes == nullptr){

@@ -28,7 +28,7 @@ def get_pure_infer_data(size, pure_data_type):
     return ndata
 
 # get tensors from files list combile all files
-def get_tensor_from_files_list(files_list, device, size, pure_data_type):
+def get_tensor_from_files_list(files_list, device, size, pure_data_type, auto_set_dymshape_mode=False):
     ndatalist = []
     for i, file_path in enumerate(files_list):
         logger.debug("get tensor from filepath:{} i:{} of all:{}".format(file_path, i, len(files_list)))
@@ -44,7 +44,7 @@ def get_tensor_from_files_list(files_list, device, size, pure_data_type):
             ndata = get_file_content(file_path)
         ndatalist.append(ndata)
     ndata = np.concatenate(ndatalist)
-    if ndata.nbytes != size:
+    if auto_set_dymshape_mode == False and ndata.nbytes != size:
         logger.error('ndata size:{} not match {}'.format(ndata.nbytes, size))
         raise RuntimeError()
 
@@ -58,14 +58,17 @@ def get_tensor_from_files_list(files_list, device, size, pure_data_type):
 # Obtain filesperbatch runcount information according to file information and input description information
 # The strategy is as follows:  Judge according to the realsize and file size of input 0. If the judgment fails,
 # you need to force the desired value to be set
-def get_files_count_per_batch(intensors_desc, fileslist):
+def get_files_count_per_batch(intensors_desc, fileslist, auto_set_dymshape_mode=False):
     # get filesperbatch
     filesize = get_file_datasize(fileslist[0][0])
     tensorsize = intensors_desc[0].realsize
-    if filesize == 0 or tensorsize%filesize != 0:
-        logger.error('arg0 tensorsize: {} filesize: {} not match'.format(tensorsize, filesize))
-        raise RuntimeError()
-    files_count_per_batch = (int)(tensorsize/filesize)
+    if auto_set_dymshape_mode == True:
+        files_count_per_batch = 1
+    else:
+        if filesize == 0 or tensorsize % filesize != 0:
+            logger.error('arg0 tensorsize: {} filesize: {} not match'.format(tensorsize, filesize))
+            raise RuntimeError()
+        files_count_per_batch = (int)(tensorsize/filesize)
 
     runcount = math.ceil(len(fileslist[0]) / files_count_per_batch)
     #runcount = len(fileslist[0]) // files_count_per_batch
@@ -89,11 +92,11 @@ def create_intensors_zerodata(intensors_desc, device, pure_data_type):
 
 # Obtain tensor information and files information according to the input filelist. Create intensor form files list
 # len(files_list) should equal len(intensors_desc)
-def create_infileslist_from_fileslist(fileslist, intensors_desc):
+def create_infileslist_from_fileslist(fileslist, intensors_desc, auto_set_dymshape_mode=False):
     if len(intensors_desc) != len(fileslist):
         logger.error('fileslist:{} intensor:{} not match'.format(len(fileslist), len(intensors_desc)))
         raise RuntimeError()
-    files_count_per_batch, runcount = get_files_count_per_batch(intensors_desc, fileslist)
+    files_count_per_batch, runcount = get_files_count_per_batch(intensors_desc, fileslist, auto_set_dymshape_mode)
 
     files_perbatch_list = [ list(list_split(fileslist[j], files_count_per_batch, padding_infer_fake_file)) for j in range(len(intensors_desc)) ]
 
@@ -107,43 +110,44 @@ def create_infileslist_from_fileslist(fileslist, intensors_desc):
     return infileslist
 
 #  outapi. Obtain tensor information and files information according to the input filelist. Create intensor form files list
-def create_intensors_from_infileslist(infileslist, intensors_desc, device, pure_data_type):
+def create_intensors_from_infileslist(infileslist, intensors_desc, device, pure_data_type, auto_set_dymshape_mode=False):
     intensorslist = []
     for i, infiles in enumerate(infileslist):
         intensors = []
         for j, files in enumerate(infiles):
-            tensor = get_tensor_from_files_list(files, device, intensors_desc[j].realsize, pure_data_type)
+            tensor = get_tensor_from_files_list(files, device, intensors_desc[j].realsize, pure_data_type, auto_set_dymshape_mode)
             intensors.append(tensor)
         intensorslist.append(intensors)
     return intensorslist
 
 def check_input_parameter(inputs_list, intensors_desc):
     if len(inputs_list) == 0:
-        logger.error("Invalid input parameters. Parameter inputs_list is empty")
+        logger.error("Invalid args. Input args are empty")
         raise RuntimeError()
     if os.path.isfile(inputs_list[0]):
         for file_path in inputs_list:
             realpath = os.readlink(file_path) if os.path.islink(file_path) else file_path
             if not os.path.isfile(realpath):
-                logger.error("Invalid input parameters. file_path:{} realpath:{} not exist".format(file_path, realpath))
+                logger.error("Invalid args. file_path:{} realpath:{} not exist".format(file_path, realpath))
                 raise RuntimeError()
     elif os.path.isdir(inputs_list[0]):
         if len(inputs_list) != len(intensors_desc):
-            logger.error("Invalid input parameters. The length of  inputs_list is invalid")
+            logger.error("Invalid args. args input dir num:{0} not equal to model inputs num:{1}".format(
+                len(inputs_list), len(intensors_desc)))
             raise RuntimeError()
 
         for dir_path in inputs_list:
             real_dir_path = os.readlink(dir_path) if os.path.islink(dir_path) else dir_path
             if not os.path.isdir(real_dir_path):
-                logger.error("Invalid input parameters. dir_path:{} real_dir_path:{} not exist".format(dir_path, real_dir_path))
+                logger.error("Invalid args. {} of input args is not a real dir path".format(real_dir_path))
                 raise RuntimeError()
     else:
-        logger.error("Invalid input parameters. --input[0] is not file or folder {}".format(inputs_list[0]))
+        logger.error("Invalid args. {}  of --input is invalid".format(inputs_list[0]))
         raise RuntimeError()
 
 
 # outapi. get by input parameters of  inputs_List.
-def create_infileslist_from_inputs_list(inputs_list, intensors_desc):
+def create_infileslist_from_inputs_list(inputs_list, intensors_desc, auto_set_dymshape_mode=False):
     check_input_parameter(inputs_list, intensors_desc)
     fileslist = []
     inputlistcount = len(inputs_list)
@@ -154,14 +158,14 @@ def create_infileslist_from_inputs_list(inputs_list, intensors_desc):
         logger.debug("create intensors list file type inlistcount:{} intensorcont:{} chunks:{} files_size:{}".format(
             inputlistcount, intensorcount, chunks, len(fileslist)))
     elif os.path.isdir(inputs_list[0]) and inputlistcount == intensorcount:
-        fileslist = [ get_fileslist_from_dir(dir) for dir in inputs_list ]
+        fileslist = [get_fileslist_from_dir(dir) for dir in inputs_list]
         logger.debug("create intensors list dictionary type inlistcount:{} intensorcont:{} files_size:{}".format(
             inputlistcount, intensorcount, len(fileslist)))
     else:
         logger.error('create intensors list filelists:{} intensorcont:{} error create'.format(inputlistcount, intensorcount))
         raise RuntimeError()
 
-    infileslist = create_infileslist_from_fileslist(fileslist, intensors_desc)
+    infileslist = create_infileslist_from_fileslist(fileslist, intensors_desc, auto_set_dymshape_mode)
     if len(infileslist) == 0:
         logger.error('create_infileslist_from_fileslist return infileslist size: {}'.format(len(infileslist)))
         raise RuntimeError()
@@ -177,14 +181,18 @@ def outtensors_to_host(outputs):
         totle_laency += float(endtime - starttime) * 1000.0  # millisecond
     summary.d2h_latency_list.append(totle_laency)
 
-def save_tensors_to_file(outputs, output_prefix, infiles_paths, outfmt, index):
+
+def save_tensors_to_file(outputs, output_prefix, infiles_paths, outfmt, index, output_batchsize_axis):
     files_count_perbatch = len(infiles_paths[0])
     infiles_perbatch = np.transpose(infiles_paths)
-    logger.debug("files_count_perbatch:{} outputs count:{}".format(files_count_perbatch, len(outputs)))
     for i, out in enumerate(outputs):
         ndata = np.array(out)
-        if files_count_perbatch == 1 or ndata.shape[0] % files_count_perbatch == 0:
-            subdata = np.array_split(ndata, files_count_perbatch)
+        if output_batchsize_axis >= len(ndata.shape):
+            logger.error("error i:{0} ndata.shape:{1} len:{2} <= output_batchsize_axis:{3}  is invalid".format(
+                i, ndata.shape, len(ndata.shape), output_batchsize_axis))
+            raise RuntimeError()
+        if files_count_perbatch == 1 or ndata.shape[output_batchsize_axis] % files_count_perbatch == 0:
+            subdata = np.array_split(ndata, files_count_perbatch, output_batchsize_axis)
             for j in range(files_count_perbatch):
                 sample_id = index*files_count_perbatch+j
                 #file_path = os.path.join(output_prefix, "input{}_output_{}.{}".format(sample_id, i, outfmt.lower()))
@@ -195,11 +203,11 @@ def save_tensors_to_file(outputs, output_prefix, infiles_paths, outfmt, index):
                 file_path = os.path.join(output_prefix, "{}_{}.{}".format(
                     os.path.basename(infiles_perbatch[j][0]).split('.')[0], i, outfmt.lower()))
                 summary.add_sample_id_infiles(sample_id, infiles_perbatch[j])
-                logger.debug("save func: sampleid:{} i:{} infiles:{} outfile:{} fmt:{}".format(
-                    sample_id, i, infiles_perbatch[j], file_path, outfmt))
+                logger.debug("save func: sampleid:{} i:{} infiles:{} outfile:{} fmt:{} axis:{}".format(
+                    sample_id, i, infiles_perbatch[j], file_path, outfmt, output_batchsize_axis))
                 summary.append_sample_id_outfile(sample_id, file_path)
                 save_data_to_files(file_path, subdata[j])
         else:
-            logger.error('save out files error array shape:{} filesinfo:{} files_count_perbatch:{} ndata.shape0:{}'.format(
-                ndata.shape, infiles_paths, files_count_perbatch, ndata.shape[0]))
+            logger.error('save out files error array shape:{} filesinfo:{} files_count_perbatch:{} ndata.shape{}:{}'.format(
+                ndata.shape, infiles_paths, files_count_perbatch, output_batchsize_axis, ndata.shape[output_batchsize_axis]))
             raise RuntimeError()
