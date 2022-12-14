@@ -9,10 +9,11 @@
 已安装开发运行环境的昇腾AI推理设备。需要安装python3,  不支持python2
 
 ## 一键安装
-安装aclruntime包
+安装环境要求网络畅通  
+安装aclruntime包  
 pip3  install -v --force-reinstall 'git+https://gitee.com/ascend/tools.git#egg=aclruntime&subdirectory=ais-bench_workload/tool/ais_infer/backend'
 
-安装ais_bench推理程序包
+安装ais_bench推理程序包    
 pip3  install -v --force-reinstall 'git+https://gitee.com/ascend/tools.git#egg=ais_bench&subdirectory=ais-bench_workload/tool/ais_infer'
 
 ## 源代码构建与安装
@@ -278,6 +279,12 @@ actual_input_1:8-9,3,224-300,260-300
 支持以--acl_json_path、--profiler、--dump参数形式实现：
 + acl_json_path 为指定路径的json文件，可以在该文件中修改对应的参数信息。
 + profiler 为固化到程序中的一组acl_json配置，生成的profiling数据保存在 output路径的profiler文件夹中。**注意运行中会首先检查msprof命令是否存在，如果存在，则通过msprof拉起ais_bench推理程序，这样可以采集、解析profiling数据，更为方便。**
+  如果是msprof命令拉起推理程序，执行的命令和参数在ais_bench/infer/__main__.py中msprof_run_profiling函数，命令拼接代码如下。
+  如果需要修改参数，请修改如下代码。
+  ```bash
+  msprof_cmd="{} --output={}/profiler --application=\"{}\" --model-execution=on --sys-hardware-mem=on --sys-cpu-profiling=off --sys-profiling=off --sys-pid-profiling=off --dvpp-profiling=on --runtime-api=on --task-time=on --aicpu=on".format(
+          msprof_bin, args.output, cmd)
+  ```
 + acl_json_path 优先级高于 profiler dump。 同时设置时以acl_json_path为准
 + profiler参数和dump参数 必须要增加output参数。指示输出路径。
 + profiler和dump可以分别使用，但不能同时启用
