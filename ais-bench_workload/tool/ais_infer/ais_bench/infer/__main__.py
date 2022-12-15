@@ -212,7 +212,7 @@ def get_args():
     parser.add_argument("--profiler", type=str2bool, default=False, help="profiler switch")
     parser.add_argument("--dump", type=str2bool, default=False, help="dump switch")
     parser.add_argument("--acl_json_path", type=str, default=None, help="acl json path for profiling or dump")
-    parser.add_argument("--output_batchsize_axis",  type=check_nonnegative_integer, default=0, help="splitting axis number when outputing tensor results, such as --output_batchsize_axis 12")
+    parser.add_argument("--output_batchsize_axis",  type=check_nonnegative_integer, default=0, help="splitting axis number when outputing tensor results, such as --output_batchsize_axis 1")
     parser.add_argument("--run_mode", type=str, default="array", choices=["array", "files", "tensor", "full"], help="run mode")
     parser.add_argument("--display_all_summary", type=str2bool, default=False, help="display all summary include h2d d2h info")
     parser.add_argument("--warmup_count",  type=check_nonnegative_integer, default=1, help="warmup count before inference")

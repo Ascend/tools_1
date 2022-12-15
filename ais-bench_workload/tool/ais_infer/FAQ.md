@@ -25,3 +25,12 @@ root#  python3 -m ais_bench --model /home/lhb/code/testdata/resnet50/model/pth_r
 
 **处理步骤：**  
 更新aclruntime程序包  
+## 3. 推理工具组合输入进行推理时遇到"save out files error"
+**故障现象**
+```bash
+[ERROR] save out files error array shape:(1, 349184, 2) filesinfo:[['prep/2002_07_19_big_img_18.bin', 'prep/2002_07_19_big_img_90.bin', 'prep/  2002_07_19_big_img_130.bin', 'prep/2002_07_19_big_img_135.bin', 'prep/  2002_07_19_big_img_141.bin', 'prep/2002_07_19_big_img_158.bin', 'prep/  2002_07_19_big_img_160.bin', 'prep/2002_07_19_big_img_198.bin', 'prep/  2002_07_19_big_img_209.bin', 'prep/2002_07_19_big_img_230.bin', 'prep/  2002_07_19_big_img_247.bin', 'prep/2002_07_19_big_img_254.bin', 'prep/  2002_07_19_big_img_255.bin', 'prep/2002_07_19_big_img_269.bin', 'prep/  2002_07_19_big_img_278.bin', 'prep/2002_07_19_big_img_300.bin']]  files_count_perbatch:16 ndata.shape0:1
+```
+**故障原因**
+input文件由16个文件组成，推理输出进行结果文件切分时，默认按shape的第一维切分，而shape最高维度是1，不是16的倍数。所以报错
+**处理步骤**
+推理工具参数"--output_batchsize_axis"取值为1。 改成以shape第2维进行切分
