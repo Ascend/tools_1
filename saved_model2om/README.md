@@ -85,7 +85,7 @@ tf.saved_model.simple_save(sess, 'models/',
 
 --profiling:   可选参数:1, 2。该项被设置则会开启aoe调优，配置为1时启用子图调优，配置为2时启用算子调优。（该参数配置后无需再指定job_type）
       
---method_name： 用于配置tf-serving运行时的接口路径
+--method_name： 用于配置tf-serving运行时用于推理的方法, 不配置则会从原始的Saved Model中获取
 
 --new_input_nodes： 当需要从原始saved_model中筛选一个子图时，此参数用于指定新的输入节点，输入格式为："name1:type_pb1:node_name1;name2:type_pb2:node_name2", 例如"new_input:DT_FLOAT:bert/embeding/word_embeddings:0"。
 
