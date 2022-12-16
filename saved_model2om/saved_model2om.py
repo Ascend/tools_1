@@ -124,16 +124,16 @@ def saved_model_to_pb(saved_model_dir, output_dir, output_name, saved_tags=tag_c
 def saved_sub_graph_saved_model(new_input_nodes, new_output_nodes, saved_model_dir, tmp_path,
                                 saved_tags=tag_constants.SERVING,
                                 sign=signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY):
+    input_node_names_dict, output_node_names_dict, method_name = \
+        get_input_output_node(saved_model_dir, saved_tags, sign)
     if new_input_nodes is not None:
         input_node_names_dict = parse_new_input_nodes_string(new_input_nodes)
+        input_node_names = {input_node.name: input_node for input_node in input_node_names_dict.values()}
     else:
-        input_node_names_dict = OrderedDict()
+        input_node_names = OrderedDict()
 
     if new_output_nodes is not None:
         output_node_names_dict = parse_new_output_nodes_string(new_output_nodes)
-    else:
-        _, output_node_dict, method_name = get_input_output_node(saved_model_dir, saved_tags, sign)
-    input_node_names = {input_node.name: input_node for input_node in input_node_names_dict.values()}
     output_node_names = list(output_node.name for output_node in output_node_names_dict.values())
     with tf.Session(graph=tf.Graph()) as sess:
         tf.saved_model.load(sess, [saved_tags], saved_model_dir)
