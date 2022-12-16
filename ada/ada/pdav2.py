@@ -43,7 +43,7 @@ class ProfilingDataAnalyzer:
                     rec.timestamp = int(ma.group("timestamp"))
                     rec.tid = int(ma.group("tid"))
                     rec.node_name = ma.group("element")
-                    if rec.node_name.startswith("UNKNOWN") or rec.node_name == "[UnknownNodeName]":
+                    if rec.node_name.startswith("[UNKNOWN") or rec.node_name == "[UnknownNodeName]":
                         rec.node_name = None
                     rec.event = ma.group("event")
                     if rec.event == DEVICE_EVENT:
