@@ -15,9 +15,12 @@
 # limitations under the License.
 """
 
+import os
 import functools
 
 import torch
+if not torch.cuda.is_available():
+    import torch_npu
 
 from . import wrap_tensor, wrap_torch, wrap_functional
 
@@ -43,7 +46,13 @@ def register_hook(model, hook, **kwargs):
     assert hasattr(model, "named_modules"), "Please register hooks to nn.Module."
 
     dump_mode = kwargs.get('dump_mode', 1)
-    hook = functools.partial(hook, dump_mode=dump_mode)
+    pid = os.getpid()
+    hook = functools.partial(hook, dump_mode=dump_mode, pid=pid)
+
+    # In NPU scene, clear the overflow flag before overflow detection
+    if not torch.cuda.is_available():
+        torch_npu._C_.clear_overflow_npu()
+
     initialize_hook(hook)
     for _, module in model.named_modules():
         if not hasattr(module, "named_modules") or len(list(module.named_modules())) > 1:

@@ -17,10 +17,10 @@
 """
 
 from .compare.acc_compare import compare
-from .hooks.hooks import set_dump_path, set_dump_switch, set_seed_all, acc_cmp_dump, overflow_check
+from .hooks.hooks import set_dump_path, set_dump_switch, seed_all, acc_cmp_dump, overflow_check
 from .hooks.initialize import register_hook
 
-set_seed_all()
+seed_all()
 
-__all__ = ["register_hook", "set_dump_path", "set_dump_switch", "set_seed_all",
+__all__ = ["register_hook", "set_dump_path", "set_dump_switch", "seed_all",
            "acc_cmp_dump", "overflow_check", "compare"]

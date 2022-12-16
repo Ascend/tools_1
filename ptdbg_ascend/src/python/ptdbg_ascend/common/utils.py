@@ -14,12 +14,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
+import collections
 import os
 import subprocess
 import sys
 import time
+from datetime import datetime, timezone
+
 import numpy as np
 import torch
+if not torch.cuda.is_available():
+    import torch_npu
+
+
+device = collections.namedtuple('device', ['type', 'index'])
 
 
 class Const:
@@ -258,3 +266,25 @@ def get_data_len_by_shape(shape):
 
 def add_time_as_suffix(name):
     return '{}_{}.csv'.format(name, time.strftime("%Y%m%d%H%M%S", time.localtime(time.time())))
+
+
+def get_time():
+    return datetime.now(tz=timezone.utc).strftime("%Y%m%d_%H%M%S")
+
+
+def torch_device_guard(func):
+    # Parse args/kwargs from namedtuple(torch.device) to matched torch.device objects
+    def wrapper(*args, **kwargs):
+        if args:
+            args_list = list(args)
+            for index, arg in enumerate(args_list):
+                if isinstance(arg, tuple) and "type='npu'" in str(arg):
+                    args_list[index] = torch_npu.new_device(type=torch_npu.npu.native_device, index=arg.index)
+                    break
+            args = tuple(args_list)
+        if kwargs and isinstance(kwargs.get("device"), tuple):
+            namedtuple_device = kwargs.get("device")
+            if "type='npu'" in str(namedtuple_device):
+                kwargs['device'] = torch_npu.new_device(type=torch_npu.npu.native_device, index=namedtuple_device.index)
+        return func(*args, **kwargs)
+    return wrapper
