@@ -64,7 +64,8 @@ def get_input_output_node(saved_model_dir, saved_tags, sign):
 
     if not output_nodes:
         raise RuntimeError("No Output Nodes found in saved_model.")
-
+    if not method_name:
+        method_name = None
     return input_nodes, output_nodes, method_name
 
 
@@ -131,7 +132,7 @@ def saved_sub_graph_saved_model(new_input_nodes, new_output_nodes, saved_model_d
     if new_output_nodes is not None:
         output_node_names_dict = parse_new_output_nodes_string(new_output_nodes)
     else:
-        _, output_node_dict = get_input_output_node(saved_model_dir, saved_tags, sign)
+        _, output_node_dict, method_name = get_input_output_node(saved_model_dir, saved_tags, sign)
     input_node_names = {input_node.name: input_node for input_node in input_node_names_dict.values()}
     output_node_names = list(output_node.name for output_node in output_node_names_dict.values())
     with tf.Session(graph=tf.Graph()) as sess:
@@ -157,7 +158,7 @@ def saved_sub_graph_saved_model(new_input_nodes, new_output_nodes, saved_model_d
                     inputs={k: tf.saved_model.utils.build_tensor_info(graph.get_tensor_by_name(v.full_name))
                             for k, v in input_node_names_dict.items()},
                     outputs={k: tf.saved_model.utils.build_tensor_info(graph.get_tensor_by_name(v.full_name))
-                             for k, v in output_node_names_dict.items()})
+                             for k, v in output_node_names_dict.items()}, method_name=method_name)
         output_path = os.path.join(tmp_path, "tmp_saved_model")
         saved_model_builder = tf.saved_model.builder.SavedModelBuilder(output_path)
         saved_model_builder.add_meta_graph_and_variables(
