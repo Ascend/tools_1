@@ -172,6 +172,9 @@ APP_ERROR MemoryHelper::Memset(MemoryData& data, int32_t value, size_t count)
 
 APP_ERROR MemoryHelper::Memcpy(MemoryData& dest, const MemoryData& src, size_t count)
 {
+    if (dest.size == 0 && src.size == 0) {
+        return APP_ERR_OK;
+    }
     if (dest.ptrData == nullptr || src.ptrData == nullptr) {
         LogError << GetError(APP_ERR_COMM_INVALID_POINTER)
                  << "Memcpy failed, ptrData is nullptr.";
