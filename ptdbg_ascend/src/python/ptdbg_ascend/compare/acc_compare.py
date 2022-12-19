@@ -47,11 +47,13 @@ def get_mape(a, b):
 
 
 def check_op(a, b, shape_flag):
+    a_op_name = [_.split('_', 1)[1] for _ in a["op_name"]]
+    b_op_name = [_.split('_', 1)[1] for _ in b["op_name"]]
     if shape_flag:
-        return a["op_name"] == b["op_name"] and a["input_struct"] == b["input_struct"] \
+        return a_op_name == b_op_name and a["input_struct"] == b["input_struct"] \
             and a["output_struct"] == b["output_struct"]
     else:
-        return a["op_name"] == b["op_name"]
+        return a_op_name == b_op_name
 
 
 def merge_tensor(tensor_list):
@@ -109,8 +111,9 @@ def match_op(npu_queue, bench_queue, shape_flag):
 
 
 def get_accuracy(result, n_dict, b_dict, summery_flag):
-    for index, name in enumerate(n_dict["op_name"]):
-        if name.find("input") != -1:
+    for index, n_name in enumerate(n_dict["op_name"]):
+        b_name = b_dict["op_name"][index]
+        if n_name.find("input") != -1:
             n_value = np.array(n_dict["input_value"][index])
             b_value = np.array(b_dict["input_value"][index])
             n_struct = n_dict["input_struct"][index]
@@ -131,7 +134,7 @@ def get_accuracy(result, n_dict, b_dict, summery_flag):
             rmse = get_rmse(n_value, b_value)
             mape = get_mape(n_value, b_value)
 
-        result_item = [name, n_struct[0], b_struct[0], n_struct[1], b_struct[1], cos_sim, rmse, mape]
+        result_item = [n_name, b_name, n_struct[0], b_struct[0], n_struct[1], b_struct[1], cos_sim, rmse, mape]
         if summery_flag[0]:
             summery_data = n_dict.get("summery")[index]
             result_item.extend(summery_data)
@@ -151,7 +154,7 @@ def compare(npu_pkl_path, bench_pkl_path, output_path, shape_flag=False):
     npu_pkl.close()
     bench_pkl.close()
 
-    columns = ["Name", "NPU Tensor Dtype", "Bench Tensor Dtype",
+    columns = ["NPU Name", "Bench Name", "NPU Tensor Dtype", "Bench Tensor Dtype",
                "NPU Tensor Shape", "Bench Tensor Shape", "Cosine", "RMSE", "MAPE"]
     if npu_summary:
         columns.extend(["NPU max", "NPU min", "NPU mean"])

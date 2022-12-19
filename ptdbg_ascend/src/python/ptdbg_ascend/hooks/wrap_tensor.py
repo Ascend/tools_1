@@ -21,14 +21,16 @@ import torch
 import yaml
 
 from .module import HOOKModule
+from ..common.utils import torch_device_guard
 
 cur_path = os.path.dirname(os.path.realpath(__file__))
-yaml_path = os.path.join(cur_path, "support_wrap_opts.yaml")
+yaml_path = os.path.join(cur_path, "support_wrap_ops.yaml")
 with open(yaml_path, 'r') as f:
     WrapTensorOps = yaml.safe_load(f).get('tensor')
 
 
 def get_tensor_ops():
+    global WrapTensorOps
     _tensor_ops = dir(torch._C._TensorBase)
     assert set(WrapTensorOps) <= set(_tensor_ops)
     return WrapTensorOps
@@ -45,6 +47,7 @@ class TensorOPTemplate(HOOKModule):
         self.prefix_op_name_ = "Tensor_" + str(op_name) + "_"
         super().__init__(hook)
 
+    @torch_device_guard
     def forward(self, *args, **kwargs):
         return getattr(torch._C._TensorBase, str(self.op_name_))(*args, **kwargs)
 
