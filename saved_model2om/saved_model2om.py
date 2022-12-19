@@ -322,17 +322,17 @@ def get_args():
                                                           'Use double quotation marks (") to enclose each argument.'
                                                           'E.g.: "input_name1:n1,c1,h1,w1;input_name2:n2,c2,h2,w2"')
     parser.add_argument("--method_name", help='Method name for TF-Serving.')
-    parser.add_argument("--new_input_nodes",
-                        help='Configure this to reselect the input node.'
-                             'the node format is name:type_pb:node_name'
-                             'Separate multiple nodes with semicolons (;).'
-                             'Use double quotation marks (") to enclose each argument.'
-                             'E.g.: "embedding:DT_FLOAT:bert/embedding/word_embeddings:0;add:DT_INT:bert/embedding/add:0"')
-    parser.add_argument("--new_output_nodes",
-                        help='Configure this to reselect the output node.'
-                        'Separate multiple nodes with semicolons (;).'
-                        'Use double quotation marks (") to enclose each argument.'
-                        'E.g.: "loss:loss/Softmax:0"')
+    # parser.add_argument("--new_input_nodes",
+    #                     help='Configure this to reselect the input node.'
+    #                          'the node format is name:type_pb:node_name'
+    #                          'Separate multiple nodes with semicolons (;).'
+    #                          'Use double quotation marks (") to enclose each argument.'
+    #                          'E.g.: "embedding:DT_FLOAT:bert/embedding/word_embeddings:0;add:DT_INT:bert/embedding/add:0"')
+    # parser.add_argument("--new_output_nodes",
+    #                     help='Configure this to reselect the output node.'
+    #                     'Separate multiple nodes with semicolons (;).'
+    #                     'Use double quotation marks (") to enclose each argument.'
+    #                     'E.g.: "loss:loss/Softmax:0"')
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--soc_version", help="The soc version. "
                                              "This parameter is not required when profiling is set.")
@@ -344,4 +344,4 @@ def get_args():
 if __name__ == "__main__":
     args, unknown_args = get_args()
     main(args.input_path, args.output_path, args.input_shape, args.soc_version, args.profiling, args.method_name,
-         args.new_input_nodes, args.new_output_nodes, unknown_args)
+         None, None, unknown_args)
