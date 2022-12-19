@@ -79,7 +79,7 @@ tf.saved_model.simple_save(sess, 'models/',
 
 --profiling:   可选参数:1, 2。该项被设置则会开启aoe调优，配置为1时启用子图调优，配置为2时启用算子调优。（该参数配置后无需再指定job_type）
       
---method_name： 用于配置tf-serving运行时的接口路径
+--method_name： 用于配置tf-serving运行时用于推理的方法, 不配置则会从原始的Saved Model中获取
     
 该工具同时支持对atc/aoe的参数进行透传，如果需要使用其余的参数，当--profiling未被指定时请参考ATC使用文档，当指定--profiling参数时请参考Aoe使用文档
 

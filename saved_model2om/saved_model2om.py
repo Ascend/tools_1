@@ -51,17 +51,22 @@ def get_input_output_node(saved_model_dir, saved_tags, sign):
 
     input_nodes = OrderedDict()
     output_nodes = OrderedDict()
+    method_name = ""
+    method_name_mark = "Method name is:"
     lines = result.split('\n')
     for idx, line in enumerate(result.split('\n')):
         if "inputs[" in line:
             parse_node_from_line(idx, input_nodes, line, lines)
         if "outputs[" in line:
             parse_node_from_line(idx, output_nodes, line, lines)
+        if method_name_mark in line:
+            method_name = line[len(method_name_mark):].strip()
 
     if not output_nodes:
         raise RuntimeError("No Output Nodes found in saved_model.")
-
-    return input_nodes, output_nodes
+    if not method_name:
+        method_name = None
+    return input_nodes, output_nodes, method_name
 
 
 def parse_node_from_line(idx, node_dict, line, lines):
@@ -97,7 +102,7 @@ def saved_pb(saved_model_dir, output_nodes, output_dir, output_name, saved_tags)
 def saved_model_to_pb(saved_model_dir, output_dir, output_name, saved_tags=tag_constants.SERVING,
                       sign=signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY):
 
-    input_nodes, output_nodes = get_input_output_node(saved_model_dir, saved_tags, sign)
+    input_nodes, output_nodes, method_name = get_input_output_node(saved_model_dir, saved_tags, sign)
 
     print("[INFO]: Save Model has [", len(output_nodes), "] outputs.")
     print("[INFO]: Outputs Nodes: ", output_nodes, ".")
@@ -113,22 +118,22 @@ def saved_model_to_pb(saved_model_dir, output_dir, output_name, saved_tags=tag_c
         input_nodes.pop(key)
     print("[INFO]: Inputs Nodes With Shapes: ", input_nodes, ".")
     print("[INFO]: Saved Model convert to Frozen Model done.")
-    return input_nodes, output_nodes
+    return input_nodes, output_nodes, method_name
 
 
 def saved_sub_graph_saved_model(new_input_nodes, new_output_nodes, saved_model_dir, tmp_path,
                                 saved_tags=tag_constants.SERVING,
                                 sign=signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY):
+    input_node_names_dict, output_node_names_dict, method_name = \
+        get_input_output_node(saved_model_dir, saved_tags, sign)
     if new_input_nodes is not None:
         input_node_names_dict = parse_new_input_nodes_string(new_input_nodes)
+        input_node_names = {input_node.name: input_node for input_node in input_node_names_dict.values()}
     else:
-        input_node_names_dict = OrderedDict()
+        input_node_names = OrderedDict()
 
     if new_output_nodes is not None:
         output_node_names_dict = parse_new_output_nodes_string(new_output_nodes)
-    else:
-        _, output_node_dict = get_input_output_node(saved_model_dir, saved_tags, sign)
-    input_node_names = {input_node.name: input_node for input_node in input_node_names_dict.values()}
     output_node_names = list(output_node.name for output_node in output_node_names_dict.values())
     with tf.Session(graph=tf.Graph()) as sess:
         tf.saved_model.load(sess, [saved_tags], saved_model_dir)
@@ -153,7 +158,7 @@ def saved_sub_graph_saved_model(new_input_nodes, new_output_nodes, saved_model_d
                     inputs={k: tf.saved_model.utils.build_tensor_info(graph.get_tensor_by_name(v.full_name))
                             for k, v in input_node_names_dict.items()},
                     outputs={k: tf.saved_model.utils.build_tensor_info(graph.get_tensor_by_name(v.full_name))
-                             for k, v in output_node_names_dict.items()})
+                             for k, v in output_node_names_dict.items()}, method_name=method_name)
         output_path = os.path.join(tmp_path, "tmp_saved_model")
         saved_model_builder = tf.saved_model.builder.SavedModelBuilder(output_path)
         saved_model_builder.add_meta_graph_and_variables(
@@ -285,7 +290,7 @@ def main(input_path, output_path, input_shape, soc_version, profiling, method_na
         tmp_pb_file = os.path.join(tmp_path, tmp_pb_name)
         if new_input_nodes is not None or new_output_nodes is not None:
             input_path = saved_sub_graph_saved_model(new_input_nodes, new_output_nodes, input_path, tmp_path)
-        input_nodes, output_nodes = saved_model_to_pb(input_path, tmp_path, tmp_pb_name)
+        input_nodes, output_nodes, saved_model_method_name = saved_model_to_pb(input_path, tmp_path, tmp_pb_name)
         if not input_shape:
             input_shape = get_input_shape(input_nodes)
         gen_pb_txt(tmp_pb_file)
@@ -297,6 +302,11 @@ def main(input_path, output_path, input_shape, soc_version, profiling, method_na
         if ret.returncode != 0:
             return
         print(f"[INFO]: The om model has been converted and the HW Saved Model is ready to be generated.")
+        if not saved_model_method_name and not method_name:
+            print(f"[ERROR]: The method name cannot be obtained from the input saved model. Please set the parameter --method_name.")
+            return
+        method_name = method_name or saved_model_method_name
+        print(f"[INFO]: Use method name {method_name}.")
         save_hw_saved_model(input_nodes, output_nodes, output_path, method_name)
     finally:
         shutil.rmtree(tmp_path)
