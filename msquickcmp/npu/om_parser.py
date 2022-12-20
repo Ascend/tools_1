@@ -172,6 +172,10 @@ class OmParser(object):
             for input_object in operator.get(INPUT_DESC_OBJECT):
                 shape = []
                 data_type = DTYPE_MAP.get(input_object.get(DTYPE_OBJECT))
+                if not input_object.get(SHAPE_OBJECT):
+                    # no shape info, assumed to be scalar
+                    net_output_info[input_index] = [data_type, [1]]
+                    continue
                 for num in input_object.get(SHAPE_OBJECT).get(DIM_OBJECT):
                     shape.append(num)
                 net_output_info[input_index] = [data_type, shape]

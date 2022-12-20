@@ -178,7 +178,7 @@ class TfDumpData(DumpData):
 
     def _check_node_output(self, node_name):
         op = self.global_graph.get_operation_by_name(node_name)
-        if op.outputs and not node_name.endswith("ReadVariableOp"):
+        if op.outputs and not node_name.endswith("ReadVariableOp") and "/cond/" not in node_name:
             return True
         return False
 
