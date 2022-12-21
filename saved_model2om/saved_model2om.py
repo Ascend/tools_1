@@ -291,6 +291,9 @@ def main(input_path, output_path, input_shape, soc_version, profiling, method_na
         if new_input_nodes is not None or new_output_nodes is not None:
             input_path = saved_sub_graph_saved_model(new_input_nodes, new_output_nodes, input_path, tmp_path)
         input_nodes, output_nodes, saved_model_method_name = saved_model_to_pb(input_path, tmp_path, tmp_pb_name)
+        if not saved_model_method_name and not method_name:
+            print(f"[ERROR]: The method name cannot be obtained from the input saved model. Please set the parameter --method_name.")
+            return
         if not input_shape:
             input_shape = get_input_shape(input_nodes)
         gen_pb_txt(tmp_pb_file)
@@ -302,9 +305,6 @@ def main(input_path, output_path, input_shape, soc_version, profiling, method_na
         if ret.returncode != 0:
             return
         print(f"[INFO]: The om model has been converted and the HW Saved Model is ready to be generated.")
-        if not saved_model_method_name and not method_name:
-            print(f"[ERROR]: The method name cannot be obtained from the input saved model. Please set the parameter --method_name.")
-            return
         method_name = method_name or saved_model_method_name
         print(f"[INFO]: Use method name {method_name}.")
         save_hw_saved_model(input_nodes, output_nodes, output_path, method_name)
