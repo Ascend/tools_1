@@ -8,12 +8,11 @@ Huawei Technologies Co., Ltd. All Rights Reserved © 2021
 """
 import itertools
 import json
-import numpy as np
 
-from common.dump_data import DumpData
+import numpy as np
 from common import utils
-from common.utils import AccuracyCompareException
 from common.dynamic_argument_bean import DynamicArgumentEnum
+from common.utils import AccuracyCompareException
 
 GRAPH_OBJECT = "graph"
 OP_OBJECT = "op"
@@ -101,7 +100,8 @@ class OmParser(object):
                 try:
                     return json.load(input_file)
                 except Exception as load_input_file_except:
-                    print(str(load_input_file_except))
+                    utils.print_error_log('Load Json {} failed, {}'.format(
+                        json_file_path, str(load_input_file_except)))
                     raise AccuracyCompareException(utils.ACCURACY_COMPARISON_PARSER_JSON_FILE_ERROR)
         except IOError as input_file_open_except:
             utils.print_error_log('Failed to open"' + json_file_path + '", ' + str(input_file_open_except))
