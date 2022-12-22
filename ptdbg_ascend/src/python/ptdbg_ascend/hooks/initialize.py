@@ -23,6 +23,7 @@ if not torch.cuda.is_available():
     import torch_npu
 
 from . import wrap_tensor, wrap_torch, wrap_functional
+from .module import HOOKModule
 
 
 def initialize_hook(hook):
@@ -51,7 +52,7 @@ def register_hook(model, hook, **kwargs):
 
     # In NPU scene, clear the overflow flag before overflow detection
     if not torch.cuda.is_available():
-        torch_npu._C_.clear_overflow_npu()
+        torch_npu._C._clear_overflow_npu()
 
     initialize_hook(hook)
     for _, module in model.named_modules():

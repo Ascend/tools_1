@@ -117,7 +117,7 @@ def dump_process(x, prefix="", dump_mode=1):
                     saved_tensor_head = x.contiguous().view(-1)[
                                         :Const.SUMMERY_DATA_NUMS].cpu().detach().float().numpy().tolist()
                     saved_tensor_tail = x.contiguous().view(-1)[
-                                        Const.SUMMERY_DATA_NUMS:].cpu().detach().float().numpy().tolist()
+                                        (-1 * Const.SUMMERY_DATA_NUMS):].cpu().detach().float().numpy().tolist()
                     saved_tensor = saved_tensor_head + saved_tensor_tail
                 summery_data.extend([tensor_max, tensor_min, tensor_mean])
             elif dump_mode == Const.DUMP_MODE.get("SAMPLE"):
