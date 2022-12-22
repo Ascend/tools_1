@@ -6,16 +6,16 @@ This class is used to generate GUP dump data of the TensorFlow model.
 Copyright Information:
 Huawei Technologies Co., Ltd. All Rights Reserved © 2022
 """
+import os
 import re
 import sys
-import readline
-import pexpect
 import time
-import os
+
 import numpy as np
+import pexpect
 import tensorflow as tf
-from common.dump_data import DumpData
 from common import utils, tf_common
+from common.dump_data import DumpData
 from common.utils import AccuracyCompareException
 
 
@@ -58,7 +58,7 @@ class TfDumpData(DumpData):
         utils.print_info_log("Load the model %s successfully." % self.args.model_path)
 
     def _make_inputs_data(self, inputs_tensor):
-        if "" == self.args.input_path:
+        if self.args.input_path == "":
             input_path_list = []
             for index, tensor in enumerate(inputs_tensor):
                 if not tensor.shape:
@@ -178,7 +178,7 @@ class TfDumpData(DumpData):
 
     def _check_node_output(self, node_name):
         op = self.global_graph.get_operation_by_name(node_name)
-        if op.outputs and not node_name.endswith("ReadVariableOp"):
+        if op.outputs and not node_name.endswith("ReadVariableOp") and "/cond/" not in node_name:
             return True
         return False
 
