@@ -27,9 +27,11 @@ class TfDumpData(DumpData):
     def __init__(self, arguments):
         self.args = arguments
         output_path = os.path.realpath(self.args.out_path)
-        self.data_dir = os.path.join(output_path, "input")
-        self.tf_dump_data_dir = os.path.join(output_path, "dump_data/tf")
-        self.tmp_dir = os.path.join(output_path, "tmp")
+        self.important_dirs = {
+            "input": os.path.join(output_path, "input"),
+            "dump_data_tf": os.path.join(output_path, "dump_data/tf"),
+            "tmp": os.path.join(output_path, "tmp")
+        }
         self.global_graph = None
         self.input_path = self.args.input_path
         self.net_output_name = []
@@ -37,13 +39,13 @@ class TfDumpData(DumpData):
 
     def _create_dir(self):
         # create input directory
-        utils.create_directory(self.data_dir)
+        utils.create_directory(self.important_dirs.get("input"))
 
         # create dump_data/tf directory
-        utils.create_directory(self.tf_dump_data_dir)
+        utils.create_directory(self.important_dirs.get("dump_data_tf"))
 
         # create tmp directory
-        utils.create_directory(self.tmp_dir)
+        utils.create_directory(self.important_dirs.get("tmp"))
 
     def _load_graph(self):
         try:
@@ -67,7 +69,7 @@ class TfDumpData(DumpData):
                     raise AccuracyCompareException(utils.ACCURACY_COMPARISON_BIN_FILE_ERROR)
                 input_data = np.random.random(tf_common.convert_tensor_shape(tensor.shape)) \
                     .astype(tf_common.convert_to_numpy_type(tensor.dtype))
-                input_path = os.path.join(self.data_dir, "input_" + str(index) + ".bin")
+                input_path = os.path.join(self.important_dirs.get("input"), "input_" + str(index) + ".bin")
                 input_path_list.append(input_path)
                 try:
                     input_data.tofile(input_path)
@@ -89,7 +91,7 @@ class TfDumpData(DumpData):
         tf2x_runner_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../", "tf_debug_runner.py")
         cmd = '%s %s -m %s -i "%s" --output-nodes "%s" -o %s' \
               % (sys.executable, tf2x_runner_path, self.args.model_path, self.input_path,
-                 ";".join(outputs_tensor), self.tf_dump_data_dir)
+                 ";".join(outputs_tensor), self.important_dirs.get("dump_data_tf"))
         for _, tensor_name in enumerate(outputs_tensor):
             self.net_output_name.append(tensor_name)
         if self.args.input_shape:
@@ -100,7 +102,7 @@ class TfDumpData(DumpData):
         tf_debug_runner_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../", "tf_debug_runner.py")
         cmd = '%s %s -m %s -i "%s" --output-nodes "%s" -o %s' \
               % (sys.executable, tf_debug_runner_path, self.args.model_path, self.input_path,
-                 ";".join(outputs_tensor), os.path.join(self.tmp_dir, "tf_dbg"))
+                 ";".join(outputs_tensor), os.path.join(self.important_dirs.get("tmp"), "tf_dbg"))
         for _, tensor_name in enumerate(outputs_tensor):
             self.net_output_name.append(tensor_name)
         if self.args.input_shape:
@@ -126,7 +128,7 @@ class TfDumpData(DumpData):
                 count_tensor_name = tensor_count.get(tensor_name)
                 npy_file_name = "%s.%s.npy" % (tensor_name.replace("/", "_").replace(":", "."),
                                                str(round(time.time() * 1000000)))
-                npy_file_path = os.path.join(self.tf_dump_data_dir, npy_file_name)
+                npy_file_path = os.path.join(self.important_dirs.get("dump_data_tf"), npy_file_name)
                 # get the net_output dump file info
                 if tensor_name in self.net_output_name:
                     self.net_output[self.net_output_name.index(tensor_name)] = npy_file_path
@@ -148,7 +150,7 @@ class TfDumpData(DumpData):
             tf_dbg.sendline('exit')
             utils.print_error_log("Failed to run command: %s. %s" % (cmd_line, ex))
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_PYTHON_COMMAND_ERROR)
-        tensor_name_path = os.path.join(self.tmp_dir, 'tf_tensor_names.txt')
+        tensor_name_path = os.path.join(self.important_dirs.get("tmp"), 'tf_tensor_names.txt')
         tf_dbg.sendline('lt > %s' % tensor_name_path)
         tf_dbg.expect('tfdbg>', timeout=tf_common.TF_DEBUG_TIMEOUT)
         if not os.path.exists(tensor_name_path):
@@ -244,7 +246,7 @@ class TfDumpData(DumpData):
         elif tf_common.check_tf_version(tf_common.VERSION_TF1X):
             self._run_model_tf1x(outputs_tensor)
 
-        return self.tf_dump_data_dir
+        return self.important_dirs.get("dump_data_tf")
 
     def get_net_output_info(self):
         """

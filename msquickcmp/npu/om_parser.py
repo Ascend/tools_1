@@ -213,6 +213,18 @@ class OmParser(object):
                         return True
         return False
 
+    def _get_shape_list(self, list_list_int_object, shape_list):
+        if LIST_LIST_I_OBJECT in list_list_int_object:
+            for list_list_i in list_list_int_object.get(LIST_LIST_I_OBJECT):
+                if LIST_I_OBJECT in list_list_i:
+                    list_i = list_list_i.get(LIST_I_OBJECT)
+                    if -1 in list_i:
+                        self.contain_negative_1 = True
+                        return
+                    if len(list_i) != 2:
+                        continue
+                    shape_list.append(list(range(list_i[0], list_i[1] + 1)))
+
     def _get_range_shape_size_list(self, input_object):
         range_shape_size_list = []
         if ATTR_OBJECT not in input_object:
@@ -222,16 +234,9 @@ class OmParser(object):
             if KEY_OBJECT in attr and attr.get(KEY_OBJECT) == SHAPE_RANGE_OBJECT:
                 if VALUE_OBJECT in attr and attr.get(VALUE_OBJECT) and LIST_LIST_INT_OBJECT in attr.get(VALUE_OBJECT):
                     list_list_int_object = attr.get(VALUE_OBJECT).get(LIST_LIST_INT_OBJECT)
-                    if LIST_LIST_I_OBJECT in list_list_int_object:
-                        for list_list_i in list_list_int_object.get(LIST_LIST_I_OBJECT):
-                            if LIST_I_OBJECT in list_list_i:
-                                list_i = list_list_i.get(LIST_I_OBJECT)
-                                if -1 in list_i:
-                                    self.contain_negative_1 = True
-                                    return []
-                                if len(list_i) != 2:
-                                    continue
-                                shape_list.append(list(range(list_i[0], list_i[1] + 1)))
+                    self._get_shape_list(list_list_int_object, shape_list)
+                    if self.contain_negative_1:
+                        return []
         shape_list_all = list(itertools.product(*shape_list))
         for item in shape_list_all:
             item_sum = 1
