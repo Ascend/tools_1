@@ -55,7 +55,7 @@ def register_hook(model, hook, **kwargs):
 
     initialize_hook(hook)
     for _, module in model.named_modules():
-        if not hasattr(module, "named_modules") or len(list(module.named_modules())) > 1:
+        if not isinstance(module, HOOKModule):
             continue
 
         prefix = "Module_" + module.__class__.__name__ + "_"

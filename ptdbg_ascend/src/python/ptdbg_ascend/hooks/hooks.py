@@ -31,34 +31,94 @@ from ..common.utils import check_file_or_directory_path, print_error_log, \
     print_warn_log, CompareException, Const, get_time
 
 
-def dump_tensor(x, prefix, dump_mode):
-    if "DUMP_PATH" not in os.environ:
+class DumpUtil(object):
+    dump_path = None
+    dump_switch = None
+    dump_init_enable = False
+
+    @staticmethod
+    def set_dump_path(save_path):
+        DumpUtil.dump_path = save_path
+        DumpUtil.dump_init_enable = True
+
+    @staticmethod
+    def set_dump_switch(switch):
+        DumpUtil.dump_switch = switch
+        DumpUtil.dump_init_enable = True
+
+    @staticmethod
+    def get_dump_path():
+        return DumpUtil.dump_path
+
+    @staticmethod
+    def get_dump_switch():
+        if DumpUtil.dump_switch is None:
+            return False
+
+        if DumpUtil.dump_switch == "ON":
+            return True
+        else:
+            return False
+
+
+def set_dump_path(fpath=None):
+    if fpath is None:
+        raise RuntimeError("set_dump_path '{}' error, please set a valid filename".format(fpath))
         return
-    if get_dump_switch():
+    real_path = os.path.realpath(fpath)
+    if os.path.isdir(real_path):
+        print_error_log("set_dump_path '{}' error, please set a valid filename.".format(real_path))
+        raise CompareException(CompareException.INVALID_PATH_ERROR)
+    check_file_or_directory_path(os.path.dirname(real_path), True)
+    if os.path.exists(real_path):
+        os.remove(real_path)
+    DumpUtil.set_dump_path(real_path)
+
+
+def set_dump_switch(switch=None):
+    if switch is None:
+        return
+    assert switch in ["ON", "OFF"], "Please set dump switch with 'ON' or 'OFF'."
+    DumpUtil.set_dump_switch(switch)
+
+
+def dump_tensor(x, prefix, dump_mode):
+    if DumpUtil.get_dump_path() is None:
+        return
+    if DumpUtil.get_dump_switch():
         dump_process(x, prefix, dump_mode)
 
 
-def dump_process(x, prefix, dump_mode):
+def dump_process(x, prefix="", dump_mode=1):
     if isinstance(x, (tuple, list)) and x:
         for i, item in enumerate(x):
-            dump_process(item, "{}.{}".format(prefix, i), dump_mode)
+            dump_process(item, prefix="{}.{}".format(prefix, i), dump_mode=1)
     elif isinstance(x, torch.Tensor):
         if len(x.shape) == 0 or not x.is_floating_point():
             return
 
-        if hasattr(dump_process, "call_number"):
-            dump_process.call_number = dump_process.call_number + 1
-        else:
+        if DumpUtil.dump_init_enable:
             dump_process.call_number = 0
+            DumpUtil.dump_init_enable = False
+        else:
+            dump_process.call_number = dump_process.call_number + 1
         prefix = f"{dump_process.call_number}_{prefix}"
 
-        with os.fdopen(os.open(get_dump_path(), os.O_RDWR|os.O_CREAT, stat.S_IWUSR|stat.S_IRUSR), "a") as f:
+        with os.fdopen(os.open(DumpUtil.get_dump_path(), os.O_RDWR|os.O_CREAT, stat.S_IWUSR|stat.S_IRUSR), "a") as f:
             summery_data = []
             if dump_mode == Const.DUMP_MODE.get("SUMMERY"):
                 tensor_max = torch._C._VariableFunctionsClass.max(x).cpu().detach().float().numpy().tolist()
                 tensor_min = torch._C._VariableFunctionsClass.min(x).cpu().detach().float().numpy().tolist()
                 tensor_mean = torch._C._VariableFunctionsClass.mean(x).cpu().detach().float().numpy().tolist()
-                saved_tensor = x.contiguous().view(-1)[:Const.SUMMERY_DATA_NUMS].cpu().detach().float().numpy().tolist()
+                tensor_len = torch._C._VariableFunctionsClass.numel(x)
+                if tensor_len <= Const.SUMMERY_DATA_NUMS * 2:
+                    saved_tensor = x.contiguous().view(-1)[:Const.SUMMERY_DATA_NUMS*2].cpu().detach().float().numpy().tolist()
+                else:
+                    saved_tensor_head = x.contiguous().view(-1)[
+                                        :Const.SUMMERY_DATA_NUMS].cpu().detach().float().numpy().tolist()
+                    saved_tensor_tail = x.contiguous().view(-1)[
+                                        Const.SUMMERY_DATA_NUMS:].cpu().detach().float().numpy().tolist()
+                    saved_tensor = saved_tensor_head + saved_tensor_tail
                 summery_data.extend([tensor_max, tensor_min, tensor_mean])
             elif dump_mode == Const.DUMP_MODE.get("SAMPLE"):
                 np.random.seed(int(os.environ['PYTHONHASHSEED']))
@@ -91,42 +151,6 @@ def _dump_tensor_for_overflow(x, dump_file_name, prefix=""):
             f.write('\n')
 
 
-def set_dump_path(fpath=None):
-    if fpath is None:
-        return
-    real_path = os.path.realpath(fpath)
-    if os.path.isdir(real_path):
-        print_error_log("set_dump_path '{}' error, please set a valid filename.".format(real_path))
-        raise CompareException(CompareException.INVALID_PATH_ERROR)
-    check_file_or_directory_path(os.path.dirname(real_path), True)
-    if os.path.exists(real_path):
-        os.remove(real_path)
-    os.environ["DUMP_PATH"] = real_path
-
-
-def get_dump_path():
-    assert "DUMP_PATH" in os.environ, "Please set dump path for ptdbg_ascend tools."
-    return os.environ.get("DUMP_PATH")
-
-
-def set_dump_switch(switch=None):
-    if switch is None:
-        return
-    assert switch in ["ON", "OFF"], "Please set dump switch with 'ON' or 'OFF'."
-    os.environ["PYTORCH_DUMP_SWITCH"] = switch
-
-
-def get_dump_switch():
-    if "PYTORCH_DUMP_SWITCH" not in os.environ:
-        return False
-
-    switch = os.environ.get("PYTORCH_DUMP_SWITCH")
-    if switch == "ON":
-        return True
-    else:
-        return False
-
-
 def seed_all(seed=1234):
     random.seed(seed)
     os.environ['PYTHONHASHSEED'] = str(seed)
@@ -150,7 +174,13 @@ def acc_cmp_dump(name, **kwargs):
 
 
 def overflow_check(name, **kwargs):
+    pid = kwargs.get('pid')
+    if not pid:
+        return RuntimeError("Not get the specified process pid.")
+
     def overflowcheck_hook(module, in_feat, out_feat):
+        if pid != os.getpid():
+            return
         if torch.cuda.is_available():
             print_warn_log("Overflow detection is not supported in the GPU environment.")
             return
