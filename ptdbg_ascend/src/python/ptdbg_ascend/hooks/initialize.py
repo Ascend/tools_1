@@ -20,11 +20,11 @@ import os
 
 import torch
 
-if not torch.cuda.is_available():
-    import torch_npu
-
 from . import wrap_tensor, wrap_torch, wrap_functional
 from .module import HOOKModule
+
+if not torch.cuda.is_available():
+    import torch_npu
 
 
 def initialize_hook(hook):
