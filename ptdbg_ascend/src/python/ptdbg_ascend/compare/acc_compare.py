@@ -41,23 +41,25 @@ def cosine_similarity(a, b):
     elif a_norm <= Const.FLOAT_EPSILON:
         message = 'Cannot compare by Cosine Similarity, All the data is Zero in npu dump data.'
         result = Const.NAN
-    elif b_norm <=  Const.FLOAT_EPSILON:
+    elif b_norm <= Const.FLOAT_EPSILON:
         message = 'Cannot compare by Cosine Similarity, All the data is Zero in Bench dump data.'
         result = Const.NAN
     else:
-        cos = num / a_norm * b_norm
-        result = 0.5 + 0.5 * cos
-    return format_value(result), message
+        cos = num / (a_norm * b_norm)
+        result = format_value(0.5 + 0.5 * cos)
+    return result, message
 
 
 def get_rmse(a, b):
     rmse = np.linalg.norm(a - b) / np.sqrt(len(a))
+    if np.isnan(rmse):
+        rmse = Const.NAN
     return rmse, ""
 
 
 def get_mape(a, b):
     mape_val = sum(np.abs((a - b) / b)) / len(b) * 100
-    mape = str(round(mape_val, 4)) + '%'
+    mape = Const.NAN if np.isnan(mape_val) else str(round(mape_val, 4)) + '%'
     return mape, ""
 
 
@@ -183,8 +185,8 @@ def get_accuracy(result, n_dict, b_dict, summery_flag):
         if summery_flag[1]:
             summery_data = b_dict.get("summery")[index]
             result_item.extend(summery_data)
+        result_item.append(err_msg)
         result.append(result_item)
-        result.extend(err_msg)
 
 
 def compare(npu_pkl_path, bench_pkl_path, output_path, shape_flag=False):
