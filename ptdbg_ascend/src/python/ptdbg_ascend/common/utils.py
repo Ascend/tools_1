@@ -43,6 +43,8 @@ class Const:
     DOT = "."
     DUMP_MODE = {"SUMMERY": 1, "SAMPLE": 2, "ALL": 3}
     SUMMERY_DATA_NUMS = 256
+    FLOAT_EPSILON = np.finfo(float).eps
+    NAN = 'NaN'
 
 
 class VersionCheck:
@@ -270,6 +272,10 @@ def add_time_as_suffix(name):
 
 def get_time():
     return datetime.now(tz=timezone.utc).strftime("%Y%m%d_%H%M%S")
+
+
+def format_value(value):
+    return '{:.6f}'.format(value)
 
 
 def torch_device_guard(func):

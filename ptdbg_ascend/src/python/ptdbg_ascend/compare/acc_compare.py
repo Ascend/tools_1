@@ -23,27 +23,70 @@ import os.path
 import numpy as np
 import pandas as pd
 
-from ..common.utils import check_file_or_directory_path, add_time_as_suffix, print_error_log, CompareException, Const
+from ..common.utils import check_file_or_directory_path, add_time_as_suffix,\
+    print_error_log, CompareException, Const, format_value
 
 
 def cosine_similarity(a, b):
+    np.seterr(divide='ignore', invalid='ignore')
+    if len(a) == 1:
+        return format_value(1.0), "This tensor is scalar."
     a, b = np.mat(a), np.mat(b)
     num = float(a * b.T)
-    denorm = np.linalg.norm(a) * np.linalg.norm(b)
-    cos = num / denorm
-    sim = 0.5 + 0.5 * cos
-    return sim
+    a_norm = np.linalg.norm(a)
+    b_norm = np.linalg.norm(b)
+    message = ''
+    if a_norm <= Const.FLOAT_EPSILON and b_norm <= Const.FLOAT_EPSILON:
+        result = '1.0'
+    elif a_norm <= Const.FLOAT_EPSILON:
+        message = 'Cannot compare by Cosine Similarity, All the data is Zero in npu dump data.'
+        result = Const.NAN
+    elif b_norm <= Const.FLOAT_EPSILON:
+        message = 'Cannot compare by Cosine Similarity, All the data is Zero in Bench dump data.'
+        result = Const.NAN
+    else:
+        cos = num / (a_norm * b_norm)
+        if np.isnan(cos):
+            message = 'Cannot compare by Cosine Similarity, the dump data has NaN.'
+            result = Const.NAN
+        else:
+            result = format_value(0.5 + 0.5 * cos)
+
+    return result, message
 
 
 def get_rmse(a, b):
     rmse = np.linalg.norm(a - b) / np.sqrt(len(a))
-    return rmse
+    if np.isnan(rmse):
+        rmse = Const.NAN
+    return rmse, ""
 
 
 def get_mape(a, b):
     mape_val = sum(np.abs((a - b) / b)) / len(b) * 100
-    mape = str(round(mape_val, 4)) + '%'
-    return mape
+    mape = Const.NAN if np.isnan(mape_val) else str(round(mape_val, 4)) + '%'
+    return mape, ""
+
+
+def get_max_abs_err(a, b):
+    max_value = 0.0
+    for a_data, b_data in zip(a, b):
+        temp_x = float(a_data)
+        temp_y = float(b_data)
+        abs_error = abs(temp_x - temp_y)
+        if abs_error > max_value:
+            max_value = abs_error
+    return format_value(max_value), ""
+
+
+def get_max_relative_err(a, b):
+    np.seterr(divide='ignore', invalid='ignore')
+    relative_err = np.divide((a - b), b)
+    max_relative_err = np.max(np.abs(relative_err))
+    if np.isnan(max_relative_err):
+        message = 'cannot compare by MaxRelativeError, The data contains 0 or nan in dump data.'
+        return Const.NAN, message
+    return format_value(max_relative_err), ""
 
 
 def check_op(a, b, shape_flag):
@@ -123,24 +166,31 @@ def get_accuracy(result, n_dict, b_dict, summery_flag):
             b_value = np.array(b_dict["output_value"][0])
             n_struct = n_dict["output_struct"][0]
             b_struct = b_dict["output_struct"][0]
+        err_msg = ""
         if n_struct[1] != b_struct[1]:
             cos_sim = "cannot be calculated "
             rmse = "cannot be calculated"
             mape = "cannot be calculated"
+            max_abs_err = "cannot be calculated"
+            max_relative_err = "cannot be calculated"
         else:
-            cos_sim = cosine_similarity(n_value, b_value)
-            if np.isnan(cos_sim):
-                cos_sim = "nan"
-            rmse = get_rmse(n_value, b_value)
-            mape = get_mape(n_value, b_value)
+            cos_sim, message = cosine_similarity(n_value, b_value)
+            err_msg += message
+            rmse, _ = get_rmse(n_value, b_value)
+            mape, _ = get_mape(n_value, b_value)
+            max_abs_err, _ = get_max_abs_err(n_value, b_value)
+            max_relative_err, message = get_max_relative_err(n_value, b_value)
+            err_msg += message
 
-        result_item = [n_name, b_name, n_struct[0], b_struct[0], n_struct[1], b_struct[1], cos_sim, rmse, mape]
+        result_item = [n_name, b_name, n_struct[0], b_struct[0], n_struct[1], b_struct[1],
+                       cos_sim, rmse, mape, max_abs_err, max_relative_err]
         if summery_flag[0]:
             summery_data = n_dict.get("summery")[index]
             result_item.extend(summery_data)
         if summery_flag[1]:
             summery_data = b_dict.get("summery")[index]
             result_item.extend(summery_data)
+        result_item.append(err_msg)
         result.append(result_item)
 
 
@@ -155,11 +205,12 @@ def compare(npu_pkl_path, bench_pkl_path, output_path, shape_flag=False):
     bench_pkl.close()
 
     columns = ["NPU Name", "Bench Name", "NPU Tensor Dtype", "Bench Tensor Dtype",
-               "NPU Tensor Shape", "Bench Tensor Shape", "Cosine", "RMSE", "MAPE"]
+               "NPU Tensor Shape", "Bench Tensor Shape", "Cosine", "RMSE", "MAPE", "MaxAbsErr", "MaxRelativeErr"]
     if npu_summary:
         columns.extend(["NPU max", "NPU min", "NPU mean"])
     if bench_summary:
         columns.extend(["Bench max", "Bench min", "Bench mean"])
+    columns.extend(["Err_message"])
     result_df = pd.DataFrame(result, columns=columns)
 
     file_name = add_time_as_suffix("compare_result")
