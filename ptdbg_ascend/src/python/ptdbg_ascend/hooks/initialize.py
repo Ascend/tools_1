@@ -15,10 +15,11 @@
 # limitations under the License.
 """
 
-import os
 import functools
+import os
 
 import torch
+
 if not torch.cuda.is_available():
     import torch_npu
 
