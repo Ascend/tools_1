@@ -84,7 +84,7 @@ def get_max_relative_err(a, b):
     relative_err = np.divide((a - b), b)
     max_relative_err = np.max(np.abs(relative_err))
     if np.isnan(max_relative_err):
-        message = 'cannot compare by MaxRelativeError, The data contains 0 or nan in dump data'
+        message = 'cannot compare by MaxRelativeError, The data contains 0 or nan in dump data.'
         return Const.NAN, message
     return format_value(max_relative_err), ""
 
