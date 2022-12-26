@@ -123,19 +123,19 @@ class InferSession:
         npTypelist = [np.int8, np.int16, np.int32, np.int64, np.uint8, np.uint16, np.uint32, np.float16, np.float32, np.float64]
         for feed in feeds:
             if type(feed) is np.ndarray:
-                shapes.append(feed.shape)
-                tensor = feed
+                input = feed
+                shapes.append(input.shape)
             elif type(feed) in npTypelist:
-                shapes.append([feed.size])
-                tensor = self.create_tensor_from_arrays_to_device(feed)
+                input = np.array(feed)
+                shapes.append(input.shape)
             elif type(feed) is aclruntime.Tensor:
                 shapes.append(feed.shape)
             elif hasattr(feed, 'type') and feed.type() in torchTensorlist:
-                shapes.append(feed.numpy().shape)
-                tensor = self.create_tensor_from_arrays_to_device(feed.numpy())
+                input = feed.numpy()
+                shapes.append(input.shape)
             else:
                 raise RuntimeError('type:{} invalid'.format(type(feed)))
-            inputs.append(tensor)
+            inputs.append(input)
         
         if mode == 'dymshape' or mode == 'dymdims':
             l = []
