@@ -129,6 +129,7 @@ class InferSession:
                 input = np.array(feed)
                 shapes.append(input.shape)
             elif type(feed) is aclruntime.Tensor:
+                input = feed
                 shapes.append(feed.shape)
             elif hasattr(feed, 'type') and feed.type() in torchTensorlist:
                 input = feed.numpy()
