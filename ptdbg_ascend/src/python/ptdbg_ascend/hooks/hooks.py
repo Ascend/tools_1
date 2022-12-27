@@ -69,22 +69,18 @@ class DumpUtil(object):
 
     @staticmethod
     def get_dump_path():
+        if DumpUtil.dump_path:
+            return DumpUtil.dump_path
+
         if DumpUtil.dump_switch_mode == Const.DUMP_SCOPE.get("ALL"):
-            if DumpUtil.dump_path:
-                return DumpUtil.dump_path
-            else:
-                dir_path = os.path.realpath("./")
-                dump_file_name = "scope_dump_{}_{}.pkl".format(
-                    DumpUtil.dump_switch_mode, get_time())
-                return os.path.join(dir_path, dump_file_name)
+            raise RuntimeError("get_dump_path: the file path is empty,"
+                               " you must use set_dump_path to set a valid dump path!!!")
         else:
-            if DumpUtil.dump_path:
-                dir_path = os.path.dirname(DumpUtil.dump_path)
-            else:
-                dir_path = os.path.realpath("./")
+            dir_path = os.path.realpath("./")
             dump_file_name = "scope_dump_{}_{}_{}.pkl".format(
                 DumpUtil.dump_switch_mode, DumpUtil.dump_switch_scope[0], get_time())
-            return os.path.join(dir_path, dump_file_name)
+            DumpUtil.dump_path = os.path.join(dir_path, dump_file_name)
+            return DumpUtil.dump_path
 
     @staticmethod
     def get_dump_switch():
