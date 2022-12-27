@@ -211,6 +211,8 @@ def overflow_check(name, **kwargs):
             dump_file_name = "Overflow_info_{}.pkl".format(get_time())
             stack_str = [str(_) for _ in inspect.stack()[3:]]
             dump_overflow(module_name, stack_str, in_feat, out_feat, dump_file_name)
+            # clear overflow flag for the next check
+            torch_npu._C._clear_overflow_npu()
             print_warn_log("[overflow {} times]: module name :'{}' is overflow and dump file is saved in '{}'."
                            .format(DumpUtil.real_overflow_dump_times, module_name, os.path.realpath(dump_file_name)))
             if not DumpUtil.check_overflow_dump_times(dump_mode):
