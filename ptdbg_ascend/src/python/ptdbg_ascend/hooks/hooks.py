@@ -57,7 +57,7 @@ class DumpUtil(object):
             return True
         elif DumpUtil.dump_switch_mode == Const.DUMP_SCOPE.get("LIST"):
             for item in DumpUtil.dump_switch_scope:
-                if item.startswith(name_prefix):
+                if name_prefix.startswith(item):
                     return True
         elif DumpUtil.dump_switch_mode == Const.DUMP_SCOPE.get("RANGE"):
             start = DumpUtil.dump_switch_scope[0].split('_', 1)[0]
@@ -174,6 +174,9 @@ def _dump_tensor_completely(x, prefix, dump_file_name):
         for i, item in enumerate(x):
             _dump_tensor_completely(item, "{}.{}".format(prefix, i), dump_file_name)
     else:
+        if DumpUtil.dump_switch_scope != Const.DUMP_SCOPE.get("ALL") and \
+                (not isinstance(x, torch.Tensor) or len(x.shape) == 0 or not x.is_floating_point()):
+            return
         with os.fdopen(os.open(dump_file_name, os.O_RDWR|os.O_CREAT, stat.S_IWUSR|stat.S_IRUSR), "a") as f:
             if isinstance(x, torch.Tensor):
                 save_tensor = x.contiguous().view(-1).cpu().detach().float().numpy().tolist()

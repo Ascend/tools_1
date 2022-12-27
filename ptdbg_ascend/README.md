@@ -110,10 +110,10 @@ set_dump_path("./npu_dump.pkl")
 # 示例1： dump全量
 set_dump_switch("ON")
 # 示例2： dump指定算子/算子列表.
-set_dump_switch("ON", mode=2, scope=[1478_Tensor_permute, 1484_Tensor_transpose_forward])
+set_dump_switch("ON", mode=2, scope=["1478_Tensor_permute", "1484_Tensor_transpose", "1792_Torch_relue"])
 # 示例3： dump指定范围dump.
 #  则会dump 1000_Tensor_abs 到 1484_Tensor_transpose_forward之间的所有api
-set_dump_switch("ON", mode=3, scope=[1000_Tensor_abs, 1484_Tensor_transpose_forward])
+set_dump_switch("ON", mode=3, scope=["1000_Tensor_abs", "1484_Tensor_transpose_forward"])
 
 ”“”
 # 精度比对场景：
