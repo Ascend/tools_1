@@ -102,17 +102,25 @@ from ptdbg_ascend import *
 seed_all()
 # 设置dump路径（含文件名）
 set_dump_path("./npu_dump.pkl")
+
 ”“”
+# 精度比对场景：
 # 对模型注入精度比对的hook,第三个参数为dump模式
-# dump模式有三种：
-    "SUMMERY": 1, 摘要模式，每个tensor dump最多10个数，同时dump出tensor的sum, mean;
-    "SAMPLE":  2, 采样模式，tensor数据按16倍下采样后dump
-    "ALL":     3  全dump，dump出tensor的完整数据
+# 精度比对的dump模式有三种：
+     1： 摘要模式，每个tensor dump最多512 (256(前)+256(尾))个数，同时dump出tensor的max, min, mean;
+     2： 采样模式，tensor数据按16倍下采样后dump
+     3： 全dump，dump出tensor的完整数据
 “”“
 register_hook(model, acc_cmp_dump, dump_mode=1)
 
+“”“
+#溢出检测场景：
 # 注册溢出检测回调函数，只有两个参数（NPU场景,GPU和CPU不支持）
-register_hook(model, overflow_check)
+# 溢出检测的dump模式：
+    检测的次数：配置实际溢出检测的次数，例如配置为3，表示检测到第三次溢出时停止训练;
+              该参数不配置，默认值为1次。
+“”“
+register_hook(model, overflow_check, dump_mode=1)
 
 # dump开关默认处于关闭状态.
 # 如果需要全量dump，建议在注册hook之前就将开关打开；

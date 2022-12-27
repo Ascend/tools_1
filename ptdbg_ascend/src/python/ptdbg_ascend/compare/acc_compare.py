@@ -125,20 +125,28 @@ def merge_tensor(tensor_list):
 
 def read_op(ops_queue, pkl_file_handle):
     tensor_list = []
-    read_flag = True
+    read_err = False
+    read_output_flag = {"last_line": False, "curr_line": False}
     while True:
+        curr_pos = pkl_file_handle.tell()
         tensor_line = pkl_file_handle.readline()
         if len(tensor_line) == 0:
-            read_flag = False
+            read_err = True
             break
         if tensor_line == '\n':
             continue
         tensor_data = json.loads(tensor_line)
-        tensor_list.append(tensor_data)
-        if tensor_data[0].find("output") != -1:
+        read_output_flag["last_line"] = read_output_flag.get("curr_line")
+        read_output_flag["curr_line"] = True if tensor_data[0].find("output") != -1 else False
+
+        if read_output_flag.get("last_line") and not read_output_flag.get("curr_line"):
             ops_queue.append(merge_tensor(tensor_list))
+            # the pos of the handle needs to restore to the start of the next api.
+            pkl_file_handle.seek(curr_pos, 0)
             break
-    return read_flag
+        tensor_list.append(tensor_data)
+
+    return not read_err
 
 
 def match_op(npu_queue, bench_queue, shape_flag):
