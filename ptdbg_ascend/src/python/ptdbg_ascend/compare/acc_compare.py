@@ -132,16 +132,18 @@ def read_op(ops_queue, pkl_file_handle):
     while True:
         curr_pos = pkl_file_handle.tell()
         tensor_line = pkl_file_handle.readline()
-        if len(tensor_line) == 0:
+        if len(tensor_line) == 0 and not read_output_flag.get("curr_line"):
             read_err = True
             break
         if tensor_line == '\n':
             continue
-        tensor_data = json.loads(tensor_line)
-        read_output_flag["last_line"] = read_output_flag.get("curr_line")
-        read_output_flag["curr_line"] = True if tensor_data[0].find("output") != -1 else False
+        if len(tensor_line) != 0:
+            tensor_data = json.loads(tensor_line)
+            read_output_flag["last_line"] = read_output_flag.get("curr_line")
+            read_output_flag["curr_line"] = True if tensor_data[0].find("output") != -1 else False
 
-        if read_output_flag.get("last_line") and not read_output_flag.get("curr_line"):
+        if (read_output_flag.get("last_line") and not read_output_flag.get("curr_line")) or\
+                (len(tensor_line) == 0 and read_output_flag.get("curr_line")):  # end of file scenario
             ops_queue.append(merge_tensor(tensor_list))
             # the pos of the handle needs to restore to the start of the next api.
             pkl_file_handle.seek(curr_pos, 0)
