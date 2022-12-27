@@ -137,10 +137,7 @@ def read_op(ops_queue, pkl_file_handle):
             continue
         tensor_data = json.loads(tensor_line)
         read_output_flag["last_line"] = read_output_flag.get("curr_line")
-        if tensor_data[0].find("output") != -1:
-            read_output_flag["curr_line"] = True
-        else:
-            read_output_flag["curr_line"] = False
+        read_output_flag["curr_line"] = True if tensor_data[0].find("output") != -1 else False
 
         if read_output_flag.get("last_line") and not read_output_flag.get("curr_line"):
             ops_queue.append(merge_tensor(tensor_list))
