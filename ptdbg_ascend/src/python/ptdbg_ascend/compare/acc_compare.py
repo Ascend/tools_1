@@ -109,11 +109,13 @@ def merge_tensor(tensor_list):
     op_dict["summery"] = []
 
     for tensor in tensor_list:
+        if tensor[0].find("stack_info"):
+            continue
         op_dict["op_name"].append(tensor[0])
         if tensor[0].find("input") != -1:
             op_dict["input_struct"].append((tensor[3], tensor[4]))
             op_dict["input_value"].append(tensor[2])
-        else:
+        elif tensor[0].find("output") != -1:
             op_dict["output_struct"].append((tensor[3], tensor[4]))
             op_dict["output_value"].append(tensor[2])
 
