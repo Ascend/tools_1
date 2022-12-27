@@ -174,16 +174,16 @@ def _dump_tensor_completely(x, prefix, dump_file_name):
         for i, item in enumerate(x):
             _dump_tensor_completely(item, "{}.{}".format(prefix, i), dump_file_name)
     else:
-        if DumpUtil.dump_switch_scope != Const.DUMP_SCOPE.get("ALL") and \
-                (not isinstance(x, torch.Tensor) or len(x.shape) == 0 or not x.is_floating_point()):
-            return
-        with os.fdopen(os.open(dump_file_name, os.O_RDWR|os.O_CREAT, stat.S_IWUSR|stat.S_IRUSR), "a") as f:
-            if isinstance(x, torch.Tensor):
-                save_tensor = x.contiguous().view(-1).cpu().detach().float().numpy().tolist()
-                json.dump([prefix, dump_mode, save_tensor, str(x.dtype), tuple(x.shape)], f)
-            else:
-                json.dump([prefix, x], f)
-            f.write('\n')
+        if prefix.endswith("stack_info") or \
+                DumpUtil.dump_switch_scope == Const.DUMP_SCOPE.get("ALL") or \
+                (isinstance(x, torch.Tensor) and not len(x.shape) == 0 and x.is_floating_point()):
+            with os.fdopen(os.open(dump_file_name, os.O_RDWR|os.O_CREAT, stat.S_IWUSR|stat.S_IRUSR), "a") as f:
+                if isinstance(x, torch.Tensor):
+                    save_tensor = x.contiguous().view(-1).cpu().detach().float().numpy().tolist()
+                    json.dump([prefix, dump_mode, save_tensor, str(x.dtype), tuple(x.shape)], f)
+                else:
+                    json.dump([prefix, x], f)
+                f.write('\n')
 
 
 def seed_all(seed=1234):
