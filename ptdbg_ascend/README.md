@@ -117,7 +117,7 @@ register_hook(model, acc_cmp_dump, dump_mode=1)
 #溢出检测场景：
 # 注册溢出检测回调函数，只有两个参数（NPU场景,GPU和CPU不支持）
 # 溢出检测的dump模式：
-    检测的次数：配置实际溢出检测的测试，例如配置为3，表示检测到第三次溢出时停止训练;
+    检测的次数：配置实际溢出检测的次数，例如配置为3，表示检测到第三次溢出时停止训练;
               该参数不配置，默认值为1次。
 “”“
 register_hook(model, overflow_check, dump_mode=1)
