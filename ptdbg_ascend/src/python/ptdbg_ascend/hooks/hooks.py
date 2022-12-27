@@ -35,6 +35,7 @@ class DumpUtil(object):
     dump_path = None
     dump_switch = None
     dump_init_enable = False
+    real_overflow_dump_times = 0
 
     @staticmethod
     def set_dump_path(save_path):
@@ -56,6 +57,17 @@ class DumpUtil(object):
             return False
 
         if DumpUtil.dump_switch == "ON":
+            return True
+        else:
+            return False
+
+    @staticmethod
+    def inc_overflow_dump_times():
+        DumpUtil.real_overflow_dump_times += 1
+
+    @staticmethod
+    def check_overflow_dump_times(need_dump_times):
+        if DumpUtil.real_overflow_dump_times < need_dump_times:
             return True
         else:
             return False
@@ -173,7 +185,15 @@ def acc_cmp_dump(name, **kwargs):
     return acc_cmp_hook
 
 
+def dump_overflow(module_name, stack_str, in_feat, out_feat, dump_file):
+    name_template = f"{module_name}" + "_{}"
+    _dump_tensor_for_overflow(stack_str, dump_file, name_template.format("stack_info"))
+    _dump_tensor_for_overflow(in_feat, dump_file, name_template.format("input"))
+    _dump_tensor_for_overflow(out_feat, dump_file, name_template.format("output"))
+
+
 def overflow_check(name, **kwargs):
+    dump_mode = kwargs.get('dump_mode', 1)
     pid = kwargs.get('pid')
     if not pid:
         return RuntimeError("Not get the specified process pid.")
@@ -186,14 +206,15 @@ def overflow_check(name, **kwargs):
             return
         module_name = name
         module.has_overflow = torch_npu._C._check_overflow_npu()
-        if module.has_overflow:
-            name_template = f"{name}" + "_{}"
+        if module.has_overflow and DumpUtil.check_overflow_dump_times(dump_mode):
+            DumpUtil.inc_overflow_dump_times()
             dump_file_name = "Overflow_info_{}.pkl".format(get_time())
             stack_str = [str(_) for _ in inspect.stack()[3:]]
-            _dump_tensor_for_overflow(stack_str, dump_file_name, name_template.format("stack_info"))
-            _dump_tensor_for_overflow(in_feat, dump_file_name, name_template.format("input"))
-            _dump_tensor_for_overflow(out_feat, dump_file_name, name_template.format("output"))
-            raise ValueError("[check overflow]: module name :'{}' is overflow and dump file is saved in '{}'.".format(
-                module_name, os.path.realpath(dump_file_name)))
+            dump_overflow(module_name, stack_str, in_feat, out_feat, dump_file_name)
+            print_warn_log("[overflow {} times]: module name :'{}' is overflow and dump file is saved in '{}'."
+                           .format(DumpUtil.real_overflow_dump_times, module_name, os.path.realpath(dump_file_name)))
+            if not DumpUtil.check_overflow_dump_times(dump_mode):
+                raise ValueError("[overflow {} times]: dump file is saved in '{}'."
+                                 .format(DumpUtil.real_overflow_dump_times, os.path.realpath(dump_file_name)))
 
     return overflowcheck_hook
