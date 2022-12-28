@@ -150,22 +150,12 @@ def dump_tensor(x, prefix, dump_mode):
         for i, item in enumerate(x):
             dump_tensor(item, "{}.{}".format(prefix, i), dump_mode)
     elif isinstance(x, torch.Tensor):
-        if x.numel() == 0:
+        if x.numel() == 0 or len(x.shape) == 0 or not x.is_floating_point():
             return
 
         with os.fdopen(os.open(DumpUtil.get_dump_path(), os.O_RDWR|os.O_CREAT, stat.S_IWUSR|stat.S_IRUSR), "a") as f:
             summery_data = []
-            if not x.is_floating_point():
-                saved_tensor = x.contiguous().view(-1).cpu().detach().numpy().tolist()
-                if x.numel() == 1:
-                    tensor_max = x.data.cpu().detach().numpy().tolist()
-                    summery_data.extend([tensor_max, tensor_max, tensor_max])
-                else:
-                    tensor_max = torch._C._VariableFunctionsClass.max(x).cpu().detach().float().numpy().tolist()
-                    tensor_min = torch._C._VariableFunctionsClass.min(x).cpu().detach().float().numpy().tolist()
-                    tensor_mean = ["NaN"]
-                    summery_data.extend([tensor_max, tensor_min, tensor_mean])
-            elif dump_mode == Const.DUMP_MODE.get("SUMMERY"):
+            if dump_mode == Const.DUMP_MODE.get("SUMMERY"):
                 tensor_max = torch._C._VariableFunctionsClass.max(x).cpu().detach().float().numpy().tolist()
                 tensor_min = torch._C._VariableFunctionsClass.min(x).cpu().detach().float().numpy().tolist()
                 tensor_mean = torch._C._VariableFunctionsClass.mean(x).cpu().detach().float().numpy().tolist()
