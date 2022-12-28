@@ -141,7 +141,7 @@ def set_dump_switch(switch, mode=1, scope=[]):
     if mode == Const.DUMP_SCOPE.get("LIST"):
         assert len(scope) != 0, "set_dump_switch, scope param set invalid, it's should not be an empty list."
     if mode == Const.DUMP_SCOPE.get("STACK"):
-        assert len(scope) > 2, "set_dump_switch, scope param set invalid, it's must be [start, end] or []."
+        assert len(scope) <= 2, "set_dump_switch, scope param set invalid, it's must be [start, end] or []."
     DumpUtil.set_dump_switch(switch, mode=mode, scope=scope)
 
 
@@ -157,6 +157,14 @@ def dump_tensor(x, prefix, dump_mode):
             summery_data = []
             if not x.is_floating_point():
                 saved_tensor = x.contiguous().view(-1).cpu().detach().numpy().tolist()
+                if x.numel() == 1:
+                    tensor_max = x.data.cpu().detach().numpy().tolist()
+                    summery_data.extend([tensor_max, tensor_max, tensor_max])
+                else:
+                    tensor_max = torch._C._VariableFunctionsClass.max(x).cpu().detach().float().numpy().tolist()
+                    tensor_min = torch._C._VariableFunctionsClass.min(x).cpu().detach().float().numpy().tolist()
+                    tensor_mean = ["NaN"]
+                    summery_data.extend([tensor_max, tensor_min, tensor_mean])
             elif dump_mode == Const.DUMP_MODE.get("SUMMERY"):
                 tensor_max = torch._C._VariableFunctionsClass.max(x).cpu().detach().float().numpy().tolist()
                 tensor_min = torch._C._VariableFunctionsClass.min(x).cpu().detach().float().numpy().tolist()
@@ -231,7 +239,7 @@ def dump_acc_cmp(name, in_feat, out_feat, dump_mode):
             name_template = f"{name_prefix}" + "_{}"
             stack_str = [str(_) for _ in inspect.stack()[3:]]
             _dump_tensor_completely(stack_str, name_template.format("stack_info"), dump_file)
-            if DumpUtil.dump_switch_scope != Const.DUMP_SCOPE.get("STACK"):
+            if DumpUtil.dump_switch_mode != Const.DUMP_SCOPE.get("STACK"):
                 _dump_tensor_completely(in_feat, name_template.format("input"), dump_file)
                 _dump_tensor_completely(out_feat, name_template.format("output"), dump_file)
 
