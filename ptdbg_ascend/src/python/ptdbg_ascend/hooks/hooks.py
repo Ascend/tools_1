@@ -65,6 +65,22 @@ class DumpUtil(object):
             curr = name_prefix.split('_', 1)[0]
             if start <= curr <= end:
                 return True
+        elif DumpUtil.dump_switch_mode == Const.DUMP_SCOPE.get("STACK"):
+            if len(DumpUtil.dump_switch_scope) == 0:
+                return True
+            elif len(DumpUtil.dump_switch_scope) == 1:
+                if name_prefix.startswith(DumpUtil.dump_switch_scope[0]):
+                    return True
+            elif len(DumpUtil.dump_switch_scope) == 2:
+                start = DumpUtil.dump_switch_scope[0].split('_', 1)[0]
+                end = DumpUtil.dump_switch_scope[1].split('_', 1)[0]
+                curr = name_prefix.split('_', 1)[0]
+                if start <= curr <= end:
+                    return True
+            else:
+                print_error_log("dump scope is invalid, Please set the scope param in"
+                                " set_dump_switch with [1, 2, 3, 4],1: ALL, 2: List, 3: ARRANGE, 4: STACK !")
+
         return False
 
     @staticmethod
@@ -124,6 +140,8 @@ def set_dump_switch(switch, mode=1, scope=[]):
         assert len(scope) == 2, "set_dump_switch, scope param set invalid, it's must be [start, end]."
     if mode == Const.DUMP_SCOPE.get("LIST"):
         assert len(scope) != 0, "set_dump_switch, scope param set invalid, it's should not be an empty list."
+    if mode == Const.DUMP_SCOPE.get("LIST"):
+        assert len(scope) > 2, "set_dump_switch, scope param set invalid, it's must be [start, end] or []."
     DumpUtil.set_dump_switch(switch, mode=mode, scope=scope)
 
 
@@ -132,12 +150,14 @@ def dump_tensor(x, prefix, dump_mode):
         for i, item in enumerate(x):
             dump_tensor(item, "{}.{}".format(prefix, i), dump_mode)
     elif isinstance(x, torch.Tensor):
-        if len(x.shape) == 0 or not x.is_floating_point():
+        if x.numel() == 0:
             return
 
         with os.fdopen(os.open(DumpUtil.get_dump_path(), os.O_RDWR|os.O_CREAT, stat.S_IWUSR|stat.S_IRUSR), "a") as f:
             summery_data = []
-            if dump_mode == Const.DUMP_MODE.get("SUMMERY"):
+            if not x.is_floating_point():
+                saved_tensor = x.contiguous().view(-1).cpu().detach().numpy().tolist()
+            elif dump_mode == Const.DUMP_MODE.get("SUMMERY"):
                 tensor_max = torch._C._VariableFunctionsClass.max(x).cpu().detach().float().numpy().tolist()
                 tensor_min = torch._C._VariableFunctionsClass.min(x).cpu().detach().float().numpy().tolist()
                 tensor_mean = torch._C._VariableFunctionsClass.mean(x).cpu().detach().float().numpy().tolist()
@@ -176,7 +196,7 @@ def _dump_tensor_completely(x, prefix, dump_file_name):
     else:
         if "stack_info" in prefix or \
                 DumpUtil.dump_switch_scope == Const.DUMP_SCOPE.get("ALL") or \
-                (isinstance(x, torch.Tensor) and not len(x.shape) == 0 and x.is_floating_point()):
+                (isinstance(x, torch.Tensor) and x.numel() != 0):
             with os.fdopen(os.open(dump_file_name, os.O_RDWR|os.O_CREAT, stat.S_IWUSR|stat.S_IRUSR), "a") as f:
                 if isinstance(x, torch.Tensor):
                     save_tensor = x.contiguous().view(-1).cpu().detach().float().numpy().tolist()
@@ -211,8 +231,9 @@ def dump_acc_cmp(name, in_feat, out_feat, dump_mode):
             name_template = f"{name_prefix}" + "_{}"
             stack_str = [str(_) for _ in inspect.stack()[3:]]
             _dump_tensor_completely(stack_str, name_template.format("stack_info"), dump_file)
-            _dump_tensor_completely(in_feat, name_template.format("input"), dump_file)
-            _dump_tensor_completely(out_feat, name_template.format("output"), dump_file)
+            if DumpUtil.dump_switch_scope != Const.DUMP_SCOPE.get("STACK"):
+                _dump_tensor_completely(in_feat, name_template.format("input"), dump_file)
+                _dump_tensor_completely(out_feat, name_template.format("output"), dump_file)
 
 
 def acc_cmp_dump(name, **kwargs):

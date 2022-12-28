@@ -102,18 +102,19 @@ from ptdbg_ascend import *
 seed_all()
 # 设置dump路径（含文件名）
 set_dump_path("./npu_dump.pkl")
-
-# dump默认处于关闭状态.
-# 如果需要全量dump，建议在注册hook之前就将开关打开；
-# 如果只在特定的step dump，则在期望dump的迭代开始前打开dump开关
-# 若需要控制dump的范围则需要设置第二、第三个参数
-# 示例1： dump全量
+# dump默认处于关闭状态，设置dump开关为打开
+# 如果只在特定的step dump，则在期望dump的迭代开始前打开dump开关，step结束后关掉。
 set_dump_switch("ON")
-# 示例2： dump指定算子/算子列表.
+
+# 初步确定了异常范围后，可以通过如下方式dump单API或者小范围API的全量数据
+# 通过set_dump_switch的第二、第三个参数控制dump的范围
+# 示例1： dump指定算子/算子列表.
 set_dump_switch("ON", mode=2, scope=["1478_Tensor_permute", "1484_Tensor_transpose", "1792_Torch_relue"])
-# 示例3： dump指定范围dump.
+# 示例2： dump指定范围dump.
 #  则会dump 1000_Tensor_abs 到 1484_Tensor_transpose_forward之间的所有api
 set_dump_switch("ON", mode=3, scope=["1000_Tensor_abs", "1484_Tensor_transpose_forward"])
+# 示例3： STACK模式，只dump堆栈信息， 示例中dump "1000_Tensor_abs" 到 "1484_Tensor_transpose_forward" 之间所有算子的STACK信息
+set_dump_switch("ON", mode=4, scope=["1000_Tensor_abs", "1484_Tensor_transpose_forward"])
 
 ”“”
 # 精度比对场景：
