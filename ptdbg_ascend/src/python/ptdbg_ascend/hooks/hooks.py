@@ -140,7 +140,7 @@ def set_dump_switch(switch, mode=1, scope=[]):
         assert len(scope) == 2, "set_dump_switch, scope param set invalid, it's must be [start, end]."
     if mode == Const.DUMP_SCOPE.get("LIST"):
         assert len(scope) != 0, "set_dump_switch, scope param set invalid, it's should not be an empty list."
-    if mode == Const.DUMP_SCOPE.get("LIST"):
+    if mode == Const.DUMP_SCOPE.get("STACK"):
         assert len(scope) > 2, "set_dump_switch, scope param set invalid, it's must be [start, end] or []."
     DumpUtil.set_dump_switch(switch, mode=mode, scope=scope)
 
