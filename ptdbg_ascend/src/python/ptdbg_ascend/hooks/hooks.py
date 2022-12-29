@@ -34,6 +34,8 @@ from ..common.utils import check_file_or_directory_path, print_error_log, \
 class DumpUtil(object):
     dump_path = None
     dump_switch = None
+    dump_switch_mode = Const.DUMP_SCOPE.get("ALL")
+    dump_switch_scope = []
     dump_init_enable = False
     real_overflow_dump_times = 0
 
@@ -43,13 +45,58 @@ class DumpUtil(object):
         DumpUtil.dump_init_enable = True
 
     @staticmethod
-    def set_dump_switch(switch):
+    def set_dump_switch(switch, mode, scope):
         DumpUtil.dump_switch = switch
+        DumpUtil.dump_switch_mode = mode
         DumpUtil.dump_init_enable = True
+        DumpUtil.dump_switch_scope = scope
+
+    @staticmethod
+    def check_switch_scope(name_prefix):
+        if DumpUtil.dump_switch_mode == Const.DUMP_SCOPE.get("ALL"):
+            return True
+        elif DumpUtil.dump_switch_mode == Const.DUMP_SCOPE.get("LIST"):
+            for item in DumpUtil.dump_switch_scope:
+                if name_prefix.startswith(item):
+                    return True
+        elif DumpUtil.dump_switch_mode == Const.DUMP_SCOPE.get("RANGE"):
+            start = DumpUtil.dump_switch_scope[0].split('_', 1)[0]
+            end = DumpUtil.dump_switch_scope[1].split('_', 1)[0]
+            curr = name_prefix.split('_', 1)[0]
+            if start <= curr <= end:
+                return True
+        elif DumpUtil.dump_switch_mode == Const.DUMP_SCOPE.get("STACK"):
+            if len(DumpUtil.dump_switch_scope) == 0:
+                return True
+            elif len(DumpUtil.dump_switch_scope) == 1:
+                if name_prefix.startswith(DumpUtil.dump_switch_scope[0]):
+                    return True
+            elif len(DumpUtil.dump_switch_scope) == 2:
+                start = DumpUtil.dump_switch_scope[0].split('_', 1)[0]
+                end = DumpUtil.dump_switch_scope[1].split('_', 1)[0]
+                curr = name_prefix.split('_', 1)[0]
+                if start <= curr <= end:
+                    return True
+            else:
+                print_error_log("dump scope is invalid, Please set the scope param in"
+                                " set_dump_switch with [1, 2, 3, 4],1: ALL, 2: List, 3: ARRANGE, 4: STACK !")
+
+        return False
 
     @staticmethod
     def get_dump_path():
-        return DumpUtil.dump_path
+        if DumpUtil.dump_path:
+            return DumpUtil.dump_path
+
+        if DumpUtil.dump_switch_mode == Const.DUMP_SCOPE.get("ALL"):
+            raise RuntimeError("get_dump_path: the file path is empty,"
+                               " you must use set_dump_path to set a valid dump path!!!")
+        else:
+            dir_path = os.path.realpath("./")
+            dump_file_name = "scope_dump_{}_{}_{}.pkl".format(
+                DumpUtil.dump_switch_mode, DumpUtil.dump_switch_scope[0], get_time())
+            DumpUtil.dump_path = os.path.join(dir_path, dump_file_name)
+            return DumpUtil.dump_path
 
     @staticmethod
     def get_dump_switch():
@@ -87,34 +134,24 @@ def set_dump_path(fpath=None):
     DumpUtil.set_dump_path(real_path)
 
 
-def set_dump_switch(switch=None):
-    if switch is None:
-        return
+def set_dump_switch(switch, mode=1, scope=[]):
     assert switch in ["ON", "OFF"], "Please set dump switch with 'ON' or 'OFF'."
-    DumpUtil.set_dump_switch(switch)
+    if mode == Const.DUMP_SCOPE.get("RANGE"):
+        assert len(scope) == 2, "set_dump_switch, scope param set invalid, it's must be [start, end]."
+    if mode == Const.DUMP_SCOPE.get("LIST"):
+        assert len(scope) != 0, "set_dump_switch, scope param set invalid, it's should not be an empty list."
+    if mode == Const.DUMP_SCOPE.get("STACK"):
+        assert len(scope) <= 2, "set_dump_switch, scope param set invalid, it's must be [start, end] or []."
+    DumpUtil.set_dump_switch(switch, mode=mode, scope=scope)
 
 
 def dump_tensor(x, prefix, dump_mode):
-    if DumpUtil.get_dump_path() is None:
-        return
-    if DumpUtil.get_dump_switch():
-        dump_process(x, prefix, dump_mode)
-
-
-def dump_process(x, prefix="", dump_mode=1):
     if isinstance(x, (tuple, list)) and x:
         for i, item in enumerate(x):
-            dump_process(item, prefix="{}.{}".format(prefix, i), dump_mode=1)
+            dump_tensor(item, "{}.{}".format(prefix, i), dump_mode)
     elif isinstance(x, torch.Tensor):
-        if len(x.shape) == 0 or not x.is_floating_point():
+        if x.numel() == 0 or len(x.shape) == 0 or not x.is_floating_point():
             return
-
-        if DumpUtil.dump_init_enable:
-            dump_process.call_number = 0
-            DumpUtil.dump_init_enable = False
-        else:
-            dump_process.call_number = dump_process.call_number + 1
-        prefix = f"{dump_process.call_number}_{prefix}"
 
         with os.fdopen(os.open(DumpUtil.get_dump_path(), os.O_RDWR|os.O_CREAT, stat.S_IWUSR|stat.S_IRUSR), "a") as f:
             summery_data = []
@@ -149,18 +186,22 @@ def dump_process(x, prefix="", dump_mode=1):
             f.write('\n')
 
 
-def _dump_tensor_for_overflow(x, dump_file_name, prefix=""):
+def _dump_tensor_completely(x, prefix, dump_file_name):
+    dump_mode = Const.DUMP_MODE.get("ALL")
     if isinstance(x, (tuple, list)) and x:
         for i, item in enumerate(x):
-            _dump_tensor_for_overflow(item, dump_file_name, prefix="{}.{}".format(prefix, i))
+            _dump_tensor_completely(item, "{}.{}".format(prefix, i), dump_file_name)
     else:
-        with os.fdopen(os.open(dump_file_name, os.O_RDWR|os.O_CREAT, stat.S_IWUSR|stat.S_IRUSR), "a") as f:
-            if isinstance(x, torch.Tensor):
-                save_tensor = x.contiguous().view(-1).cpu().detach().float().numpy().tolist()
-                json.dump([prefix, save_tensor, str(x.dtype), tuple(x.shape)], f)
-            else:
-                json.dump([prefix, x], f)
-            f.write('\n')
+        if "stack_info" in prefix or \
+                DumpUtil.dump_switch_scope == Const.DUMP_SCOPE.get("ALL") or \
+                (isinstance(x, torch.Tensor) and x.numel() != 0):
+            with os.fdopen(os.open(dump_file_name, os.O_RDWR|os.O_CREAT, stat.S_IWUSR|stat.S_IRUSR), "a") as f:
+                if isinstance(x, torch.Tensor):
+                    save_tensor = x.contiguous().view(-1).cpu().detach().float().numpy().tolist()
+                    json.dump([prefix, dump_mode, save_tensor, str(x.dtype), tuple(x.shape)], f)
+                else:
+                    json.dump([prefix, x], f)
+                f.write('\n')
 
 
 def seed_all(seed=1234):
@@ -168,6 +209,29 @@ def seed_all(seed=1234):
     os.environ['PYTHONHASHSEED'] = str(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
+
+
+def dump_acc_cmp(name, in_feat, out_feat, dump_mode):
+    if DumpUtil.get_dump_switch():
+        if DumpUtil.dump_init_enable:
+            dump_acc_cmp.call_number = 0
+            DumpUtil.dump_init_enable = False
+        else:
+            dump_acc_cmp.call_number = dump_acc_cmp.call_number + 1
+
+        name_prefix = f"{dump_acc_cmp.call_number}_{name}"
+        if DumpUtil.dump_switch_mode == Const.DUMP_SCOPE.get("ALL"):
+            name_template = f"{name_prefix}" + "_{}"
+            dump_tensor(in_feat, name_template.format("input"), dump_mode)
+            dump_tensor(out_feat, name_template.format("output"), dump_mode)
+        elif DumpUtil.check_switch_scope(name_prefix):
+            dump_file = DumpUtil.get_dump_path()
+            name_template = f"{name_prefix}" + "_{}"
+            stack_str = [str(_) for _ in inspect.stack()[3:]]
+            _dump_tensor_completely(stack_str, name_template.format("stack_info"), dump_file)
+            if DumpUtil.dump_switch_mode != Const.DUMP_SCOPE.get("STACK"):
+                _dump_tensor_completely(in_feat, name_template.format("input"), dump_file)
+                _dump_tensor_completely(out_feat, name_template.format("output"), dump_file)
 
 
 def acc_cmp_dump(name, **kwargs):
@@ -178,18 +242,16 @@ def acc_cmp_dump(name, **kwargs):
 
     def acc_cmp_hook(module, in_feat, out_feat):
         if pid == os.getpid():
-            name_template = f"{name}" + "_{}"
-            dump_tensor(in_feat, name_template.format("input"), dump_mode)
-            dump_tensor(out_feat, name_template.format("output"), dump_mode)
+            dump_acc_cmp(name, in_feat, out_feat, dump_mode)
 
     return acc_cmp_hook
 
 
 def dump_overflow(module_name, stack_str, in_feat, out_feat, dump_file):
     name_template = f"{module_name}" + "_{}"
-    _dump_tensor_for_overflow(stack_str, dump_file, name_template.format("stack_info"))
-    _dump_tensor_for_overflow(in_feat, dump_file, name_template.format("input"))
-    _dump_tensor_for_overflow(out_feat, dump_file, name_template.format("output"))
+    _dump_tensor_completely(stack_str, name_template.format("stack_info"), dump_file)
+    _dump_tensor_completely(in_feat, name_template.format("input"), dump_file)
+    _dump_tensor_completely(out_feat, name_template.format("output"), dump_file)
 
 
 def overflow_check(name, **kwargs):

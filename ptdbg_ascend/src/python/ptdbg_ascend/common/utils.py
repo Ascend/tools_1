@@ -42,6 +42,7 @@ class Const:
     COMMA = ","
     DOT = "."
     DUMP_MODE = {"SUMMERY": 1, "SAMPLE": 2, "ALL": 3}
+    DUMP_SCOPE = {"ALL": 1, "LIST": 2, "RANGE": 3, "STACK": 4}
     SUMMERY_DATA_NUMS = 256
     FLOAT_EPSILON = np.finfo(float).eps
     NAN = 'NaN'

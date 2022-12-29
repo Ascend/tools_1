@@ -87,9 +87,9 @@ pip3 install ./ptdbg_ascend/dist/ptdbg_ascend-0.1-py3-none-any.whl --upgrade --f
 | 函数          | 描述                                                                                                |
 |-------------|---------------------------------------------------------------------------------------------------|
 | set_dump_path | 用于设置dump文件的路径(包含文件名)，参数示例：“/var/log/dump/npu_dump.pkl”                                            |
-| set_dump_switch | 设置dump使能开关，不设置则默认处于关闭状态。参数为：“ON” 或者 "OFF"                                                                      |
+| set_dump_switch | 设置dump范围，不设置则默认处于关闭状态。第一个参数为：“ON” 或者 "OFF",若需要控制dump的算子范围，则需要第二、三个参数，默认不配置 |
 | seed_all    | 固定随机数，参数为随机数种子，默认种子为：1234.                                                                        |
-| register_hook | 用于注册dump回调函数，例如：注册精度比对hook：register_hook(model, acc_cmp_dump).                               |
+| register_hook | 用于注册dump回调函数，例如：注册精度比对hook：register_hook(model, acc_cmp_dump).                                    |
 | compare     | 比对接口，将GPU/CPU/NPU的dump文件进行比对，第三个参数为存放比对结果的目录；<br/>文件名称基于时间戳自动生成，格式为：compare_result_timestamp.csv. |
 
 #### 使用示例
@@ -102,6 +102,19 @@ from ptdbg_ascend import *
 seed_all()
 # 设置dump路径（含文件名）
 set_dump_path("./npu_dump.pkl")
+# dump默认处于关闭状态，设置dump开关为打开
+# 如果只在特定的step dump，则在期望dump的迭代开始前打开dump开关，step结束后关掉。
+set_dump_switch("ON")
+
+# 初步确定了异常范围后，可以通过如下方式dump单API或者小范围API的全量数据
+# 通过set_dump_switch的第二、第三个参数控制dump的范围
+# 示例1： dump指定算子/算子列表.
+set_dump_switch("ON", mode=2, scope=["1478_Tensor_permute", "1484_Tensor_transpose", "1792_Torch_relue"])
+# 示例2： dump指定范围dump.
+#  则会dump 1000_Tensor_abs 到 1484_Tensor_transpose_forward之间的所有api
+set_dump_switch("ON", mode=3, scope=["1000_Tensor_abs", "1484_Tensor_transpose_forward"])
+# 示例3： STACK模式，只dump堆栈信息， 示例中dump "1000_Tensor_abs" 到 "1484_Tensor_transpose_forward" 之间所有算子的STACK信息
+set_dump_switch("ON", mode=4, scope=["1000_Tensor_abs", "1484_Tensor_transpose_forward"])
 
 ”“”
 # 精度比对场景：
@@ -122,10 +135,6 @@ register_hook(model, acc_cmp_dump, dump_mode=1)
 “”“
 register_hook(model, overflow_check, dump_mode=1)
 
-# dump开关默认处于关闭状态.
-# 如果需要全量dump，建议在注册hook之前就将开关打开；
-# 如果只在特定的step dump，则在期望dump的迭代开始前打开dump开关
-set_dump_switch("ON")
 ...
 # 在期望dump的迭代结束后关闭dump开关
 set_dump_switch("OFF")
