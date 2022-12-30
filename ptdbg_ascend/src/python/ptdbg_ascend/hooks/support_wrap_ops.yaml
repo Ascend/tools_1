@@ -638,6 +638,7 @@ torch:
   - blackman_window
   - block_diag
   - bmm
+  - broadcast_tensors
   - broadcast_to
   - cartesian_prod
   - cat
