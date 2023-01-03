@@ -1,295 +1,424 @@
-# ais_bench 推理工具使用文档
+[TOC]
 
-## 介绍
-本文介绍ais_bench推理工具，该工具包含前端和后端两部分。
-后端基于c++开发，实现通用推理功能；
-前端基于python开发，实现用户界面功能。
+# ais_bench推理工具使用指南
 
-## 使用环境与依赖
-已安装开发运行环境的昇腾AI推理设备。需要安装python3,  不支持python2
+## 简介
+本文介绍ais_bench推理工具，用来针对指定的推理模型运行推理程序，并能够测试推理模型的性能（包括吞吐率、时延）。
 
-## 一键安装
-安装环境要求网络畅通  
-安装aclruntime包  
-pip3  install -v --force-reinstall 'git+https://gitee.com/ascend/tools.git#egg=aclruntime&subdirectory=ais-bench_workload/tool/ais_infer/backend'
+## 工具安装
 
-安装ais_bench推理程序包    
-pip3  install -v --force-reinstall 'git+https://gitee.com/ascend/tools.git#egg=ais_bench&subdirectory=ais-bench_workload/tool/ais_infer'
+### 环境和依赖
 
-## 源代码构建与安装
-centos平台不支持本构建与安装方式，请注意。
+- 请参见《[CANN开发工具指南](https://www.hiascend.com/document/detail/zh/canncommercial/60RC1/envdeployment/instg/instg_000002.html)》安装昇腾设备开发或运行环境，即toolkit或nnrt软件包。
+- 安装Python3。
 
-1. 本推理工具编译需要安装好CANN环境。用户可以设置CANN_PATH环境变量指定安装的CANN版本路径，比如export CANN_PATH=/xxx/nnae/latest/.
-  如果不设置，本推理工具默认会从
-  CANN_PATH
-  /usr/local/Ascend/nnae/latest/
-  /usr/local/Ascend/ascend-toolkit/latest
-  分别尝试去获取
+### 工具安装方式
 
-1. 进入ais-bench/tool/ais_infer目录下执行如下命令进行编译，即可生成推理后端whl包
+ais_bench推理工具的安装包括**aclruntime包**和**ais_bench推理程序包**的安装。
 
-   为了提高易用性。增加ais_bench的python包。可以通过如下命令进行安装。
+安装方式包括: 一键式编译安装和源代码编译安装。
 
-```Bash
-root@root: /home/tools# cd ais-bench_workload/tool/ais_infer/
-# 构建ais_bench推理后端包aclruntime
-root@root: /home/tools/ais-bench_workload/tool/ais_infer# pip3  wheel ./backend/ -v
-# 构建ais_bench推理前端包ais_bench
-root@root: /home/tools/ais-bench_workload/tool/ais_infer# pip3  wheel ./ -v
-```
-3. 在运行设备上执行如下命令，进行安装。
+**说明**：
 
-注意： 如果提示已安装 请增加--force-reinstall参数强制安装
+- 安装环境要求网络畅通。
+- centos平台默认为gcc 4.8编译器，可能无法安装本工具，建议更新gcc编译器后再安装。
+- 本工具安装时需要获取CANN版本，用户可通过设置CANN_PATH环境变量，指定安装的CANN版本路径，例如：export CANN_PATH=/xxx/nnae/latest/。若不设置，工具默认会从/usr/local/Ascend/nnae/latest/和/usr/local/Ascend/ascend-toolkit/latest路径分别尝试获取CANN版本。
 
-```
-# 安装ais_bench推理后端包aclruntime
-pip3 install ./aclruntime-0.0.2-cp37-cp37m-linux_aarch64.whl --force-reinstall
-# 安装ais_bench推理前端包ais_bench
-pip3 install ./ais_bench-0.0.2-py3-none-any.whl --force-reinstall
-```
-## 压缩包安装
+#### 一键式编译安装
 
-如果拿到的是压缩包，可以按照如下流程执行
-1. 执行如下命令 执行解压操作
-```
-root@root:/home/# tar xvf aclruntime-aarch64.tar.gz
-```
-2. 执行如下命令，安装aisbench后端whl包
-```
-root@root:/home/tool# cd aclruntime-aarch64/
-root@root:/home/aclruntime-aarch64# pip3 install ./aclruntime-0.0.1-cp37-cp37m-linux_aarch64.whl
-```
-如果安装提示已经安装了相同版本的whl，请执行命令请添加参数"--force-reinstall"
+1. **安装aclruntime包**
 
-## 运行说明
-在安装好whl包后，即可按照如下流程进行推理命令执行
-1. 确定requirement中依赖是否执行，如果没有安装，则执行如下命令进行安装
-```
-root@root:/home/aclruntime-aarch64# pip3 install -r ./requirements.txt
-```
+   在安装环境执行如下命令安装aclruntime包：
 
-2. 确定是否设置了CANN包的环境变量，如果没有设置，请执行如下命令进行设置，注意CANN包路径如果安装在其他目录,需手动替换
-```
-root@root:/home/aclruntime-aarch64# source  /usr/local/Ascend/ascend-toolkit/set_env.sh
-```
+   ```bash
+   pip3  install -v 'git+https://gitee.com/ascend/tools.git#egg=aclruntime&subdirectory=ais-bench_workload/tool/ais_infer/backend'
+   ```
 
-3. 运行ais_infer.py 执行相关推理命令操作
+   说明：若为覆盖安装，请增加**--force-reinstall**参数强制安装，例如：
+
+   ```bash
+   pip3  install -v --force-reinstall 'git+https://gitee.com/ascend/tools.git#egg=aclruntime&subdirectory=ais-bench_workload/tool/ais_infer/backend'
+   ```
+
+   提示如下示例信息则表示安装成功：
+
+   ```bash
+   Successfully installed aclruntime-{version}
+   ```
+
+2. **安装ais_bench推理程序包**
+
+   在安装环境执行如下命令安装ais_bench推理程序包：
+
+   ```bash
+   pip3  install -v 'git+https://gitee.com/ascend/tools.git#egg=ais_bench&subdirectory=ais-bench_workload/tool/ais_infer'
+   ```
+
+   说明：若为覆盖安装，请增加**--force-reinstall**参数强制安装，例如：
+
+   ```bash
+   pip3  install -v --force-reinstall 'git+https://gitee.com/ascend/tools.git#egg=ais_bench&subdirectory=ais-bench_workload/tool/ais_infer'
+   ```
+   
+   提示如下示例信息则表示安装成功：
+   
+   ```bash
+   Successfully installed ais_bench-{version}
+   ```
+
+
+
+#### 源代码编译安装
+1. 从代码开源仓[Gitee](https://gitee.com/ascend/tools)克隆/下载工具压缩包“tools-xxx.zip”。
+
+2. 将工具压缩包上传并解压至安装环境。
+
+3. 从工具解压目录下进入ais-bench_workload/tool/ais_infer目录下，执行如下命令进行编译：
+
+   ```bash
+   # 进入工具解压目录
+   cd ${HOME}/ais-bench_workload/tool/ais_infer/
+   # 构建ais_bench aclruntime包
+   pip3 wheel ./backend/ -v
+   # 构建ais_bench推理程序包
+   pip3 wheel ./ -v
+   ```
+
+   其中，${HOME}为ais_bench推理工具包所在目录。
+
+   分别提示如下信息则表示编译成功：
+
+   ```bash
+   # 成功编译ais_bench aclruntime包
+   Successfully built aclruntime
+   # 成功编译ais_bench推理程序包
+   Successfully built ais-bench
+   ```
+
+   
+
+4. 执行如下命令，进行安装。
+
+   ```bash
+   # 安装ais_bench推理后端包aclruntime
+   pip3 install ./aclruntime-{version}-{python_version}-linux_{arch}.whl
+   # 安装ais_bench推理前端包ais_bench
+   pip3 install ./ais_bench-{version}-py3-none-any.whl
+   ```
+
+   {version}表示软件版本号，{python_version}表示Python版本号，{arch}表示CPU架构。
+
+   说明：若为覆盖安装，请增加**--force-reinstall**参数强制安装，例如：
+
+   ```bash
+   pip3 install ./aclruntime-{version}-{python_version}-linux_{arch}.whl --force-reinstall
+   pip3 install ./ais_bench-{version}-py3-none-any.whl --force-reinstall
+   ```
+   
+   分别提示如下信息则表示安装成功：
+
+   ```bash
+   # 成功安装ais_bench推理后端包aclruntime
+   Successfully installed aclruntime-{version}
+   # 成功安装ais_bench推理前端包ais_bench
+   Successfully installed ais_bench-{version}
+   ```
+   
+   
+
+### 运行准备
+完成ais_bench推理工具安装后，需要执行如下操作，确保工具能够正确运行：
+1. 执行requirements.txt文件中的依赖安装，执行如下命令：
+
+   ```bash
+   cd ${HOME}/ais-bench_workload/tool/ais_infer/
+   pip3 install -r ./requirements.txt
+   ```
+
+   其中，${HOME}为ais_bench推理工具包所在目录。
+
+   说明：若依赖已安装，忽略此步骤。
+2. 设置CANN包的环境变量，执行如下命令：
+
+   ```bash
+   source ${INSTALL_PATH}/Ascend/ascend-toolkit/set_env.sh
+   ```
+
+   其中，${INSTALL_PATH}为CANN包安装路径。
+
+   说明：若环境变量已配置，忽略此步骤。
+
+完成以上设置后，可以使用ais_bench推理工具进行推理模型的性能测试。
 
 ## 使用方法
 
- ### 使用入口
-当前入口程序有两个，可以使用原有的ais_infer.py作为入口。如下调用
+### 工具介绍
 
-```
-python3 ais_infer.py --model /home/model/resnet50_v1.om
-```
+ #### 使用入口
 
-也可以使用ais_bench的python包作为入口进行调用
+ais_bench推理工具可以通过ais_bench可执行文件方式或ais_infer.py脚本方式启动模型测试。启动方式如下：
 
-```
-python3 -m ais_bench --model /home/model/resnet50_v1.om
-```
+- ais_bench可执行文件方式启动
 
-**为了便利使用。推荐大家使用第二种方式进行调用。这样不需要依赖具体文件夹内容，直接使用系统中的whl包。**
+  ```bash
+  python3 -m ais_bench --model *.om
+  ```
 
- ### 纯推理场景 会构造全为0的假数据送入模型推理
-```
+  其中，*为OM离线模型文件名。
+
+- ais_infer.py脚本方式启动
+
+  ```bash
+  python3 ${HOME}/ais-bench_workload/tool/ais_infer/ais_infer.py --model *.om
+  ```
+
+  其中，${HOME}为ais_bench推理工具包所在目录。
+
+**推荐使用ais_bench可执行文件方式进行模型测试。**
+
+#### 参数说明
+
+ais_bench推理工具可以通过配置不同的参数，来应对各种测试场景以及实现其他辅助功能，具体参数如下。
+
+| 参数名                   | 说明                                                         | 是否必选 |
+| ------------------------ | ------------------------------------------------------------ | -------- |
+| --model                  | 需要进行推理的OM离线模型文件。                               | 是       |
+| --input                  | 模型需要的输入。可指定输入文件所在目录或直接指定输入文件。支持输入文件格式为“NPY”、“BIN”。可输入多个文件或目录，文件或目录之间用“,”隔开。具体输入文件请根据模型要求准备。 <br/>若不配置该参数，会自动构造输入数据，输入数据类型由--pure_data_type参数决定。 | 否       |
+| --pure_data_type         | 纯推理数据类型。取值为：“zero”、“random”，默认值为"zero"。<br>未配置模型输入文件时，工具自动构造输入数据。设置为zero时，构造全为0的纯推理数据；设置为random时，为每一个输入生成一组随机数据。 | 否       |
+| --output                 | 推理结果保存目录。配置后会创建“日期+时间”的子目录，保存输出结果。如果指定output_dirname参数，输出结果将保存到子目录output_dirname下。不配置输出目录时，仅打印输出结果，不保存输出结果。 | 否       |
+| --output_dirname         | 推理结果保存子目录。设置该值时输出结果将保存到*output/output_dirname*目录下。 <br/>配合output参数使用，单独使用无效。<br/>例如：--output */output* --output_dirname *output_dirname* | 否       |
+| --outfmt                 | 输出数据的格式。取值为：“NPY”、“BIN”、“TXT”，默认为”BIN“。 <br/>配合output参数使用，单独使用无效。<br/>例如：--output */output* --outfmt NPY | 否       |
+| --batchsize              | 模型batchsize。不输入该值将自动推导。当前推理模块根据模型输入和文件输出自动进行组Batch。参数传递的batchszie有且只用于结果吞吐率计算。自动推导逻辑为尝试获取模型的batchsize时，首先获取第一个参数的最高维作为batchsize； 如果是动态Batch的话，更新为动态Batch的值；如果是动态dims和动态Shape更新为设置的第一个参数的最高维。如果自动推导逻辑不满足要求，请务必传入准确的batchsize值，以计算出正确的吞吐率。 | 否       |
+| --debug                  | 调试开关。可打印model的desc信息和其他详细执行信息。1或true（开启）、0或false（关闭），默认关闭。 | 否       |
+| --dymBatch               | 动态Batch参数，指定模型输入的实际Batch。 <br>如ATC模型转换时，设置--input_shape="data:-1,600,600,3;img_info:-1,3" --dynamic_batch_size="1,2,4,8"，dymBatch参数可设置为：--dymBatch 2。 | 否       |
+| --dymHW                  | 动态分辨率参数，指定模型输入的实际H、W。 <br>如ATC模型转换时，设置--input_shape="data:8,3,-1,-1;img_info:8,4,-1,-1" --dynamic_image_size="300,500;600,800"，dymHW参数可设置为：--dymHW 300,500。 | 否       |
+| --dymDims                | 动态维度参数，指定模型输入的实际Shape。 <br>如ATC模型转换时，设置 --input_shape="data:1,-1;img_info:1,-1" --dynamic_dims="224,224;600,600"，dymDims参数可设置为：--dymDims "data:1,600;img_info:1,600"。 | 否       |
+| --auto_set_dymdims_mode  | 自动设置动态Dims模式。1或true（开启）、0或false（关闭），默认关闭。<br/>针对动态档位Dims模型，根据输入的文件的信息，自动设置Shape参数，注意输入数据只能为npy文件，因为bin文件不能读取Shape信息。<br/>配合input参数使用，单独使用无效。<br/>例如：--input 1.npy --auto_set_dymdims_mode 1 | 否       |
+| --dymShape               | 动态Shape参数，指定模型输入的实际Shape。 <br>如ATC模型转换时，设置--input_shape_range="input1:\[8\~20,3,5,-1\];input2:\[5,3\~9,10,-1\]"，dymShape参数可设置为：--dymShape "input1:8,3,5,10;input2:5,3,10,10"。<br>动态Shape场景下，获取模型的输出size通常为0（即输出数据占内存大小未知），建议设置--outputSize参数。<br/>例如：--dymShape "input1:8,3,5,10;input2:5,3,10,10" --outputSize "10000,10000" | 否       |
+| --auto_set_dymshape_mode | 自动设置动态Shape模式。取值为：1或true（开启）、0或false（关闭），默认关闭。<br>针对动态Shape模型，根据输入的文件的信息，自动设置Shape参数，注意输入数据只能为npy文件，因为bin文件不能读取Shape信息。<br>配合input参数使用，单独使用无效。<br/>例如：--input 1.npy --auto_set_dymshape_mode 1 | 否       |
+| --dymShape_range         | 动态Shape的阈值范围。如果设置该参数，那么将根据参数中所有的Shape列表进行依次推理，得到汇总推理信息。<br/>配置格式为：name1:1:3:200~224:224-230;name2:1,300。其中，name为模型输入名，“~”表示范围，“-”表示某一位的取值。<br/>也可以指定动态Shape的阈值范围配置文件*.info，该文件中记录动态Shape的阈值范围。 | 否       |
+| --outputSize             | 指定模型的输出数据所占内存大小，多个输出时，需要为每个输出设置一个值，多个值之间用“,”隔开。<br>动态Shape场景下，获取模型的输出size通常为0（即输出数据占内存大小未知），需要根据输入的Shape，预估一个较合适的大小，配置输出数据占内存大小。<br>例如：--dymShape "input1:8,3,5,10;input2:5,3,10,10" --outputSize "10000,10000" | 否       |
+| --profiler               | profiler开关。1或true（开启）、0或false（关闭），默认关闭。<br>profiler数据在--output参数指定的目录下的profiler文件夹内。配合--output参数使用，单独使用无效。不能与--dump同时开启。 | 否       |
+| --dump                   | dump开关。1或true（开启）、0或false（关闭），默认关闭。<br>dump数据在--output参数指定的目录下的dump文件夹内。配合--output参数使用，单独使用无效。不能与--profiler同时开启。 | 否       |
+| --acl_json_path          | acl.json文件路径，须指定一个有效的json文件。该文件内可配置profiler或者dump。当配置该参数时，--dump和--profiler参数无效。 | 否       |
+| --output_batchsize_axis  | 输出tensor的batchsize轴，默认值为0。输出结果保存文件时，根据哪个轴进行切割推理结果，比如batchsize为2，表示2个输入文件组batch进行推理，那输出结果的batch维度是在哪个轴。默认为0轴，按照0轴进行切割为2份，但是部分模型的输出batch为1轴，所以要设置该值为1。 | 否       |
+| --display_all_summary    | 是否显示所有的汇总信息，包含h2d和d2h信息。1或true（开启）、0或false（关闭），默认关闭。 | 否       |
+| --loop                   | 推理次数。默认值为1，取值范围为大于0的正整数。 <br/>profiler参数配置为true时，推荐配置为1。 | 否       |
+| --warmup_count           | 推理预热次数。默认值为1，取值范围为大于等于0的正整数。配置为0则表示不预热。 | 否       |
+| --device                 | 指定运行设备。取值范围为[0,255]，默认值为0。                 | 否       |
+| --help                   | 工具使用帮助信息。                                           | 否       |
+
+**说明**：以上参数中参数和取值之间可以用“ ”空格分隔也可以用“=”等号分隔。例如：--debug 1或--debug=0。
+
+
+
+### 使用场景
+
+ #### 纯推理场景
+
+默认情况下，构造全为0的数据送入模型推理。
+
+示例命令如下：
+
+```bash
 python3 -m ais_bench --model /home/model/resnet50_v1.om --output ./ --outfmt BIN --loop 5
 ```
 
-### 调试模式开启
-debug调试模式 默认不使能。 设置为true 或1时可以开启调试模式。设置命令如下。
-```
-python3 -m ais_bench --model /home/model/resnet50_v1.om --output ./ --debug=1
+#### 调试模式
+开启debug调试模式。
+
+示例命令如下。
+
+```bash
+python3 -m ais_bench --model /home/model/resnet50_v1.om --output ./ --debug 1
 ```
 
-调试模式开启后会增加更多的打印信息，包括
+调试模式开启后会增加更多的打印信息，包括：
 - 模型的输入输出参数信息
-```bash
-input:
-  #0    input_ids  (1, 384)  int32  1536  1536
-  #1    input_mask  (1, 384)  int32  1536  1536
-  #2    segment_ids  (1, 384)  int32  1536  1536
-output:
-  #0    logits:0  (1, 384, 2)  float32  3072  3072
-```
+
+  ```bash
+  input:
+    #0    input_ids  (1, 384)  int32  1536  1536
+    #1    input_mask  (1, 384)  int32  1536  1536
+    #2    segment_ids  (1, 384)  int32  1536  1536
+  output:
+    #0    logits:0  (1, 384, 2)  float32  3072  3072
+  ```
+
 - 详细的推理耗时信息
-```
-[DEBUG] model aclExec cost : 2.336000
-```
+
+  ```bash
+  [DEBUG] model aclExec cost : 2.336000
+  ```
 - 模型输入输出等具体操作信息
 
+ #### 文件输入场景
 
- ### 文件输入场景 input传入文件列表 通过,进行分隔
- 本场景会根据文件输入和模型实际输入进行组batch
+使用--input参数指定模型输入文件，多个文件之间通过“,”进行分隔。
 
-```
+本场景会根据文件输入size和模型实际输入size进行对比，若缺少数据则会自动构造数据补全，称为组Batch。
+
+示例命令如下：
+
+```bash
 python3 -m ais_bench --model ./resnet50_v1_bs1_fp32.om --input "./1.bin,./2.bin,./3.bin,./4.bin,./5.bin"
-
 ```
 
-注意针对于动态分档或动态shape场景，会根据实际模型实际需要size与输入size判断进行组batch操作
-```
-python3 -m ais_bench --model ./resnet50_v1_dynamicbatchsize_fp32.om --input "./1.bin,./2.bin,./3.bin,./4.bin,./5.bin" --dymBatch 2
-```
+ #### 文件夹输入场景
 
- ### 文件夹输入场景 input传入文件夹列表 通过,进行分隔
- 本场景会根据文件输入和模型输入进行组batch 根据 模型输入size与文件输入size进行对比得出
+使用input参数指定模型输入文件所在目录，多个目录之间通过“,”进行分隔。
 
-```
+本场景会根据文件输入size和模型实际输入size进行组Batch。
+
+```bash
 python3 -m ais_bench --model ./resnet50_v1_bs1_fp32.om --input "./"
-
 ```
 
-如下指令示例，模型输入需与传入文件夹的个数一致。bert模型有三个输入 则必须传入3个文件夹，且三个文件夹分别对应模型的三个输入，顺序要对应。
-模型输入参数的信息可以通过开启调试模式查看，bert模型的三个输入依次为input_ids、 input_mask、 segment_ids，所以依次传入三个文件夹，
-第一个文件夹“./data/SQuAD1.1/input_ids",  对应模型第一个参数"input_ids"的输入 
-第二文件夹"./data/SQuAD1.1/input_mask",  对应第二个输入"input_mask"的输入
-第三个文件夹"./data/SQuAD1.1/segment_ids",  对应第三个输入"segment_ids"的输入
+模型输入需要与传入文件夹的个数一致。
 
-```
-python3 -m ais_bench --model ./save/model/BERT_Base_SQuAD_BatchSize_1.om  --input ./data/SQuAD1.1/input_ids,./data/SQuAD1.1/input_mask,./data/SQuAD1.1/segment_ids
-```
+例如，bert模型有三个输入，则必须传入3个文件夹，且三个文件夹分别对应模型的三个输入，顺序要对应。
+模型输入参数的信息可以通过开启调试模式查看，bert模型的三个输入依次为input_ids、 input_mask、 segment_ids，所以依次传入三个文件夹：
 
- ### 输出结果保存场景
- 默认推理结果数据不保存文件。
+- 第一个文件夹“./data/SQuAD1.1/input_ids",  对应模型第一个参数"input_ids"的输入
+- 第二个文件夹"./data/SQuAD1.1/input_mask",  对应第二个输入"input_mask"的输入
+- 第三个文件夹"./data/SQuAD1.1/segment_ids",  对应第三个输入"segment_ids"的输入
 
-如果设置了output参数。则保存到output目录下。默认会建立日期+时间的子文件夹保存推理输出结果 而summary文件和profiling文件将保存到output目录下
-
- ```
-# python3 -m ais_bench --model  ./pth_resnet50_bs1.om  --output ./
-# ls ./2022_11_29-03_11_35
-pure_infer_data_0.bin
-# ls ./2022_11_29-03_11_35_summary.json
-./2022_11_29-03_11_35_summary.json
- ```
-
-```
-python3 -m ais_bench --model  ./pth_resnet50_bs1.om  --output ./ --profiler 1
-# profiler文件保存在output目录下
-# ls profiler/PROF_000001_20221129060140649_HGPIAQEDEDPMFGAC/
-device_0
+```bash
+python3 -m ais_bench --model ./save/model/BERT_Base_SQuAD_BatchSize_1.om --input ./data/SQuAD1.1/input_ids,./data/SQuAD1.1/input_mask,./data/SQuAD1.1/segment_ids
 ```
 
- 如果指定output_dirname 将保存到output_dirname的子文件夹下
-```
- # python3 -m ais_bench --model ./pth_resnet50_bs1.om  --output ./ --output_dirname subdir
-# ls ./subdir/pure_infer_data_0.bin
-./subdir/pure_infer_data_0.bin
-# ls ./subdir_summary.json
-./subdir_summary.json
-```
 
- ### 动态分档场景 主要包含动态batch 动态宽高 动态Dims三种场景，需要分别传入dymBatch dymHW dymDims指定实际档位信息
 
-#### 动态batch场景 档位为1 2 4 8档，设置档位为2 本程序将获取实际模型输入组batch 每2个输入来组一组batch进行推理
-```
+ #### 动态分档场景
+
+主要包含动态Batch、动态HW（宽高）、动态Dims三种场景，需要分别传入dymBatch、dymHW、dymDims指定实际档位信息。
+
+##### 动态Batch
+
+以档位1 2 4 8档为例，设置档位为2，本程序将获取实际模型输入组Batch，每2个输入为一组，进行组Batch。
+
+```bash
 python3 -m ais_bench --model ./resnet50_v1_dynamicbatchsize_fp32.om --input=./data/ --dymBatch 2
 ```
 
-#### 动态HW宽高场景 档位为224,224;448,448档，设置档位为224,224 本程序将获取实际模型输入组batch
-```
+##### 动态HW宽高
+
+以档位224,224;448,448档为例，设置档位为224,224，本程序将获取实际模型输入组Batch。
+
+```bash
 python3 -m ais_bench --model ./resnet50_v1_dynamichw_fp32.om --input=./data/ --dymHW 224,224
-
 ```
 
-#### 动态Dims场景 设置档位为1,3,224,224 本程序将获取实际模型输入组batch
-```
+##### 动态Dims
+
+以设置档位1,3,224,224为例，本程序将获取实际模型输入组Batch。
+
+```bash
 python3 -m ais_bench --model resnet50_v1_dynamicshape_fp32.om --input=./data/ --dymDims actual_input_1:1,3,224,224
 ```
 
-#### 自动设置dims模式（动态dims模型）
+##### 自动设置dims模式（动态dims模型）
 
-针对动态dims模型，增加auto_set_dymdims_mode参数，根据输入文件的shape信息自动设置模型的shape参数。
+动态dims模型输入数据的Shape可能是不固定的，比如一个输入文件Shape为1,3,224,224，另一个输入文件Shape为 1,3,300,300。若两个文件同时推理，则需要设置两次动态Shape参数，当前不支持该操作。针对该场景，增加auto_set_dymdims_mode模式，可以根据输入文件的Shape信息，自动设置模型的Shape参数。
 
-针对动态dims模型。输入数据的shape可能是不固定的，比如一个输入文件shape为1,3,224,224 另一个输入文件shape为 1,3,300,300。如果两个文件要一起推理的话，需要设置两次动态shape参数，那正常的话是不支持的。针对该种场景，增加auto_set_dymdims_mode模式，根据输入文件的shape信息自动设置模型的shape参数，
-
-```
+```bash
 python3 -m ais_bench --model resnet50_v1_dynamicshape_fp32.om --input=./data/ --auto_set_dymdims_mode 1
 ```
 
-**注意该场景下输入必须为npy文件，如果是bin文件将获取不到真实的shape信息。**
 
-### 动态shape场景 atc设置为[1~8,3,200~300,200~300]，设置档位为1,3,224,224 本程序将获取实际模型输入组batch 注意动态shape的输出大小经常为0需要通过outputSize参数设置对应参数的内存大小
 
-```
+#### 动态Shape场景
+
+##### 动态Shape
+
+以ATC设置[1~8,3,200~300,200~300]，设置档位1,3,224,224为例，本程序将获取实际模型输入组Batch。
+
+动态Shape的输出大小通常为0，建议通过outputSize参数设置对应输出的内存大小。
+
+```bash
 python3 -m ais_bench --model resnet50_v1_dynamicshape_fp32.om --dymShape actual_input_1:1,3,224,224 --outputSize 10000
 ```
 
-#### 自动设置shape模式（动态shape模型）
+##### 自动设置Shape模式（动态shape模型）
 
-针对动态shape模型。输入数据的shape可能是不固定的，比如一个输入文件shape为1,3,224,224 另一个输入文件shape为 1,3,300,300。如果两个文件要一起推理的话，需要设置两次动态shape参数，那正常的话是不支持的。针对该种场景，增加auto_set_dymshape_mode模式，根据输入文件的shape信息自动设置模型的shape参数，
+动态shape模型输入数据的Shape可能是不固定的，比如一个输入文件Shape为1,3,224,224 另一个输入文件Shape为 1,3,300,300。若两个文件同时推理，则需要设置两次动态Shape参数，当前不支持该操作。针对该场景，增加auto_set_dymshape_mode模式，可以根据输入文件的Shape信息，自动设置模型的Shape参数。
 
-```
+```bash
 python3 -m ais_bench --model ./pth_resnet50_dymshape.om  --outputSize 100000 --auto_set_dymshape_mode 1  --input ./dymdata
 ```
 
-**注意该场景下输入必须为npy文件，如果是bin文件将获取不到真实的shape信息。**
+**注意该场景下的输入文件必须为npy格式，如果是bin文件将获取不到真实的Shape信息。**
 
-#### 动态shape模型range测试模式
+##### 动态Shape模型range测试模式
 
-输入动态shape range范围。对于该范围内的shape分别进行推理。得出各自的性能指标
+输入动态Shape的range范围。对于该范围内的Shape分别进行推理，得出各自的性能指标。
 
-```shell
-# 对1,3,224,224 1,3,224,225 1,3,224,226进行分别推理
-# python3 -m ais_bench --model ./pth_resnet50_dymshape.om  --outputSize 100000 --dymShape_range actual_input_1:1,3,224,224~226
-[INFO] -----------------dyshape_range Performance Summary------------------
-[INFO] run_count:3 success_count:3 avg_throughput:246.77165024828034
-[INFO] 0 dymshape:actual_input_1:1,3,224,225 bs:1 result:OK throughput:269.54177620425804
-[INFO] 1 dymshape:actual_input_1:1,3,224,226 bs:1 result:OK throughput:239.29170225734876
-[INFO] 2 dymshape:actual_input_1:1,3,224,224 bs:1 result:OK throughput:231.48147228323418
+以对1,3,224,224 1,3,224,225 1,3,224,226进行分别推理为例，命令如下：
 
-
-# python3 -m ais_bench --model ./pth_resnet50_dymshape.om  --outputSize 100000 --dymShape_range actual_input_1:1~2,3,224-300,224-300
-[INFO] -----------------dyshape_range Performance Summary------------------
-[INFO] run_count:8 success_count:8 avg_throughput:398.7681101272126
-[INFO] 0 dymshape:actual_input_1:2,3,224,224 bs:2 result:OK throughput:633.5128156214085
-[INFO] 1 dymshape:actual_input_1:2,3,300,224 bs:2 result:OK throughput:534.7593569251704
-[INFO] 2 dymshape:actual_input_1:2,3,224,300 bs:2 result:OK throughput:513.2152840194153
-[INFO] 3 dymshape:actual_input_1:2,3,300,300 bs:2 result:OK throughput:448.63165496928906
-[INFO] 4 dymshape:actual_input_1:1,3,224,300 bs:1 result:OK throughput:311.42946455686143
-[INFO] 5 dymshape:actual_input_1:1,3,300,224 bs:1 result:OK throughput:292.9115377690921
-[INFO] 6 dymshape:actual_input_1:1,3,300,300 bs:1 result:OK throughput:227.94620033507945
-[INFO] 7 dymshape:actual_input_1:1,3,224,224 bs:1 result:OK throughput:227.73856682138447
-
-
-# cat dym.info
-actual_input_1:1,3,224-300,224-225
-actual_input_1:8-9,3,224-300,260-300
-# python3 -m ais_bench --model ./pth_resnet50_dymshape.om  --outputSize 100000 --dymShape_range ./dym.info
-[INFO] -----------------dyshape_range Performance Summary------------------
-[INFO] run_count:12 success_count:12 avg_throughput:701.4533561722105
-[INFO] 0 dymshape:actual_input_1:8,3,224,260 bs:8 result:OK throughput:1189.5910949365423
-[INFO] 1 dymshape:actual_input_1:8,3,224,300 bs:8 result:OK throughput:1062.4169690698604
-[INFO] 2 dymshape:actual_input_1:9,3,224,260 bs:9 result:OK throughput:1009.3080839755332
-[INFO] 3 dymshape:actual_input_1:8,3,300,260 bs:8 result:OK throughput:877.9630807069874
-[INFO] 4 dymshape:actual_input_1:8,3,300,300 bs:8 result:OK throughput:840.8660974692447
-[INFO] 5 dymshape:actual_input_1:9,3,224,300 bs:9 result:OK throughput:836.1981221927723
-[INFO] 6 dymshape:actual_input_1:9,3,300,260 bs:9 result:OK throughput:765.8922381333857
-[INFO] 7 dymshape:actual_input_1:9,3,300,300 bs:9 result:OK throughput:689.3382481843958
-[INFO] 8 dymshape:actual_input_1:1,3,300,225 bs:1 result:OK throughput:317.7629413291059
-[INFO] 9 dymshape:actual_input_1:1,3,224,224 bs:1 result:OK throughput:310.6554733134515
-[INFO] 10 dymshape:actual_input_1:1,3,224,225 bs:1 result:OK throughput:302.0235479203686
-[INFO] 11 dymshape:actual_input_1:1,3,300,224 bs:1 result:OK throughput:215.42437683487793
-
+```bash
+python3 -m ais_bench --model ./pth_resnet50_dymshape.om  --outputSize 100000 --dymShape_range actual_input_1:1,3,224,224~226
 ```
 
-### profiler或者dump场景
+
+
+#### profiler或dump场景
 
 支持以--acl_json_path、--profiler、--dump参数形式实现：
-+ acl_json_path 为指定路径的json文件，可以在该文件中修改对应的参数信息。
-+ profiler 为固化到程序中的一组acl_json配置，生成的profiling数据保存在 output路径的profiler文件夹中。**注意运行中会首先检查msprof命令是否存在，如果存在，则通过msprof拉起ais_bench推理程序，这样可以采集、解析profiling数据，更为方便。**
-  如果是msprof命令拉起推理程序，执行的命令和参数在ais_bench/infer/__main__.py中msprof_run_profiling函数，命令拼接代码如下。
-  如果需要修改参数，请修改如下代码。
++ acl_json_path参数指定acl.json文件，可以在该文件中对应的profiler或dump参数。示例代码如下：
+
+  + profiler
+
+    ```bash
+    {
+    "profiler": {
+                  "switch": "on",
+                  "output": "./result/profiler"
+                }
+    }
+    ```
+
+    更多性能参数配置请参见《[CANN 开发工具指南](https://www.hiascend.com/document/detail/zh/canncommercial/60RC1/devtools/auxiliarydevtool/auxiliarydevtool_0002.html)》中的“性能分析工具>高级功能>性能数据采集（acl.json配置文件方式）”章节。
+
+  + dump
+
+    ```bash
+    {
+        "dump": {
+            "dump_list": [
+                {
+                    "model_name": "{model_name}"
+                }
+            ],
+            "dump_mode": "output",
+            "dump_path": "./result/dump"
+        }
+    }
+    ```
+
+    更多dump配置请参见《[CANN 开发工具指南](https://www.hiascend.com/document/detail/zh/canncommercial/60RC1/devtools/auxiliarydevtool/auxiliarydevtool_0002.html)》中的“精度比对工具>比对数据准备>推理场景数据准备>准备离线模型dump数据文件”章节。
+
+  通过该方式进行Profiler采集时，输出的性能数据文件需要参见《[CANN 开发工具指南](https://www.hiascend.com/document/detail/zh/canncommercial/60RC1/devtools/auxiliarydevtool/auxiliarydevtool_0002.html)》中的“性能分析工具>高级功能>数据解析与导出”章节，将性能数据解析并导出为可视化的timeline和summary文件。
+
++ profiler为固化到程序中的一组性能数据采集配置，生成的性能数据保存在--output参数指定的目录下的profiler文件夹内。
+
+  该参数是通过调用ais_bench/infer/__main__.py中的msprof_run_profiling函数来拉起msprof命令进行性能数据采集的。若需要修改性能数据采集参数，可根据实际情况修改msprof_run_profiling函数中的msprof_cmd参数。示例如下：
+
   ```bash
   msprof_cmd="{} --output={}/profiler --application=\"{}\" --model-execution=on --sys-hardware-mem=on --sys-cpu-profiling=off --sys-profiling=off --sys-pid-profiling=off --dvpp-profiling=on --runtime-api=on --task-time=on --aicpu=on".format(
           msprof_bin, args.output, cmd)
   ```
-+ acl_json_path 优先级高于 profiler dump。 同时设置时以acl_json_path为准
-+ profiler参数和dump参数 必须要增加output参数。指示输出路径。
-+ profiler和dump可以分别使用，但不能同时启用
 
-指令示例:
+  该方式进行性能数据采集时，首先检查是否存在msprof命令，若命令存在，则使用该命令进行性能数据采集、解析并导出为可视化的timeline和summary文件；若命令不存在，则调用acl.json文件进行性能数据采集，这种情况下采集的性能数据文件未自动解析，需要参见《[CANN 开发工具指南](https://www.hiascend.com/document/detail/zh/canncommercial/60RC1/devtools/auxiliarydevtool/auxiliarydevtool_0002.html)》中的“性能分析工具>高级功能>数据解析与导出”章节，将性能数据解析并导出为可视化的timeline和summary文件。
+
+  更多性能数据采集参数介绍请参见《[CANN 开发工具指南](https://www.hiascend.com/document/detail/zh/canncommercial/60RC1/devtools/auxiliarydevtool/auxiliarydevtool_0002.html)》中的“性能分析工具>高级功能>性能数据采集（msprof命令行方式）”章节。
+
++ acl_json_path优先级高于profiler和dump，同时设置时以acl_json_path为准。
+
++ profiler参数和dump参数，必须要增加output参数，指示输出路径。
+
++ profiler和dump可以分别使用，但不能同时启用。
+
+示例命令如下：
 
 ```bash
 python3 -m ais_bench --model ./resnet50_v1_bs1_fp32.om --acl_json_path ./acl.json
@@ -297,63 +426,151 @@ python3 -m ais_bench  --model /home/model/resnet50_v1.om --output ./ --dump 1
 python3 -m ais_bench  --model /home/model/resnet50_v1.om --output ./ --profiler 1
 ```
 
-### 结果summary功能
+ #### 输出结果文件保存场景
 
-针对结果输出，本程序会在增加output目录下创建 xxxx_summary.json文件打印参数值，便于汇总统计
+默认情况下，ais_bench推理工具执行后不保存输出结果数据文件，配置相关参数后，可生成的结果数据如下：
 
-其中xxxx为输入创建的子文件夹，比如默认是2022_11_23-06_40_37之类的当前日期时间格式的，如果设置为output_dirname参数的话，就是output_dirname的值。
+| 文件/目录                                | 说明                                                         |
+| ---------------------------------------- | ------------------------------------------------------------ |
+| {文件名}.bin、{文件名}.npy或{文件名}.txt | 模型推理输出结果文件。<br/>文件命名格式：名称_输出序号.后缀。不指定input时（纯推理），名称固定为“pure_infer_data”；指定input时，名称以第一个输入的第一个名称命名；输出的序号从0开始按输出先后顺序排列；文件名后缀由--outfmt参数控制。<br/>默认情况下，会在--output参数指定的目录下创建“日期+时间”的目录，并将结果文件保存在该目录下；当指定了--output_dirname时，结果文件将直接保存在--output_dirname参数指定的目录下。<br/>指定--output_dirname参数时，多次执行工具推理会导致结果文件因同名而覆盖。 |
+| xx_summary.json                          | 工具输出模型性能结果数据。默认情况下，“xx”以“日期+时间”命名；当指定了--output_dirname时，“xx”以--output_dirname指定的目录名称命名。<br/>指定--output_dirname参数时，多次执行工具推理会导致结果文件因同名而覆盖。 |
+| dump                                     | dump数据文件目录。使用--dump开启dump时，在--output参数指定的目录下创建dump目录，保存dump数据文件。 |
+| profiler                                 | Profiler采集性能数据文件目录。使用--profiler开启性能数据采集时，在--output参数指定的目录下创建profiler目录，保存性能数据文件。 |
 
-具体结果信息如下
-NPU_compute_time: 推理调用总时间
-throughput: 吞吐率。吞吐率计算公式：1000 *batchsize/npu_compute_time.mean
+- 仅设置--output参数。示例命令及结果如下：
 
-batchsize参数不输入时将自动推导，推导逻辑见下图。
+  ```bash
+  python3 -m ais_bench --model  ./pth_resnet50_bs1.om  --output ./result
+  ```
 
-如果自动推导满足不了，需要手动设置batchsize参数值以计算正确的吞吐率。
+  ```bash
+  result
+  ├── 2022_12_17-07_37_18
+  │   └── pure_infer_data_0.bin
+  └── 2022_12_17-07_37_18_summary.json
+  ```
 
-```mermaid
-graph TB
-    Start(开始) --> IsInput{"用户是否输入batchsize参数？"}
-    
-    IsInput -->|输入| use_input_batchsize[使用输入batchsize]
-    use_input_batchsize --> End(结束)
-        
-    IsInput -->|没输入| get_first_args_high_dim[1. 首先获取第一个参数的最高维度值作为batchsize]
-    get_first_args_high_dim --> if_dymbatch_set[2. 如果是动态batch模型,将动态batchsize作为batchsize]
-    if_dymbatch_set --> set_if_dymdims_or_dymshape[3. 如果是动态dims或者动态shape模型,获取设置信息的第一个参数的最高维度作为batchsize]
-    set_if_dymdims_or_dymshape --> End
-```
+- 设置--input和--output参数。示例命令及结果如下：
+
+  ```
+  # 输入的input文件夹内容如下
+  ls ./data
+  196608-0.bin  196608-1.bin  196608-2.bin  196608-3.bin  196608-4.bin  196608-5.bin  196608-6.bin  196608-7.bin  196608-8.bin  196608-9.bin
+  ```
+
+  ```
+  python3 -m ais_bench --model  ./pth_resnet50_bs1.om --input ./data  --output ./result
+  ```
+
+  ```bash
+  result/
+  |-- 2023_01_03-06_35_53
+  |   |-- 196608-0_0.bin
+  |   |-- 196608-1_0.bin
+  |   |-- 196608-2_0.bin
+  |   |-- 196608-3_0.bin
+  |   |-- 196608-4_0.bin
+  |   |-- 196608-5_0.bin
+  |   |-- 196608-6_0.bin
+  |   |-- 196608-7_0.bin
+  |   |-- 196608-8_0.bin
+  |   `-- 196608-9_0.bin
+  `-- 2023_01_03-06_35_53_summary.json
+  ```
+
+- 设置--output_dirname参数。示例命令及结果如下：
+
+  ```bash
+  python3 -m ais_bench --model  ./pth_resnet50_bs1.om  --output ./result --output_dirname subdir
+  ```
+
+  ```bash
+  result
+  ├── subdir
+  │   └── pure_infer_data_0.bin
+  └── subdir_summary.json
+  ```
+
+- 设置--dump参数。示例命令及结果如下：
+
+  ```bash
+  python3 -m ais_bench --model  ./pth_resnet50_bs1.om  --output ./result --dump 1
+  ```
+  
+  ```bash
+  result
+  ├── 2022_12_17-07_37_18
+  │   └── pure_infer_data_0.bin
+  ├── dump
+  └── 2022_12_17-07_37_18_summary.json
+  ```
+  
+- 设置--profiler参数。示例命令及结果如下：
+
+  ```bash
+  python3 -m ais_bench --model  ./pth_resnet50_bs1.om  --output ./result --profiler 1
+  ```
+
+  ```bash
+  result
+  ├── 2022_12_17-07_56_10
+  │   └── pure_infer_data_0.bin
+  ├── profiler
+  │   └── PROF_000001_20221217075609326_GLKQJOGROQGOLIIB
+  └── 2022_12_17-07_56_10_summary.json
+  ```
 
 
 
-打印如下:
+### 输出结果
 
-```bash
-[INFO] -----------------Performance Summary------------------
-[INFO] NPU_compute_time (ms): min = 0.6610000133514404, max = 0.6610000133514404, mean = 0.6610000133514404, median = 0.6610000133514404, percentile(99%) = 0.6610000133514404
-[INFO] throughput 1000*batchsize(1)/NPU_compute_time.mean(0.6610000133514404): 1512.8592735267011
-[INFO] ------------------------------------------------------
-```
+ais_bench推理工具执行后，打屏输出结果示例如下：
 
-注意 当前默认不展示h2d和d2h的耗时信息，如果需要打开，请设置display_all_summary=True。设置后的打印信息如下
+- display_all_summary=False时，打印如下：
 
-```
-[INFO] -----------------Performance Summary------------------
-[INFO] H2D_latency (ms): min = 0.05700000002980232, max = 0.05700000002980232, mean = 0.05700000002980232, median = 0.05700000002980232, percentile(99%) = 0.05700000002980232
-[INFO] NPU_compute_time (ms): min = 0.6650000214576721, max = 0.6650000214576721, mean = 0.6650000214576721, median = 0.6650000214576721, percentile(99%) = 0.6650000214576721
-[INFO] D2H_latency (ms): min = 0.014999999664723873, max = 0.014999999664723873, mean = 0.014999999664723873, median = 0.014999999664723873, percentile(99%) = 0.014999999664723873
-[INFO] throughput 1000*batchsize(1)/NPU_compute_time.mean(0.6650000214576721): 1503.759349974173
-```
+  ```bash
+  [INFO] -----------------Performance Summary------------------
+  [INFO] NPU_compute_time (ms): min = 0.6610000133514404, max = 0.6610000133514404, mean = 0.6610000133514404, median = 0.6610000133514404, percentile(99%) = 0.6610000133514404
+  [INFO] throughput 1000*batchsize(1)/NPU_compute_time.mean(0.6610000133514404): 1512.8592735267011
+  [INFO] ------------------------------------------------------
+  ```
 
+- display_all_summary=True时，打印如下：
 
+  ```bash
+  [INFO] -----------------Performance Summary------------------
+  [INFO] H2D_latency (ms): min = 0.05700000002980232, max = 0.05700000002980232, mean = 0.05700000002980232, median = 0.05700000002980232, percentile(99%) = 0.05700000002980232
+  [INFO] NPU_compute_time (ms): min = 0.6650000214576721, max = 0.6650000214576721, mean = 0.6650000214576721, median = 0.6650000214576721, percentile(99%) = 0.6650000214576721
+  [INFO] D2H_latency (ms): min = 0.014999999664723873, max = 0.014999999664723873, mean = 0.014999999664723873, median = 0.014999999664723873, percentile(99%) = 0.014999999664723873
+  [INFO] throughput 1000*batchsize(1)/NPU_compute_time.mean(0.6650000214576721): 1503.759349974173
+  ```
+
+通过输出结果可以查看模型执行耗时、吞吐率。耗时越小、吞吐率越高，则表示该模型性能越高。
+
+**字段说明**
+
+| 字段                  | 说明                                                         |
+| --------------------- | ------------------------------------------------------------ |
+| H2D_latency (ms)      | Host to Device的内存拷贝耗时。单位为ms。                     |
+| min                   | 推理执行时间最小值。                                         |
+| max                   | 推理执行时间最大值。                                         |
+| mean                  | 推理执行时间平均值。                                         |
+| median                | 推理执行时间取中位数。                                       |
+| percentile(99%)       | 推理执行时间中的百分位数。                                   |
+| NPU_compute_time (ms) | NPU推理计算的时间。单位为ms。                                |
+| D2H_latency (ms)      | Device to Host的内存拷贝耗时。单位为ms。                     |
+| throughput            | 吞吐率。吞吐率计算公式：1000 *batchsize/npu_compute_time.mean |
+| batchsize             | 批大小。本工具不一定能准确识别当前样本的batchsize，建议通过--batchsize参数进行设置。 |
+
+## 扩展功能
 
 ### 接口开放
 
-开放推理python接口。
+开放ais_bench推理工具推理Python接口。
 
-参考https://gitee.com/ascend/tools/blob/be75cf413af2238147708c46b6745dd5eee68f09/ais-bench_workload/tool/ais_infer/test/interface_sample.py
+代码示例参考https://gitee.com/ascend/tools/blob/be75cf413af2238147708c46b6745dd5eee68f09/ais-bench_workload/tool/ais_infer/test/interface_sample.py
 
-可以通过如下几行命令就完成推理操作
+可以通过如下示例代码完成ais_bench推理工具推理操作：
 
 ```python
 def infer_simple():
@@ -370,9 +587,9 @@ def infer_simple():
   print("static infer avg:{} ms".format(np.mean(session.sumary().exec_time_list)))
 ```
 
-动态shape推理
+动态Shape推理：
 
-```
+```bash
 def infer_dymshape():
   device_id = 0
   session = InferSession(device_id, model_path)
@@ -385,9 +602,10 @@ def infer_dymshape():
 ```
 
 
-### 增加异常写文件功能
 
-当出现推理异常时，会写入算子执行失败的输入输出文件到**当前目录**下。同时会打印出当前的算子执行信息。利于定位分析。
+### 推理异常保存文件功能
+
+当出现推理异常时，会写入算子执行失败的输入输出文件到**当前目录**下。同时会打印出当前的算子执行信息。利于定位分析。示例如下：
 
 ```bash
 (lcm) root@4f0ab57f0243:/home/infname77/lcm/code/tools_develop/ais-bench_workload/tool/ais_infer# python3 -m ais_bench --model  ./test/testdata/bert/model/pth_bert_bs1.om --input ./random_in0.bin,random_in1.bin,random_in2.bin
@@ -412,35 +630,6 @@ EZ9999  The error from device(2), serial number is 17, there is an aicore error,
 ```
 
 
-## 参数说明
-
-| 参数名   | 说明                            |
-| -------- | ------------------------------- |
-| --model  | 需要进行推理的om模型            |
-| --input  | 模型需要的输入，支持bin文件和目录，若不加该参数，会自动生成都为0的数据                  |
-| --output | 推理结果输出路径。默认会建立日期+时间的子文件夹保存输出结果 如果指定output_dirname 将保存到output_dirname的子文件夹下。|
-| --output_dirname | 推理结果输出子文件夹。可选参数。与参数output搭配使用，单独使用无效。设置该值时输出结果将保存到 output/output_dirname文件夹中              |
-| --outfmt | 输出数据的格式，默认”BIN“，可取值“NPY”、“BIN”、“TXT” |
-| --loop   | 推理次数，可选参数，默认1，profiler为true时，推荐为1 |
-| --debug  | 调试开关，可打印model的desc信息和其他详细执行信息，true或者false，可选参数，默认false |
-| --device | 指定运行设备 [0,255]，可选参数，默认0 |
-| --dymBatch  | 动态Batch参数，指定模型输入的实际batch，可选参数。 <br>如atc模型转换时设置 --input_shape="data:-1,600,600,3;img_info:-1,3" --dynamic_batch_size="1,2,4,8" , dymBatch参数可设置为：--dymBatch 2|
-| --dymHW  | 动态分辨率参数，指定模型输入的实际H、W，可选参数。 <br>如atc模型转换时设置 --input_shape="data:8,3,-1,-1;img_info:8,4,-1,-1"  --dynamic_image_size="300,500;600,800" , dymHW参数可设置为：--dymHW 300,500|
-| --dymDims| 动态维度参数，指定模型输入的实际shape，可选参数。 <br>如atc模型转换时设置 --input_shape="data:1,-1;img_info:1,-1" --dynamic_dims="224,224;600,600" , dymDims参数可设置为：--dymDims "data:1,600;img_info:1,600"|
-| --dymShape| 动态shape参数，指定模型输入的实际shape，可选参数。 <br>如atc模型转换时设置 --input_shape_range="input1:\[8\~20,3,5,-1\];input2:\[5,3\~9,10,-1\]" , dymShape参数可设置为：--dymShape "input1:8,3,5,10;input2:5,3,10,10"<br>设置此参数时，必须设置  --outputSize。 |
-| --auto_set_dymshape_mode| 自动设置动态shape模式，可选参数, 默认false。<br>针对动态shape模型，根据输入的文件的信息，自动设置shape参数 注意 输入数据只能为npy文件 因为bin文件不能读取shape信息<br>如 --auto_set_dymshape_mode true" |
-| --auto_set_dymdims_mode | 自动设置动态dims模式，可选参数, 默认false。<br/>针对动态档位dims模型，根据输入的文件的信息，自动设置shape参数 注意 输入数据只能为npy文件 因为bin文件不能读取shape信息<br/>如 --auto_set_dymdims_mode true" |
-| --outputSize| 指定模型的输出size，有几个输出，就设几个值，可选参数。<br>动态shape场景下，获取模型的输出size可能为0，用户需根据输入的shape预估一个较合适的值去申请内存。<br>如 --outputSize "10000,10000,10000"|
-| --batchsize | 模型batchsize 不输入该值将自动推导 。当前推理模块根据模型输入和文件输出自动进行组batch。参数传递的batchszie有且只用于结果吞吐率计算。自动推导逻辑为尝试获取模型的batchsize时，首先获取第一个参数的最高维作为batchsize； 如果是动态Batch的话，更新为动态batch的值；如果是动态dims和动态shape 更新为设置的第一个参数的最高维。如果自动推导逻辑不满足要求，请务必传入准确的batchsize值，以计算出正确的吞吐率 |
-| --pure_data_type | 纯推理数据类型。可选参数，默认"zero",可取值"zero"或"random"。<br>设置为zero时，纯推理数据全部是0；设置为random时，每一个推理数据是[0,255]之间的随机整数|
-| --profiler | profiler开关，true或者false, 可选参数，默认false。<br>--output参数必须提供。profiler数据在--output参数指定的目录下的profiler文件夹内。不能与--dump同时为true。|
-| --dump |dump开关，true或者false, 可选参数，默认false。<br>--output参数必须提供。dump数据在--output参数指定的目录下的dump文件夹内。不能与--profiler同时为true。|
-| --acl_json_path | acl json文件 profiling或者dump时设置。当该参数设置时，--dump和--profiler参数无效。      |
-| --output_batchsize_axis |输出tensor的batchsize轴，默认0。输出结果保存文件时，根据哪个轴进行切割推理结果，比如batchsize为2，表示2个输入文件进行组batch进行推理，那输出结果的batch维度是在哪个轴。默认为0轴，按照0轴进行切割为2份，但是部分模型的输出batch为1轴，所以要设置该值为1。|
-| --display_all_summary |是否显示所有的汇总信息包含h2d和d2h。默认为false|
-| --warmup_count |推理预热次数。默认为1|
-| --dymShape_range |动态shape的阈值范围。如果设置该参数，那么将根据参数中所有的shape列表进行依次推理。得到汇总推理信息。格式为 name1:1:3:200~224:224-230;name2:1,300     name为模型输入名字，~表示范围 -表示某一位的取值|
-| --help| 工具使用帮助信息                  |
 
 ## FAQ
 [FAQ](FAQ.md) 
