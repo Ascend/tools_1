@@ -69,7 +69,7 @@ ais_bench推理工具的安装包括**aclruntime包**和**ais_bench推理程序�
 
 
 #### 源代码编译安装
-1. 从代码开源仓[Gitee](https://gitee.com/ascend/tools/tree/master/ais-bench_workload)克隆/下载工具压缩包“tools-xxx.zip”。
+1. 从代码开源仓[Gitee](https://gitee.com/ascend/tools)克隆/下载工具压缩包“tools-xxx.zip”。
 
 2. 将工具压缩包上传并解压至安装环境。
 
@@ -448,6 +448,34 @@ python3 -m ais_bench  --model /home/model/resnet50_v1.om --output ./ --profiler 
   ├── 2022_12_17-07_37_18
   │   └── pure_infer_data_0.bin
   └── 2022_12_17-07_37_18_summary.json
+  ```
+
+- 设置--input和--output参数。示例命令及结果如下：
+
+  ```
+  # 输入的input文件夹内容如下
+  ls ./data
+  196608-0.bin  196608-1.bin  196608-2.bin  196608-3.bin  196608-4.bin  196608-5.bin  196608-6.bin  196608-7.bin  196608-8.bin  196608-9.bin
+  ```
+
+  ```
+  python3 -m ais_bench --model  ./pth_resnet50_bs1.om --input ./data  --output ./result
+  ```
+
+  ```bash
+  result/
+  |-- 2023_01_03-06_35_53
+  |   |-- 196608-0_0.bin
+  |   |-- 196608-1_0.bin
+  |   |-- 196608-2_0.bin
+  |   |-- 196608-3_0.bin
+  |   |-- 196608-4_0.bin
+  |   |-- 196608-5_0.bin
+  |   |-- 196608-6_0.bin
+  |   |-- 196608-7_0.bin
+  |   |-- 196608-8_0.bin
+  |   `-- 196608-9_0.bin
+  `-- 2023_01_03-06_35_53_summary.json
   ```
 
 - 设置--output_dirname参数。示例命令及结果如下：
