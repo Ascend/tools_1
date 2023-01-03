@@ -223,8 +223,8 @@ class TestClass():
 
         with open(summary_json_path,'r',encoding='utf8') as fp:
             json_data = json.load(fp)
-            ais_inference_time_ms = json_data["NPU_compute_time"]["mean"]
-        assert math.fabs(ais_inference_time_ms) > TestCommonClass.EPSILON
+            ais_bench_inference_time_ms = json_data["NPU_compute_time"]["mean"]
+        assert math.fabs(ais_bench_inference_time_ms) > TestCommonClass.EPSILON
 
         # get msame inference  average time without first time
         msame_infer_log_path = os.path.join(output_path, output_dir_name, "msame_infer.log")
@@ -247,7 +247,7 @@ class TestClass():
         assert math.fabs(msame_inference_time_ms) > TestCommonClass.EPSILON
         # compare
         allowable_performance_deviation = 0.01
-        assert math.fabs(msame_inference_time_ms - ais_inference_time_ms)/msame_inference_time_ms < allowable_performance_deviation
+        assert math.fabs(msame_inference_time_ms - ais_bench_inference_time_ms)/msame_inference_time_ms < allowable_performance_deviation
         os.remove(msame_infer_log_path)
         shutil.rmtree(output_dir_path)
 

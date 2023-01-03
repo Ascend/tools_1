@@ -1,4 +1,4 @@
-[TOC]
+
 
 # ais_bench推理工具使用指南
 
@@ -15,8 +15,7 @@
 ### 工具安装方式
 
 ais_bench推理工具的安装包括**aclruntime包**和**ais_bench推理程序包**的安装。
-
-安装方式包括: 一键式编译安装和源代码编译安装。
+安装方式包括：一键式编译安装和源代码编译安装。
 
 **说明**：
 
@@ -31,13 +30,13 @@ ais_bench推理工具的安装包括**aclruntime包**和**ais_bench推理程序�
    在安装环境执行如下命令安装aclruntime包：
 
    ```bash
-   pip3  install -v 'git+https://gitee.com/ascend/tools.git#egg=aclruntime&subdirectory=ais-bench_workload/tool/ais_infer/backend'
+   pip3  install -v 'git+https://gitee.com/ascend/tools.git#egg=aclruntime&subdirectory=ais-bench_workload/tool/ais_bench/backend'
    ```
 
    说明：若为覆盖安装，请增加**--force-reinstall**参数强制安装，例如：
 
    ```bash
-   pip3  install -v --force-reinstall 'git+https://gitee.com/ascend/tools.git#egg=aclruntime&subdirectory=ais-bench_workload/tool/ais_infer/backend'
+   pip3  install -v --force-reinstall 'git+https://gitee.com/ascend/tools.git#egg=aclruntime&subdirectory=ais-bench_workload/tool/ais_bench/backend'
    ```
 
    提示如下示例信息则表示安装成功：
@@ -51,13 +50,13 @@ ais_bench推理工具的安装包括**aclruntime包**和**ais_bench推理程序�
    在安装环境执行如下命令安装ais_bench推理程序包：
 
    ```bash
-   pip3  install -v 'git+https://gitee.com/ascend/tools.git#egg=ais_bench&subdirectory=ais-bench_workload/tool/ais_infer'
+   pip3  install -v 'git+https://gitee.com/ascend/tools.git#egg=ais_bench&subdirectory=ais-bench_workload/tool/ais_bench'
    ```
 
    说明：若为覆盖安装，请增加**--force-reinstall**参数强制安装，例如：
 
    ```bash
-   pip3  install -v --force-reinstall 'git+https://gitee.com/ascend/tools.git#egg=ais_bench&subdirectory=ais-bench_workload/tool/ais_infer'
+   pip3  install -v --force-reinstall 'git+https://gitee.com/ascend/tools.git#egg=ais_bench&subdirectory=ais-bench_workload/tool/ais_bench'
    ```
    
    提示如下示例信息则表示安装成功：
@@ -73,11 +72,11 @@ ais_bench推理工具的安装包括**aclruntime包**和**ais_bench推理程序�
 
 2. 将工具压缩包上传并解压至安装环境。
 
-3. 从工具解压目录下进入ais-bench_workload/tool/ais_infer目录下，执行如下命令进行编译：
+3. 从工具解压目录下进入ais-bench_workload/tool/ais_bench目录下，执行如下命令进行编译：
 
    ```bash
    # 进入工具解压目录
-   cd ${HOME}/ais-bench_workload/tool/ais_infer/
+   cd ${HOME}/ais-bench_workload/tool/ais_bench/
    # 构建ais_bench aclruntime包
    pip3 wheel ./backend/ -v
    # 构建ais_bench推理程序包
@@ -131,7 +130,7 @@ ais_bench推理工具的安装包括**aclruntime包**和**ais_bench推理程序�
 1. 执行requirements.txt文件中的依赖安装，执行如下命令：
 
    ```bash
-   cd ${HOME}/ais-bench_workload/tool/ais_infer/
+   cd ${HOME}/ais-bench_workload/tool/ais_bench/
    pip3 install -r ./requirements.txt
    ```
 
@@ -156,23 +155,14 @@ ais_bench推理工具的安装包括**aclruntime包**和**ais_bench推理程序�
 
  #### 使用入口
 
-ais_bench推理工具可以通过ais_bench可执行文件方式或ais_infer.py脚本方式启动模型测试。启动方式如下：
+ais_bench推理工具可以通过ais_bench可执行文件方式启动模型测试。启动方式如下：
 
 - ais_bench可执行文件方式启动
 
   ```bash
   python3 -m ais_bench --model *.om
   ```
-
   其中，*为OM离线模型文件名。
-
-- ais_infer.py脚本方式启动
-
-  ```bash
-  python3 ${HOME}/ais-bench_workload/tool/ais_infer/ais_infer.py --model *.om
-  ```
-
-  其中，${HOME}为ais_bench推理工具包所在目录。
 
 **推荐使用ais_bench可执行文件方式进行模型测试。**
 
@@ -196,7 +186,7 @@ ais_bench推理工具可以通过配置不同的参数，来应对各种测试�
 | --auto_set_dymdims_mode  | 自动设置动态Dims模式。1或true（开启）、0或false（关闭），默认关闭。<br/>针对动态档位Dims模型，根据输入的文件的信息，自动设置Shape参数，注意输入数据只能为npy文件，因为bin文件不能读取Shape信息。<br/>配合input参数使用，单独使用无效。<br/>例如：--input 1.npy --auto_set_dymdims_mode 1 | 否       |
 | --dymShape               | 动态Shape参数，指定模型输入的实际Shape。 <br>如ATC模型转换时，设置--input_shape_range="input1:\[8\~20,3,5,-1\];input2:\[5,3\~9,10,-1\]"，dymShape参数可设置为：--dymShape "input1:8,3,5,10;input2:5,3,10,10"。<br>动态Shape场景下，获取模型的输出size通常为0（即输出数据占内存大小未知），建议设置--outputSize参数。<br/>例如：--dymShape "input1:8,3,5,10;input2:5,3,10,10" --outputSize "10000,10000" | 否       |
 | --auto_set_dymshape_mode | 自动设置动态Shape模式。取值为：1或true（开启）、0或false（关闭），默认关闭。<br>针对动态Shape模型，根据输入的文件的信息，自动设置Shape参数，注意输入数据只能为npy文件，因为bin文件不能读取Shape信息。<br>配合input参数使用，单独使用无效。<br/>例如：--input 1.npy --auto_set_dymshape_mode 1 | 否       |
-| --dymShape_range         | 动态Shape的阈值范围。如果设置该参数，那么将根据参数中所有的Shape列表进行依次推理，得到汇总推理信息。<br/>配置格式为：name1:1:3:200~224:224-230;name2:1,300。其中，name为模型输入名，“~”表示范围，“-”表示某一位的取值。<br/>也可以指定动态Shape的阈值范围配置文件*.info，该文件中记录动态Shape的阈值范围。 | 否       |
+| --dymShape_range         | 动态Shape的阈值范围。如果设置该参数，那么将根据参数中所有的Shape列表进行依次推理，得到汇总推理信息。<br/>配置格式为：name1:1:3:200~224:224-230;name2:1,300。<br/>其中，name为模型输入名，“~”表示范围，“-”表示某一位的取值。<br/>也可以指定动态Shape的阈值范围配置文件*.info，该文件中记录动态Shape的阈值范围。 | 否       |
 | --outputSize             | 指定模型的输出数据所占内存大小，多个输出时，需要为每个输出设置一个值，多个值之间用“,”隔开。<br>动态Shape场景下，获取模型的输出size通常为0（即输出数据占内存大小未知），需要根据输入的Shape，预估一个较合适的大小，配置输出数据占内存大小。<br>例如：--dymShape "input1:8,3,5,10;input2:5,3,10,10" --outputSize "10000,10000" | 否       |
 | --profiler               | profiler开关。1或true（开启）、0或false（关闭），默认关闭。<br>profiler数据在--output参数指定的目录下的profiler文件夹内。配合--output参数使用，单独使用无效。不能与--dump同时开启。 | 否       |
 | --dump                   | dump开关。1或true（开启）、0或false（关闭），默认关闭。<br>dump数据在--output参数指定的目录下的dump文件夹内。配合--output参数使用，单独使用无效。不能与--profiler同时开启。 | 否       |
@@ -227,7 +217,7 @@ python3 -m ais_bench --model /home/model/resnet50_v1.om --output ./ --outfmt BIN
 #### 调试模式
 开启debug调试模式。
 
-示例命令如下。
+示例命令如下：
 
 ```bash
 python3 -m ais_bench --model /home/model/resnet50_v1.om --output ./ --debug 1
@@ -317,9 +307,9 @@ python3 -m ais_bench --model ./resnet50_v1_dynamichw_fp32.om --input=./data/ --d
 python3 -m ais_bench --model resnet50_v1_dynamicshape_fp32.om --input=./data/ --dymDims actual_input_1:1,3,224,224
 ```
 
-##### 自动设置dims模式（动态dims模型）
+##### 自动设置Dims模式（动态Dims模型）
 
-动态dims模型输入数据的Shape可能是不固定的，比如一个输入文件Shape为1,3,224,224，另一个输入文件Shape为 1,3,300,300。若两个文件同时推理，则需要设置两次动态Shape参数，当前不支持该操作。针对该场景，增加auto_set_dymdims_mode模式，可以根据输入文件的Shape信息，自动设置模型的Shape参数。
+动态Dims模型输入数据的Shape可能是不固定的，比如一个输入文件Shape为1,3,224,224，另一个输入文件Shape为 1,3,300,300。若两个文件同时推理，则需要设置两次动态Shape参数，当前不支持该操作。针对该场景，增加auto_set_dymdims_mode模式，可以根据输入文件的Shape信息，自动设置模型的Shape参数。
 
 ```bash
 python3 -m ais_bench --model resnet50_v1_dynamicshape_fp32.om --input=./data/ --auto_set_dymdims_mode 1
@@ -339,9 +329,9 @@ python3 -m ais_bench --model resnet50_v1_dynamicshape_fp32.om --input=./data/ --
 python3 -m ais_bench --model resnet50_v1_dynamicshape_fp32.om --dymShape actual_input_1:1,3,224,224 --outputSize 10000
 ```
 
-##### 自动设置Shape模式（动态shape模型）
+##### 自动设置Shape模式（动态Shape模型）
 
-动态shape模型输入数据的Shape可能是不固定的，比如一个输入文件Shape为1,3,224,224 另一个输入文件Shape为 1,3,300,300。若两个文件同时推理，则需要设置两次动态Shape参数，当前不支持该操作。针对该场景，增加auto_set_dymshape_mode模式，可以根据输入文件的Shape信息，自动设置模型的Shape参数。
+动态Shape模型输入数据的Shape可能是不固定的，比如一个输入文件Shape为1,3,224,224 另一个输入文件Shape为 1,3,300,300。若两个文件同时推理，则需要设置两次动态Shape参数，当前不支持该操作。针对该场景，增加auto_set_dymshape_mode模式，可以根据输入文件的Shape信息，自动设置模型的Shape参数。
 
 ```bash
 python3 -m ais_bench --model ./pth_resnet50_dymshape.om  --outputSize 100000 --auto_set_dymshape_mode 1  --input ./dymdata
@@ -445,20 +435,20 @@ python3 -m ais_bench  --model /home/model/resnet50_v1.om --output ./ --profiler 
 
   ```bash
   result
-  ├── 2022_12_17-07_37_18
-  │   └── pure_infer_data_0.bin
-  └── 2022_12_17-07_37_18_summary.json
+  |-- 2022_12_17-07_37_18
+  │   `-- pure_infer_data_0.bin
+  `-- 2022_12_17-07_37_18_summary.json
   ```
 
 - 设置--input和--output参数。示例命令及结果如下：
 
-  ```
+  ```bash
   # 输入的input文件夹内容如下
   ls ./data
   196608-0.bin  196608-1.bin  196608-2.bin  196608-3.bin  196608-4.bin  196608-5.bin  196608-6.bin  196608-7.bin  196608-8.bin  196608-9.bin
   ```
 
-  ```
+  ```bash
   python3 -m ais_bench --model  ./pth_resnet50_bs1.om --input ./data  --output ./result
   ```
 
@@ -486,9 +476,9 @@ python3 -m ais_bench  --model /home/model/resnet50_v1.om --output ./ --profiler 
 
   ```bash
   result
-  ├── subdir
-  │   └── pure_infer_data_0.bin
-  └── subdir_summary.json
+  |-- subdir
+  │   `-- pure_infer_data_0.bin
+  `-- subdir_summary.json
   ```
 
 - 设置--dump参数。示例命令及结果如下：
@@ -499,10 +489,10 @@ python3 -m ais_bench  --model /home/model/resnet50_v1.om --output ./ --profiler 
   
   ```bash
   result
-  ├── 2022_12_17-07_37_18
-  │   └── pure_infer_data_0.bin
-  ├── dump
-  └── 2022_12_17-07_37_18_summary.json
+  |-- 2022_12_17-07_37_18
+  │   `-- pure_infer_data_0.bin
+  |-- dump
+  `-- 2022_12_17-07_37_18_summary.json
   ```
   
 - 设置--profiler参数。示例命令及结果如下：
@@ -513,11 +503,11 @@ python3 -m ais_bench  --model /home/model/resnet50_v1.om --output ./ --profiler 
 
   ```bash
   result
-  ├── 2022_12_17-07_56_10
-  │   └── pure_infer_data_0.bin
-  ├── profiler
-  │   └── PROF_000001_20221217075609326_GLKQJOGROQGOLIIB
-  └── 2022_12_17-07_56_10_summary.json
+  |-- 2022_12_17-07_56_10
+  │   `-- pure_infer_data_0.bin
+  |-- profiler
+  │   `-- PROF_000001_20221217075609326_GLKQJOGROQGOLIIB
+  `-- 2022_12_17-07_56_10_summary.json
   ```
 
 
@@ -568,7 +558,7 @@ ais_bench推理工具执行后，打屏输出结果示例如下：
 
 开放ais_bench推理工具推理Python接口。
 
-代码示例参考https://gitee.com/ascend/tools/blob/be75cf413af2238147708c46b6745dd5eee68f09/ais-bench_workload/tool/ais_infer/test/interface_sample.py
+代码示例参考https://gitee.com/ascend/tools/blob/master/ais-bench_workload/tool/ais_bench/test/interface_sample.py
 
 可以通过如下示例代码完成ais_bench推理工具推理操作：
 
@@ -608,7 +598,10 @@ def infer_dymshape():
 当出现推理异常时，会写入算子执行失败的输入输出文件到**当前目录**下。同时会打印出当前的算子执行信息。利于定位分析。示例如下：
 
 ```bash
-(lcm) root@4f0ab57f0243:/home/infname77/lcm/code/tools_develop/ais-bench_workload/tool/ais_infer# python3 -m ais_bench --model  ./test/testdata/bert/model/pth_bert_bs1.om --input ./random_in0.bin,random_in1.bin,random_in2.bin
+python3 -m ais_bench --model  ./test/testdata/bert/model/pth_bert_bs1.om --input ./random_in0.bin,random_in1.bin,random_in2.bin
+```
+
+```bash
 [INFO] acl init success
 [INFO] open device 0 success
 [INFO] load model ./test/testdata/bert/model/pth_bert_bs1.om success
@@ -622,7 +615,7 @@ def infer_dymshape():
 EZ9999: Inner Error!
 EZ9999  The error from device(2), serial number is 17, there is an aicore error, core id is 0, error code = 0x800000, dump info: pc start: 0x800124080041000, current: 0x124080041100, vec error info: 0x1ff1d3ae, mte error info: 0x3022733, ifu error info: 0x7d1f3266f700, ccu error info: 0xd510fef0003608cf, cube error info: 0xfc, biu error info: 0, aic error mask: 0x65000200d000288, para base: 0x124080017040, errorStr: The DDR address of the MTE instruction is out of range.[FUNC:PrintCoreErrorInfo]
       
-(lcm) root@4f0ab57f0243:/home/infname77/lcm/code/tools_develop/ais-bench_workload/tool/ais_infer# ls exception_cb_index_0_* -lh
+# ls exception_cb_index_0_* -lh
 -rwxrwxrwx 1 root root  45M Nov 28 12:40 exception_cb_index_0_input_0.bin
 -rwxrwxrwx 1 root root 1.5K Nov 28 12:40 exception_cb_index_0_input_1.bin
 -rwxrwxrwx 1 root root    4 Nov 28 12:40 exception_cb_index_0_input_2.bin
