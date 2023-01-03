@@ -30,13 +30,13 @@ ais_bench推理工具的安装包括**aclruntime包**和**ais_bench推理程序�
    在安装环境执行如下命令安装aclruntime包：
 
    ```bash
-   pip3  install -v 'git+https://gitee.com/ascend/tools.git#egg=aclruntime&subdirectory=ais-bench_workload/tool/ais_bench/backend'
+   pip3 install -v 'git+https://gitee.com/ascend/tools.git#egg=aclruntime&subdirectory=ais-bench_workload/tool/ais_bench/backend'
    ```
 
-   说明：若为覆盖安装，请增加**--force-reinstall**参数强制安装，例如：
+   说明：若为覆盖安装，请增加“--force-reinstall”参数强制安装，例如：
 
    ```bash
-   pip3  install -v --force-reinstall 'git+https://gitee.com/ascend/tools.git#egg=aclruntime&subdirectory=ais-bench_workload/tool/ais_bench/backend'
+   pip3 install -v --force-reinstall 'git+https://gitee.com/ascend/tools.git#egg=aclruntime&subdirectory=ais-bench_workload/tool/ais_bench/backend'
    ```
 
    提示如下示例信息则表示安装成功：
@@ -50,13 +50,13 @@ ais_bench推理工具的安装包括**aclruntime包**和**ais_bench推理程序�
    在安装环境执行如下命令安装ais_bench推理程序包：
 
    ```bash
-   pip3  install -v 'git+https://gitee.com/ascend/tools.git#egg=ais_bench&subdirectory=ais-bench_workload/tool/ais_bench'
+   pip3 install -v 'git+https://gitee.com/ascend/tools.git#egg=ais_bench&subdirectory=ais-bench_workload/tool/ais_bench'
    ```
 
-   说明：若为覆盖安装，请增加**--force-reinstall**参数强制安装，例如：
+   说明：若为覆盖安装，请增加“--force-reinstall”参数强制安装，例如：
 
    ```bash
-   pip3  install -v --force-reinstall 'git+https://gitee.com/ascend/tools.git#egg=ais_bench&subdirectory=ais-bench_workload/tool/ais_bench'
+   pip3 install -v --force-reinstall 'git+https://gitee.com/ascend/tools.git#egg=ais_bench&subdirectory=ais-bench_workload/tool/ais_bench'
    ```
    
    提示如下示例信息则表示安装成功：
@@ -107,7 +107,7 @@ ais_bench推理工具的安装包括**aclruntime包**和**ais_bench推理程序�
 
    {version}表示软件版本号，{python_version}表示Python版本号，{arch}表示CPU架构。
 
-   说明：若为覆盖安装，请增加**--force-reinstall**参数强制安装，例如：
+   说明：若为覆盖安装，请增加“--force-reinstall”参数强制安装，例如：
 
    ```bash
    pip3 install ./aclruntime-{version}-{python_version}-linux_{arch}.whl --force-reinstall
@@ -157,14 +157,10 @@ ais_bench推理工具的安装包括**aclruntime包**和**ais_bench推理程序�
 
 ais_bench推理工具可以通过ais_bench可执行文件方式启动模型测试。启动方式如下：
 
-- ais_bench可执行文件方式启动
-
-  ```bash
-  python3 -m ais_bench --model *.om
-  ```
-  其中，*为OM离线模型文件名。
-
-**推荐使用ais_bench可执行文件方式进行模型测试。**
+```bash
+python3 -m ais_bench --model *.om
+```
+其中，*为OM离线模型文件名。
 
 #### 参数说明
 
@@ -186,7 +182,7 @@ ais_bench推理工具可以通过配置不同的参数，来应对各种测试�
 | --auto_set_dymdims_mode  | 自动设置动态Dims模式。1或true（开启）、0或false（关闭），默认关闭。<br/>针对动态档位Dims模型，根据输入的文件的信息，自动设置Shape参数，注意输入数据只能为npy文件，因为bin文件不能读取Shape信息。<br/>配合input参数使用，单独使用无效。<br/>例如：--input 1.npy --auto_set_dymdims_mode 1 | 否       |
 | --dymShape               | 动态Shape参数，指定模型输入的实际Shape。 <br>如ATC模型转换时，设置--input_shape_range="input1:\[8\~20,3,5,-1\];input2:\[5,3\~9,10,-1\]"，dymShape参数可设置为：--dymShape "input1:8,3,5,10;input2:5,3,10,10"。<br>动态Shape场景下，获取模型的输出size通常为0（即输出数据占内存大小未知），建议设置--outputSize参数。<br/>例如：--dymShape "input1:8,3,5,10;input2:5,3,10,10" --outputSize "10000,10000" | 否       |
 | --auto_set_dymshape_mode | 自动设置动态Shape模式。取值为：1或true（开启）、0或false（关闭），默认关闭。<br>针对动态Shape模型，根据输入的文件的信息，自动设置Shape参数，注意输入数据只能为npy文件，因为bin文件不能读取Shape信息。<br>配合input参数使用，单独使用无效。<br/>例如：--input 1.npy --auto_set_dymshape_mode 1 | 否       |
-| --dymShape_range         | 动态Shape的阈值范围。如果设置该参数，那么将根据参数中所有的Shape列表进行依次推理，得到汇总推理信息。<br/>配置格式为：name1:1:3:200~224:224-230;name2:1,300。<br/>其中，name为模型输入名，“~”表示范围，“-”表示某一位的取值。<br/>也可以指定动态Shape的阈值范围配置文件*.info，该文件中记录动态Shape的阈值范围。 | 否       |
+| --dymShape_range         | 动态Shape的阈值范围。如果设置该参数，那么将根据参数中所有的Shape列表进行依次推理，得到汇总推理信息。<br/>配置格式为：name1:1:3:200\~224:224-230;name2:1,300。其中，name为模型输入名，“\~”表示范围，“-”表示某一位的取值。<br/>也可以指定动态Shape的阈值范围配置文件*.info，该文件中记录动态Shape的阈值范围。 | 否       |
 | --outputSize             | 指定模型的输出数据所占内存大小，多个输出时，需要为每个输出设置一个值，多个值之间用“,”隔开。<br>动态Shape场景下，获取模型的输出size通常为0（即输出数据占内存大小未知），需要根据输入的Shape，预估一个较合适的大小，配置输出数据占内存大小。<br>例如：--dymShape "input1:8,3,5,10;input2:5,3,10,10" --outputSize "10000,10000" | 否       |
 | --profiler               | profiler开关。1或true（开启）、0或false（关闭），默认关闭。<br>profiler数据在--output参数指定的目录下的profiler文件夹内。配合--output参数使用，单独使用无效。不能与--dump同时开启。 | 否       |
 | --dump                   | dump开关。1或true（开启）、0或false（关闭），默认关闭。<br>dump数据在--output参数指定的目录下的dump文件夹内。配合--output参数使用，单独使用无效。不能与--profiler同时开启。 | 否       |
@@ -269,9 +265,9 @@ python3 -m ais_bench --model ./resnet50_v1_bs1_fp32.om --input "./"
 例如，bert模型有三个输入，则必须传入3个文件夹，且三个文件夹分别对应模型的三个输入，顺序要对应。
 模型输入参数的信息可以通过开启调试模式查看，bert模型的三个输入依次为input_ids、 input_mask、 segment_ids，所以依次传入三个文件夹：
 
-- 第一个文件夹“./data/SQuAD1.1/input_ids",  对应模型第一个参数"input_ids"的输入
-- 第二个文件夹"./data/SQuAD1.1/input_mask",  对应第二个输入"input_mask"的输入
-- 第三个文件夹"./data/SQuAD1.1/segment_ids",  对应第三个输入"segment_ids"的输入
+- 第一个文件夹“./data/SQuAD1.1/input_ids"，对应模型第一个参数"input_ids"的输入
+- 第二个文件夹"./data/SQuAD1.1/input_mask"，对应第二个输入"input_mask"的输入
+- 第三个文件夹"./data/SQuAD1.1/segment_ids"，对应第三个输入"segment_ids"的输入
 
 ```bash
 python3 -m ais_bench --model ./save/model/BERT_Base_SQuAD_BatchSize_1.om --input ./data/SQuAD1.1/input_ids,./data/SQuAD1.1/input_mask,./data/SQuAD1.1/segment_ids
@@ -321,7 +317,7 @@ python3 -m ais_bench --model resnet50_v1_dynamicshape_fp32.om --input=./data/ --
 
 ##### 动态Shape
 
-以ATC设置[1~8,3,200~300,200~300]，设置档位1,3,224,224为例，本程序将获取实际模型输入组Batch。
+以ATC设置[1\~8,3,200\~300,200\~300]，设置档位1,3,224,224为例，本程序将获取实际模型输入组Batch。
 
 动态Shape的输出大小通常为0，建议通过outputSize参数设置对应输出的内存大小。
 
@@ -430,7 +426,7 @@ python3 -m ais_bench  --model /home/model/resnet50_v1.om --output ./ --profiler 
 - 仅设置--output参数。示例命令及结果如下：
 
   ```bash
-  python3 -m ais_bench --model  ./pth_resnet50_bs1.om  --output ./result
+  python3 -m ais_bench --model ./pth_resnet50_bs1.om --output ./result
   ```
 
   ```bash
@@ -449,7 +445,7 @@ python3 -m ais_bench  --model /home/model/resnet50_v1.om --output ./ --profiler 
   ```
 
   ```bash
-  python3 -m ais_bench --model  ./pth_resnet50_bs1.om --input ./data  --output ./result
+  python3 -m ais_bench --model ./pth_resnet50_bs1.om --input ./data --output ./result
   ```
 
   ```bash
@@ -471,7 +467,7 @@ python3 -m ais_bench  --model /home/model/resnet50_v1.om --output ./ --profiler 
 - 设置--output_dirname参数。示例命令及结果如下：
 
   ```bash
-  python3 -m ais_bench --model  ./pth_resnet50_bs1.om  --output ./result --output_dirname subdir
+  python3 -m ais_bench --model ./pth_resnet50_bs1.om --output ./result --output_dirname subdir
   ```
 
   ```bash
@@ -484,7 +480,7 @@ python3 -m ais_bench  --model /home/model/resnet50_v1.om --output ./ --profiler 
 - 设置--dump参数。示例命令及结果如下：
 
   ```bash
-  python3 -m ais_bench --model  ./pth_resnet50_bs1.om  --output ./result --dump 1
+  python3 -m ais_bench --model ./pth_resnet50_bs1.om --output ./result --dump 1
   ```
   
   ```bash
@@ -498,7 +494,7 @@ python3 -m ais_bench  --model /home/model/resnet50_v1.om --output ./ --profiler 
 - 设置--profiler参数。示例命令及结果如下：
 
   ```bash
-  python3 -m ais_bench --model  ./pth_resnet50_bs1.om  --output ./result --profiler 1
+  python3 -m ais_bench --model ./pth_resnet50_bs1.om --output ./result --profiler 1
   ```
 
   ```bash
@@ -598,7 +594,7 @@ def infer_dymshape():
 当出现推理异常时，会写入算子执行失败的输入输出文件到**当前目录**下。同时会打印出当前的算子执行信息。利于定位分析。示例如下：
 
 ```bash
-python3 -m ais_bench --model  ./test/testdata/bert/model/pth_bert_bs1.om --input ./random_in0.bin,random_in1.bin,random_in2.bin
+python3 -m ais_bench --model ./test/testdata/bert/model/pth_bert_bs1.om --input ./random_in0.bin,random_in1.bin,random_in2.bin
 ```
 
 ```bash
