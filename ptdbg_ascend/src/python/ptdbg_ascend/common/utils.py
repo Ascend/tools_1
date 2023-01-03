@@ -285,13 +285,13 @@ def torch_device_guard(func):
         if args:
             args_list = list(args)
             for index, arg in enumerate(args_list):
-                if isinstance(arg, tuple) and "type='npu'" in str(arg):
+                if isinstance(arg, tuple) and hasattr(arg, 'type') and getattr(arg, 'type') == 'npu':
                     args_list[index] = torch_npu.new_device(type=torch_npu.npu.native_device, index=arg.index)
                     break
             args = tuple(args_list)
         if kwargs and isinstance(kwargs.get("device"), tuple):
-            namedtuple_device = kwargs.get("device")
-            if "type='npu'" in str(namedtuple_device):
-                kwargs['device'] = torch_npu.new_device(type=torch_npu.npu.native_device, index=namedtuple_device.index)
+            dev = kwargs.get("device")
+            if hasattr(dev, 'type') and getattr(dev, 'type') == 'npu':
+                kwargs['device'] = torch_npu.new_device(type=torch_npu.npu.native_device, index=dev.index)
         return func(*args, **kwargs)
     return wrapper
