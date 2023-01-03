@@ -425,7 +425,7 @@ class TestClass():
         input_path = TestCommonClass.get_inputs_path(input_size, os.path.join(self.model_base_path, "input"), input_file_num)
         model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
         output_path = os.path.join(self.model_base_path, "output")
-        output_dir_name = "ais_infer_output"
+        output_dir_name = "ais_bench_output"
         output_dir_path = os.path.join(output_path, output_dir_name)
         if os.path.exists(output_dir_path):
             shutil.rmtree(output_dir_path)
@@ -440,9 +440,9 @@ class TestClass():
 
         with open(summary_json_path,'r',encoding='utf8') as fp:
             json_data = json.load(fp)
-            ais_inference_time_ms = json_data["NPU_compute_time"]["mean"]
+            ais_bench_inference_time_ms = json_data["NPU_compute_time"]["mean"]
 
-        assert math.fabs(ais_inference_time_ms) > TestCommonClass.EPSILON
+        assert math.fabs(ais_bench_inference_time_ms) > TestCommonClass.EPSILON
         # get msame inference  average time without first time
         msame_infer_log_path = os.path.join(output_path, output_dir_name, "msame_infer.log")
         cmd = "{} --model {} --input {} > {}".format(TestCommonClass.msame_bin_path, model_path, input_path, msame_infer_log_path)
@@ -464,8 +464,8 @@ class TestClass():
         assert math.fabs(msame_inference_time_ms) > TestCommonClass.EPSILON
         # compare
         allowable_performance_deviation = 0.03
-        reference_deviation = (ais_inference_time_ms - msame_inference_time_ms)/msame_inference_time_ms
-        print("static batch msame time:{} ais time:{} ref:{}".format(msame_inference_time_ms, ais_inference_time_ms, reference_deviation))
+        reference_deviation = (ais_bench_inference_time_ms - msame_inference_time_ms)/msame_inference_time_ms
+        print("static batch msame time:{} ais time:{} ref:{}".format(msame_inference_time_ms, ais_bench_inference_time_ms, reference_deviation))
 
         assert reference_deviation < allowable_performance_deviation
         os.remove(msame_infer_log_path)
@@ -481,7 +481,7 @@ class TestClass():
 
         input_path = TestCommonClass.get_inputs_path(input_size, os.path.join(self.model_base_path, "input"), input_file_num)
         output_path = os.path.join(self.model_base_path, "output")
-        output_dir_name = "ais_infer_dym_output"
+        output_dir_name = "ais_bench_dym_output"
         output_dir_path = os.path.join(output_path, output_dir_name)
         if os.path.exists(output_dir_path):
             shutil.rmtree(output_dir_path)
@@ -497,9 +497,9 @@ class TestClass():
 
         with open(summary_json_path,'r',encoding='utf8') as fp:
             json_data = json.load(fp)
-            ais_inference_time_ms = json_data["NPU_compute_time"]["mean"]
+            ais_bench_inference_time_ms = json_data["NPU_compute_time"]["mean"]
 
-        assert math.fabs(ais_inference_time_ms) > TestCommonClass.EPSILON
+        assert math.fabs(ais_bench_inference_time_ms) > TestCommonClass.EPSILON
         # get msame inference  average time without first time
         msame_infer_log_path = os.path.join(output_path, output_dir_name, "msame_infer.log")
         cmd = "{} --model {} --outputSize {} --dymShape {} --input {} --output {} > {}".format(
@@ -523,8 +523,8 @@ class TestClass():
         assert math.fabs(msame_inference_time_ms) > TestCommonClass.EPSILON
         # compare
         allowable_performance_deviation = 0.04
-        reference_deviation = (ais_inference_time_ms - msame_inference_time_ms)/msame_inference_time_ms
-        print("dymshape msame time:{} ais time:{} ref:{}".format(msame_inference_time_ms, ais_inference_time_ms, reference_deviation))
+        reference_deviation = (ais_bench_inference_time_ms - msame_inference_time_ms)/msame_inference_time_ms
+        print("dymshape msame time:{} ais time:{} ref:{}".format(msame_inference_time_ms, ais_bench_inference_time_ms, reference_deviation))
         assert reference_deviation < allowable_performance_deviation
         os.remove(msame_infer_log_path)
         shutil.rmtree(output_dir_path)

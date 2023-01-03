@@ -14,14 +14,14 @@ class TestCommonClass:
     default_device_id = 0
     EPSILON = 1e-6
     epsilon = 1e-6
-    cmd_prefix = sys.executable + " " + os.path.join(os.path.dirname(os.path.realpath(__file__)), "../ais_infer.py")
+    cmd_prefix = sys.executable + " " + os.path.join(os.path.dirname(os.path.realpath(__file__)), "../ais_bench/__main__.py")
     base_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../test/testdata")
     msame_bin_path = os.getenv('MSAME_BIN_PATH')
 
     @staticmethod
     def get_cmd_prefix():
         _current_dir = os.path.dirname(os.path.realpath(__file__))
-        return sys.executable + " " + os.path.join(_current_dir, "../ais_infer.py")
+        return sys.executable + " " + os.path.join(_current_dir, "../ais_bench/__main__.py")
 
     @staticmethod
     def get_basepath():

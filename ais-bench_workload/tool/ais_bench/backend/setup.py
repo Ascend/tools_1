@@ -85,7 +85,7 @@ ext_modules = [
 setup(
     name = "aclruntime",
     version=__version__,
-    author="ais_infer",
+    author="ais_bench",
     author_email="aclruntime",
     url="https://xxxxx",
     description="A test project using pybind11 and aclruntime",

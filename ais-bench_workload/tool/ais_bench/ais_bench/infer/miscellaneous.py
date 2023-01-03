@@ -18,8 +18,8 @@ def version_check(args):
     aclruntime_version = get_modules_version('aclruntime')
     if aclruntime_version is None or aclruntime_version == "0.0.1":
         logger.warning("aclruntime version:{} is lower please update aclruntime follow any one method".format(aclruntime_version))
-        logger.warning("1. visit https://gitee.com/ascend/tools/tree/master/ais-bench_workload/tool/ais_infer to install")
-        logger.warning("2. or run cmd: pip3  install -v --force-reinstall 'git+https://gitee.com/ascend/tools.git#egg=aclruntime&subdirectory=ais-bench_workload/tool/ais_infer/backend' to install")
+        logger.warning("1. visit https://gitee.com/ascend/tools/tree/master/ais-bench_workload/tool/ais_bench to install")
+        logger.warning("2. or run cmd: pip3  install -v --force-reinstall 'git+https://gitee.com/ascend/tools.git#egg=aclruntime&subdirectory=ais-bench_workload/tool/ais_bench/backend' to install")
         # set old run mode to run ok
         args.run_mode = "tensor"
 

@@ -17,8 +17,8 @@ find ./src -type f -name "*.JPEG" | head -n 100 | xargs -i ln -sf {} ./dst
 ```bash
 root#  python3 -m ais_bench --model /home/lhb/code/testdata/resnet50/model/pth_resnet50_bs1.om --loop 2
 [WARNING] aclruntime version:0.0.1 is lower please update aclruntime follow any one method
-[WARNING] 1. visit https://gitee.com/ascend/tools/tree/master/ais-bench_workload/tool/ais_infer to install
-[WARNING] 2. or run cmd: pip3  install -v --force-reinstall 'git+https://gitee.com/ascend/tools.git#egg=aclruntime&subdirectory=ais-bench_workload/tool/ais_infer/backend' to install
+[WARNING] 1. visit https://gitee.com/ascend/tools/tree/master/ais-bench_workload/tool/ais_bench to install
+[WARNING] 2. or run cmd: pip3  install -v --force-reinstall 'git+https://gitee.com/ascend/tools.git#egg=aclruntime&subdirectory=ais-bench_workload/tool/ais_bench/backend' to install
 ```
 **故障原因：**  
 环境安装低版本aclruntime, 推理工具运行时使用的是高版本的ais_bench
