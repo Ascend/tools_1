@@ -118,13 +118,14 @@ set_dump_switch("ON", mode=4, scope=["1000_Tensor_abs", "1484_Tensor_transpose_f
 
 ”“”
 # 精度比对场景：
-# 对模型注入精度比对的hook,第三个参数为dump模式
-# 精度比对的dump模式有三种：
-     1： 摘要模式，每个tensor dump最多512 (256(前)+256(尾))个数，同时dump出tensor的max, min, mean;
-     2： 采样模式，tensor数据按16倍下采样后dump
-     3： 全dump，dump出tensor的完整数据
+# 对模型注入精度比对的hook,第三个参数为dump的采样率
+# 精度比对的dump范围：
+     每个tensor dump范围为:(256(前) + 中间部分按采样率采样 + 256(尾))个数，同时dump出tensor的max, min, mean;
+     采样率参数配置：1~100的整数，表示1% ~ 100%。 默认配置为：1
+  第二个参数： 该参数为精度比对dump的钩子函数名，必须配置为：acc_cmp_dump，该函数从ptdbg_ascend中import
 “”“
-register_hook(model, acc_cmp_dump, dump_mode=1)
+# 示例,中间部分采样1%
+register_hook(model, acc_cmp_dump, dump_ratio=1)
 
 “”“
 #溢出检测场景：
@@ -133,7 +134,9 @@ register_hook(model, acc_cmp_dump, dump_mode=1)
     检测的次数：配置实际溢出检测的次数，例如配置为3，表示检测到第三次溢出时停止训练;
               该参数不配置，默认值为1次。
 “”“
-register_hook(model, overflow_check, dump_mode=1)
+# 示例，检测到2次溢出后退出
+# 第二个参数： 该参数为溢出检测的钩子函数名，必须配置为：acc_cmp_dump，该函数从ptdbg_ascend中import
+register_hook(model, overflow_check, overflow_nums=2)
 
 ...
 # 在期望dump的迭代结束后关闭dump开关

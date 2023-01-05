@@ -47,9 +47,10 @@ def initialize_hook(hook):
 def register_hook(model, hook, **kwargs):
     assert hasattr(model, "named_modules"), "Please register hooks to nn.Module."
 
-    dump_mode = kwargs.get('dump_mode', 1)
+    dump_ratio = kwargs.get('dump_ratio', 1)
+    overflow_nums = kwargs.get('overflow_nums', 1)
     pid = os.getpid()
-    hook = functools.partial(hook, dump_mode=dump_mode, pid=pid)
+    hook = functools.partial(hook, dump_ratio=dump_ratio, overflow_nums=overflow_nums, pid=pid)
 
     # In NPU scene, clear the overflow flag before overflow detection
     if not torch.cuda.is_available():
