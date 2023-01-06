@@ -18,13 +18,13 @@ try_download_url() {
 function get_convert_file()
 {
     local convert_url="https://gitee.com/ascend/ModelZoo-PyTorch/raw/master/ACL_PyTorch/built-in/cv/Resnet50_Pytorch_Infer/pth2onnx.py"
-    wget $convert_url -O $1
+    wget $convert_url -O $1 --no-check-certificate
 }
 
 function get_aippConfig_file()
 {
     local aipp_config_url="https://gitee.com/ascend/ModelZoo-PyTorch/raw/master/ACL_PyTorch/built-in/cv/Resnet50_Pytorch_Infer/aipp_resnet50.aippconfig"
-    wget $aipp_config_url -O $1
+    wget $aipp_config_url -O $1 --no-check-certificate
 }
 
 convert_staticbatch_om()
