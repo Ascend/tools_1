@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright @ Huawei Technologies Co., Ltd. 2023-2029. All rights reserved
+# Copyright (c) Huawei Technologies Co., Ltd. 2023-2029. All rights reserved.
 # This script used to install mindxedge whitebox
 
 CUR_DIR=$(dirname $(readlink -f "$0"))
@@ -24,21 +24,21 @@ function do_install()
     is_real_path "${WHITE_BOX_INSTALL_SRC_PATH}"
     ret=$?
     if [[ ${ret} -ne 0 ]]; then
-        logger_Error "Install failed: "${WHITE_BOX_INSTALL_SRC_PATH} invalid"
+        logger_Error "Install failed: ${WHITE_BOX_INSTALL_SRC_PATH} invalid"
     fi
 
     is_real_path "${WHITE_BOX_INSTALL_DST_PATH}"
     ret=$?
     if [[ ${ret} -ne 0 ]]; then
-        logger_Error "Install failed: "${WHITE_BOX_INSTALL_DST_PATH} invalid"
+        logger_Error "Install failed: ${WHITE_BOX_INSTALL_DST_PATH} invalid"
     fi
 
     for((i=0;i<$FILE_SIZE;i++));
     do
         local file="${SCRIPT_DIR}/${FILE_LIST[$i]}"
         if [[ ! -f "${file}" ]]; then
-            logger_Error "${file} not exit"
-            return ${ret_failed_config_file_not_exit}
+            logger_Error "${file} not exist"
+            return ${ret_failed_config_file_not_exist}
         fi
 
         is_real_path "${file}"
