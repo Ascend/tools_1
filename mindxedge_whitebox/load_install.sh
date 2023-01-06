@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright @ Huawei Technologies Co., Ltd. 2023-2029. All rights reserved
+# Copyright (c) Huawei Technologies Co., Ltd. 2023-2029. All rights reserved.
 # This script used to install mindxedge whitebox
 
 CUR_DIR=$(dirname $(readlink -f "$0"))
@@ -13,19 +13,19 @@ LOG_FILE="/var/plog/upgrade.log"
 
 function do_check_all()
 {
-    if [[ "$(whoami) != "root" ]];then
+    if [[ "$(whoami) != "root" ]]; then
         echo "Install failed:user not root!" >> ${LOG_FILE}
         return 1
     fi
 
-    if [[ ! -f "${INSTALL_SCRIPT_PATH}" ]];then
+    if [[ ! -f "${INSTALL_SCRIPT_PATH}" ]]; then
         echo "${INSTALL_SCRIPT_PATH} not exist" >> ${LOG_FILE}
         return 2
     fi
 
     local zip_name=$(ls -l ${CUR_DIR} | grep "Ascend-mindxedge-whitebox.\{1,\}.zip$" | awk '{print $9}')
-    if [[ -z "${zip_name}" ]];then
-        echo "no whitebox zip in ${CUR_DIR}" >> ${LOG_FILE}
+    if [[ -z "${zip_name}" ]]; then
+        echo "no whitebox zip in ${CUR_DIR}!" >> ${LOG_FILE}
         return 3
     fi
 
@@ -36,17 +36,17 @@ function do_check_all()
 
 function do_create_dst_path()
 {
-    if [ ! -d "${WHITE_BOX_DIR}" ];then
+    if [ ! -d "${WHITE_BOX_DIR}" ]; then
         mkdir -p ${WHITE_BOX_DIR} && chmod 640 ${WHITE_BOX_DIR}
     fi
 
     rm -rf ${WHITE_BOX_PKG_DIR}
-    if [ ! -d "${WHITE_BOX_PKG_DIR}" ];then
+    if [ ! -d "${WHITE_BOX_PKG_DIR}" ]; then
         mkdir -p ${WHITE_BOX_PKG_DIR} && chmod 640 ${WHITE_BOX_PKG_DIR}
     fi
 
     rm -rf ${WHITE_BOX_TMP_PATH}
-    if [ ! -d "${WHITE_BOX_TMP_PATH}" ];then
+    if [ ! -d "${WHITE_BOX_TMP_PATH}" ]; then
         mkdir -p ${WHITE_BOX_TMP_PATH} && chmod 640 ${WHITE_BOX_TMP_PATH}
     fi
 
@@ -56,11 +56,12 @@ function do_create_dst_path()
 function do_unzip_package()
 {
     unzip ${INSTALL_ZIP_PATH} -d ${WHITE_BOX_PKG_DIR}
+
     mv ${INSTALL_ZIP_PATH} ${WHITE_BOX_DIR}
 
     local tar_gz_name=$(ls -l ${WHITE_BOX_PKG_DIR} | grep "Ascend-mindxedge-whitebox.\{1,\}.tar.gz$" | awk '{print $9}')
-    if [[ -z "${tar_gz_name}" ]];then
-        echo "no whitebox tar.gz in ${WHITE_BOX_PKG_DIR}" >> ${LOG_FILE}
+    if [[ -z "${tar_gz_name}" ]]; then
+        echo "no whitebox tar.gz in ${WHITE_BOX_PKG_DIR}!" >> ${LOG_FILE}
         return 3
     fi
 
@@ -118,26 +119,32 @@ function do_work()
         echo "do_check_all failed,err=${ret}" >> ${LOG_FILE}
         return ${ret}
     fi
+
     do_create_dst_path
     ret=$?
     if [[ ${ret} -ne 0 ]]; then
         echo "do_check_all failed,err=${ret}" >> ${LOG_FILE}
         return ${ret}
     fi
+
     do_unzip_package
     ret=$?
     if [[ ${ret} -ne 0 ]]; then
         echo "do_check_all failed,err=${ret}" >> ${LOG_FILE}
+        do_delete_package
         return ${ret}
     fi
+
     do_install_package
     ret=$?
     if [[ ${ret} -ne 0 ]]; then
         echo "do_check_all failed,err=${ret}" >> ${LOG_FILE}
+        do_delete_package
         return ${ret}
     fi
 
     do_delete_package
+
     echo "Install whitebox success" >> ${LOG_FILE}
     return 0
 }
