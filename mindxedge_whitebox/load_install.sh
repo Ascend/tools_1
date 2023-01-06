@@ -13,7 +13,7 @@ LOG_FILE="/var/plog/upgrade.log"
 
 function do_check_all()
 {
-    if [[ "$(whoami) != "root" ]]; then
+    if [[ "$(whoami)" != "root" ]]; then
         echo "Install failed:user not root!" >> ${LOG_FILE}
         return 1
     fi
@@ -123,14 +123,14 @@ function do_work()
     do_create_dst_path
     ret=$?
     if [[ ${ret} -ne 0 ]]; then
-        echo "do_check_all failed,err=${ret}" >> ${LOG_FILE}
+        echo "do_create_dst_path failed,err=${ret}" >> ${LOG_FILE}
         return ${ret}
     fi
 
     do_unzip_package
     ret=$?
     if [[ ${ret} -ne 0 ]]; then
-        echo "do_check_all failed,err=${ret}" >> ${LOG_FILE}
+        echo "do_unzip_package failed,err=${ret}" >> ${LOG_FILE}
         do_delete_package
         return ${ret}
     fi
@@ -138,7 +138,7 @@ function do_work()
     do_install_package
     ret=$?
     if [[ ${ret} -ne 0 ]]; then
-        echo "do_check_all failed,err=${ret}" >> ${LOG_FILE}
+        echo "do_install_package failed,err=${ret}" >> ${LOG_FILE}
         do_delete_package
         return ${ret}
     fi
