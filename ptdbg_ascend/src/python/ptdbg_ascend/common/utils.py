@@ -41,7 +41,7 @@ class Const:
     EQUAL = "="
     COMMA = ","
     DOT = "."
-    DUMP_MODE = {"SUMMERY": 1, "SAMPLE": 2, "ALL": 3}
+    DUMP_RATIO_MAX = 100
     DUMP_SCOPE = {"ALL": 1, "LIST": 2, "RANGE": 3, "STACK": 4}
     SUMMERY_DATA_NUMS = 256
     FLOAT_EPSILON = np.finfo(float).eps
@@ -80,7 +80,7 @@ class CompareException(Exception):
     NO_DUMP_FILE_ERROR = 9
     INVALID_DATA_ERROR = 10
     INVALID_PARAM_ERROR = 11
-    INVALID_DUMP_MODE = 12
+    INVALID_DUMP_RATIO = 12
     INVALID_DUMP_FILE = 13
     UNKNOWN_ERROR = 14
 

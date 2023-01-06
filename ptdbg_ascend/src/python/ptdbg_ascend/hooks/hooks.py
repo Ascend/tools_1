@@ -60,9 +60,9 @@ class DumpUtil(object):
                 if name_prefix.startswith(item):
                     return True
         elif DumpUtil.dump_switch_mode == Const.DUMP_SCOPE.get("RANGE"):
-            start = DumpUtil.dump_switch_scope[0].split('_', 1)[0]
-            end = DumpUtil.dump_switch_scope[1].split('_', 1)[0]
-            curr = name_prefix.split('_', 1)[0]
+            start = int(DumpUtil.dump_switch_scope[0].split('_', 1)[0])
+            end = int(DumpUtil.dump_switch_scope[1].split('_', 1)[0])
+            curr = int(name_prefix.split('_', 1)[0])
             if start <= curr <= end:
                 return True
         elif DumpUtil.dump_switch_mode == Const.DUMP_SCOPE.get("STACK"):
@@ -72,13 +72,13 @@ class DumpUtil(object):
                 if name_prefix.startswith(DumpUtil.dump_switch_scope[0]):
                     return True
             elif len(DumpUtil.dump_switch_scope) == 2:
-                start = DumpUtil.dump_switch_scope[0].split('_', 1)[0]
-                end = DumpUtil.dump_switch_scope[1].split('_', 1)[0]
-                curr = name_prefix.split('_', 1)[0]
+                start = int(DumpUtil.dump_switch_scope[0].split('_', 1)[0])
+                end = int(DumpUtil.dump_switch_scope[1].split('_', 1)[0])
+                curr = int(name_prefix.split('_', 1)[0])
                 if start <= curr <= end:
                     return True
             else:
-                print_error_log("dump scope is invalid, Please set the scope param in"
+                print_error_log("dump scope is invalid, Please set the scope mode in"
                                 " set_dump_switch with [1, 2, 3, 4],1: ALL, 2: List, 3: ARRANGE, 4: STACK !")
 
         return False
@@ -145,17 +145,17 @@ def set_dump_switch(switch, mode=1, scope=[]):
     DumpUtil.set_dump_switch(switch, mode=mode, scope=scope)
 
 
-def dump_tensor(x, prefix, dump_mode):
+def dump_tensor(x, prefix, dump_ratio):
     if isinstance(x, (tuple, list)) and x:
         for i, item in enumerate(x):
-            dump_tensor(item, "{}.{}".format(prefix, i), dump_mode)
+            dump_tensor(item, "{}.{}".format(prefix, i), dump_ratio)
     elif isinstance(x, torch.Tensor):
         if x.numel() == 0 or len(x.shape) == 0 or not x.is_floating_point():
             return
 
         with os.fdopen(os.open(DumpUtil.get_dump_path(), os.O_RDWR|os.O_CREAT, stat.S_IWUSR|stat.S_IRUSR), "a") as f:
             summery_data = []
-            if dump_mode == Const.DUMP_MODE.get("SUMMERY"):
+            if 1 <= dump_ratio <= Const.DUMP_RATIO_MAX:
                 tensor_max = torch._C._VariableFunctionsClass.max(x).cpu().detach().float().numpy().tolist()
                 tensor_min = torch._C._VariableFunctionsClass.min(x).cpu().detach().float().numpy().tolist()
                 tensor_mean = torch._C._VariableFunctionsClass.mean(x).cpu().detach().float().numpy().tolist()
@@ -165,40 +165,35 @@ def dump_tensor(x, prefix, dump_mode):
                 else:
                     saved_tensor_head = x.contiguous().view(-1)[
                                         :Const.SUMMERY_DATA_NUMS].cpu().detach().float().numpy().tolist()
+                    saved_tensor_body = []
+                    dump_step = (Const.DUMP_RATIO_MAX - dump_ratio) + 1
+                    if dump_step != 0:
+                        saved_tensor_body = x.contiguous().view(-1)[Const.SUMMERY_DATA_NUMS: (-1 * Const.SUMMERY_DATA_NUMS): dump_step]\
+                            .cpu().detach().float().numpy().tolist()
                     saved_tensor_tail = x.contiguous().view(-1)[
                                         (-1 * Const.SUMMERY_DATA_NUMS):].cpu().detach().float().numpy().tolist()
-                    saved_tensor = saved_tensor_head + saved_tensor_tail
+                    saved_tensor = saved_tensor_head + saved_tensor_body + saved_tensor_tail
                 summery_data.extend([tensor_max, tensor_min, tensor_mean])
-            elif dump_mode == Const.DUMP_MODE.get("SAMPLE"):
-                np.random.seed(int(os.environ['PYTHONHASHSEED']))
-                sample_ratio = x.shape[0] // Const.SUMMERY_DATA_NUMS if x.shape[0] >= Const.SUMMERY_DATA_NUMS else x.shape[0]
-                sample_index = np.sort(np.random.choice(x.shape[0], sample_ratio, replace='False'))
-                saved_tensor = x.contiguous()[sample_index].view(-1).cpu().detach().float().numpy().tolist()
-            elif dump_mode == Const.DUMP_MODE.get("ALL"):
-                saved_tensor = x.contiguous().view(-1).cpu().detach().float().numpy().tolist()
             else:
-                print_error_log("dump_mode is invalid, Please set dump mode in [1, 2, 3],"
-                                " 1: SUMMARY mode, 2: SAMPLE mode, 3: ALL mode")
+                print_error_log("dump_ratio is invalid, Please set dump mode in [1~100], indicate 1% ~ 100%.")
                 f.close()
-                raise CompareException(CompareException.INVALID_DUMP_MODE)
+                raise CompareException(CompareException.INVALID_DUMP_RATIO)
 
-            json.dump([prefix, dump_mode, saved_tensor, str(x.dtype), tuple(x.shape), summery_data], f)
+            json.dump([prefix, dump_ratio, saved_tensor, str(x.dtype), tuple(x.shape), summery_data], f)
             f.write('\n')
 
 
 def _dump_tensor_completely(x, prefix, dump_file_name):
-    dump_mode = Const.DUMP_MODE.get("ALL")
+    dump_flag = Const.DUMP_RATIO_MAX + 1
     if isinstance(x, (tuple, list)) and x:
         for i, item in enumerate(x):
             _dump_tensor_completely(item, "{}.{}".format(prefix, i), dump_file_name)
     else:
-        if "stack_info" in prefix or \
-                DumpUtil.dump_switch_scope == Const.DUMP_SCOPE.get("ALL") or \
-                (isinstance(x, torch.Tensor) and x.numel() != 0):
+        if "stack_info" in prefix or (isinstance(x, torch.Tensor) and x.numel() != 0):
             with os.fdopen(os.open(dump_file_name, os.O_RDWR|os.O_CREAT, stat.S_IWUSR|stat.S_IRUSR), "a") as f:
                 if isinstance(x, torch.Tensor):
                     save_tensor = x.contiguous().view(-1).cpu().detach().float().numpy().tolist()
-                    json.dump([prefix, dump_mode, save_tensor, str(x.dtype), tuple(x.shape)], f)
+                    json.dump([prefix, dump_flag, save_tensor, str(x.dtype), tuple(x.shape)], f)
                 else:
                     json.dump([prefix, x], f)
                 f.write('\n')
@@ -211,7 +206,7 @@ def seed_all(seed=1234):
     torch.manual_seed(seed)
 
 
-def dump_acc_cmp(name, in_feat, out_feat, dump_mode):
+def dump_acc_cmp(name, in_feat, out_feat, dump_ratio):
     if DumpUtil.get_dump_switch():
         if DumpUtil.dump_init_enable:
             dump_acc_cmp.call_number = 0
@@ -222,8 +217,8 @@ def dump_acc_cmp(name, in_feat, out_feat, dump_mode):
         name_prefix = f"{dump_acc_cmp.call_number}_{name}"
         if DumpUtil.dump_switch_mode == Const.DUMP_SCOPE.get("ALL"):
             name_template = f"{name_prefix}" + "_{}"
-            dump_tensor(in_feat, name_template.format("input"), dump_mode)
-            dump_tensor(out_feat, name_template.format("output"), dump_mode)
+            dump_tensor(in_feat, name_template.format("input"), dump_ratio)
+            dump_tensor(out_feat, name_template.format("output"), dump_ratio)
         elif DumpUtil.check_switch_scope(name_prefix):
             dump_file = DumpUtil.get_dump_path()
             name_template = f"{name_prefix}" + "_{}"
@@ -235,14 +230,14 @@ def dump_acc_cmp(name, in_feat, out_feat, dump_mode):
 
 
 def acc_cmp_dump(name, **kwargs):
-    dump_mode = kwargs.get('dump_mode', 1)
+    dump_ratio = kwargs.get('dump_ratio', 1)
     pid = kwargs.get('pid')
     if not pid:
         return RuntimeError("Not get the specified process pid.")
 
     def acc_cmp_hook(module, in_feat, out_feat):
         if pid == os.getpid():
-            dump_acc_cmp(name, in_feat, out_feat, dump_mode)
+            dump_acc_cmp(name, in_feat, out_feat, dump_ratio)
 
     return acc_cmp_hook
 
@@ -255,7 +250,7 @@ def dump_overflow(module_name, stack_str, in_feat, out_feat, dump_file):
 
 
 def overflow_check(name, **kwargs):
-    dump_mode = kwargs.get('dump_mode', 1)
+    overflow_nums = kwargs.get('overflow_nums', 1)
     pid = kwargs.get('pid')
     if not pid:
         return RuntimeError("Not get the specified process pid.")
@@ -268,7 +263,7 @@ def overflow_check(name, **kwargs):
             return
         module_name = name
         module.has_overflow = torch_npu._C._check_overflow_npu()
-        if module.has_overflow and DumpUtil.check_overflow_dump_times(dump_mode):
+        if module.has_overflow and DumpUtil.check_overflow_dump_times(overflow_nums):
             DumpUtil.inc_overflow_dump_times()
             dump_file_name = "Overflow_info_{}.pkl".format(get_time())
             stack_str = [str(_) for _ in inspect.stack()[3:]]
@@ -277,7 +272,7 @@ def overflow_check(name, **kwargs):
             torch_npu._C._clear_overflow_npu()
             print_warn_log("[overflow {} times]: module name :'{}' is overflow and dump file is saved in '{}'."
                            .format(DumpUtil.real_overflow_dump_times, module_name, os.path.realpath(dump_file_name)))
-            if not DumpUtil.check_overflow_dump_times(dump_mode):
+            if not DumpUtil.check_overflow_dump_times(overflow_nums):
                 raise ValueError("[overflow {} times]: dump file is saved in '{}'."
                                  .format(DumpUtil.real_overflow_dump_times, os.path.realpath(dump_file_name)))
 

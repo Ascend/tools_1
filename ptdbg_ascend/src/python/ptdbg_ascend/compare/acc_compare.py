@@ -119,7 +119,7 @@ def merge_tensor(tensor_list):
             op_dict["output_struct"].append((tensor[3], tensor[4]))
             op_dict["output_value"].append(tensor[2])
 
-        if tensor[1] == Const.DUMP_MODE.get("SUMMERY"):
+        if tensor[1] <= Const.DUMP_RATIO_MAX:
             op_dict["summery"].append(tensor[5])
 
     return op_dict
@@ -257,7 +257,7 @@ def _get_summery_mode(pkl_file_handle, file_name):
         print_error_log("dump file {} have empty line!".format(file_name))
         raise CompareException(CompareException.INVALID_DUMP_FILE)
     tensor_data = json.loads(tensor_line)
-    return tensor_data[1] == Const.DUMP_MODE.get("SUMMERY")
+    return isinstance(tensor_data[1], int) and tensor_data[1] <= Const.DUMP_RATIO_MAX
 
 
 if __name__ == "__main__":
