@@ -1,7 +1,7 @@
 # MindXEdge 白牌化安装工具
 
 ## 功能
-支持Atlas500智能小站进行白牌化的首次安装，安装后设备将变为白牌化的设备
+支持Atlas500智能小站进行白牌化的首次安装，安装后设备将变为白牌化的设备，仅首次安装涉及，白牌升级场景无需调用。
 
 ## 使用环境
 1. 用户环境为Atlas 500智能小站
@@ -35,8 +35,8 @@
 ### 1. 制作mindxedge_whitebox.zip包  
     a. 将Ascend-mindxedge-whitebox_{version}_linux.zip白牌软件包放在工具的mindxedge_whitebox子目录下，比如tools/mindxedge_whitebox/
     b. 将mindxedge_whitebox/目录压缩为mindxedge_whitebox.zip包
-    
-	
+
+
 ### 2. 将mindxedge_whitebox.zip包上传到Atlas 500小站的/tmp/目录下，并解压
     a. 进入tmp目录：cd /tmp
     b. 解压mindxedge_whitebox.zip包：unzip mindxedge_whitebox.zip
