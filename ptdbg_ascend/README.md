@@ -118,14 +118,14 @@ set_dump_switch("ON", mode=4, scope=["1000_Tensor_abs", "1484_Tensor_transpose_f
 
 ”“”
 # 精度比对场景：
-# 对模型注入精度比对的hook,第三个参数为dump的采样率
+# 对模型注入精度比对的hook,第三个参数为dump的采样步长
 # 精度比对的dump范围：
-     每个tensor dump范围为:(256(前) + 中间部分按采样率采样 + 256(尾))个数，同时dump出tensor的max, min, mean;
-     采样率参数配置：1~100的整数，表示1% ~ 100%。 默认配置为：1
+     每个tensor dump范围为:(256(前) + 中间部分按采样步长取数 + 256(尾))个数，同时dump出tensor的max, min, mean;
+     采样步长配置：1~100的整数，表示采样的步长; 默认配置为：1，表示全量dump
   第二个参数： 该参数为精度比对dump的钩子函数名，必须配置为：acc_cmp_dump，该函数从ptdbg_ascend中import
 “”“
 # 示例,中间部分采样1%
-register_hook(model, acc_cmp_dump, dump_ratio=1)
+register_hook(model, acc_cmp_dump, dump_step=1)
 
 “”“
 #溢出检测场景：
@@ -142,8 +142,15 @@ register_hook(model, overflow_check, overflow_nums=2)
 # 在期望dump的迭代结束后关闭dump开关
 set_dump_switch("OFF")
 
-# 数据dump完成后,比对dump的NPU vs GPU/CPU数据, 第三个参数中的目录必须是已存在的目录
-compare("./npu_dump.pkl", "./gpu_dump.pkl", "./output", True)
+# 数据dump完成后,比对dump的NPU vs GPU/CPU数据, 第二个参数中的目录必须是已存在的目录
+比对示例：
+dump_result_param={
+"npu_pkl_path": "./npu_dump.pkl",
+"bench_pkl_path": "./gpu_dump.pkl",
+"npu_dump_data_dir": "./npu_dump_20230104_13434",
+"bench_dump_data_dir": "./gpu_dump_20230104_132544"
+}
+compare(dump_result_param, "./output", True)
 ```
 
 ## 贡献
