@@ -60,9 +60,9 @@ class DumpUtil(object):
                 if name_prefix.startswith(item):
                     return True
         elif DumpUtil.dump_switch_mode == Const.DUMP_SCOPE.get("RANGE"):
-            start = DumpUtil.dump_switch_scope[0].split('_', 1)[0]
-            end = DumpUtil.dump_switch_scope[1].split('_', 1)[0]
-            curr = name_prefix.split('_', 1)[0]
+            start = int(DumpUtil.dump_switch_scope[0].split('_', 1)[0])
+            end = int(DumpUtil.dump_switch_scope[1].split('_', 1)[0])
+            curr = int(name_prefix.split('_', 1)[0])
             if start <= curr <= end:
                 return True
         elif DumpUtil.dump_switch_mode == Const.DUMP_SCOPE.get("STACK"):
@@ -72,9 +72,9 @@ class DumpUtil(object):
                 if name_prefix.startswith(DumpUtil.dump_switch_scope[0]):
                     return True
             elif len(DumpUtil.dump_switch_scope) == 2:
-                start = DumpUtil.dump_switch_scope[0].split('_', 1)[0]
-                end = DumpUtil.dump_switch_scope[1].split('_', 1)[0]
-                curr = name_prefix.split('_', 1)[0]
+                start = int(DumpUtil.dump_switch_scope[0].split('_', 1)[0])
+                end = int(DumpUtil.dump_switch_scope[1].split('_', 1)[0])
+                curr = int(name_prefix.split('_', 1)[0])
                 if start <= curr <= end:
                     return True
             else:
@@ -184,7 +184,7 @@ def dump_tensor(x, prefix, dump_ratio):
 
 
 def _dump_tensor_completely(x, prefix, dump_file_name):
-    dump_ratio = Const.DUMP_RATIO_MAX
+    dump_flag = Const.DUMP_RATIO_MAX + 1
     if isinstance(x, (tuple, list)) and x:
         for i, item in enumerate(x):
             _dump_tensor_completely(item, "{}.{}".format(prefix, i), dump_file_name)
@@ -193,7 +193,7 @@ def _dump_tensor_completely(x, prefix, dump_file_name):
             with os.fdopen(os.open(dump_file_name, os.O_RDWR|os.O_CREAT, stat.S_IWUSR|stat.S_IRUSR), "a") as f:
                 if isinstance(x, torch.Tensor):
                     save_tensor = x.contiguous().view(-1).cpu().detach().float().numpy().tolist()
-                    json.dump([prefix, dump_ratio, save_tensor, str(x.dtype), tuple(x.shape)], f)
+                    json.dump([prefix, dump_flag, save_tensor, str(x.dtype), tuple(x.shape)], f)
                 else:
                     json.dump([prefix, x], f)
                 f.write('\n')
