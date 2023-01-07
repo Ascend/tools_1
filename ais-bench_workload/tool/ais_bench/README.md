@@ -618,7 +618,7 @@ EZ9999  The error from device(2), serial number is 17, there is an aicore error,
 -rw-r--r-- 1 root root 576K Jan  7 08:17 exception_cb_index_0_output_0_format_2_dtype_1_shape_384x768.bin
 ```
 如果有需要将生成的异常bin文件转换为npy文件，请使用[转换工具convert_exception_cb_bin_to_npy.py](https://gitee.com/ascend/tools/tree/master/ais-bench_workload/tool/ais_bench/test/convert_exception_cb_bin_to_npy.py).  
-使用方法：python3 convert_exception_cb_bin_to_npy.py -input {bin_file_path}。支持输入bin文件或文件夹。
+使用方法：python3 convert_exception_cb_bin_to_npy.py --input {bin_file_path}。支持输入bin文件或文件夹。
 
 
 ## FAQ
