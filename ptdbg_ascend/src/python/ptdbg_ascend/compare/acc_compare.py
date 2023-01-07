@@ -244,6 +244,7 @@ def parse(pkl_file, module_name_prefix):
             continue
         if len(pkl_line) == 0:
             done = True
+            break
 
         msg = json.loads(pkl_line)
         info_prefix = msg[0]
