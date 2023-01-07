@@ -192,16 +192,15 @@ def _dump_tensor_completely(x, prefix, dump_file_name):
         for i, item in enumerate(x):
             _dump_tensor_completely(item, "{}.{}".format(prefix, i), dump_file_name)
     else:
-        if "stack_info" in prefix:
-            with os.fdopen(os.open(dump_file_name, os.O_RDWR|os.O_CREAT, stat.S_IWUSR|stat.S_IRUSR), "a") as f:
+        with os.fdopen(os.open(dump_file_name, os.O_RDWR | os.O_CREAT, stat.S_IWUSR | stat.S_IRUSR), "a") as f:
+            if "stack_info" in prefix:
                 json.dump([prefix, x], f)
-                f.write('\n')
-        elif (isinstance(x, torch.Tensor) and x.numel() != 0):
-            output_dir = DumpUtil.dump_data_dir 
-            dump_file = f'{prefix}.npy'
-            output_path = os.path.join(output_dir, dump_file)
-            save_tensor = x.contiguous().view(-1).cpu().detach().float().numpy()
-            np.save(output_path, save_tensor)
+            elif isinstance(x, torch.Tensor) and x.numel() != 0:
+                output_path = os.path.join(DumpUtil.dump_data_dir, f'{prefix}.npy')
+                save_tensor = x.contiguous().view(-1).cpu().detach().float().numpy()
+                np.save(output_path, save_tensor)
+                json.dump([prefix, dump_flag, [], str(x.dtype), tuple(x.shape)], f)
+            f.write('\n')
 
 
 def seed_all(seed=1234):
