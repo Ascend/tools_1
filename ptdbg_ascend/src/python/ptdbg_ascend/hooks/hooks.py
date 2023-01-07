@@ -32,6 +32,7 @@ from ..common.utils import check_file_or_directory_path, print_error_log, \
 
 
 class DumpUtil(object):
+    dump_data_dir = None
     dump_path = None
     dump_switch = None
     dump_switch_mode = Const.DUMP_SCOPE.get("ALL")
@@ -145,17 +146,17 @@ def set_dump_switch(switch, mode=1, scope=[]):
     DumpUtil.set_dump_switch(switch, mode=mode, scope=scope)
 
 
-def dump_tensor(x, prefix, dump_ratio):
+def dump_tensor(x, prefix, dump_step):
     if isinstance(x, (tuple, list)) and x:
         for i, item in enumerate(x):
-            dump_tensor(item, "{}.{}".format(prefix, i), dump_ratio)
+            dump_tensor(item, "{}.{}".format(prefix, i), dump_step)
     elif isinstance(x, torch.Tensor):
         if x.numel() == 0 or len(x.shape) == 0 or not x.is_floating_point():
             return
 
         with os.fdopen(os.open(DumpUtil.get_dump_path(), os.O_RDWR|os.O_CREAT, stat.S_IWUSR|stat.S_IRUSR), "a") as f:
             summery_data = []
-            if 1 <= dump_ratio <= Const.DUMP_RATIO_MAX:
+            if 1 <= dump_step <= Const.DUMP_RATIO_MAX:
                 tensor_max = torch._C._VariableFunctionsClass.max(x).cpu().detach().float().numpy().tolist()
                 tensor_min = torch._C._VariableFunctionsClass.min(x).cpu().detach().float().numpy().tolist()
                 tensor_mean = torch._C._VariableFunctionsClass.mean(x).cpu().detach().float().numpy().tolist()
@@ -166,7 +167,6 @@ def dump_tensor(x, prefix, dump_ratio):
                     saved_tensor_head = x.contiguous().view(-1)[
                                         :Const.SUMMERY_DATA_NUMS].cpu().detach().float().numpy().tolist()
                     saved_tensor_body = []
-                    dump_step = (Const.DUMP_RATIO_MAX - dump_ratio) + 1
                     if dump_step != 0:
                         saved_tensor_body = x.contiguous().view(-1)[Const.SUMMERY_DATA_NUMS: (-1 * Const.SUMMERY_DATA_NUMS): dump_step]\
                             .cpu().detach().float().numpy().tolist()
@@ -178,8 +178,11 @@ def dump_tensor(x, prefix, dump_ratio):
                 print_error_log("dump_ratio is invalid, Please set dump mode in [1~100], indicate 1% ~ 100%.")
                 f.close()
                 raise CompareException(CompareException.INVALID_DUMP_RATIO)
+            
+            output_path = os.path.join(DumpUtil.dump_data_dir, f'{prefix}.npy')
+            np.save(output_path, saved_tensor)
+            json.dump([prefix, dump_step, [], str(x.dtype), tuple(x.shape), summery_data], f)
 
-            json.dump([prefix, dump_ratio, saved_tensor, str(x.dtype), tuple(x.shape), summery_data], f)
             f.write('\n')
 
 
@@ -189,14 +192,15 @@ def _dump_tensor_completely(x, prefix, dump_file_name):
         for i, item in enumerate(x):
             _dump_tensor_completely(item, "{}.{}".format(prefix, i), dump_file_name)
     else:
-        if "stack_info" in prefix or (isinstance(x, torch.Tensor) and x.numel() != 0):
-            with os.fdopen(os.open(dump_file_name, os.O_RDWR|os.O_CREAT, stat.S_IWUSR|stat.S_IRUSR), "a") as f:
-                if isinstance(x, torch.Tensor):
-                    save_tensor = x.contiguous().view(-1).cpu().detach().float().numpy().tolist()
-                    json.dump([prefix, dump_flag, save_tensor, str(x.dtype), tuple(x.shape)], f)
-                else:
-                    json.dump([prefix, x], f)
-                f.write('\n')
+        with os.fdopen(os.open(dump_file_name, os.O_RDWR | os.O_CREAT, stat.S_IWUSR | stat.S_IRUSR), "a") as f:
+            if "stack_info" in prefix:
+                json.dump([prefix, x], f)
+            elif isinstance(x, torch.Tensor) and x.numel() != 0:
+                output_path = os.path.join(DumpUtil.dump_data_dir, f'{prefix}.npy')
+                save_tensor = x.contiguous().view(-1).cpu().detach().float().numpy()
+                np.save(output_path, save_tensor)
+                json.dump([prefix, dump_flag, [], str(x.dtype), tuple(x.shape)], f)
+            f.write('\n')
 
 
 def seed_all(seed=1234):
@@ -206,44 +210,54 @@ def seed_all(seed=1234):
     torch.manual_seed(seed)
 
 
-def dump_acc_cmp(name, in_feat, out_feat, dump_ratio):
+def make_dump_data_dir(dump_file_name):
+    dump_path, file_name = os.path.split(os.path.realpath(dump_file_name))
+    name_body, name_extension = os.path.splitext(file_name)
+    output_dir = os.path.join(dump_path, f"{name_body}_{get_time()}")
+    if not os.path.exists(output_dir):
+        os.mkdir(output_dir)
+    return output_dir
+
+def dump_acc_cmp(name, in_feat, out_feat, dump_step):
+    dump_file = DumpUtil.get_dump_path()
     if DumpUtil.get_dump_switch():
         if DumpUtil.dump_init_enable:
             dump_acc_cmp.call_number = 0
             DumpUtil.dump_init_enable = False
+            DumpUtil.dump_data_dir = make_dump_data_dir(dump_file)
         else:
             dump_acc_cmp.call_number = dump_acc_cmp.call_number + 1
 
         name_prefix = f"{dump_acc_cmp.call_number}_{name}"
         if DumpUtil.dump_switch_mode == Const.DUMP_SCOPE.get("ALL"):
             name_template = f"{name_prefix}" + "_{}"
-            dump_tensor(in_feat, name_template.format("input"), dump_ratio)
-            dump_tensor(out_feat, name_template.format("output"), dump_ratio)
+            dump_tensor(in_feat, name_template.format("input"), dump_step)
+            dump_tensor(out_feat, name_template.format("output"), dump_step)
         elif DumpUtil.check_switch_scope(name_prefix):
-            dump_file = DumpUtil.get_dump_path()
             name_template = f"{name_prefix}" + "_{}"
             stack_str = [str(_) for _ in inspect.stack()[3:]]
             _dump_tensor_completely(stack_str, name_template.format("stack_info"), dump_file)
             if DumpUtil.dump_switch_mode != Const.DUMP_SCOPE.get("STACK"):
-                _dump_tensor_completely(in_feat, name_template.format("input"), dump_file)
-                _dump_tensor_completely(out_feat, name_template.format("output"), dump_file)
+                dump_tensor(in_feat, name_template.format("input"), dump_step)
+                dump_tensor(out_feat, name_template.format("output"), dump_step)
 
 
 def acc_cmp_dump(name, **kwargs):
-    dump_ratio = kwargs.get('dump_ratio', 1)
+    dump_step = kwargs.get('dump_step', 1)
     pid = kwargs.get('pid')
     if not pid:
         return RuntimeError("Not get the specified process pid.")
 
     def acc_cmp_hook(module, in_feat, out_feat):
         if pid == os.getpid():
-            dump_acc_cmp(name, in_feat, out_feat, dump_ratio)
+            dump_acc_cmp(name, in_feat, out_feat, dump_step)
 
     return acc_cmp_hook
 
 
 def dump_overflow(module_name, stack_str, in_feat, out_feat, dump_file):
     name_template = f"{module_name}" + "_{}"
+    DumpUtil.dump_data_dir = make_dump_data_dir(dump_file)
     _dump_tensor_completely(stack_str, name_template.format("stack_info"), dump_file)
     _dump_tensor_completely(in_feat, name_template.format("input"), dump_file)
     _dump_tensor_completely(out_feat, name_template.format("output"), dump_file)

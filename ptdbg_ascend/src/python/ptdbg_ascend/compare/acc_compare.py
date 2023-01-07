@@ -99,7 +99,7 @@ def check_op(a, b, shape_flag):
         return a_op_name == b_op_name
 
 
-def merge_tensor(tensor_list):
+def merge_tensor(tensor_list, dump_data_path):
     op_dict = {}
     op_dict["op_name"] = []
     op_dict["input_struct"] = []
@@ -111,13 +111,15 @@ def merge_tensor(tensor_list):
     for tensor in tensor_list:
         if tensor[0].find("stack_info") != -1:
             continue
+        file_name = os.path.join(dump_data_path, f'{tensor[0]}.npy')
+        tensor_data = np.load(file_name)
         op_dict["op_name"].append(tensor[0])
         if tensor[0].find("input") != -1:
             op_dict["input_struct"].append((tensor[3], tensor[4]))
-            op_dict["input_value"].append(tensor[2])
+            op_dict["input_value"].append(tensor_data)
         elif tensor[0].find("output") != -1:
             op_dict["output_struct"].append((tensor[3], tensor[4]))
-            op_dict["output_value"].append(tensor[2])
+            op_dict["output_value"].append(tensor_data)
 
         if tensor[1] <= Const.DUMP_RATIO_MAX:
             op_dict["summery"].append(tensor[5])
@@ -125,7 +127,7 @@ def merge_tensor(tensor_list):
     return op_dict
 
 
-def read_op(ops_queue, pkl_file_handle):
+def read_op(ops_queue, pkl_file_handle, dump_data_path):
     tensor_list = []
     read_err = False
     read_output_flag = {"last_line": False, "curr_line": False}
@@ -144,7 +146,7 @@ def read_op(ops_queue, pkl_file_handle):
 
         if (read_output_flag.get("last_line") and not read_output_flag.get("curr_line")) or\
                 (len(tensor_line) == 0 and read_output_flag.get("curr_line")):  # end of file scenario
-            ops_queue.append(merge_tensor(tensor_list))
+            ops_queue.append(merge_tensor(tensor_list, dump_data_path))
             # the pos of the handle needs to restore to the start of the next api.
             pkl_file_handle.seek(curr_pos, 0)
             break
@@ -166,18 +168,20 @@ def match_op(npu_queue, bench_queue, shape_flag):
 
 
 def get_accuracy(result, n_dict, b_dict, summery_flag):
+    index_out = 0
     for index, n_name in enumerate(n_dict["op_name"]):
         b_name = b_dict["op_name"][index]
         if n_name.find("input") != -1:
-            n_value = np.array(n_dict["input_value"][index])
-            b_value = np.array(b_dict["input_value"][index])
+            n_value = n_dict["input_value"][index]
+            b_value = b_dict["input_value"][index]
             n_struct = n_dict["input_struct"][index]
             b_struct = b_dict["input_struct"][index]
         else:
-            n_value = np.array(n_dict["output_value"][0])
-            b_value = np.array(b_dict["output_value"][0])
-            n_struct = n_dict["output_struct"][0]
-            b_struct = b_dict["output_struct"][0]
+            n_value = n_dict["output_value"][index_out]
+            b_value = b_dict["output_value"][index_out]
+            n_struct = n_dict["output_struct"][index_out]
+            b_struct = b_dict["output_struct"][index_out]
+            index_out += 1
         err_msg = ""
         if n_struct[1] != b_struct[1]:
             cos_sim = "cannot be calculated "
@@ -206,13 +210,13 @@ def get_accuracy(result, n_dict, b_dict, summery_flag):
         result.append(result_item)
 
 
-def compare(npu_pkl_path, bench_pkl_path, output_path, shape_flag=False):
+def compare(input_parma, output_path, shape_flag=False):
     check_file_or_directory_path(output_path, True)
-    npu_pkl = open(npu_pkl_path, "r")
-    bench_pkl = open(bench_pkl_path, "r")
-    npu_summary = _get_summery_mode(npu_pkl, npu_pkl_path)
-    bench_summary = _get_summery_mode(bench_pkl, bench_pkl_path)
-    result = compare_process(npu_pkl, bench_pkl, [npu_summary, bench_summary], shape_flag)
+    npu_pkl = open(input_parma.get("npu_pkl_path"), "r")
+    bench_pkl = open(input_parma.get("bench_pkl_path"), "r")
+    npu_summary = _get_summery_mode(npu_pkl, input_parma.get("npu_pkl_path"))
+    bench_summary = _get_summery_mode(bench_pkl, input_parma.get("bench_pkl_path"))
+    result = compare_process(npu_pkl, bench_pkl, input_parma, [npu_summary, bench_summary], shape_flag)
     npu_pkl.close()
     bench_pkl.close()
 
@@ -230,13 +234,13 @@ def compare(npu_pkl_path, bench_pkl_path, output_path, shape_flag=False):
     result_df.to_csv(file_path, index=False)
 
 
-def compare_process(npu_pkl_handle, bench_pkl_handle, summary_flag, shape_flag):
+def compare_process(npu_pkl_handle, bench_pkl_handle, input_param, summary_flag, shape_flag):
     npu_ops_queue = []
     bench_ops_queue = []
     result = []
     while True:
-        npu_file_flag = read_op(npu_ops_queue, npu_pkl_handle)
-        bench_file_flag = read_op(bench_ops_queue, bench_pkl_handle)
+        npu_file_flag = read_op(npu_ops_queue, npu_pkl_handle, input_param.get("npu_dump_data_dir"))
+        bench_file_flag = read_op(bench_ops_queue, bench_pkl_handle, input_param.get("bench_dump_data_dir"))
         if (not npu_file_flag and not bench_file_flag) \
                 or (len(npu_ops_queue) == 0 or len(bench_ops_queue) == 0):
             break
