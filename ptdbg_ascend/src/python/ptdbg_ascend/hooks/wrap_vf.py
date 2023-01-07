@@ -48,10 +48,7 @@ class VfOPTemplate(HOOKModule):
 
     @torch_device_guard
     def forward(self, *args, **kwargs):
-        if self.input_param_need_adapt():
-            return getattr(torch._C._VariableFunctionsClass, str(self.op_name_))(args, **kwargs)
-        else:
-            return getattr(torch._C._VariableFunctionsClass, str(self.op_name_))(*args, **kwargs)
+        return getattr(torch._C._VariableFunctionsClass, str(self.op_name_))(*args, **kwargs)
 
 
 def wrap_vf_op(op_name, hook):
