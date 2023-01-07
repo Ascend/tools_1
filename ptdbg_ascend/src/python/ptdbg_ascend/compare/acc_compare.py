@@ -210,7 +210,7 @@ def get_accuracy(result, n_dict, b_dict, summery_flag):
         result.append(result_item)
 
 
-def compare(input_parma, output_path, shape_flag=False):
+def compare(input_parma, output_path, shape_flag=True):
     check_file_or_directory_path(output_path, True)
     npu_pkl = open(input_parma.get("npu_pkl_path"), "r")
     bench_pkl = open(input_parma.get("bench_pkl_path"), "r")
@@ -232,6 +232,34 @@ def compare(input_parma, output_path, shape_flag=False):
     file_name = add_time_as_suffix("compare_result")
     file_path = os.path.join(os.path.realpath(output_path), file_name)
     result_df.to_csv(file_path, index=False)
+
+
+def parse(pkl_file, module_name_prefix):
+    pkl_handle = open(pkl_file, "r")
+    done = False
+    while not done:
+        pkl_line = pkl_handle.readline()
+        if len(pkl_line) == 0:
+            done = True
+            print_error_log("pkl file {} have empty line!".format(pkl_file))
+        if pkl_line == '\n':
+            continue
+
+        info_line = json.loads(pkl_line)
+        info_prefix = info_line[0]
+        if info_prefix.find("stack_info") != -1:
+            print(info_line[1])
+            continue
+        if len(info_line) > 5:
+            dtype = info_line[3]
+            shape = info_line[4]
+            summery = info_line[5]
+            max_val = summery[0]
+            min_val = summery[1]
+            mean_val = summery[2]
+            summery_info = "[dtype: {}][shape: {}][max: {}][min: {}][mean: {}]"\
+                .format(dtype, shape, max_val, min_val, mean_val)
+            print(summery_info)
 
 
 def compare_process(npu_pkl_handle, bench_pkl_handle, input_param, summary_flag, shape_flag):
