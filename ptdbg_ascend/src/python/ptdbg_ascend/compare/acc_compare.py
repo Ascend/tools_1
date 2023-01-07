@@ -261,7 +261,7 @@ def parse(pkl_file, module_name_prefix):
             summery_info = "  [{}][dtype: {}][shape: {}][max: {}][min: {}][mean: {}]"\
                 .format(msg[0], msg[3], msg[4], msg[5][0], msg[5][1], msg[5][2])
             if not title_printed:
-                print("\nStatistic Info:".format(msg[0]))
+                print("\nStatistic Info:")
                 title_printed = True
             print(summery_info)
     pkl_handle.close()
