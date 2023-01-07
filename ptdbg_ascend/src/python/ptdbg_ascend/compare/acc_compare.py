@@ -247,6 +247,9 @@ def parse(pkl_file, module_name_prefix):
 
         info_line = json.loads(pkl_line)
         info_prefix = info_line[0]
+        if not info_prefix.startswith(module_name_prefix):
+            continue
+
         if info_prefix.find("stack_info") != -1:
             print(info_line[1])
             continue
