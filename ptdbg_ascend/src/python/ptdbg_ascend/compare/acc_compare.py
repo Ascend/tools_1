@@ -237,6 +237,7 @@ def compare(input_parma, output_path, shape_flag=True):
 def parse(pkl_file, module_name_prefix):
     pkl_handle = open(pkl_file, "r")
     done = False
+    title_printed = False
     while not done:
         pkl_line = pkl_handle.readline()
         if pkl_line == '\n':
@@ -258,7 +259,9 @@ def parse(pkl_file, module_name_prefix):
         if len(msg) > 5:
             summery_info = "  [{}][dtype: {}][shape: {}][max: {}][min: {}][mean: {}]"\
                 .format(msg[0], msg[3], msg[4], msg[5][0], msg[5][1], msg[5][2])
-            print("\n\nKey Statistic Info:".format(msg[0]))
+            if not title_printed:
+                print("\n\nKey Statistic Info:".format(msg[0]))
+                title_printed = True
             print(summery_info)
     pkl_handle.close()
 
