@@ -252,8 +252,8 @@ def parse(pkl_file, module_name_prefix):
             continue
 
         if info_prefix.find("stack_info") != -1:
-            print("\n\nTrace back({}):".format(msg[0]))
-            for item in reversed(msg[2]):
+            print("\nTrace back({}):".format(msg[0]))
+            for item in reversed(msg[1]):
                 print("  File \"{}\", line {}, in {}".format(item[0], item[1], item[2]))
                 print("    {}".format(item[3]))
             continue
@@ -261,7 +261,7 @@ def parse(pkl_file, module_name_prefix):
             summery_info = "  [{}][dtype: {}][shape: {}][max: {}][min: {}][mean: {}]"\
                 .format(msg[0], msg[3], msg[4], msg[5][0], msg[5][1], msg[5][2])
             if not title_printed:
-                print("\n\nKey Statistic Info:".format(msg[0]))
+                print("\nStatistic Info:".format(msg[0]))
                 title_printed = True
             print(summery_info)
     pkl_handle.close()

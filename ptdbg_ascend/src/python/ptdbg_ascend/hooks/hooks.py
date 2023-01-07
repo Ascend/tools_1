@@ -190,6 +190,7 @@ def _dump_tensor_completely(x, prefix, dump_file_name):
     if "stack_info" in prefix:
         with os.fdopen(os.open(dump_file_name, os.O_RDWR | os.O_CREAT, stat.S_IWUSR | stat.S_IRUSR), "a") as f:
             json.dump([prefix, x], f)
+            f.write('\n')
         return
 
     dump_flag = Const.DUMP_RATIO_MAX + 1
