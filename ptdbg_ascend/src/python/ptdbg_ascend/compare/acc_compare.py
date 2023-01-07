@@ -239,30 +239,28 @@ def parse(pkl_file, module_name_prefix):
     done = False
     while not done:
         pkl_line = pkl_handle.readline()
-        if len(pkl_line) == 0:
-            done = True
-            print_error_log("pkl file {} have empty line!".format(pkl_file))
         if pkl_line == '\n':
             continue
+        if len(pkl_line) == 0:
+            done = True
 
-        info_line = json.loads(pkl_line)
-        info_prefix = info_line[0]
+        msg = json.loads(pkl_line)
+        info_prefix = msg[0]
         if not info_prefix.startswith(module_name_prefix):
             continue
 
         if info_prefix.find("stack_info") != -1:
-            print(info_line[1])
+            print("\n\nTrace back({}):".format(msg[0]))
+            for item in reversed(msg[2]):
+                print("  File \"{}\", line {}, in {}".format(item[0], item[1], item[2]))
+                print("    {}".format(item[3]))
             continue
-        if len(info_line) > 5:
-            dtype = info_line[3]
-            shape = info_line[4]
-            summery = info_line[5]
-            max_val = summery[0]
-            min_val = summery[1]
-            mean_val = summery[2]
-            summery_info = "[dtype: {}][shape: {}][max: {}][min: {}][mean: {}]"\
-                .format(dtype, shape, max_val, min_val, mean_val)
+        if len(msg) > 5:
+            summery_info = "  [{}][dtype: {}][shape: {}][max: {}][min: {}][mean: {}]"\
+                .format(msg[0], msg[3], msg[4], msg[5][0], msg[5][1], msg[5][2])
+            print("\n\nKey Statistic Info:".format(msg[0]))
             print(summery_info)
+    pkl_handle.close()
 
 
 def compare_process(npu_pkl_handle, bench_pkl_handle, input_param, summary_flag, shape_flag):
