@@ -1,12 +1,14 @@
 # MindXEdge 白牌化安装工具
 
 ## 功能
-支持Atlas500智能小站进行白牌化的首次安装，安装后设备将变为白牌化的设备，仅首次安装涉及，白牌升级场景无需调用。
+支持Atlas500智能小站的白牌化软件包的首次安装，安装后设备将变为白牌化的设备。注意：仅首次安装涉及，白牌升级场景无需调用。
 
 ## 使用环境
 1. 用户环境为Atlas 500智能小站
 
-2. 已安装A500-3000-3010-firmware_{version}.hpm  Atlas 500智能小站升级包
+2. 已安装Atlas 500智能小站升级包
+
+3. Atlas500智能小站的升级包版本为21.0.4及以上版本（具体为2.0.4.6及以上的）
 
 
 ## 预置条件
@@ -15,13 +17,14 @@
 
 
 ## 工具获取
-###1. 说明：当前白牌化安装工具的目录为tools/mindxedge_whitebox，可以通过如下方法下载tools总包：
+###1. 说明：白牌化安装工具的目录为tools/mindxedge_whitebox，可以通过如下方法下载tools总包：
 
 **方法1. 下载压缩包方式获取**
 
-将 https://gitee.com/ascend/tools 仓中的脚本下载至服务器的任意目录。
+将 https://gitee.com/ascend/tools 仓中的脚本下载至服务器（或下载到本地电脑）的任意目录。
 
 例如存放路径为：$HOME/AscendProjects/tools。
+
 
 **方法2. 命令行使用git命令方式获取**
 
@@ -29,23 +32,26 @@
 
     git clone https://gitee.com/ascend/tools.git
 
-###2. 下载完成后，tools目录下的mindxedge_whitebox子目录即为存放白牌化安装工具的目录，该目录下有三个如下文件：
+###2. 下载完成后，tools目录下的mindxedge_whitebox子目录即为存放白牌化安装工具的目录，相关目录结构关系如下：
 ```
-               toolsg根目录：
-                   |--mindxedge_whitebox
-                         |--README.md
-                         |--install_whitebox.sh
-                         |--load_install.sh
+       toolsg根目录：
+           |--mindxedge_whitebox
+                 |--README.md
+                 |--install_whitebox.sh
+                 |--load_install.sh
 ```
 mindxedge_whitebox目录下的关键文件说明：
+
 --load_install.sh：为执行白牌安装的入口脚本
+
 --install_whitebox.sh：执行安装的依赖脚本
+
 --README.md：为操作指导说明
 
 
 ## 使用方法
 
-### 1. 制作mindxedge_whitebox.zip包  
+### 1. 制作mindxedge_whitebox.zip包（在本地电脑上执行）  
     a. 将Ascend-mindxedge-whitebox_{version}_linux.zip白牌软件包放在工具的mindxedge_whitebox子目录下
        即tools/mindxedge_whitebox目录
     b. 将mindxedge_whitebox目录压缩为mindxedge_whitebox.zip包
