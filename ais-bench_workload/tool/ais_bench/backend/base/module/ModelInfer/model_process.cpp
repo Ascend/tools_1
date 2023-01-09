@@ -1097,8 +1097,13 @@ Result GetDescShapeStr(const aclTensorDesc *desc, std::string &shapestr) {
     if (result != SUCCESS) {
         return FAILED;
     }
-    for (auto val : shape) {
-        shapestr += "_" + std::to_string(val);
+
+    for (int i = 0; i < shape.size(); i++) {
+        if (i == 0) {
+            shapestr +=  std::to_string(shape[i]);
+        } else {
+            shapestr += "x" + std::to_string(shape[i]);
+        }
     }
     return SUCCESS;
 }
