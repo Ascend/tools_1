@@ -240,7 +240,7 @@ int PyInferenceSession::SetDynamicShape(std::string dymshapeStr)
     return APP_ERR_OK;
 }
 
-int PyInferenceSession::SetCustomOutTensorsSize(std::vector<int> customOutSize)
+int PyInferenceSession::SetCustomOutTensorsSize(std::vector<size_t> customOutSize)
 {
     APP_ERROR ret = modelInfer_.SetCustomOutTensorsSize(customOutSize);
     if (ret != APP_ERR_OK) {
