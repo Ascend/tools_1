@@ -384,7 +384,9 @@ class TestClass():
         assert len(bin_paths) == 4
         for bin_file in bin_paths:
             os.remove(bin_file)
-
+        shutil.rmtree(input_ids_path)
+        shutil.rmtree(input_mask_path)
+        shutil.rmtree(segment_ids_path)
 
 if __name__ == '__main__':
     pytest.main(['test_infer_bert.py', '-vs'])
