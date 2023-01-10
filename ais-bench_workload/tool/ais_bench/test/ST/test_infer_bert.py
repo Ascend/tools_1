@@ -377,7 +377,7 @@ class TestClass():
         bin_paths = []
         for root, dirs, files in os.walk(test_sh_path):
             for file in files:
-                if "exception_cb_index" in file:
+                if "exception_cb_index" in file and file.endswith('.bin'):
                     i += 1
                     bin_paths.append(os.path.join(test_sh_path, file))
 
