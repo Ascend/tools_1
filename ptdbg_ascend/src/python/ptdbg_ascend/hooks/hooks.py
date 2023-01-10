@@ -187,15 +187,19 @@ def dump_tensor(x, prefix, dump_step):
 
 
 def _dump_tensor_completely(x, prefix, dump_file_name):
+    if "stack_info" in prefix:
+        with os.fdopen(os.open(dump_file_name, os.O_RDWR | os.O_CREAT, stat.S_IWUSR | stat.S_IRUSR), "a") as f:
+            json.dump([prefix, x], f)
+            f.write('\n')
+        return
+
     dump_flag = Const.DUMP_RATIO_MAX + 1
     if isinstance(x, (tuple, list)) and x:
         for i, item in enumerate(x):
             _dump_tensor_completely(item, "{}.{}".format(prefix, i), dump_file_name)
     else:
         with os.fdopen(os.open(dump_file_name, os.O_RDWR | os.O_CREAT, stat.S_IWUSR | stat.S_IRUSR), "a") as f:
-            if "stack_info" in prefix:
-                json.dump([prefix, x], f)
-            elif isinstance(x, torch.Tensor) and x.numel() != 0:
+            if isinstance(x, torch.Tensor) and x.numel() != 0:
                 output_path = os.path.join(DumpUtil.dump_data_dir, f'{prefix}.npy')
                 save_tensor = x.contiguous().view(-1).cpu().detach().float().numpy()
                 np.save(output_path, save_tensor)
@@ -235,7 +239,10 @@ def dump_acc_cmp(name, in_feat, out_feat, dump_step):
             dump_tensor(out_feat, name_template.format("output"), dump_step)
         elif DumpUtil.check_switch_scope(name_prefix):
             name_template = f"{name_prefix}" + "_{}"
-            stack_str = [str(_) for _ in inspect.stack()[3:]]
+            stack_str = []
+            for (_, path, line, func, code, _) in inspect.stack()[3:]:
+                stack_line = [path, str(line), func, code[0].strip()]
+                stack_str.append(stack_line)
             _dump_tensor_completely(stack_str, name_template.format("stack_info"), dump_file)
             if DumpUtil.dump_switch_mode != Const.DUMP_SCOPE.get("STACK"):
                 dump_tensor(in_feat, name_template.format("input"), dump_step)
@@ -280,7 +287,10 @@ def overflow_check(name, **kwargs):
         if module.has_overflow and DumpUtil.check_overflow_dump_times(overflow_nums):
             DumpUtil.inc_overflow_dump_times()
             dump_file_name = "Overflow_info_{}.pkl".format(get_time())
-            stack_str = [str(_) for _ in inspect.stack()[3:]]
+            stack_str = []
+            for (_, path, line, func, code, _) in inspect.stack()[3:]:
+                stack_line = [path, str(line), func, code[0].strip()]
+                stack_str.append(stack_line)
             dump_overflow(module_name, stack_str, in_feat, out_feat, dump_file_name)
             # clear overflow flag for the next check
             torch_npu._C._clear_overflow_npu()

@@ -16,11 +16,11 @@
 # ==============================================================================
 """
 
-from .compare.acc_compare import compare
+from .compare.acc_compare import compare, parse
 from .hooks.hooks import set_dump_path, set_dump_switch, seed_all, acc_cmp_dump, overflow_check
 from .hooks.initialize import register_hook
 
 seed_all()
 
 __all__ = ["register_hook", "set_dump_path", "set_dump_switch", "seed_all",
-           "acc_cmp_dump", "overflow_check", "compare"]
+           "acc_cmp_dump", "overflow_check", "compare", "parse"]
