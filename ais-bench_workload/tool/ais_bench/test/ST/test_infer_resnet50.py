@@ -1065,6 +1065,47 @@ class TestClass():
         shutil.rmtree(output_path)
         os.remove(summary_path)
         os.remove(infer_dynamic_dims_output_path)
+    
+    def test_pure_inference_normal_static_batch_output_txt_file(self):
+        """
+        verify output txt file with override mode
+        """
+        batch_size = 1
+        output_parent_path = os.path.join(self.model_base_path,  "output")
+        output_dirname = "base"
+        output_path = os.path.join(output_parent_path, output_dirname)
+        if os.path.exists(output_path):
+            shutil.rmtree(output_path)
+        summary_path = os.path.join(output_parent_path,  "{}_summary.json".format(output_dirname))
+        model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
+        cmd = "{} --model {} --device {} --outfmt 'TXT' --output {}  --output_dirname {}".format(TestCommonClass.cmd_prefix, model_path,
+            TestCommonClass.default_device_id, output_parent_path, output_dirname)
+        print("run cmd:{}".format(cmd))
+        ret = os.system(cmd)
+        assert ret == 0
+
+        bak_path_name = "bak"
+        bak_output_path = os.path.join(output_parent_path, bak_path_name)
+        if os.path.exists(bak_output_path):
+            shutil.rmtree(bak_output_path)
+
+        shutil.copytree(output_path, bak_output_path)
+
+        cmd = "{} --model {} --device {} --outfmt 'TXT' --output {} --output_dirname {}".format(TestCommonClass.cmd_prefix, model_path,
+            TestCommonClass.default_device_id, output_parent_path, output_dirname)
+        print("run cmd:{}".format(cmd))
+        ret = os.system(cmd)
+        assert ret == 0
+
+        file_names=os.listdir(output_path)
+        for file_name in file_names:
+            source_path = os.path.join(output_path, file_name)
+            target_path = os.path.join(bak_output_path, file_name)
+            assert filecmp.cmp(source_path, target_path)
+
+        shutil.rmtree(output_path)
+        shutil.rmtree(bak_output_path)
+        os.remove(summary_path)
 
 if __name__ == '__main__':
     pytest.main(['test_infer_resnet50.py', '-vs'])
