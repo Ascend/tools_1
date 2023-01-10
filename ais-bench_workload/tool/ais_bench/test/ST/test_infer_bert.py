@@ -377,14 +377,16 @@ class TestClass():
         bin_paths = []
         for root, dirs, files in os.walk(test_sh_path):
             for file in files:
-                if "exception_cb_index" in file:
+                if "exception_cb_index" in file and file.endswith('.bin'):
                     i += 1
                     bin_paths.append(os.path.join(test_sh_path, file))
 
         assert len(bin_paths) == 4
         for bin_file in bin_paths:
             os.remove(bin_file)
-
+        shutil.rmtree(input_ids_path)
+        shutil.rmtree(input_mask_path)
+        shutil.rmtree(segment_ids_path)
 
 if __name__ == '__main__':
     pytest.main(['test_infer_bert.py', '-vs'])

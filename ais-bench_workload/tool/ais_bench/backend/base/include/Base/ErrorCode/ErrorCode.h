@@ -129,7 +129,7 @@ enum {
     APP_ERR_INFER_FIND_MODEL_MEM_FAIL = APP_ERR_INFER_BASE + 8,     // Infer: find model memory fail
     APP_ERR_INFER_FIND_MODEL_WEIGHT_FAIL = APP_ERR_INFER_BASE + 9,  // Infer: find model weight fail
     APP_ERR_INFER_DYNAMIC_IMAGE_SIZE_FAIL = APP_ERR_INFER_BASE + 10,  // Infer: find model weight fail
-
+    APP_ERR_INFER_OUTPUTSIZE_IS_ZERO = APP_ERR_INFER_BASE + 11,  // Infer: find outputsize is zero
     APP_ERR_INFER_END,  // Not an error code, define the range of inference error
 
     // define the error of Commander
@@ -373,6 +373,8 @@ const std::string APP_ERR_INFER_LOG_STRING[] = {
     [APP_ERR_INFER_FIND_MODEL_WEIGHT_FAIL - APP_ERR_INFER_BASE] = "Infer: find model weight fail",
     [APP_ERR_INFER_DYNAMIC_IMAGE_SIZE_FAIL - APP_ERR_INFER_BASE] =
         "Infer: In DYNAMIC_HW mode, only batchSize=1 is supported.",
+    [APP_ERR_INFER_OUTPUTSIZE_IS_ZERO - APP_ERR_INFER_BASE] =
+        "Infer: find outputsize is zero please check outputsize is set correct",
 };
 
 const std::string APP_ERR_COMMANDER_STRING[] = {
