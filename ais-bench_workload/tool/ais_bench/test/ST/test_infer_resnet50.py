@@ -3,7 +3,7 @@ import json
 import math
 import os
 import shutil
-
+import torch
 import aclruntime
 import numpy as np
 import pytest
@@ -987,42 +987,44 @@ class TestClass():
     def test_general_inference_interface_dynamicshape(self):
         model_path = self.get_dynamic_shape_om_path()
         output_size = 100000
-        # interface
-        session = InferSession(TestCommonClass.default_device_id, model_path)
-        ndata = np.zeros([1,3,224,224], dtype=np.float32)
-        mode = "dymshape"
-        outputs = session.infer([ndata], mode, custom_sizes=output_size)
+        custom_sizes_list = [100000,[100000]]
+        for custom_sizes in custom_sizes_list:
+            # interface
+            session = InferSession(TestCommonClass.default_device_id, model_path)
+            ndata = np.zeros([1,3,224,224], dtype=np.float32)
+            mode = "dymshape"
+            outputs = session.infer([ndata], mode, custom_sizes=custom_sizes)
 
-        outarray = []
-        for out in outputs:
-            outarray.append(np.array(out))
+            outarray = []
+            for out in outputs:
+                outarray.append(np.array(out))
 
-        # cmd
-        infer_dynamicshape_output_path = os.path.join(self.model_base_path,  "output", "infer_dynamicshape_output.bin")
-        out = np.array(outarray)
-        out.tofile(infer_dynamicshape_output_path)
+            # cmd
+            infer_dynamicshape_output_path = os.path.join(self.model_base_path,  "output", "infer_dynamicshape_output.bin")
+            out = np.array(outarray)
+            out.tofile(infer_dynamicshape_output_path)
 
-        dym_shape = "actual_input_1:1,3,224,224"
-        output_parent_path = os.path.join(self.model_base_path,  "output")
-        output_dirname = "interface_dynamicshape"
-        output_path = os.path.join(output_parent_path, output_dirname)
-        summary_path = os.path.join(output_parent_path,  "{}_summary.json".format(output_dirname))
-        if os.path.exists(output_path):
+            dym_shape = "actual_input_1:1,3,224,224"
+            output_parent_path = os.path.join(self.model_base_path,  "output")
+            output_dirname = "interface_dynamicshape"
+            output_path = os.path.join(output_parent_path, output_dirname)
+            summary_path = os.path.join(output_parent_path,  "{}_summary.json".format(output_dirname))
+            if os.path.exists(output_path):
+                shutil.rmtree(output_path)
+            os.makedirs(output_path)
+            cmd = "{} --model {} --outputSize {} --dymShape {} --output {} --output_dirname {} --outfmt BIN".format(TestCommonClass.cmd_prefix,
+                        model_path,  output_size, dym_shape, output_parent_path, output_dirname)
+            print("run cmd:{}".format(cmd))
+            ret = os.system(cmd)
+            assert ret == 0
+            output_bin_file_path = os.path.join(output_path, "pure_infer_data_0.bin")
+
+            # compare bin file
+            assert filecmp.cmp(infer_dynamicshape_output_path, output_bin_file_path)
+
             shutil.rmtree(output_path)
-        os.makedirs(output_path)
-        cmd = "{} --model {} --outputSize {} --dymShape {} --output {} --output_dirname {} --outfmt BIN".format(TestCommonClass.cmd_prefix,
-                    model_path,  output_size, dym_shape, output_parent_path, output_dirname)
-        print("run cmd:{}".format(cmd))
-        ret = os.system(cmd)
-        assert ret == 0
-        output_bin_file_path = os.path.join(output_path, "pure_infer_data_0.bin")
-
-        # compare bin file
-        assert filecmp.cmp(infer_dynamicshape_output_path, output_bin_file_path)
-
-        shutil.rmtree(output_path)
-        os.remove(summary_path)
-        os.remove(infer_dynamicshape_output_path)
+            os.remove(summary_path)
+            os.remove(infer_dynamicshape_output_path)
 
     def test_general_inference_interface_dynamic_dims(self):
         model_path = self.get_dynamic_dim_om_path()
@@ -1065,7 +1067,7 @@ class TestClass():
         shutil.rmtree(output_path)
         os.remove(summary_path)
         os.remove(infer_dynamic_dims_output_path)
-    
+
     def test_pure_inference_normal_static_batch_output_txt_file(self):
         """
         verify output txt file with override mode
@@ -1106,6 +1108,65 @@ class TestClass():
         shutil.rmtree(output_path)
         shutil.rmtree(bak_output_path)
         os.remove(summary_path)
+
+    def test_general_inference_interface_dyshape_with_tensor(self):
+        model_path = self.get_dynamic_shape_om_path()
+        output_size = 100000
+
+        # tonsor interface
+        session = InferSession(TestCommonClass.default_device_id, model_path)
+        ndata = torch.rand([1,3,224,224], out=None, dtype=torch.float32)
+        mode = "dymshape"
+        outputs = session.infer([ndata], mode, custom_sizes=output_size)
+
+        outarray = []
+        for out in outputs:
+            outarray.append(np.array(out))
+
+        # cmd
+        dym_shape = "actual_input_1:1,3,224,224"
+        output_parent_path = os.path.join(self.model_base_path,  "output")
+        output_dirname = "interface_dynamicshape"
+        output_path = os.path.join(output_parent_path, output_dirname)
+        summary_path = os.path.join(output_parent_path,  "{}_summary.json".format(output_dirname))
+        if os.path.exists(output_path):
+            shutil.rmtree(output_path)
+        os.makedirs(output_path)
+        cmd = "{} --model {} --outputSize {} --dymShape {} --output {} --output_dirname {} --outfmt BIN".format(TestCommonClass.cmd_prefix,
+                    model_path,  output_size, dym_shape, output_parent_path, output_dirname)
+        print("run cmd:{}".format(cmd))
+        ret = os.system(cmd)
+        assert ret == 0
+        output_bin_file_path = os.path.join(output_path, "pure_infer_data_0.bin")
+        rm_dir_paths = []
+        rm_dir_paths.append(output_path)
+
+        # numpy interface
+        ndata = ndata.numpy()
+        outarray.clear()
+        outputs = session.infer([ndata], mode, custom_sizes=output_size)
+        for out in outputs:
+            outarray.append(np.array(out))
+        output_dirname_npy = "interface_dynamicshape_npy"
+        output_path_npy = os.path.join(output_parent_path, output_dirname_npy)
+        summary_path_npy = os.path.join(output_parent_path,  "{}_summary.json".format(output_dirname_npy))
+        if os.path.exists(output_path_npy):
+            shutil.rmtree(output_path_npy)
+        os.makedirs(output_path_npy)
+        cmd = "{} --model {} --outputSize {} --dymShape {} --output {} --output_dirname {} --outfmt BIN".format(TestCommonClass.cmd_prefix,
+                    model_path,  output_size, dym_shape, output_parent_path, output_dirname_npy)
+        print("run cmd:{}".format(cmd))
+        ret = os.system(cmd)
+        assert ret == 0
+        output_bin_file_path_npy = os.path.join(output_path_npy, "pure_infer_data_0.bin")
+
+        # compare bin file
+        assert filecmp.cmp( output_bin_file_path, output_bin_file_path_npy)
+
+        shutil.rmtree(output_path)
+        shutil.rmtree(output_path_npy)
+        os.remove(summary_path)
+        os.remove(summary_path_npy)
 
 if __name__ == '__main__':
     pytest.main(['test_infer_resnet50.py', '-vs'])

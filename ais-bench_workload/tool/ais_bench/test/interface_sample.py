@@ -27,10 +27,15 @@ def infer_dymshape():
     ndata = np.zeros([1,3,224,224], dtype=np.float32)
 
     mode = "dymshape"
-    outputs = session.infer([ndata], mode, custom_sizes=100000)
-    print("outputs:{} type:{}".format(outputs, type(outputs)))
+    outputSize = 100000
+    outputs = session.infer([ndata], mode, custom_sizes=outputSize)
+    print("inputs: outputSize: {} outputs:{} type:{}".format(outputSize, outputs, type(outputs)))
 
     print("dymshape infer avg:{} ms".format(np.mean(session.sumary().exec_time_list)))
+
+    outputSize = [100000]
+    outputs = session.infer([ndata], mode, custom_sizes=outputSize)
+    print("inputs: outputSize: {} outputs:{} type:{}".format(outputSize, outputs, type(outputs)))
 
 def infer_dymdims():
     device_id = 0
@@ -64,6 +69,6 @@ def get_model_info():
             i, info.shape, info.datatype, int(info.datatype), info.realsize, info.size))
 
 infer_simple()
-#infer_dynamicshape()
+#infer_dymshape()
 # infer_dymdims()
 #get_model_info()
