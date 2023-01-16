@@ -1,5 +1,6 @@
 import sys
 import numpy as np
+import torch
 
 from ais_bench.infer.interface import InferSession
 
@@ -10,13 +11,28 @@ def infer_simple():
     device_id = 0
     session = InferSession(device_id, model_path)
 
-    # create new numpy data according inputs info
-    barray = bytearray(session.get_inputs()[0].realsize)
-    ndata = np.frombuffer(barray)
+    # create npy array
+    ndata = np.zeros([1,3,224,224], dtype=np.float32)
 
     # in is numpy list and ouput is numpy list
     outputs = session.infer([ndata])
-    print("outputs:{} type:{}".format(outputs, type(outputs)))
+    print("in npy outputs:{} type:{}".format(outputs, type(outputs)))
+
+
+    # create torch tensor
+    torchtensor = torch.tensor([1,3,224,224], dtype=np.float32)
+
+    # in is numpy list and ouput is numpy list
+    outputs = session.infer([torchtensor])
+    print("in torch tensor outputs:{} type:{}".format(outputs, type(outputs)))
+
+
+    # create discontinuous torch tensor
+    torchtensor = torch.tensor([1,3,224,224], dtype=np.float32)
+
+    # in is numpy list and ouput is numpy list
+    outputs = session.infer([torchtensor])
+    print("in nocontinue torch tensor outputs:{} type:{}".format(outputs, type(outputs)))
 
     print("static infer avg:{} ms".format(np.mean(session.sumary().exec_time_list)))
 
@@ -27,15 +43,16 @@ def infer_dymshape():
     ndata = np.zeros([1,3,224,224], dtype=np.float32)
 
     mode = "dymshape"
+	# input args custom_sizes is int
     outputSize = 100000
     outputs = session.infer([ndata], mode, custom_sizes=outputSize)
-    print("inputs: outputSize: {} outputs:{} type:{}".format(outputSize, outputs, type(outputs)))
+    print("inputs: custom_sizes: {} outputs:{} type:{}".format(outputSize, outputs, type(outputs)))
 
-    print("dymshape infer avg:{} ms".format(np.mean(session.sumary().exec_time_list)))
-
+    # input args custom_sizes is list
     outputSize = [100000]
     outputs = session.infer([ndata], mode, custom_sizes=outputSize)
-    print("inputs: outputSize: {} outputs:{} type:{}".format(outputSize, outputs, type(outputs)))
+    print("inputs: custom_sizes: {} outputs:{} type:{}".format(outputSize, outputs, type(outputs)))
+    print("dymshape infer avg:{} ms".format(np.mean(session.sumary().exec_time_list)))
 
 def infer_dymdims():
     device_id = 0

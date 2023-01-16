@@ -133,6 +133,8 @@ class InferSession:
                 shapes.append(input.shape)
             elif hasattr(feed, 'type') and feed.type() in torchTensorlist:
                 input = feed.numpy()
+                if not input.flags['C_CONTIGUOUS']:
+                    input = np.ascontiguousarray(input)
                 shapes.append(input.shape)
             else:
                 raise RuntimeError('type:{} invalid'.format(type(feed)))

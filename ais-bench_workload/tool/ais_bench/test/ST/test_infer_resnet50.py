@@ -1109,6 +1109,7 @@ class TestClass():
         shutil.rmtree(bak_output_path)
         os.remove(summary_path)
 
+
     def test_general_inference_interface_dyshape_with_tensor(self):
         model_path = self.get_dynamic_shape_om_path()
         output_size = 100000
@@ -1117,56 +1118,46 @@ class TestClass():
         session = InferSession(TestCommonClass.default_device_id, model_path)
         ndata = torch.rand([1,3,224,224], out=None, dtype=torch.float32)
         mode = "dymshape"
-        outputs = session.infer([ndata], mode, custom_sizes=output_size)
-
-        outarray = []
-        for out in outputs:
-            outarray.append(np.array(out))
-
-        # cmd
-        dym_shape = "actual_input_1:1,3,224,224"
+        tensor_outputs = session.infer([ndata], mode, custom_sizes=output_size)
         output_parent_path = os.path.join(self.model_base_path,  "output")
-        output_dirname = "interface_dynamicshape"
-        output_path = os.path.join(output_parent_path, output_dirname)
-        summary_path = os.path.join(output_parent_path,  "{}_summary.json".format(output_dirname))
-        if os.path.exists(output_path):
-            shutil.rmtree(output_path)
-        os.makedirs(output_path)
-        cmd = "{} --model {} --outputSize {} --dymShape {} --output {} --output_dirname {} --outfmt BIN".format(TestCommonClass.cmd_prefix,
-                    model_path,  output_size, dym_shape, output_parent_path, output_dirname)
-        print("run cmd:{}".format(cmd))
-        ret = os.system(cmd)
-        assert ret == 0
-        output_bin_file_path = os.path.join(output_path, "pure_infer_data_0.bin")
-        rm_dir_paths = []
-        rm_dir_paths.append(output_path)
+        tensor_infer_result_file_path = os.path.join(output_parent_path, "tensor_infer_result.npy")
+        np.save(tensor_infer_result_file_path, tensor_outputs)
 
         # numpy interface
         ndata = ndata.numpy()
-        outarray.clear()
         outputs = session.infer([ndata], mode, custom_sizes=output_size)
-        for out in outputs:
-            outarray.append(np.array(out))
-        output_dirname_npy = "interface_dynamicshape_npy"
-        output_path_npy = os.path.join(output_parent_path, output_dirname_npy)
-        summary_path_npy = os.path.join(output_parent_path,  "{}_summary.json".format(output_dirname_npy))
-        if os.path.exists(output_path_npy):
-            shutil.rmtree(output_path_npy)
-        os.makedirs(output_path_npy)
-        cmd = "{} --model {} --outputSize {} --dymShape {} --output {} --output_dirname {} --outfmt BIN".format(TestCommonClass.cmd_prefix,
-                    model_path,  output_size, dym_shape, output_parent_path, output_dirname_npy)
-        print("run cmd:{}".format(cmd))
-        ret = os.system(cmd)
-        assert ret == 0
-        output_bin_file_path_npy = os.path.join(output_path_npy, "pure_infer_data_0.bin")
-
+        npy_infer_result_file_path = os.path.join(output_parent_path, "npy_infer_result.npy")
+        np.save(npy_infer_result_file_path, tensor_outputs)
         # compare bin file
-        assert filecmp.cmp( output_bin_file_path, output_bin_file_path_npy)
+        assert filecmp.cmp( tensor_infer_result_file_path, npy_infer_result_file_path)
 
-        shutil.rmtree(output_path)
-        shutil.rmtree(output_path_npy)
-        os.remove(summary_path)
-        os.remove(summary_path_npy)
+        os.remove(tensor_infer_result_file_path)
+        os.remove(npy_infer_result_file_path)
+
+    def test_general_inference_interface_dyshape_with_tensor_discontinuous(self):
+        model_path = self.get_dynamic_shape_om_path()
+        output_size = 100000
+
+        # tonsor interface
+        session = InferSession(TestCommonClass.default_device_id, model_path)
+        ndata = torch.rand([1,224,3,224], out=None, dtype=torch.float32)
+        ndata = ndata.permute(0,2,1,3)
+        mode = "dymshape"
+        tensor_outputs = session.infer([ndata], mode, custom_sizes=output_size)
+        output_parent_path = os.path.join(self.model_base_path,  "output")
+        tensor_infer_result_file_path = os.path.join(output_parent_path, "tensor_infer_result.npy")
+        np.save(tensor_infer_result_file_path, tensor_outputs)
+
+        # numpy interface
+        ndata = ndata.numpy()
+        npy_outputs = session.infer([ndata], mode, custom_sizes=output_size)
+        npy_infer_result_file_path = os.path.join(output_parent_path, "npy_infer_result.npy")
+        np.save(npy_infer_result_file_path, npy_outputs)
+        # compare bin file
+        assert filecmp.cmp( tensor_infer_result_file_path, npy_infer_result_file_path)
+
+        os.remove(tensor_infer_result_file_path)
+        os.remove(npy_infer_result_file_path)
 
 if __name__ == '__main__':
     pytest.main(['test_infer_resnet50.py', '-vs'])
