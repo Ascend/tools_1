@@ -2,6 +2,7 @@
 import time
 import aclruntime
 import numpy as np
+import torch
 
 class InferSession:
     def __init__(self, device_id: int, model_path: str, acl_json_path: str = None, debug: bool = False, loop: int = 1):
@@ -133,13 +134,13 @@ class InferSession:
                 shapes.append(input.shape)
             elif hasattr(feed, 'type') and feed.type() in torchTensorlist:
                 input = feed.numpy()
-                if not input.flags['C_CONTIGUOUS']:
+                if not feed.is_contiguous():
                     input = np.ascontiguousarray(input)
                 shapes.append(input.shape)
             else:
                 raise RuntimeError('type:{} invalid'.format(type(feed)))
             inputs.append(input)
-        
+
         if mode == 'dymshape' or mode == 'dymdims':
             l = []
             indesc = self.get_inputs()

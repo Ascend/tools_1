@@ -12,27 +12,28 @@ def infer_simple():
     session = InferSession(device_id, model_path)
 
     # create npy array
-    ndata = np.zeros([1,3,224,224], dtype=np.float32)
+    ndata = np.zeros([1,256,256,3], dtype=np.uint8)
 
     # in is numpy list and ouput is numpy list
     outputs = session.infer([ndata])
-    print("in npy outputs:{} type:{}".format(outputs, type(outputs)))
+    print("in npy outputs[0].shape:{} type:{}".format(outputs[0].shape, type(outputs)))
 
 
     # create torch tensor
-    torchtensor = torch.tensor([1,3,224,224], dtype=np.float32)
-
-    # in is numpy list and ouput is numpy list
+    torchtensor = torch.tensor(ndata)
+    # in is torch tensor and ouput is numpy list
     outputs = session.infer([torchtensor])
-    print("in torch tensor outputs:{} type:{}".format(outputs, type(outputs)))
+    print("in torch tensor outputs[0].shape:{} type:{}".format(outputs[0].shape, type(outputs)))
 
 
     # create discontinuous torch tensor
-    torchtensor = torch.tensor([1,3,224,224], dtype=np.float32)
+    ndata = np.zeros([1,256,256,3], dtype=np.uint8)
+    torchtensor = torch.tensor(ndata, dtype=torch.uint8)
+    torchtensor_transposition = torchtensor.permute(0,2,1,3)
 
-    # in is numpy list and ouput is numpy list
-    outputs = session.infer([torchtensor])
-    print("in nocontinue torch tensor outputs:{} type:{}".format(outputs, type(outputs)))
+    # in is discontinuous tensor list and ouput is numpy list
+    outputs = session.infer([torchtensor_transposition])
+    print("in discontinuous torch tensor outputs[0].shape:{} type:{}".format(outputs[0].shape, type(outputs)))
 
     print("static infer avg:{} ms".format(np.mean(session.sumary().exec_time_list)))
 
@@ -43,7 +44,7 @@ def infer_dymshape():
     ndata = np.zeros([1,3,224,224], dtype=np.float32)
 
     mode = "dymshape"
-	# input args custom_sizes is int
+    # input args custom_sizes is int
     outputSize = 100000
     outputs = session.infer([ndata], mode, custom_sizes=outputSize)
     print("inputs: custom_sizes: {} outputs:{} type:{}".format(outputSize, outputs, type(outputs)))
