@@ -253,9 +253,13 @@ def pb_to_om(pb_file_path, output_path, soc_version, input_shape, out_nodes, res
     atc_path = os.path.join(os.getenv("HOME"), atc_path_in_home)
     if not os.path.exists(atc_path):
         atc_path = os.path.join("/usr/local", atc_path_in_home)
-    return subprocess.run((atc_path, "--framework", "3", "--model", pb_file_path, "--output", output_path,
-                           "--soc_version", soc_version, "--input_shape", input_shape, "--out_nodes", out_nodes,
-                           *rest_args))
+    if input_shape:
+        return subprocess.run((atc_path, "--framework", "3", "--model", pb_file_path, "--output", output_path,
+                               "--soc_version", soc_version, "--input_shape", input_shape, "--out_nodes", out_nodes,
+                               *rest_args))
+    else:
+        return subprocess.run((atc_path, "--framework", "3", "--model", pb_file_path, "--output", output_path,
+                               "--soc_version", soc_version, "--out_nodes", out_nodes, *rest_args))
 
 
 def pb_to_om_with_profiling(pb_file_path, output_path, input_shape, out_nodes, profiling, rest_args):
@@ -263,18 +267,21 @@ def pb_to_om_with_profiling(pb_file_path, output_path, input_shape, out_nodes, p
     aoe_path = os.path.join(os.getenv("HOME"), aoe_path_in_home)
     if not os.path.exists(aoe_path):
         aoe_path = os.path.join("/usr/local", aoe_path_in_home)
-    return subprocess.run((aoe_path, "--framework", "3", "--model", pb_file_path, "--output",
-                           output_path, "--input_shape", input_shape, "--out_nodes", out_nodes,
-                           "--job_type", profiling, *rest_args))
+    if input_shape:
+        return subprocess.run((aoe_path, "--framework", "3", "--model", pb_file_path, "--output",
+                               output_path, "--input_shape", input_shape, "--out_nodes", out_nodes,
+                               "--job_type", profiling, *rest_args))
+    else:
+        return subprocess.run((aoe_path, "--framework", "3", "--model", pb_file_path, "--output",
+                               output_path, "--out_nodes", out_nodes, "--job_type", profiling, *rest_args))
 
 
-def get_input_shape(input_nodes):
+def print_input_shape(input_nodes):
     input_shapes = []
     for value in input_nodes.values():
-        input_shapes.append(f"{value.name}:{','.join('1' if shape is None else str(shape) for shape in value.shape)}")
+        input_shapes.append(f"{value.name}:{','.join('-1' if shape is None else str(shape) for shape in value.shape)}")
     input_shape_param = ";".join(input_shapes)
-    print(f"Because the input_shape parameter is not set, the following values are used: {input_shape_param}")
-    return input_shape_param
+    print(f"The input_shape of model: {input_shape_param}")
 
 
 def get_out_nodes(output_nodes):
@@ -294,8 +301,10 @@ def main(input_path, output_path, input_shape, soc_version, profiling, method_na
         if not saved_model_method_name and not method_name:
             print(f"[ERROR]: The method name cannot be obtained from the input saved model. Please set the parameter --method_name.")
             return
-        if not input_shape:
-            input_shape = get_input_shape(input_nodes)
+        if input_shape:
+            print(f"The input_shape of model: {input_shape}")
+        else:
+            print_input_shape(input_nodes)
         gen_pb_txt(tmp_pb_file)
         out_nodes = get_out_nodes(output_nodes)
         if profiling is not None:
