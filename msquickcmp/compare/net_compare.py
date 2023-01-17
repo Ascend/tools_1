@@ -51,7 +51,7 @@ class NetCompare(object):
             when invalid  msaccucmp command throw exception
         """
         self._check_pyc_to_python_version(self.msaccucmp_command_file_path, self.python_version)
-        msaccucmp_cmd = ["python" + self.python_version, self.msaccucmp_command_file_path, "compare", "-m",
+        msaccucmp_cmd = [self.python_version, self.msaccucmp_command_file_path, "compare", "-m",
                          self.npu_dump_data_path, "-g",
                          self.cpu_dump_data_path, "-f", self.output_json_path, "-out", self.arguments.out_path]
         if self._check_msaccucmp_compare_support_advisor():
@@ -82,7 +82,7 @@ class NetCompare(object):
             for each_file in sorted(files):
                 if each_file.endswith(".npy"):
                     npu_dump_file[file_index] = os.path.join(dir_path, each_file)
-                    msaccucmp_cmd = ["python" + self.python_version, self.msaccucmp_command_file_path, "compare", "-m",
+                    msaccucmp_cmd = [self.python_version, self.msaccucmp_command_file_path, "compare", "-m",
                                      npu_dump_file.get(file_index), "-g", golden_net_output_info.get(file_index)]
                     status, compare_result = self.execute_msaccucmp_command(msaccucmp_cmd, True)
                     if status == 2 or status == 0:
