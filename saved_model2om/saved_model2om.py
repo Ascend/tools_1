@@ -76,7 +76,7 @@ def parse_node_from_line(idx, node_dict, line, lines):
     node_type = type_line.split(":")[1].strip()
     node_name = name_line.split(":")[1].strip()
     node_full_name = name_line[name_line.index(":") + 1:].strip()
-    node_shape = tuple(int(shape) if shape != '-1' else None
+    node_shape = tuple(int(shape) if int(shape) != -1 else None
                        for shape in shape_line.split(":")[1].strip()[1:-1].split(","))
     node_dict[line[line.index("'") + 1:line.rfind("'")]] = NodeInfo(node_name, node_shape, node_type, node_full_name)
 
@@ -206,7 +206,7 @@ def save_hw_saved_model(input_node_dict: dict, output_node_dict: dict, output_pa
     with tf.Session(config=config) as sess:
         hw_saved_model_input_dict = OrderedDict()
         for key, value in input_node_dict.items():
-            hw_saved_model_input_dict[key] = tf.placeholder(shape=tuple(shape if shape != -1 else None for shape in value.shape),
+            hw_saved_model_input_dict[key] = tf.placeholder(shape=value.shape,
                                                             dtype=tf.DType(getattr(types_pb2, value.type)),
                                                             name=value.name)
         gen_npu_ops = helper.get_gen_ops()
