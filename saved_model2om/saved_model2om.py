@@ -206,7 +206,7 @@ def save_hw_saved_model(input_node_dict: dict, output_node_dict: dict, output_pa
     with tf.Session(config=config) as sess:
         hw_saved_model_input_dict = OrderedDict()
         for key, value in input_node_dict.items():
-            hw_saved_model_input_dict[key] = tf.placeholder(shape=value.shape,
+            hw_saved_model_input_dict[key] = tf.placeholder(shape=tuple(shape if shape != -1 else None for shape in value.shape),
                                                             dtype=tf.DType(getattr(types_pb2, value.type)),
                                                             name=value.name)
         gen_npu_ops = helper.get_gen_ops()
