@@ -954,7 +954,8 @@ class OpUT:  # 'pylint: disable=too-many-instance-attributes
         run onboard case
         """
         case_trace = op_ut_case_info.OpUTCaseTrace(run_soc_version, case_info)
-        compile_stage_status = self._run_compile_stage(run_soc_version, case_info, check_exist=True)
+        check_exist = False if case_info.bin_path else True
+        compile_stage_status = self._run_compile_stage(run_soc_version, case_info, check_exist)
         case_trace.add_stage_result(compile_stage_status)
         if compile_stage_status.status != op_status.SUCCESS:
             return ut_report.OpUTCaseReport(case_trace)

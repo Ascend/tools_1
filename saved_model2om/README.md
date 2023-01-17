@@ -1,10 +1,10 @@
 # TensorFlow1.15 saved_model模型转om工具
 
 ## 功能
-支持将TensorFlow1.15存储的saved_model转换为om
+支持将TensorFlow1.15存储的saved_model转换为om, 同步生成基于NPU版本TensorFlow的HW saved_model用于加载om
 
 ## 使用环境
-1. 用户环境中安装了CANN包的Linux机器
+1. 用户环境中安装了CANN-Toolkit + CANN-tfplugin的Linux机器
 
 2. 已经安装TensorFlow
 
@@ -43,7 +43,7 @@ tf.saved_model.simple_save(sess, 'models/',
 
     pip3 install tensorflow==1.15
 	
-### 2. 安装CANN包，配置CANN包中的环境变量  
+### 2. 安装CANN-Toolkit包与CANN-tfplugin包，配置CANN包中的环境变量  
 
     在Ascend/ascend-toolkit目录下执行source set_env.sh
 
@@ -71,12 +71,16 @@ tf.saved_model.simple_save(sess, 'models/',
                          |--variables.index
 
 ```
-​       --output_path: 输出的om文件，会自动补齐后缀，例如设置为/xxx/output/model时，输出文件为/xxx/output/model.om
+--output_path: 输出的om文件，会自动补齐后缀，例如设置为/xxx/output/model时，输出文件为/xxx/output/model.om
 
-​       --input_shape: 模型输入shape, 格式为"name1:shape;name2:shape;name3:shape", 当为设置input_shape时，模型输入shape中未明确定义的维度会被自动设置为1
+--input_shape: 模型输入shape, 格式为"name1:shape;name2:shape;name3:shape", 当为设置input_shape时，模型输入shape中未明确定义的维度会被自动设置为1
 
-​       --soc_version：输出om的soc_version。当--profiling参数启用时无需配置该项，此时的soc_version根据所在设备决定
+--soc_version：输出om的soc_version。当--profiling参数启用时无需配置该项，此时的soc_version根据所在设备决定
 
-​       --profiling:   可选参数:1, 2。该项被设置则会开启aoe调优，配置为1时启用子图调优，配置为2时启用算子调优。（该参数配置后无需再指定job_type）
-        
-   该工具同时支持对atc/aoe的参数进行透传，如果需要使用其余的参数，当--profiling未被指定时请参考ATC使用文档，当指定--profiling参数时请参考Aoe使用文档
+--profiling:   可选参数:1, 2。该项被设置则会开启aoe调优，配置为1时启用子图调优，配置为2时启用算子调优。（该参数配置后无需再指定job_type）
+      
+--method_name： 用于配置tf-serving运行时用于推理的方法, 不配置则会从原始的Saved Model中获取
+    
+该工具同时支持对atc/aoe的参数进行透传，如果需要使用其余的参数，当--profiling未被指定时请参考ATC使用文档，当指定--profiling参数时请参考Aoe使用文档
+
+转换成功后，会在指定的output_path下生成对应的om文件，并在指定output_path的父目录下生成对应的HW saved_model，路径为 ${output_path_dir}/{om_name}_{timestamp}

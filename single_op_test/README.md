@@ -64,6 +64,13 @@ rtStreamSynchronize execute failed, reason=\[the model stream execute failed\]\[
         with tf.Session(config=config) as sess:
           print(sess.run(cost))
         ```
+    -  torch模式下，开启op\_debug\_level和enable\_exception\_dump：
+
+        ```
+        option = {}
+        option["ACL_OP_DEBUG_LEVEL"] = 2
+        torch.npu.set_options(option)
+        ```
 
     **表 1**  op\_debug\_level参数取值说明
 
@@ -96,7 +103,7 @@ rtStreamSynchronize execute failed, reason=\[the model stream execute failed\]\[
 
 ## 解析溢出dump数据<a name="section14854129142313"></a>
 
-1.  在[准备溢出dump数据](#section9992124216229)环节生成的数据中找到溢出数据文件，例如L2Loss.L2Loss.3.1638329841577837。
+1.  在[准备溢出dump数据](#section9992124216229)环节生成的数据中找到溢出数据文件(训练脚本同目录)，例如L2Loss.L2Loss.3.1638329841577837。
 2.  进入解析脚本所在路径。
 
     假设Toolkit软件包安装目录为： /usr/local/Ascend。则命令为：
@@ -104,7 +111,7 @@ rtStreamSynchronize execute failed, reason=\[the model stream execute failed\]\[
     **cd /usr/local/Ascend/toolkit/tools/operator\_cmp/compare**
 
 3.  执行解析命令。例如：
-
+    注意: 此工具要求protobuf的版本大于3.13.0
     **python3.7.5 msaccucmp.pyc convert -d /home/user/tf/L2Loss.L2Loss.3.1638329841577837 -out /home/user/tf/result**
 
     >![](figures/icon-note.gif) **说明：** 
@@ -125,6 +132,7 @@ rtStreamSynchronize execute failed, reason=\[the model stream execute failed\]\[
 
 构造用例如下：
 
+单输入举例：
 ```
 from op_test_frame.ut import OpUT
        
@@ -141,8 +149,26 @@ def run_sample_case():
 if __name__ == '__main__':
       run_sample_case()
 ```
+双输入举例：
+```
+from op_test_frame.ut import OpUT
+       
+def run_sample_case():
+      ut_case = OpUT("Mul", None, None)
+      
+      case1 = { "params": [{"shape": (8192, 1), "dtype": "float32", "format": "NHWC", "ori_shape": (8192, 1), "ori_format": "NHWC"},
+                           {"shape": (8192, 100), "dtype": "float32", "format": "NHWC", "ori_shape": (8192, 100), "ori_format": "NHWC"},
+                           {"shape": (8192, 1), "dtype": "float32", "format": "NHWC", "ori_shape": (8192, 1), "ori_format": "NHWC"}],
+                "case_name":"te_mul_c0c615ce55e6d3f96950bca0ea39a9ba178f78dab0e17f9096acb313f6057d65_f60e652462a30de2_0",
+                "bin_path":"/home/user/tf/kernel_meta/te_mul_c0c615ce55e6d3f96950bca0ea39a9ba178f78dab0e17f9096acb313f6057d65_f60e652416a30de2_0.o"
+              }
+       ut_case.add_direct_case(case1)
+       ut_case.run("all")
+if __name__ == '__main__':
+      run_sample_case()
+```
 
--   "params"：算子输入信息。
+-   "params"：算子输入信息，类型为一个list,构造方法为[{input1},{input2},...{output1},...,attrs]
 -   "value"：算子输入数据。
 -   "case\_name"：用例名称。
 -   "bin\_path"：算子.o的名称。需要注意的是，工具使用bin\_path值替换.o为.json的方式获取json文件。
