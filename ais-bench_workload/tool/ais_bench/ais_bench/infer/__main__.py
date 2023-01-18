@@ -59,6 +59,7 @@ def set_dymshape_shape(session, inputs):
     dyshapes = ';'.join(l)
     logger.debug("set dymshape shape:{}".format(dyshapes))
     session.set_dynamic_shape(dyshapes)
+    summary.add_batchsize(inputs[0].shape[0])
 
 def set_dymdims_shape(session, inputs):
     l = []
@@ -70,6 +71,7 @@ def set_dymdims_shape(session, inputs):
     dydims = ';'.join(l)
     logger.debug("set dymdims shape:{}".format(dydims))
     session.set_dynamic_dims(dydims)
+    summary.add_batchsize(inputs[0].shape[0])
 
 def warmup(session, args, intensors_desc, infiles):
     # prepare input data
