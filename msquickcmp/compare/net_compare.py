@@ -251,7 +251,7 @@ class NetCompare(object):
         return process
 
     def _check_msaccucmp_compare_support_args(self, compare_args):
-        check_cmd = ["python" + self.python_version, self.msaccucmp_command_file_path, "compare", "-h"]
+        check_cmd = [self.python_version, self.msaccucmp_command_file_path, "compare", "-h"]
         process = self.execute_command_line(check_cmd)
         while process.poll() is None:
             line = process.stdout.readline().strip()
