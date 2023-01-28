@@ -517,7 +517,7 @@ ais_bench推理工具执行后，打屏输出结果示例如下：
   ```bash
   [INFO] -----------------Performance Summary------------------
   [INFO] NPU_compute_time (ms): min = 0.6610000133514404, max = 0.6610000133514404, mean = 0.6610000133514404, median = 0.6610000133514404, percentile(99%) = 0.6610000133514404
-  [INFO] throughput 1000*batchsize(1)/NPU_compute_time.mean(0.6610000133514404): 1512.8592735267011
+  [INFO] throughput 1000*batchsize.mean(1)/NPU_compute_time.mean(0.6610000133514404): 1512.8592735267011
   [INFO] ------------------------------------------------------
   ```
 
@@ -528,7 +528,7 @@ ais_bench推理工具执行后，打屏输出结果示例如下：
   [INFO] H2D_latency (ms): min = 0.05700000002980232, max = 0.05700000002980232, mean = 0.05700000002980232, median = 0.05700000002980232, percentile(99%) = 0.05700000002980232
   [INFO] NPU_compute_time (ms): min = 0.6650000214576721, max = 0.6650000214576721, mean = 0.6650000214576721, median = 0.6650000214576721, percentile(99%) = 0.6650000214576721
   [INFO] D2H_latency (ms): min = 0.014999999664723873, max = 0.014999999664723873, mean = 0.014999999664723873, median = 0.014999999664723873, percentile(99%) = 0.014999999664723873
-  [INFO] throughput 1000*batchsize(1)/NPU_compute_time.mean(0.6650000214576721): 1503.759349974173
+  [INFO] throughput 1000*batchsize.mean(1)/NPU_compute_time.mean(0.6650000214576721): 1503.759349974173
   ```
 
 通过输出结果可以查看模型执行耗时、吞吐率。耗时越小、吞吐率越高，则表示该模型性能越高。

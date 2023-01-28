@@ -22,6 +22,10 @@ class Summary(object):
         self.h2d_latency_list = []
         self.d2h_latency_list = []
         self.npu_compute_time_list = []
+        self._batchsizes = []
+
+    def add_batchsize(self, n: int):
+        self._batchsizes.append(n)
 
     @staticmethod
     def get_list_info(work_list, percentile_scale):
@@ -56,6 +60,8 @@ class Summary(object):
         npu_compute_time = Summary.get_list_info(self.npu_compute_time_list, scale)
         h2d_latency = Summary.get_list_info(self.h2d_latency_list, scale)
         d2h_latency = Summary.get_list_info(self.d2h_latency_list, scale)
+        if self._batchsizes:
+            batchsize = sum(self._batchsizes) / len(self._batchsizes)
         if npu_compute_time.mean == 0:
             throughput = 0
         else:
@@ -87,7 +93,7 @@ class Summary(object):
             logger.info("D2H_latency (ms): min = {0}, max = {1}, mean = {2}, median = {3}, percentile({4}%) = {5}"
                         .format(d2h_latency.min, d2h_latency.max, d2h_latency.mean, d2h_latency.median, scale,
                                 d2h_latency.percentile))
-        logger.info("throughput 1000*batchsize({})/NPU_compute_time.mean({}): {}".format(
+        logger.info("throughput 1000*batchsize.mean({})/NPU_compute_time.mean({}): {}".format(
             batchsize, npu_compute_time.mean, throughput))
         logger.info("------------------------------------------------------")
 
