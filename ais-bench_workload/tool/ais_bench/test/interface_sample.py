@@ -32,10 +32,10 @@ def infer_torch_tensor():
 
     # create discontinuous torch tensor
     torchtensor = torch.zeros([1,256,3,256], out=None, dtype=torch.uint8)
-    torchtensor_transposition = torchtensor.permute(0,2,1,3)
+    torchtensor_discontinue = torchtensor.permute(0,2,1,3)
 
     # in is discontinuous tensor list and ouput is numpy list
-    outputs = session.infer([torchtensor_transposition])
+    outputs = session.infer([torchtensor_discontinue])
     print("in discontinuous torch tensor outputs[0].shape:{} type:{}".format(outputs[0].shape, type(outputs)))
 
     print("static infer avg:{} ms".format(np.mean(session.sumary().exec_time_list)))
