@@ -20,6 +20,26 @@ def infer_simple():
 
     print("static infer avg:{} ms".format(np.mean(session.sumary().exec_time_list)))
 
+def infer_torch_tensor():
+    import torch
+    device_id = 0
+    session = InferSession(device_id, model_path)
+    # create continuous torch tensor
+    torchtensor = torch.zeros([1,3,256,256], out=None, dtype=torch.uint8)
+    # in is torch tensor and ouput is numpy list
+    outputs = session.infer([torchtensor])
+    print("in torch tensor outputs[0].shape:{} type:{}".format(outputs[0].shape, type(outputs)))
+
+    # create discontinuous torch tensor
+    torchtensor = torch.zeros([1,256,3,256], out=None, dtype=torch.uint8)
+    torchtensor_discontinue = torchtensor.permute(0,2,1,3)
+
+    # in is discontinuous tensor list and ouput is numpy list
+    outputs = session.infer([torchtensor_discontinue])
+    print("in discontinuous torch tensor outputs[0].shape:{} type:{}".format(outputs[0].shape, type(outputs)))
+
+    print("static infer avg:{} ms".format(np.mean(session.sumary().exec_time_list)))
+
 def infer_dymshape():
     device_id = 0
     session = InferSession(device_id, model_path)
@@ -27,9 +47,15 @@ def infer_dymshape():
     ndata = np.zeros([1,3,224,224], dtype=np.float32)
 
     mode = "dymshape"
-    outputs = session.infer([ndata], mode, custom_sizes=100000)
-    print("outputs:{} type:{}".format(outputs, type(outputs)))
+    # input args custom_sizes is int
+    outputSize = 100000
+    outputs = session.infer([ndata], mode, custom_sizes=outputSize)
+    print("inputs: custom_sizes: {} outputs:{} type:{}".format(outputSize, outputs, type(outputs)))
 
+    # input args custom_sizes is list
+    outputSizes = [100000]
+    outputs = session.infer([ndata], mode, custom_sizes=outputSizes)
+    print("inputs: custom_sizes: {} outputs:{} type:{}".format(outputSizes, outputs, type(outputs)))
     print("dymshape infer avg:{} ms".format(np.mean(session.sumary().exec_time_list)))
 
 def infer_dymdims():
@@ -64,6 +90,7 @@ def get_model_info():
             i, info.shape, info.datatype, int(info.datatype), info.realsize, info.size))
 
 infer_simple()
-#infer_dynamicshape()
+# infer_torch_tensor()
+#infer_dymshape()
 # infer_dymdims()
 #get_model_info()

@@ -45,7 +45,7 @@ def get_acl_json_path(args):
         out_dump_path = os.path.join(args.output, "dump")
 
         if not os.path.exists(out_dump_path):
-            os.mkdir(out_dump_path)
+            os.makedirs(out_dump_path, 0o755)
 
         model_name = args.model.split("/")[-1]
         output_json_dict["dump"]["dump_path"] = out_dump_path
