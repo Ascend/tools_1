@@ -21,7 +21,7 @@ ais_bench推理工具的安装包括**aclruntime包**和**ais_bench推理程序�
 
 - 安装环境要求网络畅通。
 - centos平台默认为gcc 4.8编译器，可能无法安装本工具，建议更新gcc编译器后再安装。
-- 本工具安装时需要获取CANN版本，用户可通过设置CANN_PATH环境变量，指定安装的CANN版本路径，例如：export CANN_PATH=/xxx/nnae/latest/。若不设置，工具默认会从/usr/local/Ascend/nnae/latest/和/usr/local/Ascend/ascend-toolkit/latest路径分别尝试获取CANN版本。
+- 本工具安装时需要获取CANN版本，用户可通过设置CANN_PATH环境变量，指定安装的CANN版本路径，例如：export CANN_PATH=/xxx/nnrt/latest/。若不设置，工具默认会从/usr/local/Ascend/nnrt/latest/和/usr/local/Ascend/ascend-toolkit/latest路径分别尝试获取CANN版本。
 
 #### 一键式编译安装
 
