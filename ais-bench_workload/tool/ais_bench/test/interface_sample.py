@@ -24,18 +24,14 @@ def infer_torch_tensor():
     import torch
     device_id = 0
     session = InferSession(device_id, model_path)
-    # create npy array
-    ndata = np.zeros([1,3,256,256], dtype=np.uint8)
-
     # create continuous torch tensor
-    torchtensor = torch.tensor(ndata)
+    torchtensor = torch.zeros([1,3,256,256], out=None, dtype=torch.uint8)
     # in is torch tensor and ouput is numpy list
     outputs = session.infer([torchtensor])
     print("in torch tensor outputs[0].shape:{} type:{}".format(outputs[0].shape, type(outputs)))
 
     # create discontinuous torch tensor
-    ndata = np.zeros([1,256,3,256], dtype=np.uint8)
-    torchtensor = torch.tensor(ndata, dtype=torch.uint8)
+    torchtensor = torch.zeros([1,256,3,256], out=None, dtype=torch.uint8)
     torchtensor_transposition = torchtensor.permute(0,2,1,3)
 
     # in is discontinuous tensor list and ouput is numpy list
