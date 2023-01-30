@@ -135,8 +135,6 @@ class InferSession:
                 input = feed.numpy()
                 if not feed.is_contiguous():
                     input = np.ascontiguousarray(input)
-                else:
-                    print("already continue input:{}".format(input))
                 shapes.append(input.shape)
             else:
                 raise RuntimeError('type:{} invalid'.format(type(feed)))

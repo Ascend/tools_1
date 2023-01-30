@@ -18,15 +18,19 @@ def infer_simple():
     outputs = session.infer([ndata])
     print("outputs:{} type:{}".format(outputs, type(outputs)))
 
+    print("static infer avg:{} ms".format(np.mean(session.sumary().exec_time_list)))
+
+def infer_torch_tensor():
+    import torch
+    device_id = 0
+    session = InferSession(device_id, model_path)
     # create npy array
     ndata = np.zeros([1,256,256,3], dtype=np.uint8)
 
     # in is numpy list and ouput is numpy list
     outputs = session.infer([ndata])
-    print("in npy outputs[0].shape:{} type:{}".format(outputs[0].shape, type(outputs)))
 
-    # create torch tensor
-    import torch
+    # create continuous torch tensor
     torchtensor = torch.tensor(ndata)
     # in is torch tensor and ouput is numpy list
     outputs = session.infer([torchtensor])
@@ -59,15 +63,6 @@ def infer_dymshape():
     outputSizes = [100000]
     outputs = session.infer([ndata], mode, custom_sizes=outputSizes)
     print("inputs: custom_sizes: {} outputs:{} type:{}".format(outputSizes, outputs, type(outputs)))
-
-    import torch
-    ndata = torch.rand([1,224,3,224], out=None, dtype=torch.float32)
-    ndata1 = ndata.permute(0,2,1,3)
-    ndata11 = ndata1.contiguous()
-
-    outputs = session.infer([ndata11], mode, custom_sizes=outputSize)
-    print("inputs: custom_sizes: {} outputs:{} type:{} tesnor is_contiguous: {}".format(outputSize, outputs, type(outputs), ndata11.is_contiguous()))
-
     print("dymshape infer avg:{} ms".format(np.mean(session.sumary().exec_time_list)))
 
 def infer_dymdims():
@@ -102,6 +97,7 @@ def get_model_info():
             i, info.shape, info.datatype, int(info.datatype), info.realsize, info.size))
 
 infer_simple()
+# infer_torch_tensor()
 #infer_dymshape()
 # infer_dymdims()
 #get_model_info()
