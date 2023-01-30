@@ -157,21 +157,21 @@ def dump_tensor(x, prefix, dump_step):
         with os.fdopen(os.open(DumpUtil.get_dump_path(), os.O_RDWR|os.O_CREAT, stat.S_IWUSR|stat.S_IRUSR), "a") as f:
             summery_data = []
             if 1 <= dump_step <= Const.DUMP_RATIO_MAX:
-                tensor_max = torch._C._VariableFunctionsClass.max(x).cpu().detach().float().numpy().tolist()
-                tensor_min = torch._C._VariableFunctionsClass.min(x).cpu().detach().float().numpy().tolist()
-                tensor_mean = torch._C._VariableFunctionsClass.mean(x).cpu().detach().float().numpy().tolist()
+                tensor_max = torch._C._VariableFunctionsClass.max(x).cpu().detach().float().numpy()
+                tensor_min = torch._C._VariableFunctionsClass.min(x).cpu().detach().float().numpy()
+                tensor_mean = torch._C._VariableFunctionsClass.mean(x).cpu().detach().float().numpy()
                 tensor_len = torch._C._VariableFunctionsClass.numel(x)
                 if tensor_len <= Const.SUMMERY_DATA_NUMS * 2:
-                    saved_tensor = x.contiguous().view(-1)[:Const.SUMMERY_DATA_NUMS*2].cpu().detach().float().numpy().tolist()
+                    saved_tensor = x.contiguous().view(-1)[:Const.SUMMERY_DATA_NUMS*2].cpu().detach().float().numpy()
                 else:
                     saved_tensor_head = x.contiguous().view(-1)[
-                                        :Const.SUMMERY_DATA_NUMS].cpu().detach().float().numpy().tolist()
+                                        :Const.SUMMERY_DATA_NUMS].cpu().detach().float().numpy()
                     saved_tensor_body = []
                     if dump_step != 0:
                         saved_tensor_body = x.contiguous().view(-1)[Const.SUMMERY_DATA_NUMS: (-1 * Const.SUMMERY_DATA_NUMS): dump_step]\
-                            .cpu().detach().float().numpy().tolist()
+                            .cpu().detach().float().numpy()
                     saved_tensor_tail = x.contiguous().view(-1)[
-                                        (-1 * Const.SUMMERY_DATA_NUMS):].cpu().detach().float().numpy().tolist()
+                                        (-1 * Const.SUMMERY_DATA_NUMS):].cpu().detach().float().numpy()
                     saved_tensor = saved_tensor_head + saved_tensor_body + saved_tensor_tail
                 summery_data.extend([tensor_max, tensor_min, tensor_mean])
             else:
