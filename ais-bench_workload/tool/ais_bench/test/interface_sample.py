@@ -50,9 +50,17 @@ def infer_dymshape():
     print("inputs: custom_sizes: {} outputs:{} type:{}".format(outputSize, outputs, type(outputs)))
 
     # input args custom_sizes is list
-    outputSize = [100000]
-    outputs = session.infer([ndata], mode, custom_sizes=outputSize)
-    print("inputs: custom_sizes: {} outputs:{} type:{}".format(outputSize, outputs, type(outputs)))
+    outputSizes = [100000]
+    outputs = session.infer([ndata], mode, custom_sizes=outputSizes)
+    print("inputs: custom_sizes: {} outputs:{} type:{}".format(outputSizes, outputs, type(outputs)))
+
+    ndata = torch.rand([1,224,3,224], out=None, dtype=torch.float32)
+    ndata1 = ndata.permute(0,2,1,3)
+    ndata11 = ndata1.contiguous()
+
+    outputs = session.infer([ndata11], mode, custom_sizes=outputSize)
+    print("inputs: custom_sizes: {} outputs:{} type:{} tesnor is_contiguous: {}".format(outputSize, outputs, type(outputs), ndata11.is_contiguous()))
+
     print("dymshape infer avg:{} ms".format(np.mean(session.sumary().exec_time_list)))
 
 def infer_dymdims():
