@@ -25,10 +25,7 @@ def infer_torch_tensor():
     device_id = 0
     session = InferSession(device_id, model_path)
     # create npy array
-    ndata = np.zeros([1,256,256,3], dtype=np.uint8)
-
-    # in is numpy list and ouput is numpy list
-    outputs = session.infer([ndata])
+    ndata = np.zeros([1,3,256,256], dtype=np.uint8)
 
     # create continuous torch tensor
     torchtensor = torch.tensor(ndata)
@@ -37,7 +34,7 @@ def infer_torch_tensor():
     print("in torch tensor outputs[0].shape:{} type:{}".format(outputs[0].shape, type(outputs)))
 
     # create discontinuous torch tensor
-    ndata = np.zeros([1,256,256,3], dtype=np.uint8)
+    ndata = np.zeros([1,256,3,256], dtype=np.uint8)
     torchtensor = torch.tensor(ndata, dtype=torch.uint8)
     torchtensor_transposition = torchtensor.permute(0,2,1,3)
 
@@ -96,8 +93,8 @@ def get_model_info():
         print("outputs info i:{} shape:{} type:{} val:{} realsize:{} size:{}".format(
             i, info.shape, info.datatype, int(info.datatype), info.realsize, info.size))
 
-infer_simple()
-# infer_torch_tensor()
+# infer_simple()
+infer_torch_tensor()
 #infer_dymshape()
 # infer_dymdims()
 #get_model_info()

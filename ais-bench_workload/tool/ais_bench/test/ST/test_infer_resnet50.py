@@ -1110,7 +1110,7 @@ class TestClass():
         os.remove(summary_path)
 
 
-    def test_general_inference_interface_dyshape_with_tensor(self):
+    def test_general_inference_interface_dyshape_compare_tensor_npy(self):
         model_path = self.get_dynamic_shape_om_path()
         output_size = 100000
 
@@ -1134,7 +1134,7 @@ class TestClass():
         os.remove(tensor_infer_result_file_path)
         os.remove(npy_infer_result_file_path)
 
-    def test_general_inference_interface_dyshape_with_tensor_discontinuous(self):
+    def test_general_inference_interface_dyshape_compare_tensor_discontinuous_tensor_continues(self):
         model_path = self.get_dynamic_shape_om_path()
         output_size = 100000
 
@@ -1144,14 +1144,14 @@ class TestClass():
         session = InferSession(TestCommonClass.default_device_id, model_path)
         ndata = torch.rand([1,224,3,224], out=None, dtype=torch.float32)
 
-        ndata1 = ndata.permute(0,2,1,3)
-        ndata11 = ndata1.contiguous()
+        ndata_discontinue = ndata.permute(0,2,1,3)
+        ndata_continue = ndata_discontinue.contiguous()
 
-        tensor_outputs = session.infer([ndata11], mode, custom_sizes=output_size)
+        tensor_outputs = session.infer([ndata_continue], mode, custom_sizes=output_size)
         tensor_infer_result1_path = os.path.join(output_parent_path, "first_tensor_infer_result.npy")
         np.save(tensor_infer_result1_path, tensor_outputs)
 
-        npy_outputs = session.infer([ndata1], mode, custom_sizes=output_size)
+        npy_outputs = session.infer([ndata_discontinue], mode, custom_sizes=output_size)
         tensor_infer_result2_path = os.path.join(output_parent_path, "second_tensor_infer_result.npy")
         np.save(tensor_infer_result2_path, npy_outputs)
 
