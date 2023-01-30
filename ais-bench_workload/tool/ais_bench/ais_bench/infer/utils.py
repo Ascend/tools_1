@@ -68,7 +68,7 @@ def save_data_to_files(file_path, ndata):
     elif file_path.endswith(".TXT") or file_path.endswith(".txt"):
         outdata=ndata.reshape(-1, ndata.shape[-1])
         fmt = get_ndata_fmt(outdata)
-        with open(file_path, "ab") as f:
+        with open(file_path, 'wb') as f:
             for i in range(outdata.shape[0]):
                 np.savetxt(f, np.c_[outdata[i]], fmt=fmt, newline=" ")
                 f.write(b"\n")

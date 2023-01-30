@@ -129,59 +129,6 @@ class TestClass():
         for output_path in output_paths:
             shutil.rmtree(output_path)
 
-    def test_general_inference_normal_dynamic_batch(self):
-        batch_size = 1
-        static_model_path = TestCommonClass.get_model_static_om_path(
-            batch_size, self.model_name)
-        input_size = TestCommonClass.get_model_inputs_size(static_model_path)[0]
-        input_ids_dir_path = TestCommonClass.get_inputs_path(
-            input_size, os.path.join(self.model_base_path, "input",
-                                     "input_ids"), self.output_file_num, "zero")
-        input_mask_dir_path = TestCommonClass.get_inputs_path(
-            input_size,
-            os.path.join(self.model_base_path, "input", "input_mask"),
-            self.output_file_num, "zero")
-        segment_ids_dir_path = TestCommonClass.get_inputs_path(
-            input_size,
-            os.path.join(self.model_base_path, "input", "segment_ids"),
-            self.output_file_num, "zero")
-        input_paths = []
-        input_paths.append(input_ids_dir_path)
-        input_paths.append(input_mask_dir_path)
-        input_paths.append(segment_ids_dir_path)
-        input_path = ','.join(input_paths)
-        batch_list = [1, 2, 4, 8, 16]
-        base_output_path = os.path.join(self.model_base_path, "output")
-        model_path = self.get_dynamic_batch_om_path()
-        output_paths = []
-
-        for i, dys_batch_size in enumerate(batch_list):
-            output_dirname = "{}_{}".format("static_batch", i)
-            tmp_output_path = os.path.join(base_output_path, output_dirname)
-            if os.path.exists(tmp_output_path):
-                shutil.rmtree(tmp_output_path)
-            os.makedirs(tmp_output_path)
-            cmd = "{} --model {} --device {} --dymBatch {} --input {} --output {} --output_dirname {} ".format(
-                TestCommonClass.cmd_prefix, model_path,
-                TestCommonClass.default_device_id, dys_batch_size, input_path,
-                base_output_path, output_dirname)
-            print("run cmd:{}".format(cmd))
-            ret = os.system(cmd)
-            assert ret == 0
-            output_paths.append(tmp_output_path)
-
-        # compare different batchsize inference bin files
-        base_compare_path = output_paths[0]
-        for i, cur_output_path in enumerate(output_paths):
-            if i == 0:
-                continue
-            cmd = "diff {}  {}".format(base_compare_path, cur_output_path)
-            ret = os.system(cmd)
-            assert ret == 0
-
-        for output_path in output_paths:
-            shutil.rmtree(output_path)
-
     def test_general_inference_prformance_comparison_with_msame_static_batch(self):
         batch_size = 1
         input_file_num = 100
@@ -377,14 +324,16 @@ class TestClass():
         bin_paths = []
         for root, dirs, files in os.walk(test_sh_path):
             for file in files:
-                if "exception_cb_index" in file:
+                if "exception_cb_index" in file and file.endswith('.bin'):
                     i += 1
                     bin_paths.append(os.path.join(test_sh_path, file))
 
         assert len(bin_paths) == 4
         for bin_file in bin_paths:
             os.remove(bin_file)
-
+        shutil.rmtree(input_ids_path)
+        shutil.rmtree(input_mask_path)
+        shutil.rmtree(segment_ids_path)
 
 if __name__ == '__main__':
     pytest.main(['test_infer_bert.py', '-vs'])

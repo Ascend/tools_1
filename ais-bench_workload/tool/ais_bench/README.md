@@ -517,7 +517,7 @@ ais_bench推理工具执行后，打屏输出结果示例如下：
   ```bash
   [INFO] -----------------Performance Summary------------------
   [INFO] NPU_compute_time (ms): min = 0.6610000133514404, max = 0.6610000133514404, mean = 0.6610000133514404, median = 0.6610000133514404, percentile(99%) = 0.6610000133514404
-  [INFO] throughput 1000*batchsize(1)/NPU_compute_time.mean(0.6610000133514404): 1512.8592735267011
+  [INFO] throughput 1000*batchsize.mean(1)/NPU_compute_time.mean(0.6610000133514404): 1512.8592735267011
   [INFO] ------------------------------------------------------
   ```
 
@@ -528,7 +528,7 @@ ais_bench推理工具执行后，打屏输出结果示例如下：
   [INFO] H2D_latency (ms): min = 0.05700000002980232, max = 0.05700000002980232, mean = 0.05700000002980232, median = 0.05700000002980232, percentile(99%) = 0.05700000002980232
   [INFO] NPU_compute_time (ms): min = 0.6650000214576721, max = 0.6650000214576721, mean = 0.6650000214576721, median = 0.6650000214576721, percentile(99%) = 0.6650000214576721
   [INFO] D2H_latency (ms): min = 0.014999999664723873, max = 0.014999999664723873, mean = 0.014999999664723873, median = 0.014999999664723873, percentile(99%) = 0.014999999664723873
-  [INFO] throughput 1000*batchsize(1)/NPU_compute_time.mean(0.6650000214576721): 1503.759349974173
+  [INFO] throughput 1000*batchsize.mean(1)/NPU_compute_time.mean(0.6650000214576721): 1503.759349974173
   ```
 
 通过输出结果可以查看模型执行耗时、吞吐率。耗时越小、吞吐率越高，则表示该模型性能越高。
@@ -603,21 +603,22 @@ python3 -m ais_bench --model ./test/testdata/bert/model/pth_bert_bs1.om --input 
 [INFO] load model ./test/testdata/bert/model/pth_bert_bs1.om success
 [INFO] create model description success
 [INFO] get filesperbatch files0 size:1536 tensor0size:1536 filesperbatch:1 runcount:1
-[INFO] exception_cb streamId:4 taskId:22 deviceId: 0 opName:bert/embeddings/GatherV2 inputCnt:3 outputCnt:1
-[INFO] exception_cb format:2 hostaddr:0x124040800000 devaddr:0x12400ac48a00 len:46881792 write to filename:exception_cb_index_0_input_0.bin
-[INFO] exception_cb format:2 hostaddr:0x124040751000 devaddr:0x12408020c000 len:1536 write to filename:exception_cb_index_0_input_1.bin
-[INFO] exception_cb format:2 hostaddr:0x124040752000 devaddr:0x12400d98e600 len:4 write to filename:exception_cb_index_0_input_2.bin
-[INFO] exception_cb format:2 hostaddr:0x124040753000 devaddr:0x12400db20400 len:589824 write to filename:exception_cb_index_0_output_0.bin
+[INFO] exception_cb streamId:103 taskId:10 deviceId: 0 opName:bert/embeddings/GatherV2 inputCnt:3 outputCnt:1
+[INFO] exception_cb hostaddr:0x124040800000 devaddr:0x12400ac48800 len:46881792 write to filename:exception_cb_index_0_input_0_format_2_dtype_1_shape_30522x768.bin
+[INFO] exception_cb hostaddr:0x124040751000 devaddr:0x1240801f6000 len:1536 write to filename:exception_cb_index_0_input_1_format_2_dtype_3_shape_384.bin
+[INFO] exception_cb hostaddr:0x124040752000 devaddr:0x12400d98e400 len:4 write to filename:exception_cb_index_0_input_2_format_2_dtype_3_shape_.bin
+[INFO] exception_cb hostaddr:0x124040753000 devaddr:0x12400db20400 len:589824 write to filename:exception_cb_index_0_output_0_format_2_dtype_1_shape_384x768.bin
 EZ9999: Inner Error!
 EZ9999  The error from device(2), serial number is 17, there is an aicore error, core id is 0, error code = 0x800000, dump info: pc start: 0x800124080041000, current: 0x124080041100, vec error info: 0x1ff1d3ae, mte error info: 0x3022733, ifu error info: 0x7d1f3266f700, ccu error info: 0xd510fef0003608cf, cube error info: 0xfc, biu error info: 0, aic error mask: 0x65000200d000288, para base: 0x124080017040, errorStr: The DDR address of the MTE instruction is out of range.[FUNC:PrintCoreErrorInfo]
       
 # ls exception_cb_index_0_* -lh
--rwxrwxrwx 1 root root  45M Nov 28 12:40 exception_cb_index_0_input_0.bin
--rwxrwxrwx 1 root root 1.5K Nov 28 12:40 exception_cb_index_0_input_1.bin
--rwxrwxrwx 1 root root    4 Nov 28 12:40 exception_cb_index_0_input_2.bin
--rwxrwxrwx 1 root root 576K Nov 28 12:40 exception_cb_index_0_output_0.bin
+-rw-r--r-- 1 root root  45M Jan  7 08:17 exception_cb_index_0_input_0_format_2_dtype_1_shape_30522x768.bin
+-rw-r--r-- 1 root root 1.5K Jan  7 08:17 exception_cb_index_0_input_1_format_2_dtype_3_shape_384.bin
+-rw-r--r-- 1 root root    4 Jan  7 08:17 exception_cb_index_0_input_2_format_2_dtype_3_shape_.bin
+-rw-r--r-- 1 root root 576K Jan  7 08:17 exception_cb_index_0_output_0_format_2_dtype_1_shape_384x768.bin
 ```
-
+如果有需要将生成的异常bin文件转换为npy文件，请使用[转换脚本convert_exception_cb_bin_to_npy.py](https://gitee.com/ascend/tools/tree/master/ais-bench_workload/tool/ais_bench/test/convert_exception_cb_bin_to_npy.py).  
+使用方法：python3 convert_exception_cb_bin_to_npy.py --input {bin_file_path}。支持输入bin文件或文件夹。
 
 
 ## FAQ

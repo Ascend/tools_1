@@ -125,10 +125,10 @@ def check_input_parameter(inputs_list, intensors_desc):
         logger.error("Invalid args. Input args are empty")
         raise RuntimeError()
     if os.path.isfile(inputs_list[0]):
-        for file_path in inputs_list:
+        for index, file_path in enumerate(inputs_list):
             realpath = os.readlink(file_path) if os.path.islink(file_path) else file_path
             if not os.path.isfile(realpath):
-                logger.error("Invalid args. file_path:{} realpath:{} not exist".format(file_path, realpath))
+                logger.error("Invalid input args.--input:{} input[{}]:{} {} not exist".format(inputs_list, index, file_path, realpath))
                 raise RuntimeError()
     elif os.path.isdir(inputs_list[0]):
         if len(inputs_list) != len(intensors_desc):

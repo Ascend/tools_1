@@ -132,12 +132,12 @@ APP_ERROR ModelInferenceProcessor::CreateOutMemoryData(std::vector<MemoryData>& 
     int customIndex = 0;
     for (size_t i = 0; i < modelDesc_.outTensorsDesc.size(); ++i) {
         size = modelDesc_.outTensorsDesc[i].size;
-        if (size == 0 && customIndex < customOutTensorSize_.size()){
+        if (customIndex < customOutTensorSize_.size()){
             size = customOutTensorSize_[customIndex++];
         }
         if (size == 0){
             ERROR_LOG("out i:%d size is zero", i);
-            return APP_ERR_ACL_FAILURE;
+            return APP_ERR_INFER_OUTPUTSIZE_IS_ZERO;
         }
         DEBUG_LOG("Create OutMemory i:%d name:%s size:%zu", i, modelDesc_.outTensorsDesc[i].name.c_str(), size);
         Base::MemoryData memorydata(size, MemoryData::MemoryType::MEMORY_DEVICE, deviceId_);
@@ -626,7 +626,7 @@ APP_ERROR ModelInferenceProcessor::SetDynamicShape(std::string dymshapeStr)
     return APP_ERR_OK;
 }
 
-APP_ERROR ModelInferenceProcessor::SetCustomOutTensorsSize(std::vector<int> customOutSize)
+APP_ERROR ModelInferenceProcessor::SetCustomOutTensorsSize(std::vector<size_t> customOutSize)
 {
     customOutTensorSize_ = customOutSize;
     return APP_ERR_OK;

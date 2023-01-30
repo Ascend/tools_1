@@ -68,7 +68,7 @@ public:
     int SetDynamicDims(std::string dymdimsStr);
 
     int SetDynamicShape(std::string dymshapeStr);
-    int SetCustomOutTensorsSize(std::vector<int> customOutSize);
+    int SetCustomOutTensorsSize(std::vector<size_t> customOutSize);
 
     TensorBase CreateTensorFromFilesList(Base::TensorDesc &dstTensorDesc, std::vector<std::string>& filesList);
 

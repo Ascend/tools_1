@@ -185,7 +185,7 @@ public:
     APP_ERROR SetDynamicHW(int width, int height);
     APP_ERROR SetDynamicDims(std::string dymdimsStr);
     APP_ERROR SetDynamicShape(std::string dymshapeStr);
-    APP_ERROR SetCustomOutTensorsSize(std::vector<int> customOutSize);
+    APP_ERROR SetCustomOutTensorsSize(std::vector<size_t> customOutSize);
 private:
 
     APP_ERROR SetDynamicInfo();
@@ -224,7 +224,7 @@ private:
     std::shared_ptr<SessionOptions> options_;
     int32_t deviceId_;
 
-    std::vector<int> customOutTensorSize_;
+    std::vector<size_t> customOutTensorSize_;
     std::vector<MemoryData> outputsMemDataQue_;
 };
 }  // namespace Base

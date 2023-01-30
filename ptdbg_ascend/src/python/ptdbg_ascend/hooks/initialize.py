@@ -20,7 +20,7 @@ import os
 
 import torch
 
-from . import wrap_tensor, wrap_torch, wrap_functional
+from . import wrap_tensor, wrap_torch, wrap_functional, wrap_vf
 from .module import HOOKModule
 
 if not torch.cuda.is_available():
@@ -42,6 +42,11 @@ def initialize_hook(hook):
     for attr_name in dir(wrap_functional.HOOKFunctionalOP):
         if attr_name.startswith("wrap_"):
             setattr(torch.nn.functional, attr_name[5:], getattr(wrap_functional.HOOKFunctionalOP, attr_name))
+
+    wrap_vf.wrap_vf_ops_and_bind(hook)
+    for attr_name in dir(wrap_vf.HOOKVfOP):
+        if attr_name.startswith("wrap_"):
+            setattr(torch._VF, attr_name[5:], getattr(wrap_vf.HOOKVfOP, attr_name))
 
 
 def register_hook(model, hook, **kwargs):

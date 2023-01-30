@@ -998,3 +998,6 @@ torch:
   - vstack
   - where
   - xlogy_
+
+_VF:
+  - lstm
