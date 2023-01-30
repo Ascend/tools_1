@@ -2,7 +2,6 @@
 import time
 import aclruntime
 import numpy as np
-import torch
 
 class InferSession:
     def __init__(self, device_id: int, model_path: str, acl_json_path: str = None, debug: bool = False, loop: int = 1):
@@ -133,11 +132,9 @@ class InferSession:
                 input = feed
                 shapes.append(input.shape)
             elif hasattr(feed, 'type') and feed.type() in torchTensorlist:
-                print("==============feed is_contiguous: {}".format(feed.is_contiguous()))
                 input = feed.numpy()
                 if not feed.is_contiguous():
                     input = np.ascontiguousarray(input)
-                    print("change continue input:{}".format(input))
                 else:
                     print("already continue input:{}".format(input))
                 shapes.append(input.shape)

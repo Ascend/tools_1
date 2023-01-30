@@ -1,6 +1,5 @@
 import sys
 import numpy as np
-import torch
 
 from ais_bench.infer.interface import InferSession
 
@@ -11,6 +10,14 @@ def infer_simple():
     device_id = 0
     session = InferSession(device_id, model_path)
 
+    # create new numpy data according inputs info
+    barray = bytearray(session.get_inputs()[0].realsize)
+    ndata = np.frombuffer(barray)
+
+    # in is numpy list and ouput is numpy list
+    outputs = session.infer([ndata])
+    print("outputs:{} type:{}".format(outputs, type(outputs)))
+
     # create npy array
     ndata = np.zeros([1,256,256,3], dtype=np.uint8)
 
@@ -18,13 +25,12 @@ def infer_simple():
     outputs = session.infer([ndata])
     print("in npy outputs[0].shape:{} type:{}".format(outputs[0].shape, type(outputs)))
 
-
     # create torch tensor
+    import torch
     torchtensor = torch.tensor(ndata)
     # in is torch tensor and ouput is numpy list
     outputs = session.infer([torchtensor])
     print("in torch tensor outputs[0].shape:{} type:{}".format(outputs[0].shape, type(outputs)))
-
 
     # create discontinuous torch tensor
     ndata = np.zeros([1,256,256,3], dtype=np.uint8)
@@ -54,6 +60,7 @@ def infer_dymshape():
     outputs = session.infer([ndata], mode, custom_sizes=outputSizes)
     print("inputs: custom_sizes: {} outputs:{} type:{}".format(outputSizes, outputs, type(outputs)))
 
+    import torch
     ndata = torch.rand([1,224,3,224], out=None, dtype=torch.float32)
     ndata1 = ndata.permute(0,2,1,3)
     ndata11 = ndata1.contiguous()
