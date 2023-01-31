@@ -45,7 +45,7 @@ tf.saved_model.simple_save(sess, 'models/',
 	
 ### 2. 安装CANN-Toolkit包与CANN-tfplugin包，配置CANN包中的环境变量  
 
-    在Ascend/ascend-toolkit目录下执行source set_env.sh
+    在Ascend/ascend-toolkit,Ascend/tfplugin目录下执行source set_env.sh
 
 ### 3. saved_model模型文件转om
 执行转换脚本

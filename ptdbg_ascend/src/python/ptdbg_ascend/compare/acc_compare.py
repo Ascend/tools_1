@@ -185,21 +185,14 @@ def get_accuracy(result, n_dict, b_dict, summery_flag):
         err_msg = ""
         if n_struct[1] != b_struct[1]:
             cos_sim = "cannot be calculated "
-            rmse = "cannot be calculated"
-            mape = "cannot be calculated"
             max_abs_err = "cannot be calculated"
-            max_relative_err = "cannot be calculated"
         else:
             cos_sim, message = cosine_similarity(n_value, b_value)
             err_msg += message
-            rmse, _ = get_rmse(n_value, b_value)
-            mape, _ = get_mape(n_value, b_value)
             max_abs_err, _ = get_max_abs_err(n_value, b_value)
-            max_relative_err, message = get_max_relative_err(n_value, b_value)
-            err_msg += message
 
         result_item = [n_name, b_name, n_struct[0], b_struct[0], n_struct[1], b_struct[1],
-                       cos_sim, rmse, mape, max_abs_err, max_relative_err]
+                       cos_sim, max_abs_err]
         if summery_flag[0]:
             summery_data = n_dict.get("summery")[index]
             result_item.extend(summery_data)
@@ -221,7 +214,7 @@ def compare(input_parma, output_path, shape_flag=True):
     bench_pkl.close()
 
     columns = ["NPU Name", "Bench Name", "NPU Tensor Dtype", "Bench Tensor Dtype",
-               "NPU Tensor Shape", "Bench Tensor Shape", "Cosine", "RMSE", "MAPE", "MaxAbsErr", "MaxRelativeErr"]
+               "NPU Tensor Shape", "Bench Tensor Shape", "Cosine", "MaxAbsErr"]
     if npu_summary:
         columns.extend(["NPU max", "NPU min", "NPU mean"])
     if bench_summary:

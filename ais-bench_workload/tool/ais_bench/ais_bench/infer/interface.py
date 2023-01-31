@@ -133,11 +133,13 @@ class InferSession:
                 shapes.append(input.shape)
             elif hasattr(feed, 'type') and feed.type() in torchTensorlist:
                 input = feed.numpy()
+                if not feed.is_contiguous():
+                    input = np.ascontiguousarray(input)
                 shapes.append(input.shape)
             else:
                 raise RuntimeError('type:{} invalid'.format(type(feed)))
             inputs.append(input)
-        
+
         if mode == 'dymshape' or mode == 'dymdims':
             l = []
             indesc = self.get_inputs()
@@ -149,7 +151,12 @@ class InferSession:
             dyshapes = ';'.join(l)
             if mode == 'dymshape':
                 self.session.set_dynamic_shape(dyshapes)
-                self.session.set_custom_outsize([custom_sizes]*len(outdesc))
+                if isinstance(custom_sizes, int):
+                    custom_sizes = [custom_sizes]*len(outdesc)
+                elif isinstance(custom_sizes, list) == False:
+                    raise RuntimeError('custom_sizes:{} type:{} invalid'.format(
+                        custom_sizes, type(custom_sizes)))
+                self.session.set_custom_outsize(custom_sizes)
             elif mode == 'dymdims':
                 self.session.set_dynamic_dims(dyshapes)
         return self.run(inputs, out_array=True)
