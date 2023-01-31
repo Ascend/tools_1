@@ -137,7 +137,8 @@ class NetCompare(object):
                 csv_object = csv.DictReader(csv_file)
                 rows = [row for row in csv_object]
                 for item in rows:
-                    if float(item.get("CosineSimilarity")) < 0.9:
+                    cosine_similarity = item.get("CosineSimilarity")
+                    if cosine_similarity and float(cosine_similarity) < 0.9:
                         return item
         except IOError as csv_file_except:
             utils.print_error_log('Failed to open"' + result_file_path + '", ' + str(csv_file_except))
@@ -182,7 +183,8 @@ class NetCompare(object):
         npu_file_name = os.path.basename(npu_file)
         golden_file_name = os.path.basename(golden_file)
         for dir_path, subs_paths, files in os.walk(self.arguments.out_path):
-            if len(files) != 0:
+            files = [file for file in files if file.endswith("csv")]
+            if files:
                 result_file_path = os.path.join(dir_path, files[0])
                 result_file_backup = "{}_bak.csv".format(files[0].split(".")[0])
                 result_file_backup_path = os.path.join(dir_path, result_file_backup)
