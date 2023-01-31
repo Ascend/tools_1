@@ -1,11 +1,19 @@
 import argparse
+import asyncio
+import json
 import logging
 import os
 import sys
 import time
 import shutil
+import numpy as np
 
 from tqdm import tqdm
+import time
+from multiprocessing import Pool
+from multiprocessing import Process
+from multiprocessing import Manager
+
 from ais_bench.infer.interface import InferSession, MemorySummary
 from ais_bench.infer.io_oprations import (create_infileslist_from_inputs_list,
                                     create_intensors_from_infileslist,
@@ -219,7 +227,7 @@ def get_args():
     parser.add_argument("--display_all_summary", type=str2bool, default=False, help="display all summary include h2d d2h info")
     parser.add_argument("--warmup_count",  type=check_nonnegative_integer, default=1, help="warmup count before inference")
     parser.add_argument("--dymShape_range", type=str, default=None, help="dynamic shape range, such as --dymShape_range \"data:1,600~700;img_info:1,600-700\"")
-
+    parser.add_argument("--process", type=int, default=1, help="number process run")
     args = parser.parse_args()
 
     if args.profiler is True and args.dump is True:
@@ -252,7 +260,11 @@ def msprof_run_profiling(args):
     ret = os.system(msprof_cmd)
     logger.info("msprof cmd:{} end run ret:{}".format(msprof_cmd, ret))
 
-def main(args):
+def main(index=0, q=None):
+    if q != None:
+        logger.info("main run index:{} rq:{}".format(index, q))
+
+    args = get_args()
     if args.debug == True:
         logger.setLevel(logging.DEBUG)
 
@@ -283,6 +295,17 @@ def main(args):
 
     warmup(session, args, intensors_desc, infileslist[0])
 
+    if q != None:
+        logger.info("subprocess index:{} qsize:{} now waiting".format(index, q.qsize()))
+        q.put(index)
+        while True:
+            if q.qsize() >= args.process:
+                break
+            time.sleep(1)
+        logger.info("subprocess index:{} qsize:{} ready to infer run".format(index, q.qsize()))
+
+    start_time = time.time()
+
     if args.run_mode == "array":
         infer_loop_array_run(session, args, intensors_desc, infileslist, output_prefix)
     elif args.run_mode == "files":
@@ -293,6 +316,7 @@ def main(args):
         infer_loop_tensor_run(session, args, intensors_desc, infileslist, output_prefix)
     else:
         raise RuntimeError('wrong run_mode:{}'.format(args.run_mode))
+    end_time = time.time()
 
     summary.add_args(sys.argv)
     s = session.sumary()
@@ -301,7 +325,30 @@ def main(args):
     summary.d2h_latency_list = MemorySummary.get_D2H_time_list()
     summary.report(args.batchsize, output_prefix, args.display_all_summary)
 
+    if q != None:
+        q.put([index, summary.infodict['throughput'], start_time, end_time])
+
     session.finalize()
+
+def multiprocess_run(args):
+    logger.info("multiprocess run begin")
+    p = Pool(args.process)
+    q = Manager().Queue()
+
+    for i in range(args.process):
+        p.apply_async(main, args=(i, q))
+
+    logger.info("multiprocess run apply async done")
+    p.close()
+    p.join()
+    print("multiprocess run end qsize:{}".format(q.qsize()))
+    tlist = []
+    while q.qsize() != 0:
+        ret = q.get()
+        if type(ret) == list:
+            print("subprocess_{} throughput:{} start_time:{} end_time:{}".format(ret[0], ret[1], ret[2], ret[3]))
+            tlist.append(ret[1])
+    logger.info('summary throughput:{}'.format(np.sum(tlist)))
 
 if __name__ == "__main__":
     args = get_args()
@@ -321,3 +368,8 @@ if __name__ == "__main__":
         # dymshape range run,according range to run each shape infer get best shape
         dymshape_range_run(args)
         exit(0)
+
+    if args.process > 1:
+        multiprocess_run(args)
+        exit(0)
+    main()
