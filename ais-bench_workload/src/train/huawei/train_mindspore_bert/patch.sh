@@ -64,6 +64,12 @@ get_git_info(){
         commitid="5318681496ef9a37d337737325ad1b238ef75917"
         git_url="https://gitee.com/mindspore/models.git"
         modelzoo_sub_dir="models/official/nlp/bert"
+    elif [ "$branch_args" == "r1.10" ];then
+        branch="r1.10"
+        patch_file_name="r1.10"
+        commitid="8f7331e6a846e7c306dc8ac30313d9f07cf6ee98"
+        git_url="https://gitee.com/mindspore/models.git"
+        modelzoo_sub_dir="models/official/nlp/bert"
     else
         echo "bad parameters : $1"
         return $ret_error

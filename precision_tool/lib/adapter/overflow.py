@@ -69,6 +69,11 @@ class Overflow(object):
     def _json_summary(self, json_txt, debug_file):
         res = []
         detail = {'task_id': -1}
+        if 'magic' in json_txt:
+            # version 2
+            detail = json_txt['acc_list']['data']
+            res.append(' - [AccType:%s][Status:%s][TaskId:%s]' % (
+                json_txt['acc_list'], detail['status'], detail['task_id']))
         if 'AI Core' in json_txt and json_txt['AI Core']['status'] > 0:
             detail = json_txt['AI Core']
             res.append(' - [AI Core][Status:%s][TaskId:%s] %s' % (

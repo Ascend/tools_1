@@ -218,6 +218,13 @@ class AscendOp:
             kernel_output_list.append(info)
         return kernel_input_list, kernel_output_list
 
+    @staticmethod
+    def find(name, path):
+        for root, _, files in os.walk(path):
+            if name in files:
+                return os.path.join(root, name)
+        return None
+
     def compile(self, *args, **kwargs) -> AscendOpKernel:
         """
         compile
@@ -235,10 +242,9 @@ class AscendOp:
             raise RuntimeError("Compile op failed.") from compile_err
 
         kernel_name = kwargs.get("kernel_name")
-        kernel_meta_dir = os.path.realpath("./kernel_meta")
-        bin_path = os.path.join(kernel_meta_dir, kernel_name + ".o")
-        json_path = os.path.join(kernel_meta_dir, kernel_name + ".json")
-        if not os.path.exists(bin_path) or not os.path.exists(json_path):
+        bin_path = AscendOp.find(kernel_name + ".o", os.path.realpath("./"))
+        json_path =  AscendOp.find( kernel_name + ".json", os.path.realpath("./"))
+        if not bin_path or not json_path:
             raise RuntimeError("Compile op failed, .o or .json is not generate successful.")
 
         kernel = AscendOpKernel(bin_path, json_path)
@@ -436,6 +442,9 @@ class AscendOpKernelRunner:
         """
         build_kernel_param
         """
+        # foolproof design
+        if isinstance(data, str) and data.endswith(".npy"):
+            data = np.load(data)
         if isinstance(data, str):
             kernel_param = AscendOpKernelParam.build_op_param_by_data_file(data_file_path=data,
                                                                            shape=shape,
