@@ -180,6 +180,9 @@ AtlasEdge软件安装路径/run.sh restart
 * 使用主机网络时，容器与主机间不做网络隔离，容器内应用程序可以访问宿主机上任意网络接口，建议使用安全性更高的端口映射模式。
 * 如果容器的重启策略配置为“不重启”，当该容器出现异常时，该容器会一直保持异常状态。
 
+### 端口映射
+**须知**：
+* 如果映射的容器端口取值为[0-1023], 需开启useDefaultContainerCap、useRunAsRoot能力并且容器以root用户运行，请参考本文中的"工具使用方法"章节配置需开启useDefaultContainerCap、useRunAsRoot能力项。
 
 ### 容器日志收集
 FusionDirector容器日志收集约束：
