@@ -145,7 +145,6 @@ def set_dump_switch(switch, mode=1, scope=[]):
         assert len(scope) <= 2, "set_dump_switch, scope param set invalid, it's must be [start, end] or []."
     DumpUtil.set_dump_switch(switch, mode=mode, scope=scope)
 
-
 def dump_tensor(x, prefix, dump_step):
     if isinstance(x, (tuple, list)) and x:
         for i, item in enumerate(x):
@@ -155,7 +154,6 @@ def dump_tensor(x, prefix, dump_step):
             return
 
         with os.fdopen(os.open(DumpUtil.get_dump_path(), os.O_RDWR|os.O_CREAT, stat.S_IWUSR|stat.S_IRUSR), "a") as f:
-            summery_data = []
             if 1 <= dump_step <= Const.DUMP_RATIO_MAX:
                 tensor_max = torch._C._VariableFunctionsClass.max(x).cpu().detach().float().numpy()
                 tensor_min = torch._C._VariableFunctionsClass.min(x).cpu().detach().float().numpy()
@@ -172,8 +170,10 @@ def dump_tensor(x, prefix, dump_step):
                             .cpu().detach().float().numpy()
                     saved_tensor_tail = x.contiguous().view(-1)[
                                         (-1 * Const.SUMMERY_DATA_NUMS):].cpu().detach().float().numpy()
-                    saved_tensor = saved_tensor_head + saved_tensor_body + saved_tensor_tail
-                summery_data.extend([tensor_max, tensor_min, tensor_mean])
+                    saved_tensor = np.append(np.append(saved_tensor_head, saved_tensor_body), saved_tensor_tail)
+                tensor_max_min = np.append(tensor_max, tensor_min)
+                tensor_max_min_mean = np.append(tensor_max_min, tensor_mean)
+                summery_data = str(tensor_max_min_mean)
             else:
                 print_error_log("dump_ratio is invalid, Please set dump mode in [1~100], indicate 1% ~ 100%.")
                 f.close()
