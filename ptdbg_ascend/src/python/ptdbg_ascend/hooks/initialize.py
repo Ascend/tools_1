@@ -22,6 +22,8 @@ import torch
 
 from . import wrap_tensor, wrap_torch, wrap_functional, wrap_vf
 from .module import HOOKModule
+from ..common.utils import check_file_or_directory_path, add_time_as_suffix,\
+    print_error_log, CompareException, Const, format_value
 
 if not torch.cuda.is_available():
     import torch_npu
@@ -54,8 +56,11 @@ def register_hook(model, hook, **kwargs):
 
     dump_step = kwargs.get('dump_step', 1)
     overflow_nums = kwargs.get('overflow_nums', 1)
+    dump_mode, dump_config_file = init_dump_config(kwargs)
+
     pid = os.getpid()
-    hook = functools.partial(hook, dump_step=dump_step, overflow_nums=overflow_nums, pid=pid)
+    hook = functools.partial(hook, dump_step=dump_step, overflow_nums=overflow_nums, pid=pid,
+                             dump_mode=dump_mode, dump_config=dump_config_file)
 
     # In NPU scene, clear the overflow flag before overflow detection
     if not torch.cuda.is_available():
@@ -72,3 +77,21 @@ def register_hook(model, hook, **kwargs):
 
         module.register_forward_hook(hook(prefix + "forward"))
         module.register_backward_hook(hook(prefix + "backward"))
+
+
+def init_dump_config(kwargs):
+    dump_mode = kwargs.get('dump_mode', "api")
+    dump_config = kwargs.get('dump_config')
+    if dump_mode not in Const.SUPPORT_DUMP_MODE:
+        print_error_log("dump_mode only support %s" % Const.SUPPORT_DUMP_MODE)
+        raise CompareException(CompareException.INVALID_PARAM_ERROR)
+    if dump_mode == "acl":
+        if dump_config is None:
+            print_error_log("dump_mode is acl mode, dump_config must be configured.")
+            raise CompareException(CompareException.INVALID_PARAM_ERROR)
+        dump_config_file = os.path.realpath(dump_config)
+        check_file_or_directory_path(dump_config_file)
+        if not dump_config.endswith(".json"):
+            print_error_log("dump_config must be configure json file.")
+            raise CompareException(CompareException.INVALID_PARAM_ERROR)
+    return dump_mode, dump_config_file

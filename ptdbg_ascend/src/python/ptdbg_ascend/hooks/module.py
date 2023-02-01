@@ -28,13 +28,15 @@ class HOOKModule(nn.Module):
     def __init__(self, hook) -> None:
         super(HOOKModule, self).__init__()
         self.has_overflow = False
+        self.input_args = tuple()
+        self.input_kwargs = dict()
         prefix = ""
         if hasattr(self, "prefix_op_name_"):
             prefix = self.prefix_op_name_
- 
+
         self.register_forward_hook(hook(prefix + "forward"))
         self.register_backward_hook(hook(prefix + "backward"))
-    
+
     def __call__(self, *input, **kwargs):
         full_backward_hooks, non_full_backward_hooks = [], []
         if len(self._backward_hooks) > 0:
@@ -49,6 +51,8 @@ class HOOKModule(nn.Module):
         if len(full_backward_hooks) > 0:
             bw_hook = full_hooks.BackwardHook(self, full_backward_hooks)
             input = bw_hook.setup_input_hook(input)
+        self.input_args = input
+        self.input_kwargs = kwargs
         if torch._C._get_tracing_state():
             result = self._slow_forward(*input, **kwargs)
         else:
