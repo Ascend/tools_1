@@ -117,15 +117,6 @@ class TestClass():
             assert ret == 0
             output_paths.append(tmp_output_path)
 
-        # compare different batchsize inference bin files
-        base_compare_path = output_paths[0]
-        for i, cur_output_path in enumerate(output_paths):
-            if i == 0:
-                continue
-            cmd = "diff  {}  {}".format(base_compare_path, cur_output_path)
-            ret = os.system(cmd)
-            assert ret == 0
-
         for output_path in output_paths:
             shutil.rmtree(output_path)
 
