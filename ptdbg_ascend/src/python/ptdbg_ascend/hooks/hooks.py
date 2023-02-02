@@ -154,10 +154,11 @@ def dump_tensor(x, prefix, dump_step):
             return
 
         with os.fdopen(os.open(DumpUtil.get_dump_path(), os.O_RDWR|os.O_CREAT, stat.S_IWUSR|stat.S_IRUSR), "a") as f:
+            summery_data = []
             if 1 <= dump_step <= Const.DUMP_RATIO_MAX:
-                tensor_max = torch._C._VariableFunctionsClass.max(x).cpu().detach().float().numpy()
-                tensor_min = torch._C._VariableFunctionsClass.min(x).cpu().detach().float().numpy()
-                tensor_mean = torch._C._VariableFunctionsClass.mean(x).cpu().detach().float().numpy()
+                tensor_max = torch._C._VariableFunctionsClass.max(x).cpu().detach().float().numpy().tolist()
+                tensor_min = torch._C._VariableFunctionsClass.min(x).cpu().detach().float().numpy().tolist()
+                tensor_mean = torch._C._VariableFunctionsClass.mean(x).cpu().detach().float().numpy().tolist()
                 tensor_len = torch._C._VariableFunctionsClass.numel(x)
                 if tensor_len <= Const.SUMMERY_DATA_NUMS * 2:
                     saved_tensor = x.contiguous().view(-1)[:Const.SUMMERY_DATA_NUMS*2].cpu().detach().float().numpy()
@@ -171,9 +172,7 @@ def dump_tensor(x, prefix, dump_step):
                     saved_tensor_tail = x.contiguous().view(-1)[
                                         (-1 * Const.SUMMERY_DATA_NUMS):].cpu().detach().float().numpy()
                     saved_tensor = np.append(np.append(saved_tensor_head, saved_tensor_body), saved_tensor_tail)
-                tensor_max_min = np.append(tensor_max, tensor_min)
-                tensor_max_min_mean = np.append(tensor_max_min, tensor_mean)
-                summery_data = str(tensor_max_min_mean)
+                summery_data.extend([tensor_max, tensor_min, tensor_mean])
             else:
                 print_error_log("dump_ratio is invalid, Please set dump mode in [1~100], indicate 1% ~ 100%.")
                 f.close()
