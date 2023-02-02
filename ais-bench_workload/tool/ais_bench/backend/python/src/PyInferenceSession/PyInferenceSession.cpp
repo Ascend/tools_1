@@ -37,12 +37,12 @@ int PyInferenceSession::Destroy()
     }
     APP_ERROR ret = TensorContext::GetInstance()->SetContext(deviceId_);
     if (ret != APP_ERR_OK) {
-        ERROR_LOG("TensorContext::SetContext failed. ret=", ret);
+        ERROR_LOG("TensorContext::SetContext failed. ret=%d", ret);
         return ret;
     }
     ret = modelInfer_.DeInit();
     if (ret != APP_ERR_OK) {
-        ERROR_LOG("ModelInfer Deinit failed. ret=", ret);
+        ERROR_LOG("ModelInfer Deinit failed. ret=%d", ret);
         return ret;
     }
     DEBUG_LOG("PyInferSession DestroySession successfully!");
@@ -54,18 +54,18 @@ int PyInferenceSession::Finalize()
 {
     APP_ERROR ret = TensorContext::GetInstance()->SetContext(deviceId_);
     if (ret != APP_ERR_OK) {
-        ERROR_LOG("TensorContext::SetContext failed. ret=", ret);
+        ERROR_LOG("TensorContext::SetContext failed. ret=%d", ret);
         return ret;
     }
 
     ret = Destroy();
     if (ret != APP_ERR_OK) {
-        ERROR_LOG("TensorContext::Finalize. ret=", ret);
+        ERROR_LOG("TensorContext::Finalize. ret=%d", ret);
         return ret;
     }
     ret = TensorContext::GetInstance()->Finalize();
     if (ret != APP_ERR_OK) {
-        ERROR_LOG("TensorContext::Finalize. ret=", ret);
+        ERROR_LOG("TensorContext::Finalize. ret=%d", ret);
         return ret;
     }
     DEBUG_LOG("PyInferSession Finalize successfully!");

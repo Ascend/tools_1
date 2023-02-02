@@ -1258,7 +1258,7 @@ Result ModelProcess::GetCurOutputShape(size_t index, bool is_dymshape, std::vect
         ret = aclmdlGetCurOutputDims(modelDesc_, index, &ioDims);
         if (ret != ACL_SUCCESS) {
             // cout << aclGetRecentErrMsg() << endl;
-            DEBUG_LOG("aclmdlGetCurOutputDims get not success, maybe the modle has dynamic shape", ret);
+            DEBUG_LOG("aclmdlGetCurOutputDims get not success, maybe the modle has dynamic shape.ret=%d", ret);
             return FAILED;
         }
         for (size_t i = 0; i < ioDims.dimCount; i++) {

@@ -444,7 +444,7 @@ APP_ERROR ModelInferenceProcessor::AllocDyIndexMem()
     dynamicIndexMemory_.deviceId = deviceId_;
     auto ret = MemoryHelper::MxbsMalloc(dynamicIndexMemory_);
     if (ret != APP_ERR_OK) {
-        ERROR_LOG("MemoryHelper::MxbsMalloc failed. ret=", ret);
+        ERROR_LOG("MemoryHelper::MxbsMalloc failed. ret=%d", ret);
         return ret;
     }
     return APP_ERR_OK;
