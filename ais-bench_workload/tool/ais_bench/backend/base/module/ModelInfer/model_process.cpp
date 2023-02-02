@@ -190,9 +190,9 @@ Result ModelProcess::SetDynamicShape(std::map<std::string, std::vector<int64_t>>
 {
     aclError ret;
     const char *name;
-    int64_t input_num = dym_shape_map.size();
+    size_t  input_num = dym_shape_map.size();
     aclTensorDesc * inputDesc;
-    for (int i = 0; i < input_num; i++) {
+    for (size_t i = 0; i < input_num; i++) {
         name = aclmdlGetInputNameByIndex(modelDesc_, i);
         int64_t arr[dym_shape_map[name].size()];
         std::copy(dym_shape_map[name].begin(), dym_shape_map[name].end(), arr);
@@ -372,7 +372,7 @@ Result ModelProcess::CheckDynamicDims(vector<string> dym_dims, size_t gearCount,
     for (size_t i = 0; i < gearCount; i++)
     {
         if ((size_t)dym_dims.size() != dims[i].dimCount){
-            ERROR_LOG("the dymDims parameter is not correct i:%zu dysize:%zu dimcount:%lu", i, dym_dims.size(), dims[i].dimCount);
+            ERROR_LOG("the dymDims parameter is not correct i:%zu dysize:%zu dimcount:%zu", i, dym_dims.size(), dims[i].dimCount);
             GetDimInfo(gearCount, dims);
             return FAILED;
         }
