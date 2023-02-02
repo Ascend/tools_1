@@ -191,7 +191,7 @@ APP_ERROR ModelInferenceProcessor::CheckInVectorAndFillBaseTensor(const std::vec
         baseTensor.buf = feeds[i].buf;
         baseTensor.size = feeds[i].size;
         if (baseTensor.size != modelDesc_.inTensorsDesc[i].realsize){
-            ERROR_LOG("Check i:%zu name:%s in size:%ju needsize:%zu not match",
+            ERROR_LOG("Check i:%zu name:%s in size:%zu needsize:%zu not match",
                 i, modelDesc_.inTensorsDesc[i].name.c_str(), baseTensor.size, modelDesc_.inTensorsDesc[i].realsize);
             return APP_ERR_ACL_FAILURE;
         }
