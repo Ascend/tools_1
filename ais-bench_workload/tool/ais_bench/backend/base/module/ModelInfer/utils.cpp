@@ -171,7 +171,6 @@ std::string Utils::TimeLine()
 
 std::string Utils::printCurrentTime()
 {
-    char szBuf[256] = { 0 };
     struct timeval tv;
     struct timezone tz;
     struct tm* p = nullptr;
@@ -179,8 +178,8 @@ std::string Utils::printCurrentTime()
     gettimeofday(&tv, &tz);
     p = localtime(&tv.tv_sec);
     std::string pi = std::to_string(p->tm_year + 1900) + std::to_string(p->tm_mon + 1) + std::to_string(p->tm_mday) \
-		     + "_" + std::to_string(p->tm_hour) + "_" + std::to_string(p->tm_min) + "_" + \
-		     std::to_string(p->tm_sec) + "_" + std::to_string(tv.tv_usec); 
+             + "_" + std::to_string(p->tm_hour) + "_" + std::to_string(p->tm_min) + "_" + \
+             std::to_string(p->tm_sec) + "_" + std::to_string(tv.tv_usec);
     return pi;
 }
 void Utils::printHelpLetter()
@@ -330,7 +329,7 @@ void Utils::SplitStringSimple(string str, vector<string> &out, char split1, char
     for (size_t i = 0; i < split2_out.size(); ++i){
         istringstream block_tmp1(split2_out[i]);
         while (getline(block_tmp1, cell2, split3)) {
-            out.push_back(cell2); 
+            out.push_back(cell2);
         }
     }
 }
@@ -341,7 +340,7 @@ void Utils::SplitStringWithSemicolonsAndColons(string str, vector<string> &out, 
     string cell;
     string cell1;
     vector<string> split1_out;
-    
+
     while (getline(block, cell, split1)) {
         split1_out.push_back(cell);
     }
@@ -368,18 +367,18 @@ void Utils::SplitStringWithPunctuation(string str, vector<string> &out, char spl
 
 int Utils::ToInt(string &str)
 {
-  return atoi(str.c_str()); 
+  return atoi(str.c_str());
 }
 
 Result Utils::SplitStingGetNameDimsMulMap(std::vector<std::string> in_dym_shape_str, std::map<string, int64_t> &out_namedimsmul_map)
 {
     string name;
     string shape_str;
-    
+
     for (size_t i = 0; i < in_dym_shape_str.size(); ++i){
         size_t pos = in_dym_shape_str[i].rfind(':');
         if(pos == in_dym_shape_str[i].npos){
-            ERROR_LOG("find no : split i:%d str:%s\n", i, in_dym_shape_str[i].c_str());
+            ERROR_LOG("find no : split i:%zu str:%s\n", i, in_dym_shape_str[i].c_str());
             return FAILED;
         }
         name = in_dym_shape_str[i].substr(0, pos);
@@ -388,7 +387,7 @@ Result Utils::SplitStingGetNameDimsMulMap(std::vector<std::string> in_dym_shape_
         vector<string> shape_tmp;
         Utils::SplitStringWithPunctuation(shape_str, shape_tmp, ',');
         int64_t DimsMul = 1;
-        for(int j = 0; j < shape_tmp.size(); ++j){
+        for(size_t j = 0; j < shape_tmp.size(); ++j){
 	        DimsMul = DimsMul * atoi(shape_tmp[j].c_str());
         }
         out_namedimsmul_map[name] = DimsMul;

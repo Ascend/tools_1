@@ -86,14 +86,14 @@ Result ModelProcess::CreateDesc()
 
 Result ModelProcess::GetDynamicGearCount(size_t &dymGearCount)
 {
-    aclError ret; 
+    aclError ret;
     ret = aclmdlGetInputDynamicGearCount(modelDesc_, -1, &dymGearCount);
     if (ret != ACL_SUCCESS) {
         cout << aclGetRecentErrMsg() << endl;
         ERROR_LOG("get input dynamic gear count failed %d", ret);
         return FAILED;
     }
-    
+
     DEBUG_LOG("get input dynamic gear count success");
 
     return SUCCESS;
@@ -101,7 +101,7 @@ Result ModelProcess::GetDynamicGearCount(size_t &dymGearCount)
 
 Result ModelProcess::GetDynamicIndex(size_t &dymindex)
 {
-    aclError ret; 
+    aclError ret;
 
     const char *inputname = nullptr;
     bool dynamicIndex_exist = false;
@@ -131,25 +131,24 @@ Result ModelProcess::GetDynamicIndex(size_t &dymindex)
 
 Result ModelProcess::CheckDynamicShape(std::vector<std::string> dym_shape_tmp, std::map<string, std::vector<int64_t>> &dym_shape_map, std::vector<int64_t> &dims_num)
 {
-    aclError ret; 
     const char *inputname = nullptr;
     vector<const char *> inputnames;
     string name;
     string shape_str;
     size_t numInputs = aclmdlGetNumInputs(modelDesc_);
-    int64_t num_tmp = 0; 
+    int64_t num_tmp = 0;
     if (numInputs != dym_shape_tmp.size()){
         ERROR_LOG("om has %zu input, but dymShape parametet give %zu", numInputs, dym_shape_tmp.size());
-        return FAILED;        
+        return FAILED;
     }
-    
+
     for (size_t i = 0; i < numInputs; i++) {
         inputname = aclmdlGetInputNameByIndex(modelDesc_, i);
         if (inputname == nullptr) {
             ERROR_LOG("get input name failed, index = %zu.", i);
             return FAILED;
-        }    
-        inputnames.push_back(inputname);    
+        }
+        inputnames.push_back(inputname);
     }
     for (size_t i = 0; i < dym_shape_tmp.size(); ++i){
         istringstream block(dym_shape_tmp[i]);
@@ -161,25 +160,25 @@ Result ModelProcess::CheckDynamicShape(std::vector<std::string> dym_shape_tmp, s
                 name = cell;
             }
             else if (index == 1){
-               shape_str = cell; 
+               shape_str = cell;
             }
             index += 1;
         }
         Utils::SplitStringWithPunctuation(shape_str, shape_tmp, ',');
         size_t shape_tmp_size = shape_tmp.size();
         vector<int64_t> shape_array_tmp;
-        
+
 	    dims_num.push_back(shape_tmp_size);
-        for(int index = 0; index < shape_tmp_size; ++index){
+        for(size_t index = 0; index < shape_tmp_size; ++index){
             num_tmp = atoi(shape_tmp[index].c_str());
-            shape_array_tmp.push_back(num_tmp);  
+            shape_array_tmp.push_back(num_tmp);
         }
-        dym_shape_map[name] = shape_array_tmp;     
+        dym_shape_map[name] = shape_array_tmp;
     }
     for (size_t i = 0; i < inputnames.size(); ++i){
         if (dym_shape_map.count(inputnames[i]) <= 0){
-            ERROR_LOG("the dymShape parameter set error, please check input name"); 
-            return FAILED;       
+            ERROR_LOG("the dymShape parameter set error, please check input name");
+            return FAILED;
         }
     }
     DEBUG_LOG("check Dynamic Shape success");
@@ -193,7 +192,7 @@ Result ModelProcess::SetDynamicShape(std::map<std::string, std::vector<int64_t>>
     const char *name;
     int input_num = dym_shape_map.size();
     aclTensorDesc * inputDesc;
-    for (size_t i = 0; i < input_num; i++) {
+    for (int i = 0; i < input_num; i++) {
         name = aclmdlGetInputNameByIndex(modelDesc_, i);
         int64_t arr[dym_shape_map[name].size()];
         std::copy(dym_shape_map[name].begin(), dym_shape_map[name].end(), arr);
@@ -206,7 +205,7 @@ Result ModelProcess::SetDynamicShape(std::map<std::string, std::vector<int64_t>>
         }
     }
     DEBUG_LOG("set Dynamic shape success");
-	return SUCCESS;	
+	return SUCCESS;
 }
 
 Result ModelProcess::GetMaxDynamicHWSize(uint64_t &outsize)
@@ -248,22 +247,22 @@ Result ModelProcess::CheckDynamicHWSize(pair<int, int> dynamicPair, bool &is_dym
     if (dynamicHW.hwCount > 0) {
         stringstream dynamicRange;
         for (size_t i = 0; i < dynamicHW.hwCount; i++) {
-            if (dynamicPair.first == dynamicHW.hw[i][0] and dynamicPair.second == dynamicHW.hw[i][1]) {
+            if ((size_t)dynamicPair.first == dynamicHW.hw[i][0] and (size_t)dynamicPair.second == dynamicHW.hw[i][1]) {
                 if_same = true;
                 break;
             }
         }
         if (! if_same){
             ERROR_LOG("the dymHW parameter is not correct");
-            return FAILED;                  
+            return FAILED;
         }
         is_dymHW = true;
- 
+
     }
     else{
         ERROR_LOG("the dynamic_image_size parameter is not specified for model conversion");
-        return FAILED;       
-    } 
+        return FAILED;
+    }
     INFO_LOG("check dynamic image size success.");
     return SUCCESS;
 }
@@ -284,7 +283,7 @@ Result ModelProcess::SetDynamicHW(std::pair<uint64_t , uint64_t > dynamicPair)
 Result ModelProcess::CheckDynamicBatchSize(uint64_t dymbatch, bool &is_dymbatch)
 {
     aclmdlBatch batch_info;
-    aclError ret; 
+    aclError ret;
     bool if_same = false;
     ret = aclmdlGetDynamicBatch(modelDesc_, &batch_info);
     if (ret != ACL_SUCCESS) {
@@ -302,14 +301,14 @@ Result ModelProcess::CheckDynamicBatchSize(uint64_t dymbatch, bool &is_dymbatch)
         if (! if_same){
             ERROR_LOG("the dymBatch parameter is not correct");
             GetDymBatchInfo();
-            return FAILED;                  
+            return FAILED;
         }
         is_dymbatch = true;
     }
     else{
         ERROR_LOG("the dynamic_batch_size parameter is not specified for model conversion");
-        return FAILED;       
-    }  
+        return FAILED;
+    }
     INFO_LOG("check dynamic batch success");
     return SUCCESS;
 }
@@ -323,13 +322,13 @@ Result ModelProcess::SetDynamicBatchSize(uint64_t batchSize)
         return FAILED;
     }
     DEBUG_LOG("set dynamic batch size success");
-    return SUCCESS; 
+    return SUCCESS;
 }
 
 Result ModelProcess::GetMaxBatchSize(uint64_t &maxBatchSize)
 {
     aclmdlBatch batch_info;
-    aclError ret; 
+    aclError ret;
     ret = aclmdlGetDynamicBatch(modelDesc_, &batch_info);
     if (ret != ACL_SUCCESS) {
         cout << aclGetRecentErrMsg() << endl;
@@ -349,7 +348,7 @@ Result ModelProcess::GetMaxBatchSize(uint64_t &maxBatchSize)
 
 Result ModelProcess::GetCurOutputDimsMul(size_t index, vector<int64_t>& curOutputDimsMul)
 {
-    aclError ret; 
+    aclError ret;
     aclmdlIODims ioDims;
     int64_t tmp_dim = 1;
     ret = aclmdlGetCurOutputDims(modelDesc_, index, &ioDims);
@@ -358,7 +357,7 @@ Result ModelProcess::GetCurOutputDimsMul(size_t index, vector<int64_t>& curOutpu
         WARN_LOG("aclmdlGetCurOutputDims failed ret[%d], maybe the modle has dynamic shape", ret);
         return FAILED;
     }
-    for (int i = 1; i < ioDims.dimCount; i++) {
+    for (size_t i = 1; i < ioDims.dimCount; i++) {
         tmp_dim *= ioDims.dims[ioDims.dimCount - i];
         curOutputDimsMul.push_back(tmp_dim);
     }
@@ -373,12 +372,12 @@ Result ModelProcess::CheckDynamicDims(vector<string> dym_dims, size_t gearCount,
     for (size_t i = 0; i < gearCount; i++)
     {
         if ((size_t)dym_dims.size() != dims[i].dimCount){
-            ERROR_LOG("the dymDims parameter is not correct i:%d dysize:%d dimcount:%d", i, dym_dims.size(), dims[i].dimCount);
+            ERROR_LOG("the dymDims parameter is not correct i:%zu dysize:%zu dimcount:%lu", i, dym_dims.size(), dims[i].dimCount);
             GetDimInfo(gearCount, dims);
             return FAILED;
         }
         for (size_t j = 0; j < dims[i].dimCount; j++)
-        {   
+        {
             if (dims[i].dims[j] != atoi(dym_dims[j].c_str()))
             {
                 break;
@@ -388,37 +387,37 @@ Result ModelProcess::CheckDynamicDims(vector<string> dym_dims, size_t gearCount,
                 if_same = true;
             }
         }
-        
+
     }
 
     if(! if_same){
         ERROR_LOG("the dynamic_dims parameter is not correct");
         GetDimInfo(gearCount, dims);
-        return FAILED;  
+        return FAILED;
     }
     DEBUG_LOG("check dynamic dims success");
     return SUCCESS;
- 
+
 }
 
 Result ModelProcess::SetDynamicDims(vector<string> dym_dims)
-{   
+{
     aclmdlIODims dims;
     dims.dimCount = dym_dims.size();
     for (size_t i = 0; i < dims.dimCount; i++)
-    {   
+    {
         dims.dims[i] = atoi(dym_dims[i].c_str());
     }
 
     aclError ret = aclmdlSetInputDynamicDims(modelId_, input_, g_dymindex, &dims);
- 
+
     if (ret != ACL_SUCCESS) {
         cout << aclGetRecentErrMsg() << endl;
         ERROR_LOG("aclmdlSetInputDynamicDims failed %d", ret);
         return FAILED;
     }
     DEBUG_LOG("set dynamic dims success");
-    return SUCCESS; 
+    return SUCCESS;
 }
 
 void ModelProcess::GetDymBatchInfo(){
@@ -427,23 +426,23 @@ void ModelProcess::GetDymBatchInfo(){
     stringstream ss;
     ss << "model has dynamic batch size:{";
     for (size_t i = 0; i < batch_info.batchCount; i++) {
-        ss << "[" << batch_info.batch[i] << "]";  
+        ss << "[" << batch_info.batch[i] << "]";
     }
     ss << "}, please set correct dynamic batch size";
-    ERROR_LOG("%s", ss.str().c_str());    
+    ERROR_LOG("%s", ss.str().c_str());
 }
 
 void ModelProcess::GetDymHWInfo(){
     aclmdlHW  hw_info;
     aclmdlGetDynamicHW(modelDesc_, -1, &hw_info);
     stringstream ss;
-    
+
     ERROR_LOG("model has %zu gear of HW", hw_info.hwCount);
     for (size_t i = 0; i < hw_info.hwCount; i++) {
-        ss << "[" << hw_info.hw[i] << "]";  
+        ss << "[" << hw_info.hw[i] << "]";
     }
     ss << "}, please set correct dynamic batch size";
-    ERROR_LOG("%s", ss.str().c_str());    
+    ERROR_LOG("%s", ss.str().c_str());
 }
 
 void ModelProcess::GetDimInfo(size_t gearCount, aclmdlIODims *dims)
@@ -454,15 +453,15 @@ void ModelProcess::GetDimInfo(size_t gearCount, aclmdlIODims *dims)
     {
         if (i == 0)
         {
-            ERROR_LOG("model has %zu gear of dims", gearCount); 
+            ERROR_LOG("model has %zu gear of dims", gearCount);
         }
         stringstream ss;
         ss << "dims[" << i << "]:";
         for (size_t j = 0; j < dims[i].dimCount; j++)
         {
-            ss << "[" << dims[i].dims[j] << "]";  
+            ss << "[" << dims[i].dims[j] << "]";
         }
-        ERROR_LOG("%s", ss.str().c_str()); 
+        ERROR_LOG("%s", ss.str().c_str());
     }
 }
 
@@ -477,7 +476,6 @@ Result ModelProcess::PrintDesc()
 
     aclmdlIODims dimsInput;
     aclmdlIODims dimsOutput;
-    aclmdlIODims dimsCurrentOutput;
     for (size_t i = 0; i < numInputs; i++) {
         DEBUG_LOG("the size of %zu input: %zu", i, aclmdlGetInputSizeByIndex(modelDesc_, i));
         ret = aclmdlGetInputDims(modelDesc_, i, &dimsInput);
@@ -551,7 +549,7 @@ Result ModelProcess::CreateDymInput(size_t index)
             ERROR_LOG("can't create dataset, create input failed");
             return FAILED;
         }
-    } 
+    }
     size_t buffer_size = aclmdlGetInputSizeByIndex(modelDesc_, index);
     void* inBufferDev = nullptr;
     aclError ret = aclrtMalloc(&inBufferDev, buffer_size, ACL_MEM_MALLOC_HUGE_FIRST);
@@ -608,7 +606,7 @@ Result ModelProcess::CreateInput(void* inputDataBuffer, size_t bufferSize)
 }
 
 Result ModelProcess::CreateZeroInput()
-{   
+{
     if (input_ == nullptr) {
         input_ = aclmdlCreateDataset();
         if (input_ == nullptr) {
@@ -713,7 +711,7 @@ Result ModelProcess::CreateOutput()
 
     if ((g_output_size.empty() == false)  && (outputNum != g_output_size.size())){
         ERROR_LOG("om has %zu output, but outputSize parametet give %zu", outputNum, g_output_size.size());
-        return FAILED;   
+        return FAILED;
     }
 
     for (size_t i = 0; i < outputNum; ++i) {
@@ -780,7 +778,7 @@ void ModelProcess::OutputModelResult(std::string& s, std::string& modelName, std
     void* data = nullptr;
     void* outHostData = nullptr;
     void* outData = nullptr;
-    aclError ret = ACL_SUCCESS;    
+    aclError ret = ACL_SUCCESS;
     uint64_t maxBatchSize = 0;
     size_t len = 0;
     ret = GetMaxBatchSize(maxBatchSize);
@@ -788,7 +786,7 @@ void ModelProcess::OutputModelResult(std::string& s, std::string& modelName, std
         cout << aclGetRecentErrMsg() << endl;
         ERROR_LOG("aclrtMallocHost failed, ret[%d]", ret);
         return;
-    }   
+    }
     for (size_t i = 0; i < aclmdlGetDatasetNumBuffers(output_); ++i) {
         aclDataBuffer* dataBuffer = aclmdlGetDatasetBuffer(output_, i);
         data = aclGetDataBufferAddr(dataBuffer);
@@ -868,7 +866,7 @@ void ModelProcess::OutputModelResult(std::string& s, std::string& modelName, std
             ofstream outstr(s + "/" + modelName + "_output_" + to_string(i) + ".txt", ios::out);
             switch (datatype) {
             case 0:
-                for (int64_t i = 1; i <= len / sizeof(float); i++) {
+                for (size_t i = 1; i <= len / sizeof(float); i++) {
                     float out = *((float*)outData + i - 1);
                     outstr << out << " ";
                     vector<int64_t>::iterator it;
@@ -876,14 +874,14 @@ void ModelProcess::OutputModelResult(std::string& s, std::string& modelName, std
                         if ((i != 0) && (i % *it == 0)){
                             outstr << "\n";
                             break;
-                        } 
-                    }                    
+                        }
+                    }
                 }
                 break;
             case 1:{
                 aclFloat16 * out_fp16 = reinterpret_cast<aclFloat16*>(outData);
                 float out = 0;
-                for (int i = 1; i <= len / sizeof(aclFloat16); i++) {
+                for (size_t i = 1; i <= len / sizeof(aclFloat16); i++) {
                     out = aclFloat16ToFloat(out_fp16[i-1]);
                     outstr << out << " ";
                     vector<int64_t>::iterator it;
@@ -891,13 +889,13 @@ void ModelProcess::OutputModelResult(std::string& s, std::string& modelName, std
                         if ((i != 0) && (i % *it == 0)){
                             outstr << "\n";
                             break;
-                        } 
-                    }                   
+                        }
+                    }
                 }
                 break;
             }
             case 2:
-                for (int i = 1; i <= len / sizeof(int8_t); i++) {
+                for (size_t i = 1; i <= len / sizeof(int8_t); i++) {
                     int8_t out = *((int8_t*)outData + i - 1);
                     outstr << out << " ";
                     vector<int64_t>::iterator it;
@@ -905,12 +903,12 @@ void ModelProcess::OutputModelResult(std::string& s, std::string& modelName, std
                         if ((i != 0) && (i % *it == 0)){
                             outstr << "\n";
                             break;
-                        } 
-                    } 
+                        }
+                    }
                 }
                 break;
             case 3:
-                for (int i = 1; i <= len / sizeof(int); i++) {
+                for (size_t i = 1; i <= len / sizeof(int); i++) {
                     int out = *((int*)outData + i - 1);
                     outstr << out << " ";
                     vector<int64_t>::iterator it;
@@ -918,12 +916,12 @@ void ModelProcess::OutputModelResult(std::string& s, std::string& modelName, std
                         if ((i != 0) && (i % *it == 0)){
                             outstr << "\n";
                             break;
-                        } 
+                        }
                     }
                 }
                 break;
             case 4:
-                for (int i = 1; i <= len / sizeof(uint8_t); i++) {
+                for (size_t i = 1; i <= len / sizeof(uint8_t); i++) {
                     uint8_t out = *((uint8_t*)outData + i - 1);
                     outstr << out << " ";
                     vector<int64_t>::iterator it;
@@ -931,12 +929,12 @@ void ModelProcess::OutputModelResult(std::string& s, std::string& modelName, std
                         if ((i != 0) && (i % *it == 0)){
                             outstr << "\n";
                             break;
-                        } 
+                        }
                     }
                 }
                 break;
             case 6:
-                for (int i = 1; i <= len / sizeof(int16_t); i++) {
+                for (size_t i = 1; i <= len / sizeof(int16_t); i++) {
                     int16_t out = *((int16_t*)outData + i - 1);
                     outstr << out << " ";
                     vector<int64_t>::iterator it;
@@ -944,12 +942,12 @@ void ModelProcess::OutputModelResult(std::string& s, std::string& modelName, std
                         if ((i != 0) && (i % *it == 0)){
                             outstr << "\n";
                             break;
-                        } 
-                    } 
+                        }
+                    }
                 }
                 break;
             case 7:
-                for (int i = 1; i <= len / sizeof(uint16_t); i++) {
+                for (size_t i = 1; i <= len / sizeof(uint16_t); i++) {
                     uint16_t out = *((uint16_t*)outData + i - 1);
                     outstr << out << " ";
                     vector<int64_t>::iterator it;
@@ -957,12 +955,12 @@ void ModelProcess::OutputModelResult(std::string& s, std::string& modelName, std
                         if ((i != 0) && (i % *it == 0)){
                             outstr << "\n";
                             break;
-                        } 
-                    } 
+                        }
+                    }
                 }
                 break;
             case 8:
-                for (int i = 1; i <= len / sizeof(uint32_t); i++) {
+                for (size_t i = 1; i <= len / sizeof(uint32_t); i++) {
                     uint32_t out = *((uint32_t*)outData + i - 1);
                     outstr << out << " ";
                     vector<int64_t>::iterator it;
@@ -970,12 +968,12 @@ void ModelProcess::OutputModelResult(std::string& s, std::string& modelName, std
                         if ((i != 0) && (i % *it == 0)){
                             outstr << "\n";
                             break;
-                        } 
-                    } 
+                        }
+                    }
                 }
                 break;
             case 9:
-                for (int i = 1; i <= len / sizeof(int64_t); i++) {
+                for (size_t i = 1; i <= len / sizeof(int64_t); i++) {
                     int64_t out = *((int64_t*)outData + i - 1);
                     outstr << out << " ";
                     vector<int64_t>::iterator it;
@@ -983,12 +981,12 @@ void ModelProcess::OutputModelResult(std::string& s, std::string& modelName, std
                         if ((i != 0) && (i % *it == 0)){
                             outstr << "\n";
                             break;
-                        } 
-                    } 
+                        }
+                    }
                 }
                 break;
             case 10:
-                for (int i = 1; i <= len / sizeof(uint64_t); i++) {
+                for (size_t i = 1; i <= len / sizeof(uint64_t); i++) {
                     uint64_t out = *((uint64_t*)outData + i - 1);
                     outstr << out << " ";
                     vector<int64_t>::iterator it;
@@ -996,12 +994,12 @@ void ModelProcess::OutputModelResult(std::string& s, std::string& modelName, std
                         if ((i != 0) && (i % *it == 0)){
                             outstr << "\n";
                             break;
-                        } 
-                    } 
+                        }
+                    }
                 }
                 break;
             case 11:
-                for (int i = 1; i <= len / sizeof(double); i++) {
+                for (size_t i = 1; i <= len / sizeof(double); i++) {
                     double out = *((double*)outData + i - 1);
                     outstr << out << " ";
                     vector<int64_t>::iterator it;
@@ -1009,12 +1007,12 @@ void ModelProcess::OutputModelResult(std::string& s, std::string& modelName, std
                         if ((i != 0) && (i % *it == 0)){
                             outstr << "\n";
                             break;
-                        } 
-                    } 
+                        }
+                    }
                 }
                 break;
             case 12:
-                for (int i = 1; i <= len / sizeof(bool); i++) {
+                for (size_t i = 1; i <= len / sizeof(bool); i++) {
                     int out = *((bool*)outData + i - 1);
                     outstr << out << " ";
                     vector<int64_t>::iterator it;
@@ -1022,8 +1020,8 @@ void ModelProcess::OutputModelResult(std::string& s, std::string& modelName, std
                         if ((i != 0) && (i % *it == 0)){
                             outstr << "\n";
                             break;
-                        } 
-                    } 
+                        }
+                    }
                 }
                 break;
             default:
@@ -1098,7 +1096,7 @@ Result GetDescShapeStr(const aclTensorDesc *desc, std::string &shapestr) {
         return FAILED;
     }
 
-    for (int i = 0; i < shape.size(); i++) {
+    for (size_t i = 0; i < shape.size(); i++) {
         if (i == 0) {
             shapestr +=  std::to_string(shape[i]);
         } else {
@@ -1133,12 +1131,12 @@ Result SaveTensorMemoryToFile(const aclTensorDesc *desc, std::string &prefixName
     ret = aclrtMemcpy(hostaddr, len, devaddr, len, ACL_MEMCPY_DEVICE_TO_HOST);
     if (ret != ACL_SUCCESS) {
         cout << aclGetRecentErrMsg() << endl;
-        WARN_LOG("exception_cb aclMemcpy failed ret:%d hostaddr:%p devaddr:%zu len:%zu",
+        WARN_LOG("exception_cb aclMemcpy failed ret:%d hostaddr:%p devaddr:%p len:%zu",
             ret, hostaddr, devaddr, len);
         return FAILED;
     }
     std::string fileName = prefixName + "_format_" + std::to_string(format) + "_dtype_" + std::to_string(dtype) + "_shape_" + shapestr + ".bin";
-    INFO_LOG("exception_cb hostaddr:%p devaddr:%p len:%d write to filename:%s",
+    INFO_LOG("exception_cb hostaddr:%p devaddr:%p len:%zu write to filename:%s",
              hostaddr, devaddr, len, fileName.c_str());
     ofstream outFile(fileName, ios::out | ios::binary);
     outFile.write((char*)hostaddr, len);
@@ -1171,19 +1169,19 @@ void callback(aclrtExceptionInfo *exceptionInfo)
     aclError ret = aclmdlCreateAndGetOpDesc(deviceId, streamId, taskId, opName, 256, \
                     &inputDesc, &inputCnt, &outputDesc, &outputCnt);
     if (ret != ACL_SUCCESS) {
-        WARN_LOG("exception_cb deviceId:%d streamId:%d taskId:%d failed:%d", deviceId, streamId, taskId, ret);
+        WARN_LOG("exception_cb deviceId:%u streamId:%u taskId:%u failed:%d", deviceId, streamId, taskId, ret);
         return;
     }
 
     static int index = 0;
-    INFO_LOG("exception_cb streamId:%d taskId:%d deviceId: %d opName:%s inputCnt:%d outputCnt:%d",
+    INFO_LOG("exception_cb streamId:%u taskId:%u deviceId: %u opName:%s inputCnt:%zu outputCnt:%zu",
         streamId, taskId, deviceId, opName, inputCnt, outputCnt);
     for (size_t i = 0; i < inputCnt; ++i) {
         const aclTensorDesc *desc = aclGetTensorDescByIndex(inputDesc, i);
         std::string prefix_filename = "exception_cb_index_" + std::to_string(index) + \
             "_input_" + std::to_string(i);
         if (SaveTensorMemoryToFile(desc, prefix_filename) != SUCCESS) {
-            WARN_LOG("exception_cb input_%d save failed", i);
+            WARN_LOG("exception_cb input_%zu save failed", i);
             break;
         }
     }
@@ -1192,7 +1190,7 @@ void callback(aclrtExceptionInfo *exceptionInfo)
         std::string prefix_filename = "exception_cb_index_" + std::to_string(index) + \
             "_output_" + std::to_string(i);
         if (SaveTensorMemoryToFile(desc, prefix_filename) != SUCCESS){
-            WARN_LOG("exception_cb input_%d save failed", i);
+            WARN_LOG("exception_cb input_%zu save failed", i);
             break;
         }
     }
@@ -1241,9 +1239,8 @@ void ModelProcess::Unload()
 
 Result ModelProcess::GetCurOutputShape(size_t index, bool is_dymshape, std::vector<int64_t>& shape)
 {
-    aclError ret; 
+    aclError ret;
     aclmdlIODims ioDims;
-    int64_t tmp_dim = 1;
     // 对于动态shape场景，通过V2接口获取，其他通过V1接口获取
     if (is_dymshape == true) {
         aclTensorDesc *outputDesc = aclmdlGetDatasetTensorDesc(output_, index);
@@ -1264,7 +1261,7 @@ Result ModelProcess::GetCurOutputShape(size_t index, bool is_dymshape, std::vect
             DEBUG_LOG("aclmdlGetCurOutputDims get not success, maybe the modle has dynamic shape", ret);
             return FAILED;
         }
-        for (int i = 0; i < ioDims.dimCount; i++) {
+        for (size_t i = 0; i < ioDims.dimCount; i++) {
             shape.push_back(ioDims.dims[i]);
         }
     }
@@ -1319,9 +1316,8 @@ size_t ModelProcess::GetOutTensorLen(size_t i, bool is_dymshape)
 {
     aclDataBuffer* dataBuffer = aclmdlGetDatasetBuffer(output_, i);
     uint64_t maxBatchSize = 0;
-    aclError ret = ACL_SUCCESS;
     size_t len;
-    ret = GetMaxBatchSize(maxBatchSize);
+    GetMaxBatchSize(maxBatchSize);
     if (is_dymshape){
 	    aclTensorDesc *outputDesc = aclmdlGetDatasetTensorDesc(output_, i);
 	    len = aclGetTensorDescSize(outputDesc);
