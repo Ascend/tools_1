@@ -17,6 +17,14 @@ __version__ = "0.0.2"
 #   Sort input source files if you glob sources to ensure bit-for-bit
 #   reproducible builds (https://github.com/pybind/python_example/pull/53)
 
+# Avoid a gcc warning below:
+# cc1plus: warning: command line option ‘-Wstrict-prototypes’ is valid
+# for C/ObjC but not for C++
+class BuildExt(build_ext):
+    def build_extensions(self):
+        self.compiler.compiler_so.remove('-Wstrict-prototypes')
+        super(BuildExt, self).build_extensions()
+
 cann_base_path = None
 
 def get_cann_path():
@@ -62,7 +70,7 @@ ext_modules = [
             'python/src/PyInterface/PyInterface.cpp',
             'python/src/PyTensor/PyTensor.cpp',
             'python/src/PyInferenceSession/PyInferenceSession.cpp',
-            
+
 
         ],
         include_dirs=[
@@ -73,7 +81,7 @@ ext_modules = [
         ],
         #library_dirs=['output/lib/',],
         library_dirs=[ cann_base_path + '/runtime/lib64/stub/',],
-        
+
         extra_compile_args = ['--std=c++11', '-g3'],
 
         libraries=['ascendcl', 'acl_dvpp', 'acl_cblas'],
@@ -91,7 +99,7 @@ setup(
     description="A test project using pybind11 and aclruntime",
     long_description="",
     ext_modules = ext_modules,
-    cmdclass={"build_ext": build_ext},
+    cmdclass={"build_ext": BuildExt},
     zip_safe=False,
     python_requires=">=3.6",
 )

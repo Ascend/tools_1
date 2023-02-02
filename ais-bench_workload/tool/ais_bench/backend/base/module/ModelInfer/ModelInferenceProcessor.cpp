@@ -129,21 +129,21 @@ APP_ERROR ModelInferenceProcessor::DestroyOutMemoryData(std::vector<MemoryData>&
 APP_ERROR ModelInferenceProcessor::CreateOutMemoryData(std::vector<MemoryData>& outputs)
 {
     size_t size;
-    int customIndex = 0;
+    size_t customIndex = 0;
     for (size_t i = 0; i < modelDesc_.outTensorsDesc.size(); ++i) {
         size = modelDesc_.outTensorsDesc[i].size;
         if (customIndex < customOutTensorSize_.size()){
             size = customOutTensorSize_[customIndex++];
         }
         if (size == 0){
-            ERROR_LOG("out i:%d size is zero", i);
+            ERROR_LOG("out i:%zu size is zero", i);
             return APP_ERR_INFER_OUTPUTSIZE_IS_ZERO;
         }
-        DEBUG_LOG("Create OutMemory i:%d name:%s size:%zu", i, modelDesc_.outTensorsDesc[i].name.c_str(), size);
+        DEBUG_LOG("Create OutMemory i:%zu name:%s size:%zu", i, modelDesc_.outTensorsDesc[i].name.c_str(), size);
         Base::MemoryData memorydata(size, MemoryData::MemoryType::MEMORY_DEVICE, deviceId_);
         auto ret = MemoryHelper::MxbsMalloc(memorydata);
         if (ret != APP_ERR_OK) {
-            ERROR_LOG("MemoryHelper::MxbsMalloc failed.i:%d name:%s size:%zu ret:%d", \
+            ERROR_LOG("MemoryHelper::MxbsMalloc failed.i:%zu name:%s size:%zu ret:%d", \
                     i, modelDesc_.outTensorsDesc[i].name.c_str(), size, ret);
             return ret;
         }
@@ -156,7 +156,6 @@ APP_ERROR ModelInferenceProcessor::CreateOutMemoryData(std::vector<MemoryData>& 
 APP_ERROR ModelInferenceProcessor::AddOutTensors(std::vector<MemoryData>& outputs, std::vector<std::string> outputNames, std::vector<TensorBase>& outputTensors)
 {
     bool is_dymshape = (dynamicInfo_.dynamicType == DYNAMIC_SHAPE ? true : false);
-    uint64_t dymbatch_size = (dynamicInfo_.dynamicType == DYNAMIC_BATCH ? dynamicInfo_.dyBatch.batchSize : 0);
     size_t realLen;
     for (const auto& name : outputNames) {
         auto index = modelDesc_.outnames2Index[name];
@@ -168,7 +167,7 @@ APP_ERROR ModelInferenceProcessor::AddOutTensors(std::vector<MemoryData>& output
             // 针对于动态shape场景 如果无法获取真实的输出shape 先填写一个一维的值 以便后续内存可以导出
             i64shape.push_back(realLen / aclDataTypeSize(static_cast<aclDataType>(modelDesc_.outTensorsDesc[index].datatype)));
         }
-        DEBUG_LOG("AddOutTensors name:%s index:%d len:%zu outdescsize:%zu shapesize:%zu",
+        DEBUG_LOG("AddOutTensors name:%s index:%zu len:%zu outdescsize:%zu shapesize:%zu",
             name.c_str(), index, realLen, modelDesc_.outTensorsDesc[index].size, i64shape.size());
         outputs[index].size = realLen;
         bool isBorrowed = false;
@@ -192,7 +191,7 @@ APP_ERROR ModelInferenceProcessor::CheckInVectorAndFillBaseTensor(const std::vec
         baseTensor.buf = feeds[i].buf;
         baseTensor.size = feeds[i].size;
         if (baseTensor.size != modelDesc_.inTensorsDesc[i].realsize){
-            ERROR_LOG("Check i:%d name:%s in size:%d needsize:%zu not match",
+            ERROR_LOG("Check i:%zu name:%s in size:%zu needsize:%zu not match",
                 i, modelDesc_.inTensorsDesc[i].name.c_str(), baseTensor.size, modelDesc_.inTensorsDesc[i].realsize);
             return APP_ERR_ACL_FAILURE;
         }
@@ -227,7 +226,7 @@ APP_ERROR ModelInferenceProcessor::CheckInMapAndFillBaseTensor(const std::map<st
     for (size_t i = 0; i < modelDesc_.inTensorsDesc.size(); ++i) {
         auto iter = feeds.find(modelDesc_.inTensorsDesc[i].name);
         if (feeds.end() == iter) {
-            ERROR_LOG("intensors i:%lld name:%s not find", i, modelDesc_.inTensorsDesc[i].name);
+            ERROR_LOG("intensors i:%zu name:%s not find", i, modelDesc_.inTensorsDesc[i].name.c_str());
             return APP_ERR_ACL_FAILURE;
         }
 
@@ -235,7 +234,7 @@ APP_ERROR ModelInferenceProcessor::CheckInMapAndFillBaseTensor(const std::map<st
         baseTensor.buf = iter->second.GetBuffer();
         baseTensor.size = iter->second.GetByteSize();
         if (baseTensor.size != modelDesc_.inTensorsDesc[i].realsize){
-            ERROR_LOG("Check i:%d name:%s in size:%zu needsize:%zu not match",
+            ERROR_LOG("Check i:%zu name:%s in size:%zu needsize:%zu not match",
                 i, modelDesc_.inTensorsDesc[i].name.c_str(), baseTensor.size, modelDesc_.inTensorsDesc[i].realsize);
             return APP_ERR_ACL_FAILURE;
         }
@@ -267,7 +266,7 @@ APP_ERROR ModelInferenceProcessor::CheckInVectorAndFillBaseTensor(const std::vec
         baseTensor.buf = feeds[i].GetBuffer();
         baseTensor.size = feeds[i].GetByteSize();
         if (baseTensor.size != modelDesc_.inTensorsDesc[i].realsize){
-            ERROR_LOG("Check i:%d name:%s in size:%zu needsize:%zu not match",
+            ERROR_LOG("Check i:%zu name:%s in size:%zu needsize:%zu not match",
                 i, modelDesc_.inTensorsDesc[i].name.c_str(), baseTensor.size, modelDesc_.inTensorsDesc[i].realsize);
             return APP_ERR_ACL_FAILURE;
         }
@@ -311,12 +310,12 @@ APP_ERROR ModelInferenceProcessor::SetInputsData(std::vector<BaseTensor> &inputs
     }
 
     if (dynamicInfo_.dynamicType != DYNAMIC_DIMS && dym_gear_count_ > 0){
-        WARN_LOG("check failed dym gearcount:%d but dymtype:%d not set", dym_gear_count_, dynamicInfo_.dynamicType);
+        WARN_LOG("check failed dym gearcount:%zu but dymtype:%d not set", dym_gear_count_, dynamicInfo_.dynamicType);
         return APP_ERR_ACL_FAILURE;
     }
 
     // add dynamic index tensor
-    if (dynamicIndex_ != -1) {
+    if (dynamicIndex_ != size_t(-1)) {
         Base::BaseTensor dyIndexTensor = {};
         dyIndexTensor.buf = dynamicIndexMemory_.ptrData;
         dyIndexTensor.size = dynamicIndexMemory_.size;
@@ -432,7 +431,7 @@ const InferSumaryInfo& ModelInferenceProcessor::GetSumaryInfo()
 
 APP_ERROR ModelInferenceProcessor::AllocDyIndexMem()
 {
-    if (dynamicIndex_ == -1 || dynamicIndexMemory_.ptrData != nullptr){
+    if (dynamicIndex_ == (size_t)-1 || dynamicIndexMemory_.ptrData != nullptr){
         return APP_ERR_OK;
     }
 
@@ -445,7 +444,7 @@ APP_ERROR ModelInferenceProcessor::AllocDyIndexMem()
     dynamicIndexMemory_.deviceId = deviceId_;
     auto ret = MemoryHelper::MxbsMalloc(dynamicIndexMemory_);
     if (ret != APP_ERR_OK) {
-        ERROR_LOG("MemoryHelper::MxbsMalloc failed. ret=", ret);
+        ERROR_LOG("MemoryHelper::MxbsMalloc failed. ret=%d", ret);
         return ret;
     }
     return APP_ERR_OK;
@@ -475,7 +474,10 @@ APP_ERROR ModelInferenceProcessor::FreeDymInfoMem()
             dynamicInfo_.dyShape.pShapes = nullptr;
         }
         break;
+    default:
+        break;
     }
+
     return APP_ERR_OK;
 }
 
@@ -507,7 +509,6 @@ APP_ERROR ModelInferenceProcessor::SetDynamicBatchsize(int batchsize){
 APP_ERROR ModelInferenceProcessor::SetDynamicHW(int width, int height)
 {
     bool is_dymHW;
-    uint64_t maxDymHWSize;
     pair<uint64_t, uint64_t> dynamicHW = {width, height};
 
     FreeDymInfoMem();
@@ -657,6 +658,8 @@ APP_ERROR ModelInferenceProcessor::SetDynamicInfo()
             CHECK_RET_EQ(processModel->SetDynamicShape(
                 dynamicInfo_.dyShape.pShapes->dym_shape_map, dynamicInfo_.dyShape.pShapes->dims_num), SUCCESS);
         }
+        break;
+    default:
         break;
     }
     return APP_ERR_OK;

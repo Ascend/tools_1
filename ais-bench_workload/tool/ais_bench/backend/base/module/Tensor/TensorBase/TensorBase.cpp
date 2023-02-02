@@ -507,7 +507,7 @@ MemoryData CopyMemory2DeviceMemory(void *ptr, uint64_t size, int32_t deviceId)
     Base::MemoryData dst(size, MemoryData::MemoryType::MEMORY_DEVICE, deviceId);
     auto ret = MemoryHelper::MxbsMalloc(dst);
     if (ret != APP_ERR_OK) {
-        ERROR_LOG("MemoryHelper::MxbsMalloc failed device size:%d ret:%d", size, ret);
+        ERROR_LOG("MemoryHelper::MxbsMalloc failed device size:%zu ret:%d", size, ret);
         return ret;
     }
     ret = MemoryHelper::MxbsMemcpy(dst, src, dst.size);
