@@ -190,7 +190,7 @@ Result ModelProcess::SetDynamicShape(std::map<std::string, std::vector<int64_t>>
 {
     aclError ret;
     const char *name;
-    int input_num = dym_shape_map.size();
+    int64_t input_num = dym_shape_map.size();
     aclTensorDesc * inputDesc;
     for (int i = 0; i < input_num; i++) {
         name = aclmdlGetInputNameByIndex(modelDesc_, i);

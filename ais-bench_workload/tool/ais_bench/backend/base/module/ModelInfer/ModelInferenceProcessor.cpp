@@ -474,9 +474,7 @@ APP_ERROR ModelInferenceProcessor::FreeDymInfoMem()
             dynamicInfo_.dyShape.pShapes = nullptr;
         }
         break;
-    case STATIC_BATCH:
-    case DYNAMIC_BATCH:
-    case DYNAMIC_HW:
+    default:
         break;
     }
 
