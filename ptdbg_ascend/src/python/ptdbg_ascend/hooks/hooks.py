@@ -28,7 +28,8 @@ if not torch.cuda.is_available():
     import torch_npu
 
 from ..common.utils import check_file_or_directory_path, print_error_log, \
-    print_warn_log, CompareException, Const, get_time
+    print_warn_log, CompareException, Const, get_time, print_info_log
+from .backward import Backward
 
 
 class DumpUtil(object):
@@ -178,7 +179,7 @@ def dump_tensor(x, prefix, dump_step):
                 print_error_log("dump_ratio is invalid, Please set dump mode in [1~100], indicate 1% ~ 100%.")
                 f.close()
                 raise CompareException(CompareException.INVALID_DUMP_RATIO)
-            
+
             output_path = os.path.join(DumpUtil.dump_data_dir, f'{prefix}.npy')
             np.save(output_path, saved_tensor)
             json.dump([prefix, dump_step, [], str(x.dtype), tuple(x.shape), summery_data], f)
@@ -273,6 +274,10 @@ def dump_overflow(module_name, stack_str, in_feat, out_feat, dump_file):
 def overflow_check(name, **kwargs):
     overflow_nums = kwargs.get('overflow_nums', 1)
     pid = kwargs.get('pid')
+    dump_mode = kwargs.get('dump_mode', "api")
+    dump_config = kwargs.get('dump_config')
+    backward_obj = Backward()
+    torch.autograd.backward = backward_obj.backward
     if not pid:
         return RuntimeError("Not get the specified process pid.")
 
@@ -294,10 +299,37 @@ def overflow_check(name, **kwargs):
             dump_overflow(module_name, stack_str, in_feat, out_feat, dump_file_name)
             # clear overflow flag for the next check
             torch_npu._C._clear_overflow_npu()
+            if dump_mode == "acl":
+                acl_dump(module, module_name)
             print_warn_log("[overflow {} times]: module name :'{}' is overflow and dump file is saved in '{}'."
                            .format(DumpUtil.real_overflow_dump_times, module_name, os.path.realpath(dump_file_name)))
             if not DumpUtil.check_overflow_dump_times(overflow_nums):
                 raise ValueError("[overflow {} times]: dump file is saved in '{}'."
                                  .format(DumpUtil.real_overflow_dump_times, os.path.realpath(dump_file_name)))
+
+    def acl_dump(module, module_name):
+        if "forward" in module_name:
+            forward_ack_dump(module, module_name)
+        if "backward" in module_name:
+            backward_acl_dump()
+
+    def backward_acl_dump():
+        torch_npu.npu.init_dump()
+        torch_npu.npu.set_dump(dump_config)
+        torch_npu.npu.synchronize()
+        torch.autograd.backward(backward_obj.tensors, backward_obj.gradient, backward_obj.retain_graph,
+                                backward_obj.create_graph, inputs=backward_obj.inputs)
+        torch_npu.npu.synchronize()
+        torch_npu.npu.finalize_dump()
+        print_info_log("Dump backward op file.")
+
+    def forward_ack_dump(module, module_name):
+        torch_npu.npu.init_dump()
+        torch_npu.npu.set_dump(dump_config)
+        torch_npu.npu.synchronize()
+        module.forward(*module.input_args, **module.input_kwargs)
+        torch_npu.npu.synchronize()
+        torch_npu.npu.finalize_dump()
+        print_info_log("Dump %s op file." % module_name)
 
     return overflowcheck_hook

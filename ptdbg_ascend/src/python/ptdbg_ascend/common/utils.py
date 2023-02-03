@@ -46,6 +46,7 @@ class Const:
     SUMMERY_DATA_NUMS = 256
     FLOAT_EPSILON = np.finfo(float).eps
     NAN = 'NaN'
+    SUPPORT_DUMP_MODE = ['api', 'acl']
 
 
 class VersionCheck:
