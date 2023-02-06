@@ -82,6 +82,7 @@ def register_hook(model, hook, **kwargs):
 def init_dump_config(kwargs):
     dump_mode = kwargs.get('dump_mode', "api")
     dump_config = kwargs.get('dump_config')
+    dump_config_file = ''
     if dump_mode not in Const.SUPPORT_DUMP_MODE:
         print_error_log("dump_mode only support %s" % Const.SUPPORT_DUMP_MODE)
         raise CompareException(CompareException.INVALID_PARAM_ERROR)
