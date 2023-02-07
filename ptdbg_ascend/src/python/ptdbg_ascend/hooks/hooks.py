@@ -146,7 +146,6 @@ def set_dump_switch(switch, mode=1, scope=[]):
         assert len(scope) <= 2, "set_dump_switch, scope param set invalid, it's must be [start, end] or []."
     DumpUtil.set_dump_switch(switch, mode=mode, scope=scope)
 
-
 def dump_tensor(x, prefix, dump_step):
     if isinstance(x, (tuple, list)) and x:
         for i, item in enumerate(x):
@@ -163,17 +162,17 @@ def dump_tensor(x, prefix, dump_step):
                 tensor_mean = torch._C._VariableFunctionsClass.mean(x).cpu().detach().float().numpy().tolist()
                 tensor_len = torch._C._VariableFunctionsClass.numel(x)
                 if tensor_len <= Const.SUMMERY_DATA_NUMS * 2:
-                    saved_tensor = x.contiguous().view(-1)[:Const.SUMMERY_DATA_NUMS*2].cpu().detach().float().numpy().tolist()
+                    saved_tensor = x.contiguous().view(-1)[:Const.SUMMERY_DATA_NUMS*2].cpu().detach().float().numpy()
                 else:
                     saved_tensor_head = x.contiguous().view(-1)[
-                                        :Const.SUMMERY_DATA_NUMS].cpu().detach().float().numpy().tolist()
+                                        :Const.SUMMERY_DATA_NUMS].cpu().detach().float().numpy()
                     saved_tensor_body = []
                     if dump_step != 0:
                         saved_tensor_body = x.contiguous().view(-1)[Const.SUMMERY_DATA_NUMS: (-1 * Const.SUMMERY_DATA_NUMS): dump_step]\
-                            .cpu().detach().float().numpy().tolist()
+                            .cpu().detach().float().numpy()
                     saved_tensor_tail = x.contiguous().view(-1)[
-                                        (-1 * Const.SUMMERY_DATA_NUMS):].cpu().detach().float().numpy().tolist()
-                    saved_tensor = saved_tensor_head + saved_tensor_body + saved_tensor_tail
+                                        (-1 * Const.SUMMERY_DATA_NUMS):].cpu().detach().float().numpy()
+                    saved_tensor = np.append(np.append(saved_tensor_head, saved_tensor_body), saved_tensor_tail)
                 summery_data.extend([tensor_max, tensor_min, tensor_mean])
             else:
                 print_error_log("dump_ratio is invalid, Please set dump mode in [1~100], indicate 1% ~ 100%.")
