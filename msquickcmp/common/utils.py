@@ -45,7 +45,6 @@ DOT = "."
 ASCEND_BATCH_FIELD = "ascend_mbatch_batch_"
 BATCH_SCENARIO_OP_NAME = "{0}_ascend_mbatch_batch_{1}"
 
-
 class AccuracyCompareException(Exception):
     """
     Class for Accuracy Compare Exception
