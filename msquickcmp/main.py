@@ -127,7 +127,7 @@ def main():
         if csv_object_item is not None:
             utils.print_info_log(
                 "{} of the first operator whose cosine similarity is less than 0.9".format(
-                    csv_object_item.get("LeftOp")))
+                    csv_object_item.get("NPUDump")))
         else:
             utils.print_info_log("No operator whose cosine value is less then 0.9 exists.")
     except utils.AccuracyCompareException as error:
