@@ -22,8 +22,8 @@ import torch
 
 from . import wrap_tensor, wrap_torch, wrap_functional, wrap_vf
 from .module import HOOKModule
-from ..common.utils import check_file_or_directory_path, add_time_as_suffix,\
-    print_error_log, CompareException, Const, format_value
+from ..common.utils import check_file_or_directory_path, add_time_as_suffix, \
+    print_error_log, CompareException, Const, format_value, print_info_log
 
 if not torch.cuda.is_available():
     import torch_npu
@@ -59,8 +59,11 @@ def register_hook(model, hook, **kwargs):
     dump_mode, dump_config_file = init_dump_config(kwargs)
 
     pid = os.getpid()
+    hook_name = hook.__name__
+    print_info_log("Start mounting the {} hook function to the model.".format(hook_name))
     hook = functools.partial(hook, dump_step=dump_step, overflow_nums=overflow_nums, pid=pid,
                              dump_mode=dump_mode, dump_config=dump_config_file)
+    print_info_log("The {} hook function is successfully mounted to the model.".format(hook_name))
 
     # In NPU scene, clear the overflow flag before overflow detection
     if not torch.cuda.is_available():
