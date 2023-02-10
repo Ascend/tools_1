@@ -93,3 +93,19 @@ python3 -m ais_bench --model ./testdata/resnet50/model/pth_resnet50_bs1.om --inp
 请查看模型输入需要大小。将文件输入文件大小调整为对应大小。
 
 本例中更换input参数对象为196608字节大小的文件  即可解决问题。
+
+## 6. CANN6.0环境，使用profiling参数，model等参数使用相对路径时，遇到提示om模型文件找不到
+**故障现象**
+```bash
+python3 -m ais_bench --model search_bs1.om --profiler 1 --output ./
+E19999:Inner Error, Please contack support engineer!
+E19999 Model file path search_bs1.om is invalid[FUNC:LoadFromFile][FILE:model_parser_base.cc][LINE:39] TraceBack(most recent call last):
+[ERROR] load model from file failed, model file is search_bs1.om
+...
+RuntimeError:[1][ACL:invalid parameter]
+```
+**故障原因：** 
+推理工具推理命令model或input参数路径中使用的是相对路径时，msprof命令解析存在问题，当前在定位解决，预计在2023年330大版本中解决。
+
+**处理步骤：** 
+推理工具推理命令model或input参数路径修改为绝对路径。msprof修复版本发布后，推理工具推理命令带profiler参数时推理参数支持相对路径就没问题了。

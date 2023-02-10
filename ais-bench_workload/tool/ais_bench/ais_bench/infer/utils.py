@@ -18,7 +18,7 @@ def list_split(listA, n, padding_file):
                 [padding_file for y in range(n-len(every_chunk))]
         yield every_chunk
 
-def natural_sort(l): 
+def natural_sort(l):
     convert = lambda text: int(text) if text.isdigit() else text.lower()
     alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
     return sorted(l, key=alphanum_key)
@@ -35,7 +35,7 @@ def get_fileslist_from_dir(dir):
             files_list.append(os.path.join(dir, f))
 
     if len(files_list) == 0:
-        logger.error('not find valid [*.npy *.NPY *.bin *.BIN] files:{}'.format(files_list))
+        logger.error('no input valid [*.npy *.NPY *.bin *.BIN] files:{} in folder:{}'.format(files_list, dir))
         raise RuntimeError()
     files_list.sort()
     return natural_sort(files_list)
