@@ -35,7 +35,7 @@ def get_fileslist_from_dir(dir):
             files_list.append(os.path.join(dir, f))
 
     if len(files_list) == 0:
-        logger.error('no input valid [*.npy *.NPY *.bin *.BIN] files:{} in folder:{}'.format(files_list, dir))
+        logger.error('{} of input args not find valid file,valid file format:[*.npy *.NPY *.bin *.BIN]'.format(dir))
         raise RuntimeError()
     files_list.sort()
     return natural_sort(files_list)

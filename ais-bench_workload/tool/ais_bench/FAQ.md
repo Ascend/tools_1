@@ -94,18 +94,30 @@ python3 -m ais_bench --model ./testdata/resnet50/model/pth_resnet50_bs1.om --inp
 
 本例中更换input参数对象为196608字节大小的文件  即可解决问题。
 
-## 6. CANN6.0环境，使用profiling参数，model等参数使用相对路径时，遇到提示om模型文件找不到
+## 6. 推理命令执行正常，增加profiler参数使能profiler功能时出现报错，提示推理命令中的路径找不到
 **故障现象**
+
 ```bash
-python3 -m ais_bench --model search_bs1.om --profiler 1 --output ./
-E19999:Inner Error, Please contack support engineer!
-E19999 Model file path search_bs1.om is invalid[FUNC:LoadFromFile][FILE:model_parser_base.cc][LINE:39] TraceBack(most recent call last):
+# 基础推理命令执行正常
+$ python3 -m ais_bench --model=search_bs1.om --output ./
+
+# 在基础推理命令上增加profiler参数使能，报错，提示模型路径找不到
+$ python3 -m ais_bench --model=search_bs1.om --output ./ --profiler 1 
+...
 [ERROR] load model from file failed, model file is search_bs1.om
 ...
 RuntimeError:[1][ACL:invalid parameter]
+
+# 基础命令中执行成功
+$ python3 -m ais_bench --model=/home/search_bs1.om --output ./  --input ./1.bin,./2.bin
+# 基础命令中增加profiler参数使能，报错，提示文件输入路径不存在
+$ python3 -m ais_bench --model=/home/search_bs1.om --output ./  --input ./1.bin,./2.bin --profiler 1
+...
+[ERROR] Invalid args. ./1.bin of --input is invalid
 ```
 **故障原因：** 
-推理工具推理命令model或input参数路径中使用的是相对路径时，msprof命令解析存在问题，当前在定位解决，预计在2023年330大版本中解决。
+	出现该问题原因是因为使能profiler功能后，相对路径被profiler模块解析时会有些问题，导致运行目录切换，相对路径找不到，当前版本暂未修复。
 
 **处理步骤：** 
-推理工具推理命令model或input参数路径修改为绝对路径。msprof修复版本发布后，推理工具推理命令带profiler参数时推理参数支持相对路径就没问题了。
+
+​	出现该问题，请将model  input output等参数里的相对路径修改为绝对路径，这样可以临时规避。
