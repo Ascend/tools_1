@@ -23,12 +23,12 @@ main() {
         return $ret_invalid_args
     }
 
-    bash -x $CUR_PATH/get_pth_resnet50_data.sh
-    #bash -x $CUR_PATH/get_pth_resnet101_data.sh
-    #bash -x $CUR_PATH/get_pth_inception_v3_data.sh
-    bash -x $CUR_PATH/get_bert_data.sh
-    bash -x $CUR_PATH/get_yolo_data.sh
-    bash -x $CUR_PATH/get_pth_crnn_data.sh
+    bash -x $CUR_PATH/get_pth_resnet50_data.sh $SOC_VERSION $PYTHON_COMMAND
+    #bash -x $CUR_PATH/get_pth_resnet101_data.sh $SOC_VERSION $PYTHON_COMMAND
+    #bash -x $CUR_PATH/get_pth_inception_v3_data.sh $SOC_VERSION $PYTHON_COMMAND
+    bash -x $CUR_PATH/get_bert_data.sh $SOC_VERSION $PYTHON_COMMAND
+    bash -x $CUR_PATH/get_yolo_data.sh $SOC_VERSION $PYTHON_COMMAND
+    bash -x $CUR_PATH/get_pth_crnn_data.sh $SOC_VERSION $PYTHON_COMMAND
     ${PYTHON_COMMAND} -m pytest -s $CUR_PATH/ST/
     ${PYTHON_COMMAND} -m pytest -s $CUR_PATH/UT/
 

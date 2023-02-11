@@ -93,3 +93,31 @@ python3 -m ais_bench --model ./testdata/resnet50/model/pth_resnet50_bs1.om --inp
 请查看模型输入需要大小。将文件输入文件大小调整为对应大小。
 
 本例中更换input参数对象为196608字节大小的文件  即可解决问题。
+
+## 6. 推理命令执行正常，增加profiler参数使能profiler功能时出现报错，提示推理命令中的路径找不到
+**故障现象**
+
+```bash
+# 基础推理命令执行正常
+$ python3 -m ais_bench --model=search_bs1.om --output ./
+
+# 在基础推理命令上增加profiler参数使能，报错，提示模型路径找不到
+$ python3 -m ais_bench --model=search_bs1.om --output ./ --profiler 1 
+...
+[ERROR] load model from file failed, model file is search_bs1.om
+...
+RuntimeError:[1][ACL:invalid parameter]
+
+# 基础命令中执行成功
+$ python3 -m ais_bench --model=/home/search_bs1.om --output ./  --input ./1.bin,./2.bin
+# 基础命令中增加profiler参数使能，报错，提示文件输入路径不存在
+$ python3 -m ais_bench --model=/home/search_bs1.om --output ./  --input ./1.bin,./2.bin --profiler 1
+...
+[ERROR] Invalid args. ./1.bin of --input is invalid
+```
+**故障原因：** 
+	出现该问题原因是因为使能profiler功能后，相对路径被profiler模块解析时会有些问题，导致运行目录切换，相对路径找不到，当前版本暂未修复。
+
+**处理步骤：** 
+
+​	出现该问题，请将model  input output等参数里的相对路径修改为绝对路径，这样可以临时规避。
