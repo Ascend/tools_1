@@ -298,7 +298,7 @@ def overflow_check(name, **kwargs):
             dump_overflow(module_name, stack_str, in_feat, out_feat, dump_file_name)
             # clear overflow flag for the next check
             torch_npu._C._clear_overflow_npu()
-            if dump_mode == "acl":
+            if dump_mode == "acl" and not DumpUtil.check_overflow_dump_times(overflow_nums):
                 acl_dump(module, module_name)
             print_warn_log("[overflow {} times]: module name :'{}' is overflow and dump file is saved in '{}'."
                            .format(DumpUtil.real_overflow_dump_times, module_name, os.path.realpath(dump_file_name)))
@@ -310,7 +310,7 @@ def overflow_check(name, **kwargs):
 
     def acl_dump(module, module_name):
         if "forward" in module_name:
-            forward_ack_dump(module, module_name)
+            forward_acl_dump(module, module_name)
         if "backward" in module_name:
             backward_acl_dump()
 
@@ -324,7 +324,7 @@ def overflow_check(name, **kwargs):
         torch_npu.npu.finalize_dump()
         print_info_log("Dump backward op file.")
 
-    def forward_ack_dump(module, module_name):
+    def forward_acl_dump(module, module_name):
         torch_npu.npu.init_dump()
         torch_npu.npu.set_dump(dump_config)
         torch_npu.npu.synchronize()
