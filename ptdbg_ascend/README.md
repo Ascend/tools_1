@@ -329,7 +329,7 @@ seed_all()
 
 #注册溢出检测的hook：
 # 第一个参数是model对象， 第二个参数为精度比对dump的钩子函数名，必须配置为：overflow_check，该函数从ptdbg_ascend中import
-# 第三个参数为溢出检测的次数，例如配置为3，表示检测到第三次溢出时停止训练;默认不配置即检测到一次溢出，训练停止
+# 第三个参数为overflow_nums表示第几次溢出时，进行acl算子级dump，例如配置为3，表示检测到第三次溢出时停止训练，并针对此次溢出dump;默认不配置即检测到一次溢出，训练停止
 # 第四个参数为dump_mode,控制针对溢出api的dump模式，默认api，如需进一步定位acl数据，可配置为dump_mode="acl"
 # 第五个参数为dump_config，acl dump的配置文件，dump_mode="acl"时，此配置项为必须的。例如：dump_config='/home/xxx/dump.json'
 
