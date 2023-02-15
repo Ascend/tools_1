@@ -53,6 +53,8 @@ class Backward:
     def backward(self, tensors, grad_tensors=None, retain_graph=None, create_graph=False,
                  grad_variables=None, inputs=None):
         from torch.autograd import Variable
+        if tensors == None:
+            return
         self.tensors = tensors
         self.gradient = grad_tensors
         self.retain_graph = retain_graph
