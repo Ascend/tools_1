@@ -211,7 +211,7 @@ export SINGLESERVER_MODE=True
 #modelarts version default "V1", Optional value ["V1", "V2"]
 export MODELARTS_VERSION=V2
 ```
-该环境变量默认是V1版本,不设置。需要执行modelarts V2版本时请显示声明该变量为"V2"
+该环境变量默认是V1版本,不设置。需要执行modelarts V2版本时请显示声明该变量为"V2"。对于如果B板的芯片resnet50要使用非默认batch_size, 则需要在配置文件中增加配置, 比如"BATCH_SIZE=240"  
 
 
 #### 配置config.json
