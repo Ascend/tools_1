@@ -286,13 +286,18 @@ def torch_device_guard(func):
         if args:
             args_list = list(args)
             for index, arg in enumerate(args_list):
-                if isinstance(arg, tuple) and hasattr(arg, 'type') and getattr(arg, 'type') == 'npu':
-                    args_list[index] = torch_npu.new_device(type=torch_npu.npu.native_device, index=arg.index)
+                if isinstance(arg, tuple) and "type='npu'" in str(arg):
+                    args_list[index] = str(arg).replace("npu", torch_npu.npu.native_device)
+                    break
+                elif isinstance(arg, str) and "npu" in arg:
+                    args_list[index] = args_list[index].replace("npu", torch_npu.npu.native_device)
                     break
             args = tuple(args_list)
-        if kwargs and isinstance(kwargs.get("device"), tuple):
-            dev = kwargs.get("device")
-            if hasattr(dev, 'type') and getattr(dev, 'type') == 'npu':
-                kwargs['device'] = torch_npu.new_device(type=torch_npu.npu.native_device, index=dev.index)
+        if kwargs and kwargs.get("device"):
+            nametuple_device = kwargs.get("device")
+            if isinstance(nametuple_device, tuple) and "type='npu'" in str(nametuple_device):
+                kwargs['device'] = torch_npu.new_device(type=torch_npu.npu.native_device, index=nametuple_device.index)
+            elif isinstance(nametuple_device, str) and "npu" in nametuple_device:
+                kwargs['device'] = nametuple_device.replace("npu", torch_npu.npu.native_device)
         return func(*args, **kwargs)
     return wrapper
