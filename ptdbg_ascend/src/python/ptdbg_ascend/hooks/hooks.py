@@ -288,9 +288,11 @@ def overflow_check(name, **kwargs):
             return
         module_name = name
         module.has_overflow = torch_npu._C._check_overflow_npu()
-        if not module.has_overflow and "forward" in module_name:
-            del module.input_args
-            del module.input_kwargs
+        if not module.has_overflow:
+            if hasattr(module, 'input_args'):
+                del module.input_args
+            if hasattr(module, 'input_kwargs')
+                del module.input_kwargs
         if module.has_overflow and DumpUtil.check_overflow_dump_times(overflow_nums):
             DumpUtil.inc_overflow_dump_times()
             dump_file_name = "Overflow_info_{}.pkl".format(get_time())
