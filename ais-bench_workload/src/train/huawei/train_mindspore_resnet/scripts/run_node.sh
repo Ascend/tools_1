@@ -7,7 +7,6 @@
 function get_train_cmd()
 {
     [[ $RANK_SIZE -gt 1 ]] && DISTRUTE_ENABLE="True" || DISTRUTE_ENABLE="False"
-    [[ -z $BATCH_SIZE ]] || {sed -i "s/batch_size:.*/batch_size: ${BATCH_SIZE}/g" ./resnet50_imagenet2012_Boost_config.yaml;}
     train_run_cmd="${PYTHON_COMMAND} -u $WORK_PATH/code/train.py \
         --run_distribute=$DISTRUTE_ENABLE \
         --data_path=${TRAIN_DATA_PATH} \

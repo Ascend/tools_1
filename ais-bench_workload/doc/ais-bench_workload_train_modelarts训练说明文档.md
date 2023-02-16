@@ -211,12 +211,18 @@ export SINGLESERVER_MODE=True
 #modelarts version default "V1", Optional value ["V1", "V2"]
 export MODELARTS_VERSION=V2
 ```
-该环境变量默认是V1版本,不设置。需要执行modelarts V2版本时请显示声明该变量为"V2"。对于如果B板的芯片resnet50要使用非默认batch_size, 则需要在配置文件中增加配置, 比如"BATCH_SIZE=240"  
+该环境变量默认是V1版本,不设置。需要执行modelarts V2版本时请显示声明该变量为"V2"
 
 
 #### 配置config.json
 
 config.json tester服务器信息配置文件，位于性能测试软件包解压路径/code/config.json，主要填写ais-bench测试的tester服务器具体信息，用于在完成性能测试后将测试结果上报到tester服务器上。若无须上报测试结果，可不配置。
+
+#### 配置训练配置yaml文件
+对于训练模型训练参数由yaml配置文件，用户有自定义的训练参数修改需求时，用户可以修改相关的模型训练yaml文件。  
+比如B版芯片（NPU芯片名称带B字样）上，resnet50模型需要修改batch_size参数为240，用户可以直接修改：
++ 对于mindspore框架1.3版本，修改resnet50_imagenet2012_Boost_config.yaml
++ 对于mindspore框架1.3以上版本，修改resnet50_imagenet2012_Boost_config.yaml
 
 ### 运行测试
 
