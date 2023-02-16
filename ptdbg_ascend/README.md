@@ -382,6 +382,7 @@ register_hook(model, overflow_check, dump_mode='acl', dump_config='/home/xxx/dum
 ##### 注意事项
 此功能原理是，针对溢出阶段，开启acl dump模式，重新对溢出阶段执行，落盘数据。
 * 针对前向溢出api，可以通过以上原理，重新精准执行到溢出前向api，因此可以得到前向溢出api的全部acl数据。
+* 部分api存在调用嵌套关系，比如functional.batch_norm实际调用torch.batch_norm, 该场景会影响acl init初始化多次，导致功能异常。针对此场景，后续会针对性做适配，当前版本可能存在此问题
 * 针对反向场景，通过以上原理，由于torch反向自动化机制，只能重新执行loss.backward（即反向入口），因此得到的是反向全流程的acl数据。
 * 针对前向溢出api，可以通过overflow_nums，配置允许的溢出次数，并将每次溢出api的全部acl数据dump下来，到达指定溢出次数后停止。
 * 针对反向溢出场景的特殊性，overflow_nums不生效，反向检测到一次溢出后，就会停止，并将反向全流程acl数据dump。
