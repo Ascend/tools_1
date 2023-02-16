@@ -220,8 +220,8 @@ config.json tester服务器信息配置文件，位于性能测试软件包解�
 
 #### 配置训练配置yaml文件
 对于训练模型训练参数由yaml配置文件，用户有自定义的训练参数修改需求时，用户可以修改相关的模型训练yaml文件。  
-比如B版芯片（NPU芯片名称带B字样）上，resnet50模型需要修改batch_size参数为240，用户可以直接修改：
-+ 对于mindspore框架1.3版本，修改resnet50_imagenet2012_Boost_config.yaml
+比如B版芯片（比如910B）上，resnet50模型需要修改batch_size参数为240，用户可以直接修改：
++ 对于mindspore框架1.3版本，修改resnet50_imagenet2012_Acc_config.yaml
 + 对于mindspore框架1.3以上版本，修改resnet50_imagenet2012_Boost_config.yaml
 
 ### 运行测试
