@@ -290,7 +290,7 @@ def overflow_check(name, **kwargs):
         module.has_overflow = torch_npu._C._check_overflow_npu()
         if module.has_overflow and DumpUtil.check_overflow_dump_times(overflow_nums):
             DumpUtil.inc_overflow_dump_times()
-            dump_file_name = "Overflow_info_{}.pkl".format(get_time())
+            dump_file_name = "Overflow_info_{}_{}.pkl".format(get_time(), DumpUtil.real_overflow_dump_times)
             stack_str = []
             for (_, path, line, func, code, _) in inspect.stack()[3:]:
                 stack_line = [path, str(line), func, code[0].strip()]
