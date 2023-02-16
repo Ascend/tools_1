@@ -73,7 +73,7 @@ tar xvf train_huawei_train_mindspore_resnet-Ais-Benchmark-Stubs-aarch64-1.0-r1.3
 
 config.sh通用负载配置文件，位于性能测试软件包解压路径/code/config/config.sh，主要包括离线训练性能测试操作的基本配置信息。
 
-请在配置文件中根据注释说明填写. 
+请在配置文件中根据注释说明填写.  
 
 **注意**
 
