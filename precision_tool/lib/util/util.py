@@ -36,7 +36,7 @@ except ImportError as import_error:
     print("Unable to import module: readline. Run 'pip3 install gnureadline pyreadline' to fix it.")
 
 # patterns
-OFFLINE_DUMP_PATTERN = r"^([A-Za-z0-9_-]+)\.([A-Za-z0-9_-]+)\.([0-9]+)\.?([0-9]+)?\.([0-9]{1,255})"
+OFFLINE_DUMP_PATTERN = r"^([A-Za-z0-9_-]+)\.([A-Za-z0-9_-]+)\.([0-9]+)\.?([0-9]+)?\.([0-9]{1,255})[.csv]?"
 OFFLINE_DUMP_DECODE_PATTERN = \
     r"^([A-Za-z0-9_-]+)\.([A-Za-z0-9_-]+)\.([0-9]+)(\.[0-9]+)?\.([0-9]{1,255})\.?[0-9]?[\.0-9]+?" \
     r"\.([a-z]+)\.([0-9]{1,255})\.npy$"
