@@ -291,7 +291,7 @@ def overflow_check(name, **kwargs):
         if not module.has_overflow:
             if hasattr(module, 'input_args'):
                 del module.input_args
-            if hasattr(module, 'input_kwargs')
+            if hasattr(module, 'input_kwargs'):
                 del module.input_kwargs
         if module.has_overflow and DumpUtil.check_overflow_dump_times(overflow_nums):
             DumpUtil.inc_overflow_dump_times()
