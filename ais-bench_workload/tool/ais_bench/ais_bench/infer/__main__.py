@@ -188,7 +188,7 @@ def check_nonnegative_integer(value):
 
 def check_device_range_valid(value):
     ivalue = int(value)
-    if ivalue < 0 and ivalue > 255:
+    if ivalue < 0 or ivalue > 255:
         raise argparse.ArgumentTypeError("%s is invalid. valid value range is [0, 255]" % value)
     return ivalue
 

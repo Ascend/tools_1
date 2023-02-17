@@ -89,24 +89,9 @@ def get_model_info():
         print("outputs info i:{} shape:{} type:{} val:{} realsize:{} size:{}".format(
             i, info.shape, info.datatype, int(info.datatype), info.realsize, info.size))
 
-def infer_init():
-    loop = 100
-    device_id = 0
-    exception_num = 0
-    for i in range(loop):
-        try:
-            session = InferSession(device_id, model_path)
-            del session
-        except Exception as e:
-            print("session finalize {} time, exception: {}".format(i + 1, e))
-            exception_num += 1
-
-    assert exception_num == 0
-
 
 infer_simple()
 # infer_torch_tensor()
 #infer_dymshape()
 # infer_dymdims()
 #get_model_info()
-# infer_init()
