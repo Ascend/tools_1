@@ -89,7 +89,6 @@ def get_model_info():
         print("outputs info i:{} shape:{} type:{} val:{} realsize:{} size:{}".format(
             i, info.shape, info.datatype, int(info.datatype), info.realsize, info.size))
 
-
 infer_simple()
 # infer_torch_tensor()
 #infer_dymshape()
