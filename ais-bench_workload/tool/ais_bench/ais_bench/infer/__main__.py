@@ -392,7 +392,7 @@ if __name__ == "__main__":
         # dymshape range run,according range to run each shape infer get best shape
         dymshape_range_run(args)
         exit(0)
-    
+
     if type(args.device) == list:
         # args has multiple device, run single process for each device
         ret = multidevice_run(args)
