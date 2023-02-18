@@ -1242,6 +1242,19 @@ Result ModelProcess::Execute(void* inputDataSet, void* outputDataSet)
     return SUCCESS;
 }
 
+Result ModelProcess::ExecuteAsync(void* inputDataSet, void* outputDataSet, void* stream)
+{
+    aclError ret = aclmdlExecuteAsync(modelId_, (aclmdlDataset*)inputDataSet, (aclmdlDataset*)outputDataSet, *(aclrtStream *)stream);
+    if (ret != ACL_SUCCESS) {
+        cout << aclGetRecentErrMsg() << endl;
+        ERROR_LOG("executeAsync model failed, modelId is %u", modelId_);
+        return FAILED;
+    }
+
+    DEBUG_LOG("model executeAsync success");
+    return SUCCESS;
+}
+
 void ModelProcess::Unload()
 {
     if (!loadFlag_) {
@@ -1408,6 +1421,7 @@ Result ModelProcess::CreateDataSet(void* &pDataSet)
 Result ModelProcess::DestroyDataSet(void* pDataSet, bool free_memory_flag=true)
 {
     if (pDataSet == nullptr) {
+        WARN_LOG("dataset is null please check");
         return FAILED;
     }
 

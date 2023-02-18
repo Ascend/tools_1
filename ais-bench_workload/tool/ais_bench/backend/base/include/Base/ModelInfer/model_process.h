@@ -203,6 +203,12 @@ public:
     Result Execute(void* inputDataSet, void* outputDataSet);
 
     /**
+    * @brief model execute async with dataset stream
+    * @return result
+    */
+    Result ExecuteAsync(void* inputDataSet, void* outputDataSet, void* stream);
+
+    /**
     * @brief dump model output result to file
     */
     void DumpModelOutputResult();

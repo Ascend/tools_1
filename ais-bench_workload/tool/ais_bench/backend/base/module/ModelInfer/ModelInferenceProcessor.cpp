@@ -221,6 +221,62 @@ APP_ERROR ModelInferenceProcessor::Inference(const std::vector<BaseTensor>& feed
     return ret;
 }
 
+APP_ERROR ModelInferenceProcessor::CreateBindingData(const std::vector<BaseTensor>& feeds, BindingData &bindData)
+{
+    std::vector<BaseTensor> inputs;
+    auto ret = CheckInVectorAndFillBaseTensor(feeds, inputs);
+    if (ret != APP_ERR_OK){
+        ERROR_LOG("Check InVector failed ret:%d", ret);
+        return ret;
+    }
+
+    Result result = processModel->CreateDataSet(bindData.inputDataSet);
+    if (result != SUCCESS){
+        ERROR_LOG("create inputDataSet failed ret:%d", ret);
+        ret = APP_ERR_FAILURE;
+        goto Failed;
+    }
+    result = processModel->CreateDataSet(bindData.outputDataSet);
+    if (result != SUCCESS){
+        ERROR_LOG("create outputDataset failed ret:%d", ret);
+        ret = APP_ERR_FAILURE;
+        goto Failed;
+    }
+
+    // create output memdata
+    ret = CreateOutMemoryData(bindData.outputsMemDataQue);
+    if (ret != APP_ERR_OK) {
+        ERROR_LOG("create outmemory data failed:%d", ret);
+        goto Failed;
+    }
+
+    ret = SetInOutData(inputs, bindData.inputDataSet, bindData.outputDataSet, bindData.outputsMemDataQue);
+    if (ret != APP_ERR_OK){
+        ERROR_LOG("Set InputsData failed ret:%d", ret);
+        goto Failed;
+    }
+    return APP_ERR_OK;
+
+Failed:
+    processModel->DestroyDataSet(bindData.inputDataSet, false);
+    processModel->DestroyDataSet(bindData.outputDataSet, false);
+    DestroyOutMemoryData(bindData.outputsMemDataQue);
+    return ret;
+}
+
+APP_ERROR ModelInferenceProcessor::InferenceAsync(BindingData &bindData, void *stream)
+{
+    return processModel->ExecuteAsync(bindData.inputDataSet, bindData.outputDataSet, stream);
+}
+
+APP_ERROR ModelInferenceProcessor::DestroyBindingData(BindingData &bindData)
+{
+    processModel->DestroyDataSet(bindData.inputDataSet, false);
+    processModel->DestroyDataSet(bindData.outputDataSet, false);
+    DestroyOutMemoryData(bindData.outputsMemDataQue);
+    return APP_ERR_OK;
+}
+
 APP_ERROR ModelInferenceProcessor::CheckInMapAndFillBaseTensor(const std::map<std::string, TensorBase>& feeds, std::vector<BaseTensor> &inputs)
 {
     if (feeds.size() != modelDesc_.inTensorsDesc.size()){
@@ -319,13 +375,6 @@ APP_ERROR ModelInferenceProcessor::SetInOutData(std::vector<BaseTensor> &inputs,
         inputs.insert(inputs.begin() + dynamicIndex_, dyIndexTensor);
     }
 
-    // create output memdata
-    ret = CreateOutMemoryData(outputsMemDataQue);
-    if (ret != APP_ERR_OK) {
-        ERROR_LOG("create outmemory data failed:%d", ret);
-        return ret;
-    }
-
     // add data to input dataset
     for (const auto& tensor : inputs) {
         auto result = processModel->AddBufToDataset(inputDataSet, tensor.buf, tensor.size);
@@ -383,15 +432,22 @@ APP_ERROR ModelInferenceProcessor::ModelInference_Inner(std::vector<BaseTensor> 
     DEBUG_LOG("lcm debug tid:%d InferInner begin indata:%p outdata:%p", gettid(), inputDataSet, outputDataSet);
 
     Result result = processModel->CreateDataSet(inputDataSet);
-    if (result != SUCCESS || inputDataSet == nullptr){
+    if (result != SUCCESS){
         ERROR_LOG("create inputDataSet failed ret:%d", ret);
         ret = APP_ERR_FAILURE;
         goto Done;
     }
     result = processModel->CreateDataSet(outputDataSet);
-    if (result != SUCCESS || outputDataSet == nullptr){
+    if (result != SUCCESS){
         ERROR_LOG("create outputDataset failed ret:%d", ret);
         ret = APP_ERR_FAILURE;
+        goto Done;
+    }
+
+    // create output memdata
+    ret = CreateOutMemoryData(outputsMemDataQue);
+    if (ret != APP_ERR_OK) {
+        ERROR_LOG("create outmemory data failed:%d", ret);
         goto Done;
     }
 
@@ -418,12 +474,8 @@ APP_ERROR ModelInferenceProcessor::ModelInference_Inner(std::vector<BaseTensor> 
 
     DEBUG_LOG("lcm debug tid:%d InferInner end indata:%p outdata:%p", gettid(), inputDataSet, outputDataSet);
 Done:
-    if (inputDataSet != nullptr) {
-        processModel->DestroyDataSet(inputDataSet, false);
-    }
-    if (outputDataSet != nullptr) {
-        processModel->DestroyDataSet(outputDataSet, false);
-    }
+    processModel->DestroyDataSet(inputDataSet, false);
+    processModel->DestroyDataSet(outputDataSet, false);
     DestroyOutMemoryData(outputsMemDataQue);
     return ret;
 }

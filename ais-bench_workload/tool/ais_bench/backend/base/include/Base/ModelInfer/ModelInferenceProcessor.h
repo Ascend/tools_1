@@ -139,6 +139,12 @@ struct InferSumaryInfo {
     std::vector<float> execTimeList;
 };
 
+struct BindingData{
+    void *inputDataSet;
+    void *outputDataSet;
+    std::vector<MemoryData> outputsMemDataQue;
+};
+
 class ModelInferenceProcessor {
 public:
     /**
@@ -208,6 +214,10 @@ private:
     APP_ERROR CheckInVectorAndFillBaseTensor(const std::vector<BaseTensor>& feeds, std::vector<BaseTensor> &inputs);
     APP_ERROR CheckInVectorAndFillBaseTensor(const std::vector<TensorBase>& feeds, std::vector<BaseTensor> &inputs);
     APP_ERROR CheckInMapAndFillBaseTensor(const std::map<std::string, TensorBase>& feeds, std::vector<BaseTensor> &inputs);
+
+    APP_ERROR InferenceAsync(BindingData &bindData, void *stream);
+    APP_ERROR CreateBindingData(const std::vector<BaseTensor>& feeds, BindingData &bindData);
+    APP_ERROR DestroyBindingData(BindingData &bindData);
 
 private:
     ModelDesc modelDesc_;
