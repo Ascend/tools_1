@@ -362,7 +362,8 @@ def multidevice_run(args):
 
     p.close()
     p.join()
-    logger.info("multidevice run end qsize:{}".format(msgq.qsize()))
+    result  = 0 if len(device_list) == msgq.qsize() else 1
+    logger.info("multidevice run end qsize:{} result:{}".format(msgq.qsize(), result))
     tlist = []
     while msgq.qsize() != 0:
         ret = msgq.get()
@@ -371,6 +372,7 @@ def multidevice_run(args):
                 ret[0], device_list[ret[0]], ret[1], ret[2], ret[3]))
             tlist.append(ret[1])
     logger.info('summary throughput:{}'.format(sum(tlist)))
+    return result
 
 if __name__ == "__main__":
     args = get_args()
@@ -393,7 +395,7 @@ if __name__ == "__main__":
     
     if type(args.device) == list:
         # args has multiple device, run single process for each device
-        multidevice_run(args)
-        exit(0)
+        ret = multidevice_run(args)
+        exit(ret)
 
     main(args)
