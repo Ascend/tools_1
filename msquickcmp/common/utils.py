@@ -296,7 +296,7 @@ def _check_colon_exist(input_shape):
 def _check_shape_number(input_shape_value):
     dim_pattern = re.compile(DIM_PATTERN)
     match = dim_pattern.match(input_shape_value)
-    if match.group() is not input_shape_value:
+    if not match or match.group() is not input_shape_value:
         print_error_log(get_shape_not_match_message(InputShapeError.VALUE_TYPE_NOT_MATCH, input_shape_value))
         raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
 
