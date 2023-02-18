@@ -90,20 +90,35 @@ public:
     Result SetDynamicDims(std::vector<std::string> dym_dims);
 
     /**
+    * @brief set dynamic input dims with dataset
+    */    
+    Result SetDynamicDims(void* indatset, vector<string> dym_dims);
+
+    /**
     * @brief check dynamic input image size valid
     */
     Result CheckDynamicShape(std::vector<std::string> dym_shape_tmp, std::map<std::string, std::vector<int64_t>> &dym_shape_map, std::vector<int64_t> &dims_num);
-    
+
     /**
     * @brief set dynamic input dims 
     */    
     Result SetDynamicShape(std::map<std::string, std::vector<int64_t>> dym_shape_map, std::vector<int64_t> &dims_num);
 
     /**
-    * @brief set dynamic batch size
+    * @brief set dynamic input dims with dataset
     */    
+    Result SetDynamicShape(void* indatset, std::map<std::string, std::vector<int64_t>> dym_shape_map, std::vector<int64_t> &dims_num);
+
+    /**
+    * @brief set dynamic batch size
+    */
     Result SetDynamicBatchSize(uint64_t batchSize);
-    
+
+    /**
+    * @brief set dynamic batch size with dataset
+    */
+    Result SetDynamicBatchSize(void* indatset, uint64_t batchSize);
+
     /**
     * @brief get max dynamic batch size
     */    
@@ -113,6 +128,11 @@ public:
     * @brief set dynamic image size
     */
     Result SetDynamicHW(std::pair<uint64_t , uint64_t > dynamicPair);
+
+    /**
+    * @brief set dynamic image size with dataset
+    */
+    Result SetDynamicHW(void* indatset, std::pair<uint64_t , uint64_t > dynamicPair);
 
     /**
     * @brief get dynamic input dims info
@@ -177,6 +197,12 @@ public:
     Result Execute();
 
     /**
+    * @brief model execute with dataset
+    * @return result
+    */
+    Result Execute(void* inputDataSet, void* outputDataSet);
+
+    /**
     * @brief dump model output result to file
     */
     void DumpModelOutputResult();
@@ -200,12 +226,19 @@ public:
     Result GetOutTensorDesc(size_t i, std::string& name, int& datatype, size_t& format, std::vector<int64_t>& shape, size_t& size);
 
     size_t GetOutTensorLen(size_t i, bool is_dymshape);
+    size_t GetOutTensorLen(void* outdatset, size_t i, bool is_dymshape);
 
     Result GetCurOutputShape(size_t index, bool is_dymshape, std::vector<int64_t>& shape);
+    Result GetCurOutputShape(void* outdatset, size_t index, bool is_dymshape, std::vector<int64_t>& shape);
 
     Result GetMaxDynamicHWSize(size_t &outsize);
 
     void SetExceptionCallBack();
+
+    Result CreateDataSet(void* &pDataSet);
+    Result DestroyDataSet(void* pDataSet, bool free_memory_flag);
+    Result AddBufToDataset(void* pDataSet, void* dataBuffer, size_t bufferSize);
+
 private:
     uint32_t modelId_;
     bool loadFlag_; // model load flag

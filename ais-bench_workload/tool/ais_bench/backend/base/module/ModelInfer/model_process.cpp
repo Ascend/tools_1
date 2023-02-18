@@ -188,16 +188,21 @@ Result ModelProcess::CheckDynamicShape(std::vector<std::string> dym_shape_tmp, s
 
 Result ModelProcess::SetDynamicShape(std::map<std::string, std::vector<int64_t>> dym_shape_map, std::vector<int64_t> &dims_num)
 {
+    return SetDynamicShape(input_, dym_shape_map, dims_num);
+}
+
+Result ModelProcess::SetDynamicShape(void* indatset, std::map<std::string, std::vector<int64_t>> dym_shape_map, std::vector<int64_t> &dims_num)
+{
     aclError ret;
     const char *name;
-    size_t  input_num = dym_shape_map.size();
+    int input_num = dym_shape_map.size();
     aclTensorDesc * inputDesc;
     for (size_t i = 0; i < input_num; i++) {
         name = aclmdlGetInputNameByIndex(modelDesc_, i);
         int64_t arr[dym_shape_map[name].size()];
         std::copy(dym_shape_map[name].begin(), dym_shape_map[name].end(), arr);
 	    inputDesc = aclCreateTensorDesc(ACL_FLOAT, dims_num[i], arr, ACL_FORMAT_NCHW);
-        ret = aclmdlSetDatasetTensorDesc(input_, inputDesc, i);
+        ret = aclmdlSetDatasetTensorDesc((aclmdlDataset*)indatset, inputDesc, i);
         if (ret != ACL_SUCCESS) {
             cout << aclGetRecentErrMsg() << endl;
             ERROR_LOG("aclmdlSetDatasetTensorDesc failed %d", ret);
@@ -205,7 +210,7 @@ Result ModelProcess::SetDynamicShape(std::map<std::string, std::vector<int64_t>>
         }
     }
     DEBUG_LOG("set Dynamic shape success");
-	return SUCCESS;
+	return SUCCESS;	
 }
 
 Result ModelProcess::GetMaxDynamicHWSize(uint64_t &outsize)
@@ -267,10 +272,10 @@ Result ModelProcess::CheckDynamicHWSize(pair<int, int> dynamicPair, bool &is_dym
     return SUCCESS;
 }
 
-Result ModelProcess::SetDynamicHW(std::pair<uint64_t , uint64_t > dynamicPair)
+Result ModelProcess::SetDynamicHW(void* indatset, std::pair<uint64_t , uint64_t > dynamicPair)
 {
     aclError ret;
-    ret = aclmdlSetDynamicHWSize(modelId_, input_, g_dymindex, dynamicPair.first, dynamicPair.second);
+    ret = aclmdlSetDynamicHWSize(modelId_, (aclmdlDataset *)indatset, g_dymindex, dynamicPair.first, dynamicPair.second);
     if (ret != ACL_SUCCESS) {
         cout << aclGetRecentErrMsg() << endl;
         ERROR_LOG("aclmdlSetDynamicHWSize failed %d", ret);
@@ -278,6 +283,11 @@ Result ModelProcess::SetDynamicHW(std::pair<uint64_t , uint64_t > dynamicPair)
     }
     DEBUG_LOG("set Dynamic HW success");
     return SUCCESS;
+}
+
+Result ModelProcess::SetDynamicHW(std::pair<uint64_t , uint64_t > dynamicPair)
+{
+    return SetDynamicHW(input_, dynamicPair);
 }
 
 Result ModelProcess::CheckDynamicBatchSize(uint64_t dymbatch, bool &is_dymbatch)
@@ -315,7 +325,12 @@ Result ModelProcess::CheckDynamicBatchSize(uint64_t dymbatch, bool &is_dymbatch)
 
 Result ModelProcess::SetDynamicBatchSize(uint64_t batchSize)
 {
-    aclError ret = aclmdlSetDynamicBatchSize(modelId_, input_, g_dymindex, batchSize);
+    return SetDynamicBatchSize(input_, batchSize);
+}
+
+Result ModelProcess::SetDynamicBatchSize(void* indatset, uint64_t batchSize)
+{
+    aclError ret = aclmdlSetDynamicBatchSize(modelId_, (aclmdlDataset *)indatset, g_dymindex, batchSize);
     if (ret != ACL_SUCCESS) {
         cout << aclGetRecentErrMsg() << endl;
         ERROR_LOG("aclmdlSetDynamicBatchSize failed %d", ret);
@@ -400,7 +415,7 @@ Result ModelProcess::CheckDynamicDims(vector<string> dym_dims, size_t gearCount,
 
 }
 
-Result ModelProcess::SetDynamicDims(vector<string> dym_dims)
+Result ModelProcess::SetDynamicDims(void* indatset, vector<string> dym_dims)
 {
     aclmdlIODims dims;
     dims.dimCount = dym_dims.size();
@@ -409,7 +424,7 @@ Result ModelProcess::SetDynamicDims(vector<string> dym_dims)
         dims.dims[i] = atoi(dym_dims[i].c_str());
     }
 
-    aclError ret = aclmdlSetInputDynamicDims(modelId_, input_, g_dymindex, &dims);
+    aclError ret = aclmdlSetInputDynamicDims(modelId_, (aclmdlDataset *)indatset, g_dymindex, &dims);
 
     if (ret != ACL_SUCCESS) {
         cout << aclGetRecentErrMsg() << endl;
@@ -417,7 +432,12 @@ Result ModelProcess::SetDynamicDims(vector<string> dym_dims)
         return FAILED;
     }
     DEBUG_LOG("set dynamic dims success");
-    return SUCCESS;
+    return SUCCESS; 
+}
+
+Result ModelProcess::SetDynamicDims(vector<string> dym_dims)
+{
+    return SetDynamicDims((aclmdlDataset*)input_, dym_dims);
 }
 
 void ModelProcess::GetDymBatchInfo(){
@@ -1206,7 +1226,12 @@ void ModelProcess::SetExceptionCallBack()
 
 Result ModelProcess::Execute()
 {
-    aclError ret = aclmdlExecute(modelId_, input_, output_);
+    return Execute(input_, output_);
+}
+
+Result ModelProcess::Execute(void* inputDataSet, void* outputDataSet)
+{
+    aclError ret = aclmdlExecute(modelId_, (aclmdlDataset*)inputDataSet, (aclmdlDataset*)outputDataSet);
     if (ret != ACL_SUCCESS) {
         cout << aclGetRecentErrMsg() << endl;
         ERROR_LOG("execute model failed, modelId is %u", modelId_);
@@ -1239,11 +1264,16 @@ void ModelProcess::Unload()
 
 Result ModelProcess::GetCurOutputShape(size_t index, bool is_dymshape, std::vector<int64_t>& shape)
 {
-    aclError ret;
+    return GetCurOutputShape(output_, index, is_dymshape, shape);
+}
+
+Result ModelProcess::GetCurOutputShape(void* outdatset, size_t index, bool is_dymshape, std::vector<int64_t>& shape)
+{
+    aclError ret; 
     aclmdlIODims ioDims;
     // 对于动态shape场景，通过V2接口获取，其他通过V1接口获取
     if (is_dymshape == true) {
-        aclTensorDesc *outputDesc = aclmdlGetDatasetTensorDesc(output_, index);
+        aclTensorDesc *outputDesc = aclmdlGetDatasetTensorDesc((aclmdlDataset*)outdatset, index);
         size_t dimNums = aclGetTensorDescNumDims(outputDesc);
          if (dimNums == ACL_UNKNOWN_RANK) {
             return FAILED;
@@ -1258,7 +1288,7 @@ Result ModelProcess::GetCurOutputShape(size_t index, bool is_dymshape, std::vect
         ret = aclmdlGetCurOutputDims(modelDesc_, index, &ioDims);
         if (ret != ACL_SUCCESS) {
             // cout << aclGetRecentErrMsg() << endl;
-            DEBUG_LOG("aclmdlGetCurOutputDims get not success, maybe the modle has dynamic shape.ret=%d", ret);
+            DEBUG_LOG("aclmdlGetCurOutputDims get not success, maybe the modle has dynamic shape", ret);
             return FAILED;
         }
         for (size_t i = 0; i < ioDims.dimCount; i++) {
@@ -1314,12 +1344,17 @@ Result ModelProcess::GetOutTensorDesc(size_t i, std::string& name, int& datatype
 
 size_t ModelProcess::GetOutTensorLen(size_t i, bool is_dymshape)
 {
-    aclDataBuffer* dataBuffer = aclmdlGetDatasetBuffer(output_, i);
+    return GetOutTensorLen(output_, i, is_dymshape);
+}
+
+size_t ModelProcess::GetOutTensorLen(void* outdatset, size_t i, bool is_dymshape)
+{
+    aclDataBuffer* dataBuffer = aclmdlGetDatasetBuffer((aclmdlDataset*)outdatset, i);
     uint64_t maxBatchSize = 0;
     size_t len;
     GetMaxBatchSize(maxBatchSize);
     if (is_dymshape){
-	    aclTensorDesc *outputDesc = aclmdlGetDatasetTensorDesc(output_, i);
+	    aclTensorDesc *outputDesc = aclmdlGetDatasetTensorDesc((aclmdlDataset*)outdatset, i);
 	    len = aclGetTensorDescSize(outputDesc);
 	}
     else{
@@ -1354,5 +1389,64 @@ Result ModelProcess::CreateOutput(void* outputBuffer, size_t bufferSize)
         outputData = nullptr;
         return FAILED;
     }
+    return SUCCESS;
+}
+
+Result ModelProcess::CreateDataSet(void* &pDataSet)
+{
+    aclmdlDataset* set;
+    set = aclmdlCreateDataset();
+    if (set == nullptr) {
+        ERROR_LOG("can't create dataset, create input failed");
+        return FAILED;
+    }
+    pDataSet = (void *)set;
+    DEBUG_LOG("create pDataSet:%p success", pDataSet);
+    return SUCCESS;
+}
+
+Result ModelProcess::DestroyDataSet(void* pDataSet, bool free_memory_flag=true)
+{
+    if (pDataSet == nullptr) {
+        return FAILED;
+    }
+
+    for (size_t i = 0; i < aclmdlGetDatasetNumBuffers((aclmdlDataset*)pDataSet); ++i) {
+        aclDataBuffer* dataBuffer = aclmdlGetDatasetBuffer((aclmdlDataset*)pDataSet, i);
+        void* data = aclGetDataBufferAddr(dataBuffer);
+        if (free_memory_flag == true){
+            (void)aclrtFree(data);
+        }
+        (void)aclDestroyDataBuffer(dataBuffer);
+    }
+
+    (void)aclmdlDestroyDataset((aclmdlDataset*)pDataSet);
+    DEBUG_LOG("destroy pDataSet:%p success", pDataSet);
+    pDataSet = nullptr;
+    return SUCCESS;
+}
+
+Result ModelProcess::AddBufToDataset(void* pDataSet, void* dataBuffer, size_t bufferSize)
+{
+    if (pDataSet == nullptr) {
+        ERROR_LOG("dataset is null cannot addbuf");
+        return FAILED;
+    }
+
+    aclDataBuffer* inputData = aclCreateDataBuffer(dataBuffer, bufferSize);
+    if (inputData == nullptr) {
+        ERROR_LOG("can't create data buffer, create input failed");
+        return FAILED;
+    }
+
+    aclError ret = aclmdlAddDatasetBuffer((aclmdlDataset*)pDataSet, inputData);
+    if (ret != ACL_SUCCESS) {
+        cout << aclGetRecentErrMsg() << endl;
+        ERROR_LOG("add dataset:%p buffer failed", pDataSet);
+        aclDestroyDataBuffer(inputData);
+        inputData = nullptr;
+        return FAILED;
+    }
+    DEBUG_LOG("add dataset:%p buffer:%p size:%d success", pDataSet, dataBuffer, bufferSize);
     return SUCCESS;
 }
