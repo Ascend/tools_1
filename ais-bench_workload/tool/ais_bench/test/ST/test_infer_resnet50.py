@@ -1180,7 +1180,9 @@ class TestClass():
 
     def test_general_inference_interface_normal_multi_device(self):
         device_count, ret = acl.rt.get_device_count()
-        assert device_count > 0
+        if device_count <= 1:
+            return
+
         device_list = [str(i) for i in range(device_count)]
         devices = ','.join(device_list)
 
