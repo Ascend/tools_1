@@ -48,6 +48,8 @@ public:
 
     std::vector<TensorBase> InferBaseTensorVector(std::vector<std::string>& output_names, std::vector<Base::BaseTensor>& feeds);
 
+    APP_ERROR ThreadRunTest(int threadNum, std::vector<std::string>& output_names, std::vector<Base::BaseTensor>& feeds);
+
     std::vector<std::vector<uint64_t>> GetDynamicHW();
     std::vector<int64_t> GetDynamicBatch();
 
@@ -79,6 +81,7 @@ public:
 private:
     void Init(const std::string &modelPath, std::shared_ptr<SessionOptions> options);
     int Destroy();
+    APP_ERROR InferThreadFunc(std::vector<std::string> output_names, std::vector<Base::BaseTensor> feeds);
 
 private:
     uint32_t deviceId_ = 0;

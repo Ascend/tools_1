@@ -295,21 +295,11 @@ APP_ERROR ModelInferenceProcessor::Inference(const std::vector<TensorBase>& feed
     return ret;
 }
 
-// APP_ERROR ModelInferenceProcessor::DestroyInferCacheData()
-// {
-//     DestroyOutMemoryData(outputsMemDataQue_);
-//     processModel->DestroyInput(false);
-//     processModel->DestroyOutput(false);
-//     return APP_ERR_OK;
-// }
 
-
-APP_ERROR ModelInferenceProcessor::SetInputsData(std::vector<BaseTensor> &inputs, void *inputDataSet,
+APP_ERROR ModelInferenceProcessor::SetInOutData(std::vector<BaseTensor> &inputs, void *inputDataSet,
             void *outputDataSet, std::vector<MemoryData> &outputsMemDataQue)
 {
     APP_ERROR ret;
-
-    DestroyInferCacheData();
 
     if (inputs.size() != modelDesc_.inTensorsDesc.size()){
         WARN_LOG("intensors in:%zu need:%zu not match", inputs.size(), modelDesc_.inTensorsDesc.size());
@@ -346,7 +336,7 @@ APP_ERROR ModelInferenceProcessor::SetInputsData(std::vector<BaseTensor> &inputs
     }
 
     // add data to output dataset
-    for (const auto& tensor : outputsMemDataQue_) {
+    for (const auto& tensor : outputsMemDataQue) {
         auto result = processModel->AddBufToDataset(outputDataSet, tensor.ptrData, tensor.size);
         if (result != SUCCESS){
             ERROR_LOG("create outputdataset failed:%d", result);
@@ -405,7 +395,7 @@ APP_ERROR ModelInferenceProcessor::ModelInference_Inner(std::vector<BaseTensor> 
         goto Done;
     }
 
-    ret = SetInputsData(inputs, inputDataSet, outputDataSet, outputsMemDataQue);
+    ret = SetInOutData(inputs, inputDataSet, outputDataSet, outputsMemDataQue);
     if (ret != APP_ERR_OK){
         ERROR_LOG("Set InputsData failed ret:%d", ret);
         goto Done;
@@ -677,7 +667,7 @@ APP_ERROR ModelInferenceProcessor::SetDynamicInfo(void *inputDataSet)
     pair<uint64_t, uint64_t> dynamicHW;
     switch (dynamicInfo_.dynamicType) {
     case DYNAMIC_BATCH:
-        CHECK_RET_EQ(processModel->SetDynamicBatchSize(dynamicInfo_.dyBatch.batchSize), SUCCESS);
+        CHECK_RET_EQ(processModel->SetDynamicBatchSize(inputDataSet, dynamicInfo_.dyBatch.batchSize), SUCCESS);
         break;
     case DYNAMIC_HW:
         dynamicHW = {dynamicInfo_.dyHW.imageSize.width, dynamicInfo_.dyHW.imageSize.height};

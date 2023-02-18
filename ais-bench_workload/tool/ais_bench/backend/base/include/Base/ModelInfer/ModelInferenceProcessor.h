@@ -201,7 +201,7 @@ private:
     APP_ERROR GetModelDescInfo();
     // APP_ERROR DestroyInferCacheData();
 
-    APP_ERROR SetInputsData(std::vector<BaseTensor> &inputs, void *inputDataSet, void *outputDataSet, std::vector<MemoryData> &outputsMemDataQue);
+    APP_ERROR SetInOutData(std::vector<BaseTensor> &inputs, void *inputDataSet, void *outputDataSet, std::vector<MemoryData> &outputsMemDataQue);
     APP_ERROR Execute(void* inputDataSet, void* outputDataSet);
     APP_ERROR GetOutputs(void* outputDataSet, std::vector<std::string> outputNames, std::vector<TensorBase> &outputTensors, std::vector<MemoryData> &outputsMemDataQue);
 
