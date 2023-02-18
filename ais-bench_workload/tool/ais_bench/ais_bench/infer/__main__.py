@@ -198,7 +198,6 @@ def check_device_range_valid(value):
             if ivalue < min_value or ivalue > max_value:
                 raise argparse.ArgumentTypeError("{} of device:{} is invalid. valid value range is [{}, {}]".format(
                     ivalue, value, min_value, max_value))
-        print("lcm debug value:{} ilist:{}".format(value, ilist))
         return ilist
     else:
 		# default as single int value
