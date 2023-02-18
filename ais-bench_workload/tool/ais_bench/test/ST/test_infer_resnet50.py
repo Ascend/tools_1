@@ -1,7 +1,6 @@
 import filecmp
 import json
 import math
-import random
 import os
 import shutil
 import torch
@@ -1246,8 +1245,7 @@ class TestClass():
         """
         device_count, ret = acl.rt.get_device_count()
         assert device_count > 0
-        random_num = random.randint(device_count, 256)
-        devices = "1,2," + str(random_num)
+        devices = "1,2," + str(255)
         print("devices: {}".format(devices))
         batch_size = 1
         static_model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
