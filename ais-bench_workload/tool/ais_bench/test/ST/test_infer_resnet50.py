@@ -4,6 +4,7 @@ import math
 import os
 import shutil
 import torch
+import acl
 import aclruntime
 import numpy as np
 import pytest
@@ -1176,6 +1177,104 @@ class TestClass():
                 exception_num += 1
 
         assert exception_num == 0
+
+    def test_general_inference_interface_normal_multi_device(self):
+        device_count, ret = acl.rt.get_device_count()
+        assert device_count > 0
+        device_list = [str(i) for i in range(device_count)]
+        devices = ','.join(device_list)
+
+        batch_size = 1
+        static_model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
+        input_size = TestCommonClass.get_model_inputs_size(static_model_path)[0]
+        input_path = TestCommonClass.get_inputs_path(input_size, os.path.join(self.model_base_path, "input"),
+                                                     self.output_file_num)
+        output_path = os.path.join(self.model_base_path, "output")
+        if not os.path.exists(output_path):
+            os.makedirs(output_path)
+        log_path = os.path.join(output_path, "multi_device_infer.log")
+
+        model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
+        cmd = "{} --model {} --device {} --input {} > {}".format(TestCommonClass.cmd_prefix, model_path,
+                                                            devices, input_path, log_path)
+        print("run cmd:{}".format(cmd))
+        ret = os.system(cmd)
+        assert ret == 0
+        assert os.path.exists(log_path)
+
+        device_throughputs = []
+        total_throughtout = 0;
+        summary_throughput = 0
+        with open(log_path) as f:
+            for line in f:
+                if "device_"  in line:
+                    temp_strs = line.split(' ')
+                    throughtout = float(temp_strs[2].split(':')[1])
+                    device_throughputs.append(throughtout)
+                    total_throughtout += throughtout
+                elif "summary throughput" in line:
+                    temp_strs = line.split(' ')
+                    temp_str = temp_strs[2].split(':')[1]
+                    temp_str = temp_str.replace('\n','')
+                    summary_throughput = float(temp_str)
+                else:
+                    continue
+
+        assert device_count == len(device_throughputs)
+        assert abs(total_throughtout - summary_throughput) <= TestCommonClass.EPSILON
+        os.remove(log_path)
+
+    def test_general_inference_interface_same_multi_device_0(self):
+        """"device 0,0
+        """
+        devices = "0,0"
+        batch_size = 1
+        static_model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
+        input_size = TestCommonClass.get_model_inputs_size(static_model_path)[0]
+        input_path = TestCommonClass.get_inputs_path(input_size, os.path.join(self.model_base_path, "input"),
+                                                     self.output_file_num)
+        model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
+        cmd = "{} --model {} --device {} --input {} ".format(TestCommonClass.cmd_prefix, model_path,
+                                                            devices, input_path)
+        print("run cmd:{}".format(cmd))
+        ret = os.system(cmd)
+        assert ret == 0
+
+    def test_general_inference_interface_abnormal_invalid_device(self):
+        """"类似device 1,2,200. 2个device ID正确,1个不正确,但在可能的取值范围[0,255]内
+        """
+        device_count, ret = acl.rt.get_device_count()
+        assert device_count > 0
+        devices = "1,2," + str(255)
+        batch_size = 1
+        static_model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
+        input_size = TestCommonClass.get_model_inputs_size(static_model_path)[0]
+        input_path = TestCommonClass.get_inputs_path(input_size, os.path.join(self.model_base_path, "input"),
+                                                     self.output_file_num)
+        model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
+        cmd = "{} --model {} --device {} --input {} ".format(TestCommonClass.cmd_prefix, model_path,
+                                                            devices, input_path)
+        print("run cmd:{}".format(cmd))
+        ret = os.system(cmd)
+        # assert  exception_num == 1
+        assert ret != 0
+
+    def test_general_inference_interface_abnormal_invalid_device_2(self):
+        """"device 500.不在可能的取值范围[0,255]
+        """
+        devices = "500"
+        batch_size = 1
+        static_model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
+        input_size = TestCommonClass.get_model_inputs_size(static_model_path)[0]
+        input_path = TestCommonClass.get_inputs_path(input_size, os.path.join(self.model_base_path, "input"),
+                                                     self.output_file_num)
+        model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
+        cmd = "{} --model {} --device {} --input {} ".format(TestCommonClass.cmd_prefix, model_path,
+                                                            devices, input_path)
+        print("run cmd:{}".format(cmd))
+        ret = os.system(cmd)
+        assert ret != 0
+
 
 if __name__ == '__main__':
     pytest.main(['test_infer_resnet50.py', '-vs'])
