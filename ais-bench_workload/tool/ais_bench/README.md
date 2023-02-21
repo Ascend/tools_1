@@ -164,39 +164,49 @@ python3 -m ais_bench --model *.om
 
 #### 参数说明
 
-ais_bench推理工具可以通过配置不同的参数，来应对各种测试场景以及实现其他辅助功能，具体参数如下。
+ais_bench推理工具可以通过配置不同的参数，来应对各种测试场景以及实现其他辅助功能。
+
+参数按照功能类别分为**基础功能参数**和**高级功能参数**：
+
+- **基础功能参数**：主要包括输入输入文件及格式、debug、推理次数、预热次数、指定运行设备以及帮助信息等。
+- **高级功能参数**：主要包括动态分档场景和动态Shape场景的ais_bench推理测试参数以及profiler或dump数据获取等。
+
+**说明**：以下参数中，参数和取值之间可以用“ ”空格分隔也可以用“=”等号分隔。例如：--debug 1或--debug=0。
+
+##### 基础功能参数
+
+| 参数名                | 说明                                                         | 是否必选 |
+| --------------------- | ------------------------------------------------------------ | -------- |
+| --model               | 需要进行推理的OM离线模型文件。                               | 是       |
+| --input               | 模型需要的输入。可指定输入文件所在目录或直接指定输入文件。支持输入文件格式为“NPY”、“BIN”。可输入多个文件或目录，文件或目录之间用“,”隔开。具体输入文件请根据模型要求准备。  若不配置该参数，会自动构造输入数据，输入数据类型由--pure_data_type参数决定。 | 否       |
+| --pure_data_type      | 纯推理数据类型。取值为：“zero”、“random”，默认值为"zero"。 未配置模型输入文件时，工具自动构造输入数据。设置为zero时，构造全为0的纯推理数据；设置为random时，为每一个输入生成一组随机数据。 | 否       |
+| --output              | 推理结果保存目录。配置后会创建“日期+时间”的子目录，保存输出结果。如果指定output_dirname参数，输出结果将保存到子目录output_dirname下。不配置输出目录时，仅打印输出结果，不保存输出结果。 | 否       |
+| --output_dirname      | 推理结果保存子目录。设置该值时输出结果将保存到*output/output_dirname*目录下。  配合output参数使用，单独使用无效。 例如：--output */output* --output_dirname *output_dirname* | 否       |
+| --outfmt              | 输出数据的格式。取值为：“NPY”、“BIN”、“TXT”，默认为”BIN“。  配合output参数使用，单独使用无效。 例如：--output */output* --outfmt NPY。 | 否       |
+| --debug               | 调试开关。可打印model的desc信息和其他详细执行信息。1或true（开启）、0或false（关闭），默认关闭。 | 否       |
+| --display_all_summary | 是否显示所有的汇总信息，包含h2d和d2h信息。1或true（开启）、0或false（关闭），默认关闭。 | 否       |
+| --loop                | 推理次数。默认值为1，取值范围为大于0的正整数。  profiler参数配置为true时，推荐配置为1。 | 否       |
+| --warmup_count        | 推理预热次数。默认值为1，取值范围为大于等于0的整数。配置为0则表示不预热。 | 否       |
+| --device              | 指定运行设备。根据设备实际的Device ID指定，默认值为0。多Device场景下，可以同时指定多个Device进行推理测试，例如：--device 0,1,2,3。 | 否       |
+| --help                | 工具使用帮助信息。                                           | 否       |
+
+##### 高级功能参数
 
 | 参数名                   | 说明                                                         | 是否必选 |
 | ------------------------ | ------------------------------------------------------------ | -------- |
-| --model                  | 需要进行推理的OM离线模型文件。                               | 是       |
-| --input                  | 模型需要的输入。可指定输入文件所在目录或直接指定输入文件。支持输入文件格式为“NPY”、“BIN”。可输入多个文件或目录，文件或目录之间用“,”隔开。具体输入文件请根据模型要求准备。 <br/>若不配置该参数，会自动构造输入数据，输入数据类型由--pure_data_type参数决定。 | 否       |
-| --pure_data_type         | 纯推理数据类型。取值为：“zero”、“random”，默认值为"zero"。<br>未配置模型输入文件时，工具自动构造输入数据。设置为zero时，构造全为0的纯推理数据；设置为random时，为每一个输入生成一组随机数据。 | 否       |
-| --output                 | 推理结果保存目录。配置后会创建“日期+时间”的子目录，保存输出结果。如果指定output_dirname参数，输出结果将保存到子目录output_dirname下。不配置输出目录时，仅打印输出结果，不保存输出结果。 | 否       |
-| --output_dirname         | 推理结果保存子目录。设置该值时输出结果将保存到*output/output_dirname*目录下。 <br/>配合output参数使用，单独使用无效。<br/>例如：--output */output* --output_dirname *output_dirname* | 否       |
-| --outfmt                 | 输出数据的格式。取值为：“NPY”、“BIN”、“TXT”，默认为”BIN“。 <br/>配合output参数使用，单独使用无效。<br/>例如：--output */output* --outfmt NPY | 否       |
-| --batchsize              | 模型batchsize。不输入该值将自动推导。当前推理模块根据模型输入和文件输出自动进行组Batch。参数传递的batchszie有且只用于结果吞吐率计算。自动推导逻辑为尝试获取模型的batchsize时，首先获取第一个参数的最高维作为batchsize； 如果是动态Batch的话，更新为动态Batch的值；如果是动态dims和动态Shape更新为设置的第一个参数的最高维。如果自动推导逻辑不满足要求，请务必传入准确的batchsize值，以计算出正确的吞吐率。 | 否       |
-| --debug                  | 调试开关。可打印model的desc信息和其他详细执行信息。1或true（开启）、0或false（关闭），默认关闭。 | 否       |
 | --dymBatch               | 动态Batch参数，指定模型输入的实际Batch。 <br>如ATC模型转换时，设置--input_shape="data:-1,600,600,3;img_info:-1,3" --dynamic_batch_size="1,2,4,8"，dymBatch参数可设置为：--dymBatch 2。 | 否       |
 | --dymHW                  | 动态分辨率参数，指定模型输入的实际H、W。 <br>如ATC模型转换时，设置--input_shape="data:8,3,-1,-1;img_info:8,4,-1,-1" --dynamic_image_size="300,500;600,800"，dymHW参数可设置为：--dymHW 300,500。 | 否       |
 | --dymDims                | 动态维度参数，指定模型输入的实际Shape。 <br>如ATC模型转换时，设置 --input_shape="data:1,-1;img_info:1,-1" --dynamic_dims="224,224;600,600"，dymDims参数可设置为：--dymDims "data:1,600;img_info:1,600"。 | 否       |
-| --auto_set_dymdims_mode  | 自动设置动态Dims模式。1或true（开启）、0或false（关闭），默认关闭。<br/>针对动态档位Dims模型，根据输入的文件的信息，自动设置Shape参数，注意输入数据只能为npy文件，因为bin文件不能读取Shape信息。<br/>配合input参数使用，单独使用无效。<br/>例如：--input 1.npy --auto_set_dymdims_mode 1 | 否       |
 | --dymShape               | 动态Shape参数，指定模型输入的实际Shape。 <br>如ATC模型转换时，设置--input_shape_range="input1:\[8\~20,3,5,-1\];input2:\[5,3\~9,10,-1\]"，dymShape参数可设置为：--dymShape "input1:8,3,5,10;input2:5,3,10,10"。<br>动态Shape场景下，获取模型的输出size通常为0（即输出数据占内存大小未知），建议设置--outputSize参数。<br/>例如：--dymShape "input1:8,3,5,10;input2:5,3,10,10" --outputSize "10000,10000" | 否       |
-| --auto_set_dymshape_mode | 自动设置动态Shape模式。取值为：1或true（开启）、0或false（关闭），默认关闭。<br>针对动态Shape模型，根据输入的文件的信息，自动设置Shape参数，注意输入数据只能为npy文件，因为bin文件不能读取Shape信息。<br>配合input参数使用，单独使用无效。<br/>例如：--input 1.npy --auto_set_dymshape_mode 1 | 否       |
 | --dymShape_range         | 动态Shape的阈值范围。如果设置该参数，那么将根据参数中所有的Shape列表进行依次推理，得到汇总推理信息。<br/>配置格式为：name1:1:3:200\~224:224-230;name2:1,300。其中，name为模型输入名，“\~”表示范围，“-”表示某一位的取值。<br/>也可以指定动态Shape的阈值范围配置文件*.info，该文件中记录动态Shape的阈值范围。 | 否       |
 | --outputSize             | 指定模型的输出数据所占内存大小，多个输出时，需要为每个输出设置一个值，多个值之间用“,”隔开。<br>动态Shape场景下，获取模型的输出size通常为0（即输出数据占内存大小未知），需要根据输入的Shape，预估一个较合适的大小，配置输出数据占内存大小。<br>例如：--dymShape "input1:8,3,5,10;input2:5,3,10,10" --outputSize "10000,10000" | 否       |
+| --auto_set_dymdims_mode  | 自动设置动态Dims模式。1或true（开启）、0或false（关闭），默认关闭。<br/>针对动态档位Dims模型，根据输入的文件的信息，自动设置Shape参数，注意输入数据只能为npy文件，因为bin文件不能读取Shape信息。<br/>配合input参数使用，单独使用无效。<br/>例如：--input 1.npy --auto_set_dymdims_mode 1 | 否       |
+| --auto_set_dymshape_mode | 自动设置动态Shape模式。取值为：1或true（开启）、0或false（关闭），默认关闭。<br>针对动态Shape模型，根据输入的文件的信息，自动设置Shape参数，注意输入数据只能为npy文件，因为bin文件不能读取Shape信息。<br>配合input参数使用，单独使用无效。<br/>例如：--input 1.npy --auto_set_dymshape_mode 1 | 否       |
 | --profiler               | profiler开关。1或true（开启）、0或false（关闭），默认关闭。<br>profiler数据在--output参数指定的目录下的profiler文件夹内。配合--output参数使用，单独使用无效。不能与--dump同时开启。 | 否       |
 | --dump                   | dump开关。1或true（开启）、0或false（关闭），默认关闭。<br>dump数据在--output参数指定的目录下的dump文件夹内。配合--output参数使用，单独使用无效。不能与--profiler同时开启。 | 否       |
 | --acl_json_path          | acl.json文件路径，须指定一个有效的json文件。该文件内可配置profiler或者dump。当配置该参数时，--dump和--profiler参数无效。 | 否       |
+| --batchsize              | 模型batchsize。不输入该值将自动推导。当前推理模块根据模型输入和文件输出自动进行组Batch。参数传递的batchszie有且只用于结果吞吐率计算。自动推导逻辑为尝试获取模型的batchsize时，首先获取第一个参数的最高维作为batchsize； 如果是动态Batch的话，更新为动态Batch的值；如果是动态dims和动态Shape更新为设置的第一个参数的最高维。如果自动推导逻辑不满足要求，请务必传入准确的batchsize值，以计算出正确的吞吐率。 | 否       |
 | --output_batchsize_axis  | 输出tensor的batchsize轴，默认值为0。输出结果保存文件时，根据哪个轴进行切割推理结果，比如batchsize为2，表示2个输入文件组batch进行推理，那输出结果的batch维度是在哪个轴。默认为0轴，按照0轴进行切割为2份，但是部分模型的输出batch为1轴，所以要设置该值为1。 | 否       |
-| --display_all_summary    | 是否显示所有的汇总信息，包含h2d和d2h信息。1或true（开启）、0或false（关闭），默认关闭。 | 否       |
-| --loop                   | 推理次数。默认值为1，取值范围为大于0的正整数。 <br/>profiler参数配置为true时，推荐配置为1。 | 否       |
-| --warmup_count           | 推理预热次数。默认值为1，取值范围为大于等于0的正整数。配置为0则表示不预热。 | 否       |
-| --device                 | 指定运行设备。取值范围为[0,255]，默认值为0。                 | 否       |
-| --help                   | 工具使用帮助信息。                                           | 否       |
-
-**说明**：以上参数中参数和取值之间可以用“ ”空格分隔也可以用“=”等号分隔。例如：--debug 1或--debug=0。
-
-
 
 ### 使用场景
 
@@ -274,6 +284,43 @@ python3 -m ais_bench --model ./save/model/BERT_Base_SQuAD_BatchSize_1.om --input
 ```
 
 
+
+#### 多Device场景
+
+多Device场景下，可以同时指定多个Device进行推理测试。
+
+示例命令如下：
+
+```bash
+python3 -m ais_bench --model ./pth_resnet50_bs1.om --input ./data/ --device 1,2
+```
+
+输出结果依次展示每个Device的推理测试结果，示例如下：
+
+```bash
+[INFO] -----------------Performance Summary------------------
+[INFO] NPU_compute_time (ms): min = 2.4769999980926514, max = 3.937000036239624, mean = 3.5538000106811523, median = 3.7230000495910645, percentile(99%) = 3.936680030822754
+[INFO] throughput 1000*batchsize.mean(1)/NPU_compute_time.mean(3.5538000106811523): 281.38893494131406
+[INFO] ------------------------------------------------------
+[INFO] -----------------Performance Summary------------------
+[INFO] NPU_compute_time (ms): min = 3.3889999389648438, max = 3.9230000972747803, mean = 3.616000032424927, median = 3.555000066757202, percentile(99%) = 3.9134000968933105
+[INFO] throughput 1000*batchsize.mean(1)/NPU_compute_time.mean(3.616000032424927): 276.54867008654026
+[INFO] ------------------------------------------------------
+[INFO] unload model success, model Id is 1
+[INFO] unload model success, model Id is 1
+[INFO] end to destroy context
+[INFO] end to destroy context
+[INFO] end to reset device is 2
+[INFO] end to reset device is 2
+[INFO] end to finalize acl
+[INFO] end to finalize acl
+[INFO] multidevice run end qsize:4 result:1
+i:0 device_1 throughput:281.38893494131406 start_time:1676875630.804429 end_time:1676875630.8303885
+i:1 device_2 throughput:276.54867008654026 start_time:1676875630.8043878 end_time:1676875630.8326817
+[INFO] summary throughput:557.9376050278543
+```
+
+其中结果最后展示每个Device推理测试的throughput（吞吐率）、start_time（测试启动时间）、end_time（测试结束时间）以及summary throughput（吞吐率汇总）。其他详细字段解释请参见本手册的“输出结果”章节。
 
  #### 动态分档场景
 
