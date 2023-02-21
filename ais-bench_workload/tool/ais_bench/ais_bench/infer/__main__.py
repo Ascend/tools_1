@@ -361,7 +361,7 @@ def multidevice_run(args):
 
     p.close()
     p.join()
-    result  = 0 if len(device_list) == msgq.qsize() else 1
+    result  = 0 if 2 * len(device_list) == msgq.qsize() else 1
     logger.info("multidevice run end qsize:{} result:{}".format(msgq.qsize(), result))
     tlist = []
     while msgq.qsize() != 0:
