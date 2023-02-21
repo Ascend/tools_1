@@ -382,15 +382,23 @@ APP_ERROR ModelInferenceProcessor::ModelInference_Inner(std::vector<BaseTensor> 
         ERROR_LOG("Set InputsData failed ret:%d", ret);
         return ret;
     }
-
+    if (options_->loop > 1){
+        printf("\n");
+    }
     for (int i = 0; i < options_->loop; i++){
         ret = Execute();
         if (ret != APP_ERR_OK){
             ERROR_LOG("Execute Infer failed ret:%d", ret);
             return ret;
         }
+        if (options_->loop > 1){
+            printf("\rloop inference exec: (%d/%d)", i + 1, options_->loop);
+            fflush(stdout);
+        }
     }
-
+    if (options_->loop > 1){
+        printf("\n");
+    }
     ret = GetOutputs(outputNames, outputTensors);
     if (ret != APP_ERR_OK){
         ERROR_LOG("Get OutTensors failed ret:%d", ret);
