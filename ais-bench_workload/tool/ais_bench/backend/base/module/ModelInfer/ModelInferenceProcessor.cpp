@@ -392,7 +392,7 @@ APP_ERROR ModelInferenceProcessor::ModelInference_Inner(std::vector<BaseTensor> 
             return ret;
         }
         if (options_->loop > 1){
-            printf("\rloop inference exec: %d/%d", i + 1, options_->loop);
+            printf("\rloop inference exec: (%d/%d)", i + 1, options_->loop);
             fflush(stdout);
         }
     }
