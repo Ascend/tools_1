@@ -310,8 +310,6 @@ def overflow_check(name, **kwargs):
             if not DumpUtil.check_overflow_dump_times(overflow_nums):
                 raise ValueError("[overflow {} times]: dump file is saved in '{}'."
                                  .format(DumpUtil.real_overflow_dump_times, os.path.realpath(dump_file_name)))
-        else:
-            print_info_log("No overflow/underflow occurs on the {} operator".format(module_name))
 
     def acl_dump(module, module_name):
         if "forward" in module_name:
