@@ -23,7 +23,7 @@ import torch
 from . import wrap_tensor, wrap_torch, wrap_functional, wrap_vf
 from .module import HOOKModule
 from ..common.utils import check_file_or_directory_path, add_time_as_suffix, \
-    print_error_log, CompareException, Const, format_value, print_info_log
+    print_error_log, CompareException, Const, format_value, print_info_log, print_warn_log
 
 if not torch.cuda.is_available():
     import torch_npu
@@ -60,6 +60,16 @@ def register_hook(model, hook, **kwargs):
 
     pid = os.getpid()
     hook_name = hook.__name__
+
+    if "overflow_check" in hook_name:
+        if hasattr(torch_npu._C, "_enable_overflow_npu"):
+            torch_npu._C._enable_overflow_npu()
+            print_info_log("Enable overflow function success.")
+        else:
+            print_warn_log("Api '_enable_overflow_npu' is not exist, "
+                           "the overflow detection function on milan platform maybe not work! "
+                           "please check the version of software torch_npu.")
+
     print_info_log("Start mounting the {} hook function to the model.".format(hook_name))
     hook = functools.partial(hook, dump_step=dump_step, overflow_nums=overflow_nums, pid=pid,
                              dump_mode=dump_mode, dump_config=dump_config_file)
