@@ -9,6 +9,8 @@ add_definitions(-DENABLE_DVPP_INTERFACE)
 set(CMAKE_CXX_FLAGS_DEBUG "-fPIC -O0 -g -Wall")
 set(CMAKE_CXX_FLAGS_RELEASE "-fPIC -O2 -Wall")
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 # set_env_path=os.getenv("CANN_PATH", "")
 # atlas_nnae_path = "/usr/local/Ascend/nnae/latest/"
 # atlas_toolkit_path = "/usr/local/Ascend/ascend-toolkit/latest/"
@@ -74,4 +76,20 @@ add_executable(ais_bench_infer
         ${BACKEND_PATH}/python/src/PyInferenceSession/PyInferenceSession.cpp
         ais_bench_infer.cpp)
 
+add_executable(ais_bench_async
+        ${BACKEND_PATH}/base/module/DeviceManager/DeviceManager.cpp
+        ${BACKEND_PATH}/base/module/ErrorCode/ErrorCode.cpp
+        ${BACKEND_PATH}/base/module/Log/Log.cpp
+        ${BACKEND_PATH}/base/module/MemoryHelper/MemoryHelper.cpp
+        ${BACKEND_PATH}/base/module/Tensor/TensorBase/TensorBase.cpp
+        ${BACKEND_PATH}/base/module/Tensor/TensorBuffer/TensorBuffer.cpp
+        ${BACKEND_PATH}/base/module/Tensor/TensorContext/TensorContext.cpp
+        ${BACKEND_PATH}/base/module/ModelInfer/model_process.cpp
+        ${BACKEND_PATH}/base/module/ModelInfer/utils.cpp
+        ${BACKEND_PATH}/base/module/ModelInfer/SessionOptions.cpp
+        ${BACKEND_PATH}/base/module/ModelInfer/ModelInferenceProcessor.cpp
+        ${BACKEND_PATH}/python/src/PyInferenceSession/PyInferenceSession.cpp
+        ais_bench_async.cpp)
+
 target_link_libraries(ais_bench_infer ascendcl acl_cblas acl_dvpp stdc++ pthread)
+target_link_libraries(ais_bench_async ascendcl acl_cblas acl_dvpp stdc++ pthread)

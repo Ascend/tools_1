@@ -18,6 +18,7 @@
 #include "acl/acl.h"
 #include "acl/ops/acl_dvpp.h"
 #include "Base/Log/Log.h"
+#include <stdexcept>
 #include <sys/time.h>
 
 namespace Base {
@@ -155,6 +156,21 @@ APP_ERROR MemoryHelper::Free(MemoryData& data)
     return ret;
 }
 
+APP_ERROR MemoryHelper::MemsetAsync(MemoryData& data, int32_t value, size_t count, aclrtStream stream)
+{
+    if (data.ptrData == nullptr) {
+        LogError << GetError(APP_ERR_COMM_INVALID_POINTER)
+                 << "Memset failed, ptrData is nullptr.";
+        return APP_ERR_COMM_INVALID_POINTER;
+    }
+    APP_ERROR ret = aclrtMemsetAsync(data.ptrData, data.size, value, count, stream);
+    if (ret != APP_ERR_OK) {
+        cout << aclGetRecentErrMsg() << endl;
+        LogError << GetError(ret) << "Memset ptrData failed.";
+    }
+    return ret;
+}
+
 APP_ERROR MemoryHelper::Memset(MemoryData& data, int32_t value, size_t count)
 {
     if (data.ptrData == nullptr) {
@@ -166,6 +182,36 @@ APP_ERROR MemoryHelper::Memset(MemoryData& data, int32_t value, size_t count)
     if (ret != APP_ERR_OK) {
         cout << aclGetRecentErrMsg() << endl;
         LogError << GetError(ret) << "Memset ptrData failed.";
+    }
+    return ret;
+}
+
+APP_ERROR MemoryHelper::MemcpyAsync(MemoryData& dest, const MemoryData& src, size_t count, aclrtStream stream)
+{
+    if (dest.size == 0 && src.size == 0) {
+        return APP_ERR_OK;
+    }
+    if (dest.ptrData == nullptr || src.ptrData == nullptr) {
+        LogError << GetError(APP_ERR_COMM_INVALID_POINTER)
+                 << "Memcpy failed, ptrData is nullptr.";
+        return APP_ERR_COMM_INVALID_POINTER;
+    }
+    APP_ERROR ret = APP_ERR_OK;
+    struct timeval start = { 0 };
+    struct timeval end = { 0 };
+    if (IsDeviceToHost(dest, src)) {
+        ret = aclrtMemcpyAsync(dest.ptrData, dest.size, src.ptrData, count, ACL_MEMCPY_DEVICE_TO_HOST, stream);
+    } else if (IsHostToHost(dest, src)) {
+        throw std::runtime_error("MemcpyAsync does not support host to host copy.");
+    } else if (IsDeviceToDevice(dest, src)) {
+        ret = aclrtMemcpyAsync(dest.ptrData, dest.size, src.ptrData, count, ACL_MEMCPY_DEVICE_TO_DEVICE, stream);
+    } else if (IsHostToDevice(dest, src)) {
+        ret = aclrtMemcpyAsync(dest.ptrData, dest.size, src.ptrData, count, ACL_MEMCPY_HOST_TO_DEVICE, stream);
+    }
+    if (ret != APP_ERR_OK) {
+        cout << aclGetRecentErrMsg() << endl;
+        LogError << GetError(ret) << "Memcpy ptrData failed.";
+        return APP_ERR_ACL_BAD_COPY;
     }
     return ret;
 }
@@ -272,6 +318,16 @@ APP_ERROR MemoryHelper::MxbsMalloc(MemoryData& data)
 APP_ERROR MemoryHelper::MxbsFree(MemoryData& data)
 {
     return MemoryHelper::Free(data);
+}
+
+APP_ERROR MemoryHelper::MxbsMemsetAsync(MemoryData& data, int32_t value, size_t count, aclrtStream stream)
+{
+    return MemoryHelper::MemsetAsync(data, value, count, stream);
+}
+
+APP_ERROR MemoryHelper::MxbsMemcpyAsync(MemoryData& dest, const MemoryData& src, size_t count, aclrtStream stream)
+{
+    return MemoryHelper::MemcpyAsync(dest, src, count, stream);
 }
 
 APP_ERROR MemoryHelper::MxbsMemset(MemoryData& data, int32_t value, size_t count)

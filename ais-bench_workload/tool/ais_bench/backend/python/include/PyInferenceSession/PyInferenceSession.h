@@ -31,10 +31,30 @@ namespace py = pybind11;
 
 #include "Base/ModelInfer/SessionOptions.h"
 
+#include "Base/ModelInfer/AsyncExecutor.h"
 #include "Base/ModelInfer/ModelInferenceProcessor.h"
 #include "Base/Tensor/TensorBase/TensorBase.h"
 
 namespace Base {
+
+struct PerfOption {
+    bool skip_transfer = false;
+    int threads = 1;
+    int device_id = 0;
+
+    int loop = 1;
+    int log_level = LOG_INFO_LEVEL;
+    std::string acl_json_path = "";
+
+    int dynamic_type = STATIC_BATCH;
+    int batchsize = 0;
+    int width = 0;
+    int height = 0;
+    std::string dyn_shapes = "";
+    std::string dyn_dims = "";
+
+    std::vector<size_t> custom_output_size;
+};
 
 
 class PyInferenceSession
@@ -47,6 +67,7 @@ public:
     std::vector<TensorBase> InferVector(std::vector<std::string>& output_names, std::vector<TensorBase>& feeds);
 
     std::vector<TensorBase> InferBaseTensorVector(std::vector<std::string>& output_names, std::vector<Base::BaseTensor>& feeds);
+    void SessionPerf(std::vector<Base::BaseTensor>& feeds, int loop, bool skip_transfer = false);
 
     APP_ERROR ThreadRunTest(int threadNum, std::vector<std::string>& output_names, std::vector<Base::BaseTensor>& feeds);
 
@@ -89,6 +110,8 @@ private:
     bool InitFlag_ = false;
 };
 }
+
+int64_t Perf(const string modelPath, std::vector<Base::BaseTensor> feeds, Base::PerfOption options);
 
 #ifdef COMPILE_PYTHON_MODULE
     void RegistInferenceSession(py::module &m);

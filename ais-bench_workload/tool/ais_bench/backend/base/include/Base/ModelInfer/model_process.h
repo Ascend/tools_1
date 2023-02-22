@@ -16,9 +16,12 @@
 
 #ifndef _MODEL_PROCESS_H_
 #define _MODEL_PROCESS_H_
-#include "acl/acl.h"
-#include "utils.h"
+
 #include <string>
+
+#include "acl/acl.h"
+
+#include "utils.h"
 #include "Base/Tensor/TensorBase/TensorBase.h"
 
 /**
@@ -206,7 +209,7 @@ public:
     * @brief model execute async with dataset stream
     * @return result
     */
-    Result ExecuteAsync(void* inputDataSet, void* outputDataSet, void* stream);
+    Result ExecuteAsync(void* inputDataSet, void* outputDataSet, aclrtStream stream);
 
     /**
     * @brief dump model output result to file

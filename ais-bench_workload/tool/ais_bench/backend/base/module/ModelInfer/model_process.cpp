@@ -14,12 +14,13 @@
 * limitations under the License.
 */
 
-#include "model_process.h"
-#include "utils.h"
 #include <cstddef>
 #include <dirent.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+
+#include "model_process.h"
+#include "utils.h"
 
 using namespace std;
 bool g_is_device = true;
@@ -1242,9 +1243,9 @@ Result ModelProcess::Execute(void* inputDataSet, void* outputDataSet)
     return SUCCESS;
 }
 
-Result ModelProcess::ExecuteAsync(void* inputDataSet, void* outputDataSet, void* stream)
+Result ModelProcess::ExecuteAsync(void* inputDataSet, void* outputDataSet, aclrtStream stream)
 {
-    aclError ret = aclmdlExecuteAsync(modelId_, (aclmdlDataset*)inputDataSet, (aclmdlDataset*)outputDataSet, *(aclrtStream *)stream);
+    aclError ret = aclmdlExecuteAsync(modelId_, (aclmdlDataset*)inputDataSet, (aclmdlDataset*)outputDataSet, stream);
     if (ret != ACL_SUCCESS) {
         cout << aclGetRecentErrMsg() << endl;
         ERROR_LOG("executeAsync model failed, modelId is %u", modelId_);
