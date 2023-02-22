@@ -16,6 +16,7 @@
 #include "PyInferenceSession/PyInferenceSession.h"
 
 #include <exception>
+#include <thread>
 
 #include "Base/DeviceManager/DeviceManager.h"
 #include "Base/Tensor/TensorBuffer/TensorBuffer.h"
@@ -37,12 +38,12 @@ int PyInferenceSession::Destroy()
     }
     APP_ERROR ret = TensorContext::GetInstance()->SetContext(deviceId_);
     if (ret != APP_ERR_OK) {
-        ERROR_LOG("TensorContext::SetContext failed. ret=", ret);
+        ERROR_LOG("TensorContext::SetContext failed. ret=%d", ret);
         return ret;
     }
     ret = modelInfer_.DeInit();
     if (ret != APP_ERR_OK) {
-        ERROR_LOG("ModelInfer Deinit failed. ret=", ret);
+        ERROR_LOG("ModelInfer Deinit failed. ret=%d", ret);
         return ret;
     }
     DEBUG_LOG("PyInferSession DestroySession successfully!");
@@ -54,18 +55,18 @@ int PyInferenceSession::Finalize()
 {
     APP_ERROR ret = TensorContext::GetInstance()->SetContext(deviceId_);
     if (ret != APP_ERR_OK) {
-        ERROR_LOG("TensorContext::SetContext failed. ret=", ret);
+        ERROR_LOG("TensorContext::SetContext failed. ret=%d", ret);
         return ret;
     }
 
     ret = Destroy();
     if (ret != APP_ERR_OK) {
-        ERROR_LOG("TensorContext::Finalize. ret=", ret);
+        ERROR_LOG("TensorContext::Finalize. ret=%d", ret);
         return ret;
     }
     ret = TensorContext::GetInstance()->Finalize();
     if (ret != APP_ERR_OK) {
-        ERROR_LOG("TensorContext::Finalize. ret=", ret);
+        ERROR_LOG("TensorContext::Finalize. ret=%d", ret);
         return ret;
     }
     DEBUG_LOG("PyInferSession Finalize successfully!");
@@ -85,6 +86,10 @@ void PyInferenceSession::Init(const std::string &modelPath, std::shared_ptr<Sess
     if (ret != APP_ERR_OK) {
         throw std::runtime_error(GetError(ret));
     }
+
+    // 确定是否加
+    void *stream = nullptr;
+    DeviceManager::GetInstance()->CreateStream(stream);
 
     ret = modelInfer_.Init(modelPath, options, deviceId_);
     if (ret != APP_ERR_OK) {
@@ -301,6 +306,40 @@ TensorBase PyInferenceSession::CreateTensorFromFilesList(Base::TensorDesc &dstTe
     return dstTensor;
 }
 
+APP_ERROR PyInferenceSession::InferThreadFunc(std::vector<std::string> output_names, std::vector<Base::BaseTensor> feeds)
+{
+    APP_ERROR ret;
+    INFO_LOG("InferThreadFunc begin");
+
+    ret = TensorContext::GetInstance()->SetContext(deviceId_);
+    if (ret != APP_ERR_OK) {
+        throw std::runtime_error(GetError(ret));
+    }
+    void *stream = nullptr;
+    DeviceManager::GetInstance()->CreateStream(stream);
+
+    for (int i = 0; i < 1000; i++){
+        auto outputs = InferBaseTensorVector(output_names, feeds);
+    }
+
+    INFO_LOG("InferThreadFunc end");
+    // DeviceManager::GetInstance()->DestroyStream(stream);
+}
+
+APP_ERROR PyInferenceSession::ThreadRunTest(int threadNum, std::vector<std::string>& output_names, std::vector<Base::BaseTensor>& feeds)
+{
+    std::vector<std::thread> threads;
+    INFO_LOG("ThreadRunTest begin Spawning %d threads", threadNum);
+    for (int i = 0; i < threadNum; i++) {
+        threads.push_back(std::thread(&PyInferenceSession::InferThreadFunc, this, output_names, feeds));
+    }
+    INFO_LOG("ThreadRunTest Done Spawning %d threads ", threadNum);
+    for (auto& t: threads) {
+        t.join();
+    }
+    std::cout << "ThreadRunTest All threads joined.\n";
+}
+
 }
 
 std::shared_ptr<Base::PyInferenceSession> CreateModelInstance(const std::string &modelPath, const uint32_t &deviceId, std::shared_ptr<Base::SessionOptions> options)
@@ -342,6 +381,8 @@ void RegistInferenceSession(py::module &m)
     model.def("run", &Base::PyInferenceSession::InferVector);
     model.def("run", &Base::PyInferenceSession::InferMap);
     model.def("run", &Base::PyInferenceSession::InferBaseTensorVector);
+    model.def("thread_run_test", &Base::PyInferenceSession::ThreadRunTest);
+
     model.def("__str__", &Base::PyInferenceSession::GetDesc);
     model.def("__repr__", &Base::PyInferenceSession::GetDesc);
 

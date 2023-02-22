@@ -139,6 +139,12 @@ struct InferSumaryInfo {
     std::vector<float> execTimeList;
 };
 
+struct BindingData{
+    void *inputDataSet;
+    void *outputDataSet;
+    std::vector<MemoryData> outputsMemDataQue;
+};
+
 class ModelInferenceProcessor {
 public:
     /**
@@ -188,7 +194,7 @@ public:
     APP_ERROR SetCustomOutTensorsSize(std::vector<size_t> customOutSize);
 private:
 
-    APP_ERROR SetDynamicInfo();
+    APP_ERROR SetDynamicInfo(void *inputDataSet);
 
     APP_ERROR AllocDyIndexMem();
     APP_ERROR FreeDyIndexMem();
@@ -196,18 +202,22 @@ private:
 
     APP_ERROR DestroyOutMemoryData(std::vector<MemoryData>& outputs);
     APP_ERROR CreateOutMemoryData(std::vector<MemoryData>& outputs);
-    APP_ERROR AddOutTensors(std::vector<MemoryData>& outputs, std::vector<std::string> outputNames, std::vector<TensorBase>& outputTensors);
+    APP_ERROR AddOutTensors(void* outputDataSet, std::vector<MemoryData>& outputs, std::vector<std::string> outputNames, std::vector<TensorBase>& outputTensors);
 
     APP_ERROR GetModelDescInfo();
-    APP_ERROR DestroyInferCacheData();
+    // APP_ERROR DestroyInferCacheData();
 
-    APP_ERROR SetInputsData(std::vector<BaseTensor> &inputs);
-    APP_ERROR Execute();
-    APP_ERROR GetOutputs(std::vector<std::string> outputNames, std::vector<TensorBase> &outputTensors);
+    APP_ERROR SetInOutData(std::vector<BaseTensor> &inputs, void *inputDataSet, void *outputDataSet, std::vector<MemoryData> &outputsMemDataQue);
+    APP_ERROR Execute(void* inputDataSet, void* outputDataSet);
+    APP_ERROR GetOutputs(void* outputDataSet, std::vector<std::string> outputNames, std::vector<TensorBase> &outputTensors, std::vector<MemoryData> &outputsMemDataQue);
 
     APP_ERROR CheckInVectorAndFillBaseTensor(const std::vector<BaseTensor>& feeds, std::vector<BaseTensor> &inputs);
     APP_ERROR CheckInVectorAndFillBaseTensor(const std::vector<TensorBase>& feeds, std::vector<BaseTensor> &inputs);
     APP_ERROR CheckInMapAndFillBaseTensor(const std::map<std::string, TensorBase>& feeds, std::vector<BaseTensor> &inputs);
+
+    APP_ERROR InferenceAsync(BindingData &bindData, void *stream);
+    APP_ERROR CreateBindingData(const std::vector<BaseTensor>& feeds, BindingData &bindData);
+    APP_ERROR DestroyBindingData(BindingData &bindData);
 
 private:
     ModelDesc modelDesc_;

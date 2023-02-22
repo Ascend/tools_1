@@ -1,19 +1,13 @@
 import argparse
-import asyncio
-import json
 import logging
 import os
 import sys
 import time
 import shutil
-import numpy as np
-
-from tqdm import tqdm
-import time
 from multiprocessing import Pool
-from multiprocessing import Process
 from multiprocessing import Manager
 
+from tqdm import tqdm
 from ais_bench.infer.interface import InferSession, MemorySummary
 from ais_bench.infer.io_oprations import (create_infileslist_from_inputs_list,
                                     create_intensors_from_infileslist,
@@ -195,10 +189,24 @@ def check_nonnegative_integer(value):
     return ivalue
 
 def check_device_range_valid(value):
-    ivalue = int(value)
-    if ivalue < 0 and ivalue > 255:
-        raise argparse.ArgumentTypeError("%s is invalid. valid value range is [0, 255]" % value)
-    return ivalue
+    # if contain , split to int list
+    min_value = 0
+    max_value = 255
+    if ',' in value:
+        ilist = [ int(v) for v in value.split(',') ]
+        for ivalue in ilist:
+            if ivalue < min_value or ivalue > max_value:
+                raise argparse.ArgumentTypeError("{} of device:{} is invalid. valid value range is [{}, {}]".format(
+                    ivalue, value, min_value, max_value))
+        print("lcm debug value:{} ilist:{}".format(value, ilist))
+        return ilist
+    else:
+		# default as single int value
+        ivalue = int(value)
+        if ivalue < min_value or ivalue > max_value:
+            raise argparse.ArgumentTypeError("device:{} is invalid. valid value range is [{}, {}]".format(
+                ivalue, min_value, max_value))
+        return ivalue
 
 def get_args():
     parser = argparse.ArgumentParser()
@@ -227,7 +235,7 @@ def get_args():
     parser.add_argument("--display_all_summary", type=str2bool, default=False, help="display all summary include h2d d2h info")
     parser.add_argument("--warmup_count",  type=check_nonnegative_integer, default=1, help="warmup count before inference")
     parser.add_argument("--dymShape_range", type=str, default=None, help="dynamic shape range, such as --dymShape_range \"data:1,600~700;img_info:1,600-700\"")
-    parser.add_argument("--process", type=int, default=1, help="number process run")
+
     args = parser.parse_args()
 
     if args.profiler is True and args.dump is True:
@@ -260,11 +268,11 @@ def msprof_run_profiling(args):
     ret = os.system(msprof_cmd)
     logger.info("msprof cmd:{} end run ret:{}".format(msprof_cmd, ret))
 
-def main(index=0, q=None):
-    if q != None:
-        logger.info("main run index:{} rq:{}".format(index, q))
+def main(args, index=0, msgq=None):
+    # if msgq is not None,as subproces run
+    if msgq != None:
+        logger.info("subprocess_{} main run".format(index))
 
-    args = get_args()
     if args.debug == True:
         logger.setLevel(logging.DEBUG)
 
@@ -295,14 +303,20 @@ def main(index=0, q=None):
 
     warmup(session, args, intensors_desc, infileslist[0])
 
-    if q != None:
-        logger.info("subprocess index:{} qsize:{} now waiting".format(index, q.qsize()))
-        q.put(index)
+    if msgq != None:
+		# wait subprocess init ready, if time eplapsed,force ready run
+        logger.info("subprocess_{} qsize:{} now waiting".format(index, msgq.qsize()))
+        msgq.put(index)
+        time_sec = 0
         while True:
-            if q.qsize() >= args.process:
+            if msgq.qsize() >= args.subprocess_count:
+                break
+            time_sec = time_sec + 1
+            if time_sec > 10:
+                logger.warning("subprocess_{} qsize:{} time:{} s elapsed".format(index, msgq.qsize(), time_sec))
                 break
             time.sleep(1)
-        logger.info("subprocess index:{} qsize:{} ready to infer run".format(index, q.qsize()))
+        logger.info("subprocess_{} qsize:{} ready to infer run".format(index, msgq.qsize()))
 
     start_time = time.time()
 
@@ -316,6 +330,7 @@ def main(index=0, q=None):
         infer_loop_tensor_run(session, args, intensors_desc, infileslist, output_prefix)
     else:
         raise RuntimeError('wrong run_mode:{}'.format(args.run_mode))
+
     end_time = time.time()
 
     summary.add_args(sys.argv)
@@ -325,30 +340,37 @@ def main(index=0, q=None):
     summary.d2h_latency_list = MemorySummary.get_D2H_time_list()
     summary.report(args.batchsize, output_prefix, args.display_all_summary)
 
-    if q != None:
-        q.put([index, summary.infodict['throughput'], start_time, end_time])
+    if msgq != None:
+		# put result to msgq
+        msgq.put([index, summary.infodict['throughput'], start_time, end_time])
 
     session.finalize()
 
-def multiprocess_run(args):
-    logger.info("multiprocess run begin")
-    p = Pool(args.process)
-    q = Manager().Queue()
+def print_subproces_run_error(value):
+    logger.error("subprocess run failed error_callback:{}".format(value))
 
-    for i in range(args.process):
-        p.apply_async(main, args=(i, q))
+def multidevice_run(args):
+    logger.info("multidevice:{} run begin".format(args.device))
+    device_list = args.device
+    p = Pool(len(device_list))
+    msgq = Manager().Queue()
 
-    logger.info("multiprocess run apply async done")
+    args.subprocess_count = len(device_list)
+    for i in range(len(device_list)):
+        args.device = int(device_list[i])
+        p.apply_async(main, args=(args, i, msgq), error_callback=print_subproces_run_error)
+
     p.close()
     p.join()
-    print("multiprocess run end qsize:{}".format(q.qsize()))
+    logger.info("multidevice run end qsize:{}".format(msgq.qsize()))
     tlist = []
-    while q.qsize() != 0:
-        ret = q.get()
+    while msgq.qsize() != 0:
+        ret = msgq.get()
         if type(ret) == list:
-            print("subprocess_{} throughput:{} start_time:{} end_time:{}".format(ret[0], ret[1], ret[2], ret[3]))
+            print("i:{} device_{} throughput:{} start_time:{} end_time:{}".format(
+                ret[0], device_list[ret[0]], ret[1], ret[2], ret[3]))
             tlist.append(ret[1])
-    logger.info('summary throughput:{}'.format(np.sum(tlist)))
+    logger.info('summary throughput:{}'.format(sum(tlist)))
 
 if __name__ == "__main__":
     args = get_args()
@@ -368,8 +390,10 @@ if __name__ == "__main__":
         # dymshape range run,according range to run each shape infer get best shape
         dymshape_range_run(args)
         exit(0)
-
-    if args.process > 1:
-        multiprocess_run(args)
+    
+    if type(args.device) == list:
+        # args has multiple device, run single process for each device
+        multidevice_run(args)
         exit(0)
-    main()
+
+    main(args)

@@ -237,4 +237,33 @@ APP_ERROR DeviceManager::CheckDeviceId(int32_t deviceId)
     }
     return APP_ERR_OK;
 }
+
+APP_ERROR DeviceManager::CreateStream(void * &pstream)
+{
+    // create stream
+    aclrtStream *stream = (aclrtStream *)malloc(sizeof(aclrtStream));
+    auto ret = aclrtCreateStream(stream);
+    if (ret != ACL_SUCCESS) {
+        cout << aclGetRecentErrMsg() << endl;
+        ERROR_LOG("acl create stream failed");
+        return APP_ERR_FAILURE;
+    }
+    INFO_LOG("create stream:%p success", stream);
+    pstream = stream;
+    return APP_ERR_OK;
+}
+
+APP_ERROR DeviceManager::DestroyStream(void * pstream)
+{
+    if (pstream != nullptr) {
+        auto ret = aclrtDestroyStream((aclrtStream *)pstream);
+        if (ret != ACL_SUCCESS) {
+            cout << aclGetRecentErrMsg() << endl;
+            ERROR_LOG("destroy stream failed");
+        }
+        pstream = nullptr;
+    }
+    INFO_LOG("end to destroy stream");
+}
+
 }  // namespace Base

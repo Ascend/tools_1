@@ -12,6 +12,7 @@
 
 #include "Base/ModelInfer/SessionOptions.h"
 #include "PyInferenceSession/PyInferenceSession.h"
+#include <thread>
 
 int create_pure_input_tensors(std::vector<Base::TensorDesc> descs, int deviceId, std::vector<Base::TensorBase>& intensors)
 {
@@ -46,8 +47,88 @@ int str2num(char* str)
     return n;
 }
 
+int InferRun(std::shared_ptr<Base::PyInferenceSession> session, int deviceId, std::vector<std::string> output_names)
+{
+    std::vector<Base::TensorDesc> indescs = session->GetInputs();
+    std::vector<Base::TensorDesc> outdescs = session->GetOutputs();
+    std::vector<Base::TensorBase> intensors = {};
+
+    create_pure_input_tensors(indescs, deviceId, intensors);
+    for (const auto& tensor : intensors) {
+        printf("in tensor type:%d size:%lld isDevice:%d\n", 
+            tensor.GetTensorType(), tensor.GetSize(), tensor.IsDevice());
+    }
+
+    std::vector<Base::TensorBase> outtensors = session->InferVector(output_names, intensors);
+    for (const auto& tensor : outtensors) {
+        printf("out tensor type:%d size:%lld isDevice:%d\n", 
+            tensor.GetTensorType(), tensor.GetSize(), tensor.IsDevice());
+    }
+    return 0;
+}
+
+int InferThreadFunc(std::string modelPath, int loop)
+{
+    std::shared_ptr<Base::SessionOptions> options = std::make_shared<Base::SessionOptions>();
+    options->loop = 1;
+    options->log_level = 1;
+
+    int deviceId = 0;
+    std::shared_ptr<Base::PyInferenceSession> session = std::make_shared<Base::PyInferenceSession>(
+        modelPath, deviceId, options);
+    std::vector<Base::TensorDesc> outdescs = session->GetOutputs();
+
+    std::vector<std::string> output_names;
+    for (const auto& desc : outdescs) {
+        output_names.push_back(desc.name);
+    }
+
+    InferRun(session, deviceId, output_names);
+    session->ResetSumaryInfo();
+    printf("lcm debug warmup done reset summary\n");
+
+    struct timeval start = { 0 };
+    struct timeval end = { 0 };
+    gettimeofday(&start, nullptr);
+
+    for (int i = 0; i < loop; i++) {
+        InferRun(session, deviceId, output_names);
+    }
+
+    gettimeofday(&end, nullptr);
+    float time_cost = 1000 * (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000.000;
+    printf("thread start:%d.%d end:%d.%d cost : %f\n",
+        start.tv_sec, start.tv_usec, end.tv_sec, end.tv_usec, time_cost);
+
+    Base::InferSumaryInfo sumary = session->GetSumaryInfo();
+    float sum = std::accumulate(std::begin(sumary.execTimeList), std::end(sumary.execTimeList), 0.0);  
+    float mean =  sum / sumary.execTimeList.size(); //均值  
+    printf("lcm debug avg:%f count:%d\n", mean, sumary.execTimeList.size());
+}
+
 
 int main(int argc, char **argv) {
+    std::string modelPath = argv[1];
+    int loop = str2num(argv[2]);
+    int threadNum = 1;
+    if (argc > 3) {
+        threadNum = str2num(argv[3]);
+    }
+
+    std::vector<std::thread> threads;
+    INFO_LOG("ThreadRunTest begin Spawning %d threads", threadNum);
+    for (int i = 0; i < threadNum; i++) {
+        threads.push_back(std::thread(&InferThreadFunc, modelPath, loop));
+    }
+    INFO_LOG("ThreadRunTest Done Spawning %d threads ", threadNum);
+    for (auto& t: threads) {
+        t.join();
+    }
+    std::cout << "ThreadRunTest All threads joined.\n";
+
+}
+
+int main1(int argc, char **argv) {
     std::string modelPath = argv[1];
     int loop = str2num(argv[2]);
     std::string input;

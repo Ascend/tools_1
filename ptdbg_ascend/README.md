@@ -300,6 +300,7 @@ parse("./npu_dump.pkl", "21_Torch_batch_normal")
 ```
 
 #### 场景3：溢出检测分析（NPU场景,GPU和CPU不支持）
+##### 1. api溢出检测，溢出api，api级数据dump
 ```
 from ptdbg_ascend import *
 
@@ -317,6 +318,73 @@ register_hook(model, overflow_check, overflow_nums=2)
 
 ...
 ```
+##### 2. api溢出检测，溢出api，acl级数据dump
+```
+from ptdbg_ascend import *
+
+# 在main函数起始位置固定随机数
+seed_all()
+
+...
+
+#注册溢出检测的hook：
+# 第一个参数是model对象， 第二个参数为精度比对dump的钩子函数名，必须配置为：overflow_check，该函数从ptdbg_ascend中import
+# 第三个参数为overflow_nums表示第几次溢出时，进行acl算子级dump，例如配置为3，表示检测到第三次溢出时停止训练，并针对此次溢出dump;默认不配置即检测到一次溢出，训练停止
+# 第四个参数为dump_mode,控制针对溢出api的dump模式，默认api，如需进一步定位acl数据，可配置为dump_mode="acl"
+# 第五个参数为dump_config，acl dump的配置文件，dump_mode="acl"时，此配置项为必须的。例如：dump_config='/home/xxx/dump.json'
+
+# 示例，检测到1次溢出后退出，并针对溢出api，进行对应acl粒度的数据dump
+register_hook(model, overflow_check, dump_mode='acl', dump_config='/home/xxx/dump.json')
+
+...
+```
+##### dump.json配置示例
+```
+{
+ "dump":
+ {
+         "dump_list":[],
+         "dump_path":"/home/HwHiAiUser/dump/output",
+         "dump_mode":"all",
+         "dump_op_switch":"on"
+ }
+}
+```
+##### dump.json参数说明
+| 字段名              | 说明                                                                                                |
+|-----------------|---------------------------------------------------------------------------------------------------|
+| dump_list   | 待dump数据的算子模型。为空，无需配置。                                         |
+| dump_path   | dump数据文件存储到运行环境的目录，支持配置绝对路径或相对路径：<br>* 绝对路径配置以“/”开头，例如：/home/HwHiAiUser/output。<br>* 相对路径配置直接以目录名开始，例如：output。<br>例如：dump_path配置为/home/HwHiAiUser/output，则dump数据文件存储到运行环境的/home/HwHiAiUser/output目录下。 |
+| dump_mode   | dump数据模式，配置如下：<br>* output：dump算子的输出数据，默认取值output。<br>* input：dump算子的输入数据。<br>*  all：dump算子的输入、输出数据。|
+| dump_op_switch   | 单算子模型dump数据开关，配置如下：<br>* off：关闭单算子模型dump，默认取值off。<br>* on：开启单算子模型dump。|
+
+##### dump路径说明
+采集的dump数据会在{dump_path}/{time}/{deviceid}/{model_id}目录下生成，例如“/home/HwHiAiUser/output/20200808163566/0/0”
+```
+├── 20230131172437
+│   └── 1
+│       ├── 0
+│       │   ├── Add.Add.45.0.1675157077183551
+│       │   ├── Cast.trans_Cast_0.31.0.1675157077159449
+│       │   ├── Cast.trans_Cast_5.43.0.1675157077180129
+│       │   ├── MatMul.MatMul.39.0.1675157077172961
+│       │   ├── Mul.Mul.29.0.1675157077155731
+│       │   ├── NPUAllocFloatStatus.NPUAllocFloatStatus.24.0.1675157077145262
+│       │   ├── TransData.trans_TransData_1.33.0.1675157077162791
+│       │   └── TransData.trans_TransData_4.41.0.1675157077176648
+│       ├── 1701737061
+│       │   └── Cast.trans_Cast_2.35.0.1675157077166214
+│       ├── 25
+│       │   └── NPUClearFloatStatus.NPUClearFloatStatus.26.0.1675157077150342
+│       └── 68
+│           └── TransData.trans_TransData_3.37.0.1675157077169473
+```
+##### 注意事项
+此功能原理是，针对溢出阶段，开启acl dump模式，重新对溢出阶段执行，落盘数据。
+* 针对前向溢出api，可以通过以上原理，重新精准执行到溢出前向api，因此可以得到前向溢出api的全部acl数据。
+* 针对反向场景，通过以上原理，由于torch反向自动化机制，只能重新执行loss.backward（即反向入口），因此得到的是反向全流程的acl数据。
+* 针对前向溢出api，可以通过overflow_nums，配置允许的溢出次数，并将每次溢出api的全部acl数据dump下来，到达指定溢出次数后停止。
+* 针对反向溢出场景的特殊性，overflow_nums不生效，反向检测到一次溢出后，就会停止，并将反向全流程acl数据dump。
 
 ## 贡献
 

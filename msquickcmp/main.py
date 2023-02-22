@@ -42,6 +42,8 @@ def _accuracy_compare_parser(parser):
     parser.add_argument("--output-nodes", dest="output_nodes", default="",
                         help="<Optional> Output nodes designated by user. Separate multiple nodes with semicolons(;)."
                              " E.g: node_name1:0;node_name2:1;node_name3:0")
+    parser.add_argument("--advisor", dest="advisor", action="store_true",
+                        help="<Optional> Enable advisor after compare.")
 
 
 def _generate_golden_data_model(args):
@@ -125,7 +127,7 @@ def main():
         if csv_object_item is not None:
             utils.print_info_log(
                 "{} of the first operator whose cosine similarity is less than 0.9".format(
-                    csv_object_item.get("LeftOp")))
+                    csv_object_item.get("NPUDump")))
         else:
             utils.print_info_log("No operator whose cosine value is less then 0.9 exists.")
     except utils.AccuracyCompareException as error:

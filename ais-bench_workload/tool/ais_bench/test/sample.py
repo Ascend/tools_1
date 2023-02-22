@@ -240,7 +240,35 @@ def infer_dynamic_batchsize():
     # summary inference throughput
     print("infer avg:{} ms".format(np.mean(session.sumary().exec_time_list)))
 
-infer_simple()
+# 最短运行样例
+def infer_thread_test_run():
+    device_id = 0
+    tnum = int(sys.argv[2])
+    options = aclruntime.session_options()
+    options.log_level = 1
+    options.loop = 1
+    session = aclruntime.InferenceSession(model_path, device_id, options)
+
+    # create new numpy data according inputs info
+    barray = bytearray(session.get_inputs()[0].realsize)
+    ndata = np.frombuffer(barray)
+
+    outnames = [ session.get_outputs()[0].name ]
+
+    inputs = []
+    basetensor = aclruntime.BaseTensor(ndata.__array_interface__['data'][0], ndata.nbytes)
+    inputs.append(basetensor)
+
+    outputs = session.thread_run_test(tnum, outnames, inputs)
+    print("thread_run_test outputs:", outputs)
+
+    # summary inference throughput
+    elist = session.sumary().exec_time_list
+    print("infer count:{} max:{} min:{} avg:{} ms".format(len(elist), np.max(elist), np.min(elist), np.mean(elist)))
+
+infer_thread_test_run()
+
+#infer_simple()
 #infer_run_simultaneous()
 #infer_dynamicshape()
 #infer_dynamic_dims()

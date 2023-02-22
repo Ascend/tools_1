@@ -67,13 +67,20 @@ class OmParser(object):
         return subgraph_name
 
     def _gen_operator_list(self):
+        _, scenario = self.get_dynamic_scenario_info()
         for graph in self.json_object.get(GRAPH_OBJECT):
-            _, scenario = self.get_dynamic_scenario_info()
             if graph.get(NAME_OBJECT) in self.subgraph_name and \
                     scenario not in [DynamicArgumentEnum.DYM_BATCH, DynamicArgumentEnum.DYM_DIMS]:
                 continue
             for operator in graph.get(OP_OBJECT):
                 yield operator
+
+    def _gen_operator_list_from_subgraph(self):
+        for graph in self.json_object.get(GRAPH_OBJECT):
+            if graph.get(NAME_OBJECT) in self.subgraph_name:
+                for operator in graph.get(OP_OBJECT):
+                    yield operator
+                return
 
     def get_shape_size(self):
         """
@@ -121,7 +128,12 @@ class OmParser(object):
         Get net output count
         """
         count = 0
-        for operator in self._gen_operator_list():
+        is_dynamic_scenario, dym_arg = self.get_dynamic_scenario_info()
+        if not is_dynamic_scenario or dym_arg is DynamicArgumentEnum.DYM_SHAPE:
+            op_iterator = self._gen_operator_list()
+        else:
+            op_iterator = self._gen_operator_list_from_subgraph()
+        for operator in op_iterator:
             if NET_OUTPUT_OBJECT == operator.get(TYPE_OBJECT) and INPUT_DESC_OBJECT in operator:
                 count += len(operator.get(INPUT_DESC_OBJECT))
         return count

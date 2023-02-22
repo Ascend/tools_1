@@ -51,6 +51,10 @@ public:
     bool IsInitDevices() const;
     APP_ERROR CheckDeviceId(int32_t deviceId);
     void SetAclJsonPath(std::string aclJsonPath);
+
+    APP_ERROR CreateStream(void * &pstream);
+    APP_ERROR DestroyStream(void * pstream);
+
 private:
     DeviceManager() = default;
     std::mutex mtx_ = {};
