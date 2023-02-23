@@ -96,7 +96,7 @@ ais_bench推理工具的安装包括**aclruntime包**和**ais_bench推理程序�
 
    也可以选择下载如下whl包进行后续安装，无须通过上述命令编译。
 
-   002版本（aclruntime包请根据当前环境选择适配版本）：
+   0.0.2版本（aclruntime包请根据当前环境选择适配版本）：
 
    - [aclruntime-0.0.2-cp37-cp37m-linux_x86_64.whl](https://aisbench.obs.cn-north-4.myhuaweicloud.com/packet/ais_bench_infer/0.0.2/aclruntime-0.0.2-cp37-cp37m-linux_x86_64.whl)
    - [aclruntime-0.0.2-cp39-cp39-linux_x86_64.whl](https://aisbench.obs.cn-north-4.myhuaweicloud.com/packet/ais_bench_infer/0.0.2/aclruntime-0.0.2-cp39-cp39-linux_x86_64.whl)
