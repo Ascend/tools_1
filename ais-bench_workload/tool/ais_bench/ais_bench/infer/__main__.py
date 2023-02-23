@@ -4,6 +4,7 @@ import os
 import sys
 import time
 import shutil
+import copy
 from multiprocessing import Pool
 from multiprocessing import Manager
 
@@ -356,8 +357,9 @@ def multidevice_run(args):
 
     args.subprocess_count = len(device_list)
     for i in range(len(device_list)):
-        args.device = int(device_list[i])
-        p.apply_async(main, args=(args, i, msgq), error_callback=print_subproces_run_error)
+        cur_args = copy.deepcopy(args)
+        cur_args.device = int(device_list[i])
+        p.apply_async(main, args=(cur_args, i, msgq), error_callback=print_subproces_run_error)
 
     p.close()
     p.join()

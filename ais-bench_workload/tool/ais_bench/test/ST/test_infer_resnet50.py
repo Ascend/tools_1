@@ -1182,7 +1182,6 @@ class TestClass():
         device_count, ret = acl.rt.get_device_count()
         if device_count <= 1:
             return
-
         device_list = [str(i) for i in range(device_count)]
         devices = ','.join(device_list)
 
@@ -1197,7 +1196,7 @@ class TestClass():
         log_path = os.path.join(output_path, "multi_device_infer.log")
 
         model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
-        cmd = "{} --model {} --device {} --input {} > {}".format(TestCommonClass.cmd_prefix, model_path,
+        cmd = "{} --model {} --device {} --input {} --debug=1 > {}".format(TestCommonClass.cmd_prefix, model_path,
                                                             devices, input_path, log_path)
         print("run cmd:{}".format(cmd))
         ret = os.system(cmd)
@@ -1205,8 +1204,9 @@ class TestClass():
         assert os.path.exists(log_path)
 
         device_throughputs = []
-        total_throughtout = 0;
+        total_throughtout = 0
         summary_throughput = 0
+        open_device_list = []
         with open(log_path) as f:
             for line in f:
                 if "device_"  in line:
@@ -1219,9 +1219,14 @@ class TestClass():
                     temp_str = temp_strs[2].split(':')[1]
                     temp_str = temp_str.replace('\n','')
                     summary_throughput = float(temp_str)
+                elif "open device" in line:
+                    temp_strs = line.split(' ')
+                    open_device_list.append(int(temp_strs[3]))
                 else:
                     continue
 
+        open_device_list = list(set(open_device_list))
+        assert device_count == len(open_device_list)
         assert device_count == len(device_throughputs)
         assert abs(total_throughtout - summary_throughput) <= TestCommonClass.EPSILON
         os.remove(log_path)
