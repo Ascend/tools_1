@@ -301,12 +301,13 @@ def overflow_check(name, **kwargs):
                 stack_line = [path, str(line), func, code[0].strip()]
                 stack_str.append(stack_line)
             dump_overflow(module_name, stack_str, in_feat, out_feat, dump_file_name)
-            # clear overflow flag for the next check
-            torch_npu._C._clear_overflow_npu()
+
             if dump_mode == "acl":
                 acl_dump(module, module_name)
             print_warn_log("[overflow {} times]: module name :'{}' is overflow and dump file is saved in '{}'."
                            .format(DumpUtil.real_overflow_dump_times, module_name, os.path.realpath(dump_file_name)))
+            # clear overflow flag for the next check
+            torch_npu._C._clear_overflow_npu()
             if not DumpUtil.check_overflow_dump_times(overflow_nums):
                 raise ValueError("[overflow {} times]: dump file is saved in '{}'."
                                  .format(DumpUtil.real_overflow_dump_times, os.path.realpath(dump_file_name)))
