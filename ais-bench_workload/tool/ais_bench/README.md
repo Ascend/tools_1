@@ -94,14 +94,16 @@ ais_bench推理工具的安装包括**aclruntime包**和**ais_bench推理程序�
    Successfully built ais-bench
    ```
 
-   也可以选择下载如下whl包进行后续安装，无须通过上述命令编译：
+   也可以选择下载如下whl包进行后续安装，无须通过上述命令编译。
 
-   - aclruntime包（根据当前环境下载其中一个）：
-     - https://aisbench.obs.cn-north-4.myhuaweicloud.com/packet/aclruntime-0.0.2-cp37-cp37m-linux_x86_64.whl
-     - https://aisbench.obs.cn-north-4.myhuaweicloud.com/packet/aclruntime-0.0.2-cp37-cp37m-linux_x86_64.whl
-     - https://aisbench.obs.cn-north-4.myhuaweicloud.com/packet/aclruntime-0.0.2-cp37-cp37m-linux_x86_64.whl
-     - https://aisbench.obs.cn-north-4.myhuaweicloud.com/packet/aclruntime-0.0.2-cp37-cp37m-linux_x86_64.whl
-   - ais_bench推理程序包：https://aisbench.obs.cn-north-4.myhuaweicloud.com/packet/aclruntime-0.0.2-cp37-cp37m-linux_x86_64.whl
+   002版本（aclruntime包请根据当前环境选择适配版本）：
+
+   - [aclruntime-0.0.2-cp37-cp37m-linux_x86_64.whl](https://aisbench.obs.cn-north-4.myhuaweicloud.com/packet/ais_bench_infer/0.0.2/aclruntime-0.0.2-cp37-cp37m-linux_x86_64.whl)
+   - [aclruntime-0.0.2-cp39-cp39-linux_x86_64.whl](https://aisbench.obs.cn-north-4.myhuaweicloud.com/packet/ais_bench_infer/0.0.2/aclruntime-0.0.2-cp39-cp39-linux_x86_64.whl)
+   - [aclruntime-0.0.2-cp39-cp39-linux_aarch64.whl](https://aisbench.obs.cn-north-4.myhuaweicloud.com/packet/ais_bench_infer/0.0.2/aclruntime-0.0.2-cp39-cp39-linux_aarch64.whl)
+   - [aclruntime-0.0.2-cp37-cp37m-linux_aarch64.whl](https://aisbench.obs.cn-north-4.myhuaweicloud.com/packet/ais_bench_infer/0.0.2/aclruntime-0.0.2-cp37-cp37m-linux_aarch64.whl)
+
+   - [ais_bench-0.0.2-py3-none-any.whl](https://aisbench.obs.cn-north-4.myhuaweicloud.com/packet/ais_bench_infer/0.0.2/ais_bench-0.0.2-py3-none-any.whl)
 
 4. 执行如下命令，进行安装。
 
