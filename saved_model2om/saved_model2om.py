@@ -3,6 +3,10 @@ import argparse
 import sys
 import subprocess
 import copy
+import contextlib
+import time
+import shutil
+
 from time import strftime, localtime
 from collections import namedtuple, OrderedDict
 
@@ -12,13 +16,12 @@ from tensorflow.python.saved_model import tag_constants
 from tensorflow.python.saved_model import signature_constants
 from tensorflow.core.framework import types_pb2, graph_pb2, node_def_pb2, attr_value_pb2
 from tensorflow.compat.v1 import graph_util
-
 from six import StringIO
-import contextlib
-import time
-import shutil
 
 NodeInfo = namedtuple('NodeInfo', ['name', 'shape', 'type', 'full_name'])
+TMP_PATH = '/tmp/saved_model2om'
+TMP_PB_NAME = 'model.pb'
+TMP_OM_NAME = 'model'
 
 
 @contextlib.contextmanager
@@ -34,7 +37,6 @@ def captured_output():
 
 
 def get_input_output_node(saved_model_dir, saved_tags, sign):
-
     parser = saved_model_cli.create_parser()
     saved_model_cli_args = parser.parse_args([
         'show',
@@ -76,7 +78,7 @@ def parse_node_from_line(idx, node_dict, line, lines):
     node_type = type_line.split(":")[1].strip()
     node_name = name_line.split(":")[1].strip()
     node_full_name = name_line[name_line.index(":") + 1:].strip()
-    node_shape = tuple(int(shape) if int(shape) != -1 else None
+    node_shape = tuple(int(shape) if shape and int(shape) != -1 else None
                        for shape in shape_line.split(":")[1].strip()[1:-1].split(","))
     node_dict[line[line.index("'") + 1:line.rfind("'")]] = NodeInfo(node_name, node_shape, node_type, node_full_name)
 
@@ -84,10 +86,11 @@ def parse_node_from_line(idx, node_dict, line, lines):
 def saved_pb(saved_model_dir, output_nodes, output_dir, output_name, saved_tags):
     with tf.Session(graph=tf.Graph()) as sess:
         tf.saved_model.load(sess, saved_tags, saved_model_dir)
-        graph = tf.compat.v1.graph_util.convert_variables_to_constants(sess, input_graph_def=sess.graph.as_graph_def(),
-                                                                       output_node_names=[node.name
-                                                                                          for node
-                                                                                          in output_nodes.values()])
+        graph = tf.compat.v1.graph_util.convert_variables_to_constants(
+            sess,
+            input_graph_def=sess.graph.as_graph_def(),
+            output_node_names=[node.name for node in output_nodes.values()]
+        )
 
         tf.io.write_graph(
             graph,
@@ -101,7 +104,6 @@ def saved_pb(saved_model_dir, output_nodes, output_dir, output_name, saved_tags)
 
 def saved_model_to_pb(saved_model_dir, output_dir, output_name, saved_tags=tag_constants.SERVING,
                       sign=signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY):
-
     input_nodes, output_nodes, method_name = get_input_output_node(saved_model_dir, saved_tags, sign)
 
     print("[INFO]: Save Model has [", len(output_nodes), "] outputs.")
@@ -155,10 +157,10 @@ def saved_sub_graph_saved_model(new_input_nodes, new_output_nodes, saved_model_d
         tf.import_graph_def(output_graph_def, name="")
         graph = tf.get_default_graph()
         labeling_signature = tf.saved_model.signature_def_utils.build_signature_def(
-                    inputs={k: tf.saved_model.utils.build_tensor_info(graph.get_tensor_by_name(v.full_name))
-                            for k, v in input_node_names_dict.items()},
-                    outputs={k: tf.saved_model.utils.build_tensor_info(graph.get_tensor_by_name(v.full_name))
-                             for k, v in output_node_names_dict.items()}, method_name=method_name)
+            inputs={k: tf.saved_model.utils.build_tensor_info(graph.get_tensor_by_name(v.full_name))
+                    for k, v in input_node_names_dict.items()},
+            outputs={k: tf.saved_model.utils.build_tensor_info(graph.get_tensor_by_name(v.full_name))
+                     for k, v in output_node_names_dict.items()}, method_name=method_name)
         output_path = os.path.join(tmp_path, "tmp_saved_model")
         saved_model_builder = tf.saved_model.builder.SavedModelBuilder(output_path)
         saved_model_builder.add_meta_graph_and_variables(
@@ -188,7 +190,7 @@ def parse_new_output_nodes_string(new_nodes_string):
     return node_dict
 
 
-def save_hw_saved_model(input_node_dict: dict, output_node_dict: dict, output_path, method_name):
+def save_hw_saved_model(input_node_dict: dict, output_node_dict: dict, output_path, method_name, om_path):
     try:
         from npu_bridge.helper import helper
     except ImportError:
@@ -209,27 +211,22 @@ def save_hw_saved_model(input_node_dict: dict, output_node_dict: dict, output_pa
             hw_saved_model_input_dict[key] = tf.placeholder(shape=value.shape,
                                                             dtype=tf.DType(getattr(types_pb2, value.type)),
                                                             name=value.name)
+        model_data = tf.Variable(tf.io.read_file(om_path), dtype=tf.string)
         gen_npu_ops = helper.get_gen_ops()
         outputs = gen_npu_ops.load_and_execute_om(list(hw_saved_model_input_dict.values()),
+                                                  model_data=model_data,
                                                   output_dtypes=tuple(tf.DType(getattr(types_pb2, value.type))
-                                                                      for value in output_node_dict.values()),
-                                                  om_path=f"{output_path}.om")
-
-        # test run pattern
-        # import numpy as np
-        # input_list = list(hw_saved_model_input_dict.values())
-        # print(sess.run(outputs, feed_dict={input_list[0]: np.random.randn(1, 128).astype(np.int32),
-        #                                    input_list[1]: np.random.randn(1, 128).astype(np.int32),
-        #                                    input_list[2]: np.random.randn(1, 128).astype(np.int32)}))
+                                                                      for value in output_node_dict.values()))
 
         saved_outputs = OrderedDict()
         for output_tensor, output_node in zip(outputs, output_node_dict):
             saved_outputs[output_node] = tf.saved_model.utils.build_tensor_info(output_tensor)
+        sess.run(tf.initializers.global_variables())
         labeling_signature = tf.saved_model.signature_def_utils.build_signature_def(
-                    inputs={k: tf.saved_model.utils.build_tensor_info(v) for k, v in hw_saved_model_input_dict.items()},
-                    outputs=saved_outputs,
-                    method_name=method_name)
-        saved_path = output_path + f"_load_om_saved_model_{strftime('%Y%m%d_%H_%M_%S',localtime())}"
+            inputs={k: tf.saved_model.utils.build_tensor_info(v) for k, v in hw_saved_model_input_dict.items()},
+            outputs=saved_outputs,
+            method_name=method_name)
+        saved_path = output_path + f"_load_om_saved_model_{strftime('%Y%m%d_%H_%M_%S', localtime())}"
         saved_model_builder = tf.saved_model.builder.SavedModelBuilder(saved_path)
         saved_model_builder.add_meta_graph_and_variables(
             sess, [tf.saved_model.tag_constants.SERVING], signature_def_map={
@@ -288,18 +285,25 @@ def get_out_nodes(output_nodes):
     return ";".join(output_node.full_name for output_node in output_nodes.values())
 
 
+def make_temp_path(base_path, dir_name, file_name):
+    tmp_dir_path = os.path.join(base_path, dir_name)
+    os.makedirs(tmp_dir_path, exist_ok=True)
+    tmp_file_path = os.path.join(tmp_dir_path, file_name)
+    return tmp_dir_path, tmp_file_path
+
+
 def main(input_path, output_path, input_shape, soc_version, profiling, method_name, new_input_nodes, new_output_nodes,
          rest_args):
     try:
-        tmp_path = os.path.join("/tmp", f"pb_dir_{int(time.time())}")
-        os.makedirs(tmp_path, exist_ok=True)
-        tmp_pb_name = "model.pb"
-        tmp_pb_file = os.path.join(tmp_path, tmp_pb_name)
+        now_time = int(time.time())
+        tmp_pb_path, tmp_pb_file = make_temp_path(TMP_PATH, f"pb_dir_{now_time}", TMP_PB_NAME)
+        tmp_om_path, tmp_om_file = make_temp_path(TMP_PATH, f"om_dir_{now_time}", TMP_OM_NAME)
         if new_input_nodes is not None or new_output_nodes is not None:
-            input_path = saved_sub_graph_saved_model(new_input_nodes, new_output_nodes, input_path, tmp_path)
-        input_nodes, output_nodes, saved_model_method_name = saved_model_to_pb(input_path, tmp_path, tmp_pb_name)
+            input_path = saved_sub_graph_saved_model(new_input_nodes, new_output_nodes, input_path, tmp_pb_path)
+        input_nodes, output_nodes, saved_model_method_name = saved_model_to_pb(input_path, tmp_pb_path, TMP_PB_NAME)
         if not saved_model_method_name and not method_name:
-            print(f"[ERROR]: The method name cannot be obtained from the input saved model. Please set the parameter --method_name.")
+            print(f"[ERROR]: The method name cannot be obtained from the input saved model."
+                  f"Please set the parameter --method_name.")
             return
         if input_shape:
             print(f"The input_shape of model: {input_shape}")
@@ -308,17 +312,18 @@ def main(input_path, output_path, input_shape, soc_version, profiling, method_na
         gen_pb_txt(tmp_pb_file)
         out_nodes = get_out_nodes(output_nodes)
         if profiling is not None:
-            ret = pb_to_om_with_profiling(tmp_pb_file, output_path, input_shape, out_nodes, profiling, rest_args)
+            ret = pb_to_om_with_profiling(tmp_pb_file, tmp_om_file, input_shape, out_nodes, profiling, rest_args)
         else:
-            ret = pb_to_om(tmp_pb_file, output_path, soc_version, input_shape, out_nodes, rest_args)
+            ret = pb_to_om(tmp_pb_file, tmp_om_file, soc_version, input_shape, out_nodes, rest_args)
         if ret.returncode != 0:
             return
+        om_file_path = os.path.join(tmp_om_path, os.listdir(tmp_om_path)[0])
         print(f"[INFO]: The om model has been converted and the HW Saved Model is ready to be generated.")
         method_name = method_name or saved_model_method_name
         print(f"[INFO]: Use method name {method_name}.")
-        save_hw_saved_model(input_nodes, output_nodes, output_path, method_name)
+        save_hw_saved_model(input_nodes, output_nodes, output_path, method_name, om_file_path)
     finally:
-        shutil.rmtree(tmp_path)
+        shutil.rmtree(TMP_PATH)
 
 
 def get_args():
@@ -331,17 +336,17 @@ def get_args():
                                                           'Use double quotation marks (") to enclose each argument.'
                                                           'E.g.: "input_name1:n1,c1,h1,w1;input_name2:n2,c2,h2,w2"')
     parser.add_argument("--method_name", help='Method name for TF-Serving.')
-    # parser.add_argument("--new_input_nodes",
-    #                     help='Configure this to reselect the input node.'
-    #                          'the node format is name:type_pb:node_name'
-    #                          'Separate multiple nodes with semicolons (;).'
-    #                          'Use double quotation marks (") to enclose each argument.'
-    #                          'E.g.: "embedding:DT_FLOAT:bert/embedding/word_embeddings:0;add:DT_INT:bert/embedding/add:0"')
-    # parser.add_argument("--new_output_nodes",
-    #                     help='Configure this to reselect the output node.'
-    #                     'Separate multiple nodes with semicolons (;).'
-    #                     'Use double quotation marks (") to enclose each argument.'
-    #                     'E.g.: "loss:loss/Softmax:0"')
+    parser.add_argument("--new_input_nodes",
+                        help='Configure this to reselect the input node.'
+                             'the node format is name:type_pb:node_name'
+                             'Separate multiple nodes with semicolons (;).'
+                             'Use double quotation marks (") to enclose each argument.'
+                             'E.g.: "embedding:DT_FLOAT:bert/embedding/word_embeddings:0;add:DT_INT:bert/embedding/add:0"')
+    parser.add_argument("--new_output_nodes",
+                        help='Configure this to reselect the output node.'
+                             'Separate multiple nodes with semicolons (;).'
+                             'Use double quotation marks (") to enclose each argument.'
+                             'E.g.: "loss:loss/Softmax:0"')
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--soc_version", help="The soc version. "
                                              "This parameter is not required when profiling is set.")
@@ -353,4 +358,4 @@ def get_args():
 if __name__ == "__main__":
     args, unknown_args = get_args()
     main(args.input_path, args.output_path, args.input_shape, args.soc_version, args.profiling, args.method_name,
-         None, None, unknown_args)
+         args.new_input_nodes, args.new_output_nodes, unknown_args)
