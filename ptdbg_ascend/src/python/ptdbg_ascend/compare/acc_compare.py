@@ -244,9 +244,9 @@ def _compare_fusion_ops(idx, fusion_op_names, dump_path_dict, result_path, lock)
         cos_result.append(cos_sim)
         max_err_result.append(max_abs_err)
         err_mess.append(err_msg)
-    _save_cmp_reslut(idx, cos_result, max_err_result, err_mess, result_path, lock)
+    _save_cmp_result(idx, cos_result, max_err_result, err_mess, result_path, lock)
 
-def _save_cmp_reslut(idx, cos_result, max_err_result, err_msg, result_path, lock):
+def _save_cmp_result(idx, cos_result, max_err_result, err_msg, result_path, lock):
     lock.acquire()
     try:
         csv_pd = pd.read_csv(result_path, dtype=str)
