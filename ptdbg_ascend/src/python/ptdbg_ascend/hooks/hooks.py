@@ -258,6 +258,10 @@ def acc_cmp_dump(name, **kwargs):
     def acc_cmp_hook(module, in_feat, out_feat):
         if pid == os.getpid():
             dump_acc_cmp(name, in_feat, out_feat, dump_step)
+        if hasattr(module, "input_args"):
+            del module.input_args
+        if hasattr(module, "input_kwargs"):
+            del module.input_kwargs
 
     return acc_cmp_hook
 
