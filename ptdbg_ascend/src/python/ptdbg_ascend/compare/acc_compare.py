@@ -34,7 +34,7 @@ def correct_data(result):
         return result
     if float(result) > 0.99999:
         return '1.0'
-
+    return result
 
 def cosine_similarity(n_value, b_value):
     np.seterr(divide='ignore', invalid='ignore')
