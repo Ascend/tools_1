@@ -89,7 +89,7 @@ def check_op(npu_dict, bench_dict, shape_flag):
     a_op_name = [_.split('_', 1)[1] for _ in npu_dict["op_name"]]
     b_op_name = [_.split('_', 1)[1] for _ in bench_dict["op_name"]]
     if shape_flag:
-        return a_op_name == b_op_name and npu_dict["input_struct"] == npu_dict["input_struct"] \
+        return a_op_name == b_op_name and npu_dict["input_struct"] == bench_dict["input_struct"] \
             and npu_dict["output_struct"] == bench_dict["output_struct"]
     else:
         return a_op_name == b_op_name
@@ -199,7 +199,7 @@ def read_dump_path(result_path):
         npu_dump_name_list = csv_pd.iloc[0:, 0].tolist()
         bench_dump_name_list = csv_pd.iloc[0:, 1].tolist()
         op_name_mapping_dict = {}
-        for index in enumerate(npu_dump_name_list):
+        for index, _ in enumerate(npu_dump_name_list):
             npu_dump_name = npu_dump_name_list[index]
             bench_dump_name = bench_dump_name_list[index]
             op_name_mapping_dict[npu_dump_name] = [npu_dump_name, bench_dump_name]
