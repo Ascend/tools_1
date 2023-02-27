@@ -170,8 +170,7 @@ def get_accuracy(result, n_dict, b_dict, summery_flag):
             index_out += 1
         err_msg = ""
 
-        result_item = [n_name, b_name, n_struct[0], b_struct[0], n_struct[1], b_struct[1],
-                       " ", " "]
+        result_item = [n_name, b_name, n_struct[0], b_struct[0], n_struct[1], b_struct[1], " ", " "]
         if summery_flag[0]:
             summery_data = n_dict.get("summery")[index]
             result_item.extend(summery_data)
