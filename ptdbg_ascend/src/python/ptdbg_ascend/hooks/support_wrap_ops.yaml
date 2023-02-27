@@ -618,7 +618,6 @@ torch:
   - avg_pool1d
   - baddbmm
   - bartlett_window
-  - batch_norm
   - batch_norm_backward_elemt
   - batch_norm_backward_reduce
   - batch_norm_elemt

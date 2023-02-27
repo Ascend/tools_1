@@ -31,6 +31,8 @@ from ..common.utils import check_file_or_directory_path, print_error_log, \
     print_warn_log, CompareException, Const, get_time, print_info_log
 from .backward import Backward
 
+init_status = False
+
 
 class DumpUtil(object):
     dump_data_dir = None
@@ -279,8 +281,9 @@ def overflow_check(name, **kwargs):
     pid = kwargs.get('pid')
     dump_mode = kwargs.get('dump_mode', "api")
     dump_config = kwargs.get('dump_config')
-    backward_obj = Backward()
-    torch.autograd.backward = backward_obj.backward
+    if dump_mode == "acl":
+        backward_obj = Backward()
+        torch.autograd.backward = backward_obj.backward
     if not pid:
         return RuntimeError("Not get the specified process pid.")
 
@@ -298,7 +301,8 @@ def overflow_check(name, **kwargs):
             if hasattr(module, 'input_kwargs'):
                 del module.input_kwargs
         if module.has_overflow and DumpUtil.check_overflow_dump_times(overflow_nums):
-            DumpUtil.inc_overflow_dump_times()
+            if not init_status:
+                DumpUtil.inc_overflow_dump_times()
             dump_file_name = "Overflow_info_{}_{}.pkl".format(get_time(), DumpUtil.real_overflow_dump_times)
             stack_str = []
             for (_, path, line, func, code, _) in inspect.stack()[3:]:
@@ -334,14 +338,18 @@ def overflow_check(name, **kwargs):
         raise ValueError("[Acl backward only support one time, will stop when detecct backward overflow]")
 
     def forward_acl_dump(module, module_name):
-        torch_npu.npu.init_dump()
-        torch_npu.npu.set_dump(dump_config)
-        torch_npu.npu.synchronize()
-        module.forward(*module.input_args, **module.input_kwargs)
-        torch_npu.npu.synchronize()
-        torch_npu.npu.finalize_dump()
+        global init_status
+        if not init_status:
+            torch_npu.npu.init_dump()
+            torch_npu.npu.set_dump(dump_config)
+            torch_npu.npu.synchronize()
+            module.forward(*module.input_args, **module.input_kwargs)
+            torch_npu.npu.synchronize()
+            torch_npu.npu.finalize_dump()
+            init_status = True
         del module.input_args
         del module.input_kwargs
+        init_status = False
         print_info_log("Dump %s op file." % module_name)
 
     return overflowcheck_hook
