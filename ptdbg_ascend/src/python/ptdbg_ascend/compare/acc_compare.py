@@ -18,7 +18,9 @@
 
 import argparse
 import json
+import multiprocessing
 import os.path
+import sys
 
 import numpy as np
 import pandas as pd
@@ -27,14 +29,20 @@ from ..common.utils import check_file_or_directory_path, add_time_as_suffix,\
     print_error_log, CompareException, Const, format_value
 
 
-def cosine_similarity(a, b):
+def correct_data(result):
+    if result == Const.NAN:
+        return result
+    if float(result) > 0.99999:
+        return '1.0'
+    return result
+
+def cosine_similarity(n_value, b_value):
     np.seterr(divide='ignore', invalid='ignore')
-    if len(a) == 1:
+    if len(n_value) == 1:
         return format_value(1.0), "This tensor is scalar."
-    a, b = np.mat(a), np.mat(b)
-    num = float(a * b.T)
-    a_norm = np.linalg.norm(a)
-    b_norm = np.linalg.norm(b)
+    num = n_value.dot(b_value)
+    a_norm = np.linalg.norm(n_value)
+    b_norm = np.linalg.norm(b_value)
     message = ''
     if a_norm <= Const.FLOAT_EPSILON and b_norm <= Const.FLOAT_EPSILON:
         result = '1.0'
@@ -51,37 +59,32 @@ def cosine_similarity(a, b):
             result = Const.NAN
         else:
             result = format_value(0.5 + 0.5 * cos)
-
+    result = correct_data(result)
     return result, message
 
 
-def get_rmse(a, b):
-    rmse = np.linalg.norm(a - b) / np.sqrt(len(a))
+def get_rmse(n_value, b_value):
+    rmse = np.linalg.norm(n_value - b_value) / np.sqrt(len(n_value))
     if np.isnan(rmse):
         rmse = Const.NAN
     return rmse, ""
 
 
-def get_mape(a, b):
-    mape_val = sum(np.abs((a - b) / b)) / len(b) * 100
+def get_mape(n_value, b_value):
+    mape_val = np.sum(np.abs((n_value - b_value) / b_value)) / len(b_value) * 100
     mape = Const.NAN if np.isnan(mape_val) else str(round(mape_val, 4)) + '%'
     return mape, ""
 
 
-def get_max_abs_err(a, b):
-    max_value = 0.0
-    for a_data, b_data in zip(a, b):
-        temp_x = float(a_data)
-        temp_y = float(b_data)
-        abs_error = abs(temp_x - temp_y)
-        if abs_error > max_value:
-            max_value = abs_error
+def get_max_abs_err(n_value, b_value):
+    temp_res = n_value - b_value
+    max_value = np.max(np.abs(temp_res))
     return format_value(max_value), ""
 
 
-def get_max_relative_err(a, b):
+def get_max_relative_err(n_value, b_value):
     np.seterr(divide='ignore', invalid='ignore')
-    relative_err = np.divide((a - b), b)
+    relative_err = np.divide((n_value - b_value), b_value)
     max_relative_err = np.max(np.abs(relative_err))
     if np.isnan(max_relative_err):
         message = 'cannot compare by MaxRelativeError, The data contains 0 or nan in dump data.'
@@ -89,37 +92,31 @@ def get_max_relative_err(a, b):
     return format_value(max_relative_err), ""
 
 
-def check_op(a, b, shape_flag):
-    a_op_name = [_.split('_', 1)[1] for _ in a["op_name"]]
-    b_op_name = [_.split('_', 1)[1] for _ in b["op_name"]]
+def check_op(npu_dict, bench_dict, shape_flag):
+    a_op_name = [_.split('_', 1)[1] for _ in npu_dict["op_name"]]
+    b_op_name = [_.split('_', 1)[1] for _ in bench_dict["op_name"]]
     if shape_flag:
-        return a_op_name == b_op_name and a["input_struct"] == b["input_struct"] \
-            and a["output_struct"] == b["output_struct"]
+        return a_op_name == b_op_name and npu_dict["input_struct"] == bench_dict["input_struct"] \
+            and npu_dict["output_struct"] == bench_dict["output_struct"]
     else:
         return a_op_name == b_op_name
 
 
-def merge_tensor(tensor_list, dump_data_path):
+def merge_tensor(tensor_list):
     op_dict = {}
     op_dict["op_name"] = []
     op_dict["input_struct"] = []
     op_dict["output_struct"] = []
-    op_dict["input_value"] = []
-    op_dict["output_value"] = []
     op_dict["summery"] = []
 
     for tensor in tensor_list:
         if tensor[0].find("stack_info") != -1:
             continue
-        file_name = os.path.join(dump_data_path, f'{tensor[0]}.npy')
-        tensor_data = np.load(file_name)
         op_dict["op_name"].append(tensor[0])
         if tensor[0].find("input") != -1:
             op_dict["input_struct"].append((tensor[3], tensor[4]))
-            op_dict["input_value"].append(tensor_data)
         elif tensor[0].find("output") != -1:
             op_dict["output_struct"].append((tensor[3], tensor[4]))
-            op_dict["output_value"].append(tensor_data)
 
         if tensor[1] <= Const.DUMP_RATIO_MAX:
             op_dict["summery"].append(tensor[5])
@@ -127,7 +124,7 @@ def merge_tensor(tensor_list, dump_data_path):
     return op_dict
 
 
-def read_op(ops_queue, pkl_file_handle, dump_data_path):
+def read_op(ops_queue, pkl_file_handle):
     tensor_list = []
     read_err = False
     read_output_flag = {"last_line": False, "curr_line": False}
@@ -144,9 +141,9 @@ def read_op(ops_queue, pkl_file_handle, dump_data_path):
             read_output_flag["last_line"] = read_output_flag.get("curr_line")
             read_output_flag["curr_line"] = True if tensor_data[0].find("output") != -1 else False
 
-        if (read_output_flag.get("last_line") and not read_output_flag.get("curr_line")) or\
-                (len(tensor_line) == 0 and read_output_flag.get("curr_line")):  # end of file scenario
-            ops_queue.append(merge_tensor(tensor_list, dump_data_path))
+        if (read_output_flag.get("last_line") and not read_output_flag.get("curr_line")) \
+                or (len(tensor_line) == 0 and read_output_flag.get("curr_line")):  # end of file scenario
+            ops_queue.append(merge_tensor(tensor_list))
             # the pos of the handle needs to restore to the start of the next api.
             pkl_file_handle.seek(curr_pos, 0)
             break
@@ -172,27 +169,15 @@ def get_accuracy(result, n_dict, b_dict, summery_flag):
     for index, n_name in enumerate(n_dict["op_name"]):
         b_name = b_dict["op_name"][index]
         if n_name.find("input") != -1:
-            n_value = n_dict["input_value"][index]
-            b_value = b_dict["input_value"][index]
             n_struct = n_dict["input_struct"][index]
             b_struct = b_dict["input_struct"][index]
         else:
-            n_value = n_dict["output_value"][index_out]
-            b_value = b_dict["output_value"][index_out]
             n_struct = n_dict["output_struct"][index_out]
             b_struct = b_dict["output_struct"][index_out]
             index_out += 1
         err_msg = ""
-        if n_struct[1] != b_struct[1]:
-            cos_sim = "cannot be calculated "
-            max_abs_err = "cannot be calculated"
-        else:
-            cos_sim, message = cosine_similarity(n_value, b_value)
-            err_msg += message
-            max_abs_err, _ = get_max_abs_err(n_value, b_value)
 
-        result_item = [n_name, b_name, n_struct[0], b_struct[0], n_struct[1], b_struct[1],
-                       cos_sim, max_abs_err]
+        result_item = [n_name, b_name, n_struct[0], b_struct[0], n_struct[1], b_struct[1], " ", " "]
         if summery_flag[0]:
             summery_data = n_dict.get("summery")[index]
             result_item.extend(summery_data)
@@ -203,13 +188,124 @@ def get_accuracy(result, n_dict, b_dict, summery_flag):
         result.append(result_item)
 
 
+def _do_multi_process(input_parma, result_path):
+    try:
+        _handle_multi_process(compare_ops, input_parma, result_path, multiprocessing.Manager().RLock())
+    except FileNotFoundError as error:
+        print("File not Found. compare failed!")
+        return
+    except IOError as error:
+        print("IOEError. compare failed!")
+        return
+
+
+def read_dump_path(result_path):
+    try:
+        csv_pd = pd.read_csv(result_path)
+        npu_dump_name_list = csv_pd.iloc[0:, 0].tolist()
+        bench_dump_name_list = csv_pd.iloc[0:, 1].tolist()
+        op_name_mapping_dict = {}
+        for index, _ in enumerate(npu_dump_name_list):
+            npu_dump_name = npu_dump_name_list[index]
+            bench_dump_name = bench_dump_name_list[index]
+            op_name_mapping_dict[npu_dump_name] = [npu_dump_name, bench_dump_name]
+        return op_name_mapping_dict
+    except FileNotFoundError as error:
+        print(error)
+        raise FileNotFoundError(error)
+    except IOError as error:
+        print(error)
+        raise IOError(error)
+
+
+def _handle_multi_process(func, input_parma, result_path, lock):
+    process_num = int((multiprocessing.cpu_count() + 1) / 2)
+    op_name_mapping_dict = read_dump_path(result_path)
+    op_names = []
+    for _ in range(process_num):
+        op_names.append([])
+    all_op_names = list(op_name_mapping_dict.keys())
+    for i, op_name in enumerate(all_op_names):
+        op_names[i % process_num].append(op_name)
+    all_tasks = []
+    pool = multiprocessing.Pool(process_num)
+    def err_call(args):
+        try:
+            pool.terminate()
+            if os.path.exists(result_path):
+                os.remove(result_path)
+            sys.exit(args)
+        except SystemExit as error:
+            print('multiprocess compare failed! season:{}'.format(args))
+    for process_idx, fusion_op_names in enumerate(op_names):
+        idx = [process_num, process_idx]
+        task = pool.apply_async(func,
+                                args=(idx, fusion_op_names, op_name_mapping_dict, result_path, lock, input_parma),
+                                error_callback=err_call)
+        all_tasks.append(task)
+    pool.close()
+    pool.join()
+
+
+def compare_ops(idx, fusion_op_names, dump_path_dict, result_path, lock, input_parma):
+    cos_result = []
+    max_err_result = []
+    err_mess = []
+    is_print_compare_log = input_parma.get("is_print_compare_log")
+    for i, op_name in enumerate(fusion_op_names):
+        if is_print_compare_log:
+            print("start comapre: {}".format(op_name))
+        cos_sim, max_abs_err, err_msg = compare_by_op(op_name, dump_path_dict, input_parma)
+        if is_print_compare_log:
+            print("[{}] Compare result: cosine {}, max_abs_err {}, {}".format(op_name, cos_sim, max_abs_err, err_msg))
+        cos_result.append(cos_sim)
+        max_err_result.append(max_abs_err)
+        err_mess.append(err_msg)
+    _save_cmp_result(idx, cos_result, max_err_result, err_mess, result_path, lock)
+
+
+def _save_cmp_result(idx, cos_result, max_err_result, err_msg, result_path, lock):
+    lock.acquire()
+    try:
+        csv_pd = pd.read_csv(result_path, dtype=str)
+        process_num = idx[0]
+        process_idx = idx[1]
+        for i, _ in enumerate(cos_result):
+            process_index = i * process_num + process_idx
+            csv_pd.loc[process_index, "Cosine"] = cos_result[i]
+            csv_pd.loc[process_index, "MaxAbsErr"] = max_err_result[i]
+            csv_pd.loc[process_index, "Err_message"] = err_msg[i]
+        csv_pd.to_csv(result_path, index=False)
+    except FileNotFoundError as error:
+        print(error)
+        raise FileNotFoundError(error)
+    except IOError as error:
+        print(error)
+        raise IOError(error)
+    finally:
+        lock.release()
+
+def compare_by_op(op_name, op_name_mapping_dict, input_parma):
+    npu_bench_name_list = op_name_mapping_dict[op_name]
+    try:
+        n_value = np.load(os.path.join(input_parma.get("npu_dump_data_dir"), npu_bench_name_list[0] + ".npy"))
+        b_value = np.load(os.path.join(input_parma.get("bench_dump_data_dir"), npu_bench_name_list[1] + ".npy"))
+    except IOError as error:
+        return " ", "", "Dump file:{} not found".format(error.filename)
+    err_msg = ""
+    cos_sim, message = cosine_similarity(n_value, b_value)
+    err_msg += message
+    max_abs_err, _ = get_max_abs_err(n_value, b_value)
+    return cos_sim, max_abs_err, err_msg
+
+
 def compare(input_parma, output_path, shape_flag=True):
     check_file_or_directory_path(output_path, True)
     npu_pkl = open(input_parma.get("npu_pkl_path"), "r")
     bench_pkl = open(input_parma.get("bench_pkl_path"), "r")
     npu_summary = _get_summery_mode(npu_pkl, input_parma.get("npu_pkl_path"))
     bench_summary = _get_summery_mode(bench_pkl, input_parma.get("bench_pkl_path"))
-    result = compare_process(npu_pkl, bench_pkl, input_parma, [npu_summary, bench_summary], shape_flag)
+    result = compare_process(npu_pkl, bench_pkl, [npu_summary, bench_summary], shape_flag)
     npu_pkl.close()
     bench_pkl.close()
 
@@ -225,6 +321,8 @@ def compare(input_parma, output_path, shape_flag=True):
     file_name = add_time_as_suffix("compare_result")
     file_path = os.path.join(os.path.realpath(output_path), file_name)
     result_df.to_csv(file_path, index=False)
+
+    _do_multi_process(input_parma, file_path)
 
 
 def parse(pkl_file, module_name_prefix):
@@ -260,13 +358,13 @@ def parse(pkl_file, module_name_prefix):
     pkl_handle.close()
 
 
-def compare_process(npu_pkl_handle, bench_pkl_handle, input_param, summary_flag, shape_flag):
+def compare_process(npu_pkl_handle, bench_pkl_handle, summary_flag, shape_flag):
     npu_ops_queue = []
     bench_ops_queue = []
     result = []
     while True:
-        npu_file_flag = read_op(npu_ops_queue, npu_pkl_handle, input_param.get("npu_dump_data_dir"))
-        bench_file_flag = read_op(bench_ops_queue, bench_pkl_handle, input_param.get("bench_dump_data_dir"))
+        npu_file_flag = read_op(npu_ops_queue, npu_pkl_handle)
+        bench_file_flag = read_op(bench_ops_queue, bench_pkl_handle)
         if (not npu_file_flag and not bench_file_flag) \
                 or (len(npu_ops_queue) == 0 or len(bench_ops_queue) == 0):
             break
