@@ -224,6 +224,7 @@ def make_dump_data_dir(dump_file_name):
         os.mkdir(output_dir)
     return output_dir
 
+
 def dump_acc_cmp(name, in_feat, out_feat, dump_step):
     dump_file = DumpUtil.get_dump_path()
     if DumpUtil.get_dump_switch():
@@ -237,8 +238,7 @@ def dump_acc_cmp(name, in_feat, out_feat, dump_step):
         name_prefix = f"{dump_acc_cmp.call_number}_{name}"
         if DumpUtil.dump_switch_mode == Const.DUMP_SCOPE.get("ALL"):
             name_template = f"{name_prefix}" + "_{}"
-            dump_tensor(in_feat, name_template.format("input"), dump_step)
-            dump_tensor(out_feat, name_template.format("output"), dump_step)
+            dump_api_tensor(dump_step, in_feat, name_template, out_feat)
         elif DumpUtil.check_switch_scope(name_prefix):
             name_template = f"{name_prefix}" + "_{}"
             stack_str = []
@@ -247,8 +247,16 @@ def dump_acc_cmp(name, in_feat, out_feat, dump_step):
                 stack_str.append(stack_line)
             _dump_tensor_completely(stack_str, name_template.format("stack_info"), dump_file)
             if DumpUtil.dump_switch_mode != Const.DUMP_SCOPE.get("STACK"):
-                dump_tensor(in_feat, name_template.format("input"), dump_step)
-                dump_tensor(out_feat, name_template.format("output"), dump_step)
+                dump_api_tensor(dump_step, in_feat, name_template, out_feat)
+
+
+def dump_api_tensor(dump_step, in_feat, name_template, out_feat):
+    if "backward" in name_template:
+        dump_tensor(out_feat, name_template.format("input"), dump_step)
+        dump_tensor(in_feat, name_template.format("output"), dump_step)
+    else:
+        dump_tensor(in_feat, name_template.format("input"), dump_step)
+        dump_tensor(out_feat, name_template.format("output"), dump_step)
 
 
 def acc_cmp_dump(name, **kwargs):
