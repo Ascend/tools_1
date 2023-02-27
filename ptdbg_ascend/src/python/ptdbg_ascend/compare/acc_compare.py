@@ -29,6 +29,13 @@ from ..common.utils import check_file_or_directory_path, add_time_as_suffix,\
     print_error_log, CompareException, Const, format_value
 
 
+def correct_data(result):
+    if result == Const.NAN:
+        return result
+    if float(result) > 0.99999:
+        return '1.0'
+
+
 def cosine_similarity(n_value, b_value):
     np.seterr(divide='ignore', invalid='ignore')
     if len(n_value) == 1:
@@ -52,7 +59,7 @@ def cosine_similarity(n_value, b_value):
             result = Const.NAN
         else:
             result = format_value(0.5 + 0.5 * cos)
-
+    result = correct_data(result)
     return result, message
 
 
