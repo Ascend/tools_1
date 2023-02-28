@@ -15,13 +15,56 @@
 ### 工具安装方式
 
 ais_bench推理工具的安装包括**aclruntime包**和**ais_bench推理程序包**的安装。
-安装方式包括：一键式编译安装和源代码编译安装。
+安装方式包括：下载whl包安装、一键式编译安装和源代码编译安装。
 
 **说明**：
 
 - 安装环境要求网络畅通。
 - centos平台默认为gcc 4.8编译器，可能无法安装本工具，建议更新gcc编译器后再安装。
 - 本工具安装时需要获取CANN版本，用户可通过设置CANN_PATH环境变量，指定安装的CANN版本路径，例如：export CANN_PATH=/xxx/nnrt/latest/。若不设置，工具默认会从/usr/local/Ascend/nnrt/latest/和/usr/local/Ascend/ascend-toolkit/latest路径分别尝试获取CANN版本。
+
+#### 下载whl包安装
+
+1. 下载如下aclruntime和ais_bench推理程序的whl包。
+
+   0.0.2版本（aclruntime包请根据当前环境选择适配版本）：
+
+   - [aclruntime-0.0.2-cp37-cp37m-linux_x86_64.whl](https://aisbench.obs.myhuaweicloud.com/packet/ais_bench_infer/0.0.2/aclruntime-0.0.2-cp37-cp37m-linux_x86_64.whl)
+   - [aclruntime-0.0.2-cp37-cp37m-linux_aarch64.whl](https://aisbench.obs.myhuaweicloud.com/packet/ais_bench_infer/0.0.2/aclruntime-0.0.2-cp37-cp37m-linux_aarch64.whl)
+   - [aclruntime-0.0.2-cp38-cp38-linux_x86_64.whl](https://aisbench.obs.myhuaweicloud.com/packet/ais_bench_infer/0.0.2/aclruntime-0.0.2-cp38-cp38-linux_x86_64.whl)
+   - [aclruntime-0.0.2-cp38-cp38-linux_aarch64.whl](https://aisbench.obs.myhuaweicloud.com/packet/ais_bench_infer/0.0.2/aclruntime-0.0.2-cp38-cp38-linux_aarch64.whl)
+   - [aclruntime-0.0.2-cp39-cp39-linux_x86_64.whl](https://aisbench.obs.myhuaweicloud.com/packet/ais_bench_infer/0.0.2/aclruntime-0.0.2-cp39-cp39-linux_x86_64.whl)
+   - [aclruntime-0.0.2-cp39-cp39-linux_aarch64.whl](https://aisbench.obs.myhuaweicloud.com/packet/ais_bench_infer/0.0.2/aclruntime-0.0.2-cp39-cp39-linux_aarch64.whl)
+   - [ais_bench-0.0.2-py3-none-any.whl](https://aisbench.obs.myhuaweicloud.com/packet/ais_bench_infer/0.0.2/ais_bench-0.0.2-py3-none-any.whl)
+
+2. 执行如下命令，进行安装。
+
+   ```bash
+   # 安装aclruntime
+   pip3 install ./aclruntime-{version}-{python_version}-linux_{arch}.whl
+   # 安装ais_bench推理程序
+   pip3 install ./ais_bench-{version}-py3-none-any.whl
+   ```
+
+   {version}表示软件版本号，{python_version}表示Python版本号，{arch}表示CPU架构。
+
+   说明：若为覆盖安装，请增加“--force-reinstall”参数强制安装，例如：
+
+   ```bash
+   pip3 install ./aclruntime-{version}-{python_version}-linux_{arch}.whl --force-reinstall
+   pip3 install ./ais_bench-{version}-py3-none-any.whl --force-reinstall
+   ```
+
+   分别提示如下信息则表示安装成功：
+
+   ```bash
+   # 成功安装aclruntime
+   Successfully installed aclruntime-{version}
+   # 成功安装ais_bench推理程序
+   Successfully installed ais_bench-{version}
+   ```
+
+   
 
 #### 一键式编译安装
 
@@ -77,7 +120,7 @@ ais_bench推理工具的安装包括**aclruntime包**和**ais_bench推理程序�
    ```bash
    # 进入工具解压目录
    cd ${HOME}/ais-bench_workload/tool/ais_bench/
-   # 构建ais_bench aclruntime包
+   # 构建aclruntime包
    pip3 wheel ./backend/ -v
    # 构建ais_bench推理程序包
    pip3 wheel ./ -v
@@ -88,29 +131,18 @@ ais_bench推理工具的安装包括**aclruntime包**和**ais_bench推理程序�
    分别提示如下信息则表示编译成功：
 
    ```bash
-   # 成功编译ais_bench aclruntime包
+   # 成功编译aclruntime包
    Successfully built aclruntime
    # 成功编译ais_bench推理程序包
    Successfully built ais-bench
    ```
 
-   也可以选择下载如下whl包进行后续安装，无须通过上述命令编译。
-
-   0.0.2版本（aclruntime包请根据当前环境选择适配版本）：
-
-   - [aclruntime-0.0.2-cp37-cp37m-linux_x86_64.whl](https://aisbench.obs.cn-north-4.myhuaweicloud.com/packet/ais_bench_infer/0.0.2/aclruntime-0.0.2-cp37-cp37m-linux_x86_64.whl)
-   - [aclruntime-0.0.2-cp39-cp39-linux_x86_64.whl](https://aisbench.obs.cn-north-4.myhuaweicloud.com/packet/ais_bench_infer/0.0.2/aclruntime-0.0.2-cp39-cp39-linux_x86_64.whl)
-   - [aclruntime-0.0.2-cp39-cp39-linux_aarch64.whl](https://aisbench.obs.cn-north-4.myhuaweicloud.com/packet/ais_bench_infer/0.0.2/aclruntime-0.0.2-cp39-cp39-linux_aarch64.whl)
-   - [aclruntime-0.0.2-cp37-cp37m-linux_aarch64.whl](https://aisbench.obs.cn-north-4.myhuaweicloud.com/packet/ais_bench_infer/0.0.2/aclruntime-0.0.2-cp37-cp37m-linux_aarch64.whl)
-
-   - [ais_bench-0.0.2-py3-none-any.whl](https://aisbench.obs.cn-north-4.myhuaweicloud.com/packet/ais_bench_infer/0.0.2/ais_bench-0.0.2-py3-none-any.whl)
-
 4. 执行如下命令，进行安装。
 
    ```bash
-   # 安装ais_bench推理后端包aclruntime
+   # 安装aclruntime
    pip3 install ./aclruntime-{version}-{python_version}-linux_{arch}.whl
-   # 安装ais_bench推理前端包ais_bench
+   # 安装ais_bench推理程序
    pip3 install ./ais_bench-{version}-py3-none-any.whl
    ```
 
@@ -126,9 +158,9 @@ ais_bench推理工具的安装包括**aclruntime包**和**ais_bench推理程序�
    分别提示如下信息则表示安装成功：
 
    ```bash
-   # 成功安装ais_bench推理后端包aclruntime
+   # 成功安装aclruntime
    Successfully installed aclruntime-{version}
-   # 成功安装ais_bench推理前端包ais_bench
+   # 成功安装ais_bench推理程序
    Successfully installed ais_bench-{version}
    ```
    
