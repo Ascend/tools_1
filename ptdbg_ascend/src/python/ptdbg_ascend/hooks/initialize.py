@@ -20,7 +20,7 @@ import os
 
 import torch
 
-from . import wrap_tensor, wrap_torch, wrap_functional, wrap_vf
+from . import wrap_tensor, wrap_torch, wrap_functional, wrap_vf, wrap_npu_custom
 from .module import HOOKModule
 from ..common.utils import check_file_or_directory_path, add_time_as_suffix, \
     print_error_log, CompareException, Const, format_value, print_info_log, print_warn_log
@@ -49,6 +49,12 @@ def initialize_hook(hook):
     for attr_name in dir(wrap_vf.HOOKVfOP):
         if attr_name.startswith("wrap_"):
             setattr(torch._VF, attr_name[5:], getattr(wrap_vf.HOOKVfOP, attr_name))
+
+    if not torch.cuda.is_available():
+        wrap_npu_custom.wrap_npu_ops_and_bind(hook)
+        for attr_name in dir(wrap_npu_custom.HOOKNpuOP):
+            if attr_name.startswith("wrap_"):
+                setattr(torch_npu, attr_name[5:], getattr(wrap_npu_custom.HOOKNpuOP, attr_name))
 
 
 def register_hook(model, hook, **kwargs):
