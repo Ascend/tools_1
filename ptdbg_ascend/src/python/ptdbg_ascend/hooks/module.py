@@ -69,7 +69,10 @@ class HOOKModule(nn.Module):
                 if isinstance(var, dict):
                     var = next((v for v in var.values() if isinstance(v, torch.Tensor)))
                 elif isinstance(var, (list, tuple)):
-                    var = var[0]
+                    if var
+                        var = var[0]
+                    else:
+                        return result
                 else:
                     return result
             grad_fn = var.grad_fn
