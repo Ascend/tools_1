@@ -30,7 +30,7 @@ class BackendTRTExec(backend.Backend):
         self.config = TrtexecConfig()
         self.convert_config(config)
         self.model_path = ""
-        self.output_log = None
+        self.output_log = ""
         self.trace = InferenceTrace()
 
     @property
@@ -123,8 +123,15 @@ class BackendTRTExec(backend.Backend):
             command.append(f"--batch={self.config.batch}")
 
         logger.info("Trtexec Build command: " + " ".join(command))
-        log = subprocess.Popen(
+        process = subprocess.Popen(
             command, stdout=subprocess.PIPE, shell=False
-        ).communicate()
-        self.output_log = log[0].decode()
+        )
+
+        while process.poll() is None:
+            line = process.stdout.readline()
+            self.output_log += line.decode()
+            line = line.strip()
+            if line:
+                print(line.decode())
+
         return []
