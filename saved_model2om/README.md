@@ -69,8 +69,8 @@ python3 saved_model2om.py --input_path=/xxx/xxx/saved_model --output_path=/xxx/o
 | --soc_version | 输出om模型的芯片类型。<br />当设置--profiling参数时，无需配置此参数，由当前执行转换的设备决定 |
 | --profiling | 设置此参数时，则会开启AOE调优。（该参数配置后无需再指定job_type）<br />- 取值为1时，启用子图调优<br />- 取值为2时，启用算子调优<br />如需进行子图或算子调优，则该参数必选 |
 | --method_name | 用于配置TF Serving运行时用于推理的方法，不配置则会从原始saved_model中获取 |
-| --new_input_nodes | 重新现在输入节点，格式为“算子:类型:算子名;算子:类型:算子名”<br />例如"embedding:DT_FLOAT:bert/embedding/word_embeddings:0;add:DT_INT:bert/embedding/add:0" |
-| --new_output_nodes | 重新现在输入节点，格式为“算子:算子名”<br />例如"loss:loss/Softmax:0" |
+| --new_input_nodes | 重新选择输入节点，格式为"算子:类型:算子名;算子:类型:算子名"<br />例如"embedding:DT_FLOAT:bert/embedding/word_embeddings:0;add:DT_INT:bert/embedding/add:0" |
+| --new_output_nodes | 重新选择输出节点，格式为"算子:算子名"<br />例如"loss:loss/Softmax:0" |
 
 
 该工具同时支持对atc/aoe的参数进行透传，如果需要使用其余的参数，当--profiling未被指定时请参考ATC使用文档，当指定--profiling参数时请参考Aoe使用文档。
