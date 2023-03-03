@@ -290,6 +290,8 @@ def compare_by_op(op_name, op_name_mapping_dict, input_parma):
     try:
         n_value = np.load(os.path.join(input_parma.get("npu_dump_data_dir"), npu_bench_name_list[0] + ".npy"))
         b_value = np.load(os.path.join(input_parma.get("bench_dump_data_dir"), npu_bench_name_list[1] + ".npy"))
+        n_value = n_value.reshape(1, -1).astype(float)
+        b_value = b_value.reshape(1, -1).astype(float)  
     except IOError as error:
         return " ", "", "Dump file:{} not found".format(error.filename)
     err_msg = ""
