@@ -13,7 +13,7 @@
 - 同一模型，进行迭代(模型、算子或设备迭代)时存在的精度下降问题，对比相同模型在迭代前后版本的算子计算数值，进行问题定位。
 
 ## **例外场景**
-1. 当前dump会判断tensor是否为浮点类型，只Dump浮点型。
+1. 当前dump只会dump tensor类型数据，且会判断tensor是否为浮点类型，只Dump浮点型。
 2. 只支持dump反向调用链路中的算子，如果不在链路中会出现只有前向没有反向dump数据的情况。
 
 ## **精度比对基本原理**
@@ -46,6 +46,59 @@
 1. 两个算子的输入输出Tensor数量和各个Tensor的shape是否相同
 
 通常满足以上的两个条件，就认为是同一个算子，成功进行算子的匹配，后续进行相应的计算精度比对。
+
+### **NPU自定义算子dump**
+对于NPU vs NPU场景，本工具还支持对NPU自定义算子的数据dump，目前支持列表如下
+
+| NPU自定义算子 |
+| ------ | 
+| torch_npu.one_ | 
+| torch_npu.npu_sort_v2 | 
+| torch_npu.npu_transpose |
+| torch_npu.npu_broadcast |
+| torch_npu.npu_dtype_cast |
+| torch_npu.empty_with_format |
+| torch_npu.npu_one_hot |
+| torch_npu.npu_stride_add |
+| torch_npu.npu_ps_roi_pooling |
+| torch_npu.npu_roi_align |
+| torch_npu.npu_nms_v4 |
+| torch_npu.npu_iou |
+| torch_npu.npu_nms_with_mask |
+| torch_npu.npu_pad |
+| torch_npu.npu_bounding_box_encode |
+| torch_npu.npu_bounding_box_decode |
+| torch_npu.npu_batch_nms |
+| torch_npu.npu_slice |
+| torch_npu._npu_dropout |
+| torch_npu.npu_indexing
+| torch_npu.npu_ifmr |
+| torch_npu.npu_max |
+| torch_npu.npu_scatter |
+| torch_npu.npu_layer_norm_eval |
+| torch_npu.npu_alloc_float_status |
+| torch_npu.npu_get_float_status |
+| torch_npu.npu_clear_float_status |
+| torch_npu.npu_confusion_transpose |
+| torch_npu.npu_bmmV2 |
+| torch_npu.fast_gelu |
+| torch_npu.npu_sub_sample |
+| torch_npu.npu_deformable_conv2d |
+| torch_npu.npu_mish |
+| torch_npu.npu_anchor_response_flags |
+| torch_npu.npu_yolo_boxes_encode |
+| torch_npu.npu_grid_assign_positive |
+| torch_npu.npu_normalize_batch |
+| torch_npu.npu_masked_fill_range |
+| torch_npu.npu_linear |
+| torch_npu.npu_bert_apply_adam |
+| torch_npu.npu_giou |
+| torch_npu.npu_ciou |
+| torch_npu.npu_ciou_backward |
+| torch_npu.npu_diou |
+| torch_npu.npu_diou_backward |
+| torch_npu.npu_sign_bits_pack |
+| torch_npu.npu_sign_bits_unpack |
 
 ### **计算精度评价指标**
 
@@ -382,6 +435,7 @@ register_hook(model, overflow_check, dump_mode='acl', dump_config='/home/xxx/dum
 ```
 ##### 注意事项
 此功能原理是，针对溢出阶段，开启acl dump模式，重新对溢出阶段执行，落盘数据。
+* dump_mode="acl"场景下，会增加npu的内存消耗，请用户谨慎开启。
 * 针对前向溢出api，可以通过以上原理，重新精准执行到溢出前向api，因此可以得到前向溢出api的全部acl数据。
 * 部分api存在调用嵌套关系，比如functional.batch_norm实际调用torch.batch_norm, 该场景会影响acl init初始化多次，导致功能异常。针对此场景，后续会针对性做适配，当前版本可能存在此问题
 * 针对反向场景，通过以上原理，由于torch反向自动化机制，只能重新执行loss.backward（即反向入口），因此得到的是反向全流程的acl数据。
@@ -390,7 +444,7 @@ register_hook(model, overflow_check, dump_mode='acl', dump_config='/home/xxx/dum
 
 ## 贡献
 
-psuh代码前，请务必保证已经完成了基础功能测试和网络测试！
+push代码前，请务必保证已经完成了基础功能测试和网络测试！
 
 ## Release Notes
 

@@ -309,8 +309,7 @@ def overflow_check(name, **kwargs):
             if hasattr(module, 'input_kwargs'):
                 del module.input_kwargs
         if module.has_overflow and DumpUtil.check_overflow_dump_times(overflow_nums):
-            if not init_status:
-                DumpUtil.inc_overflow_dump_times()
+            DumpUtil.inc_overflow_dump_times()
             dump_file_name = "Overflow_info_{}_{}.pkl".format(get_time(), DumpUtil.real_overflow_dump_times)
             stack_str = []
             for (_, path, line, func, code, _) in inspect.stack()[3:]:
