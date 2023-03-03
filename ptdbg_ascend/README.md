@@ -230,8 +230,8 @@ pip3 install ./ptdbg_ascend/dist/ptdbg_ascend-0.1-py3-none-any.whl --upgrade --f
 #### 使用说明
 1) seed_all和set_dump_path在训练主函数main一开始就调用，避免随机数固定不全；
 2) 模型较大时dump较慢，可以通过两步法：先粗->后精，逐步缩小范围来定位，如下：<br/>
-   第一步，通过“下采样dump”做整网比对，快速找到问题的可能点；<br/>
-        "下采样dump"会dump采样后的数据，以及完整数据的统计信息：dtype, shape, max, min, mean等；<br/>
+   第一步，通过整网Dump做整网比对，快速找到问题的可能点；<br/>
+        Dump信息包含完整数据的统计信息：dtype, shape, max, min, mean等；<br/>
    第二步，基于整网比对找到的精度问题产生起始点/起始点范围，再通过指定api dump，或者指定范围做完整数据dump，从而进行精确分析；
 3) 指定范围dump的控制方法：
 ```
@@ -265,8 +265,8 @@ set_dump_switch("ON", mode=4, scope=["1000_Tensor_abs", "1484_Tensor_transpose_f
 
 #### 场景化示例
 #### 场景1：训练场景的精度问题分析
-第一步，采样模式下的整网比对，初步定位异常范围<br/>
-数据dump。下采样方式dump NPU和GPU/CPU数据，比对双方采样步长要相同，下面以NPU为例（GPU/CPU dump基本相同）：<br/>
+第一步，整网Dump比对，初步定位异常范围<br/>
+数据dump。NPU和GPU/CPU数据，下面以NPU为例（GPU/CPU dump基本相同）：<br/>
 ```
 from ptdbg_ascend import *
 
@@ -279,13 +279,9 @@ set_dump_path("./npu_dump.pkl")
 
 # 注册精度比对dump的hook函数
 # 第一个参数是model对象， 第二个参数为精度比对dump的钩子函数，必须配置为：acc_cmp_dump，该函数从ptdbg_ascend中import
-# 第三个参数为dump的采样步长
-# dump数据的采样规则：
-     每个tensor dump范围为:(256(前) + 中间部分按采样步长取数 + 256(尾))，同时dump出tensor的max, min, mean;
-     采样步长配置：1~100的整数，表示采样的步长; 默认配置为：1，全量dump（无采样）
 
-# 示例,采样步长为2，即间隔一个点抽数，分采样50%
-register_hook(model, acc_cmp_dump, dump_step=2)
+# 示例
+register_hook(model, acc_cmp_dump)
 
 ...
 
