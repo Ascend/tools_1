@@ -31,6 +31,7 @@ from ..common.utils import check_file_or_directory_path, print_error_log, \
     print_warn_log, CompareException, Const, get_time, print_info_log
 from .backward import Backward
 
+DumpCount = 0
 init_status = False
 
 
@@ -57,11 +58,13 @@ class DumpUtil(object):
 
     @staticmethod
     def check_switch_scope(name_prefix):
+        global DumpCount
         if DumpUtil.dump_switch_mode == Const.DUMP_SCOPE.get("ALL"):
             return True
         elif DumpUtil.dump_switch_mode == Const.DUMP_SCOPE.get("LIST"):
             for item in DumpUtil.dump_switch_scope:
                 if name_prefix.startswith(item):
+                    DumpCount = DumpCount + 1
                     return True
         elif DumpUtil.dump_switch_mode == Const.DUMP_SCOPE.get("RANGE"):
             start = int(DumpUtil.dump_switch_scope[0].split('_', 1)[0])
@@ -139,7 +142,12 @@ def set_dump_path(fpath=None):
 
 
 def set_dump_switch(switch, mode=1, scope=[]):
+    global DumpCount
     assert switch in ["ON", "OFF"], "Please set dump switch with 'ON' or 'OFF'."
+    if mode ==2 and switch == "ON":
+        DumpCount = 0
+    if mode == 2 and switch == "OFF":
+        print_info_log("The number of matched dump is {}".format(DumpCount))
     if mode == Const.DUMP_SCOPE.get("RANGE"):
         assert len(scope) == 2, "set_dump_switch, scope param set invalid, it's must be [start, end]."
     if mode == Const.DUMP_SCOPE.get("LIST"):
