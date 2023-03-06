@@ -18,6 +18,7 @@ from ais_bench.infer.io_oprations import (create_infileslist_from_inputs_list,
 from ais_bench.infer.summary import summary
 from ais_bench.infer.utils import logger
 from ais_bench.infer.miscellaneous import dymshape_range_run, get_acl_json_path, version_check, get_batchsize
+from ais_bench.infer.backends import BackendFactory
 
 def set_session_options(session, args):
     # 增加校验
@@ -235,6 +236,8 @@ def get_args():
     parser.add_argument("--display_all_summary", type=str2bool, default=False, help="display all summary include h2d d2h info")
     parser.add_argument("--warmup_count",  type=check_nonnegative_integer, default=1, help="warmup count before inference")
     parser.add_argument("--dymShape_range", type=str, default=None, help="dynamic shape range, such as --dymShape_range \"data:1,600~700;img_info:1,600-700\"")
+    parser.add_argument("--backend", type=str, default=None, help="backend trtexec")
+    parser.add_argument("--perf", type=str2bool, default=False, help="perf switch")
 
     args = parser.parse_args()
 
@@ -372,8 +375,20 @@ def multidevice_run(args):
             tlist.append(ret[1])
     logger.info('summary throughput:{}'.format(sum(tlist)))
 
+def backend_run(args):
+    backend_class = BackendFactory.create_backend(args.backend)
+    backend = backend_class(args)
+    backend.load(args.model)
+    backend.run()
+    perf = backend.get_perf()
+    print("perf info:{}".format(perf))
+
 if __name__ == "__main__":
     args = get_args()
+
+    if args.perf == True:
+        backend_run(args)
+        exit(0)
 
     version_check(args)
 
