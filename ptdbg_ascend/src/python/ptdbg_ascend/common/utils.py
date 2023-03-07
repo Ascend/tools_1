@@ -42,7 +42,7 @@ class Const:
     COMMA = ","
     DOT = "."
     DUMP_RATIO_MAX = 100
-    DUMP_SCOPE = {"ALL": 1, "LIST": 2, "RANGE": 3, "STACK": 4}
+    DUMP_SCOPE = {"ALL": 1, "LIST": 2, "RANGE": 3, "STACK": 4, "ACL": 5}
     SUMMERY_DATA_NUMS = 256
     FLOAT_EPSILON = np.finfo(float).eps
     NAN = 'NaN'
