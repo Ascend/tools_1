@@ -246,6 +246,9 @@ set_dump_switch("ON", mode=3, scope=["1000_Tensor_abs", "1484_Tensor_transpose_f
 
 # 示例3： STACK模式，只dump堆栈信息， 示例中dump "1000_Tensor_abs" 到 "1484_Tensor_transpose_forward" 之间所有api的STACK信息
 set_dump_switch("ON", mode=4, scope=["1000_Tensor_abs", "1484_Tensor_transpose_forward"])
+
+# 示例4： dump指定api/api列表的ACL级别的输入输出数据
+set_dump_switch("ON", mode=5, scope=["1000_Tensor_abs", "1484_Tensor_transpose_forward"])
 ```
 4) dump数据存盘说明：<br/>
 
@@ -335,6 +338,9 @@ register_hook(model, acc_cmp_dump, dump_step=1)
 set_dump_switch("ON", mode=2, scope=["1478_Tensor_permute", "1484_Tensor_transpose", "1792_Torch_relue"])
 # 示例2： dump指定范围. 会dump 1000_Tensor_abs 到 1484_Tensor_transpose_forward之间的所有api
 set_dump_switch("ON", mode=3, scope=["1000_Tensor_abs", "1484_Tensor_transpose_forward"])
+# 示例3： dump指定api/api列表的ACL级别数据.
+register_hook(model, acc_cmp_dump, dump_mode='acl', dump_config='dump.json')
+set_dump_switch("ON", mode=5, scope=["1478_Tensor_permute", "1484_Tensor_transpose", "1792_Torch_relue"])
 ...
 ```
 按范围dump后的分析<br/>
