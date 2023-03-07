@@ -276,7 +276,7 @@ def parse_input_shape(input_shape):
     tensor_list = input_shape.split(';')
     for tensor in tensor_list:
         _check_colon_exist(input_shape)
-        tensor_shape_list = tensor.split(':')
+        tensor_shape_list = tensor.rsplit(':', maxsplit=1)
         if len(tensor_shape_list) == 2:
             shape = tensor_shape_list[1]
             input_shapes[tensor_shape_list[0]] = shape.split(',')
