@@ -243,7 +243,7 @@ def dump_acc_cmp(name, in_feat, out_feat, dump_step, moudle):
             _dump_tensor_completely(stack_str, name_template.format("stack_info"), dump_file)
             if DumpUtil.dump_switch_mode == Const.DUMP_SCOPE.get("ACL"):
                 acl_dump(moudle, name)
-            if DumpUtil.dump_switch_mode != Const.DUMP_SCOPE.get("STACK"):
+            elif DumpUtil.dump_switch_mode != Const.DUMP_SCOPE.get("STACK"):
                 dump_api_tensor(dump_step, in_feat, name_template, out_feat)
 
 
@@ -280,7 +280,6 @@ def dump_api_tensor(dump_step, in_feat, name_template, out_feat):
 def acc_cmp_dump(name, **kwargs):
     dump_step = kwargs.get('dump_step', 1)
     pid = kwargs.get('pid')
-    dump_mode = kwargs.get('dump_mode', "api")
     DumpUtil.dump_config = kwargs.get('dump_config')
     if not pid:
         return RuntimeError("Not get the specified process pid.")
