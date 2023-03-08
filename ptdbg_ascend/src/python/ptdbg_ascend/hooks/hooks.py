@@ -61,7 +61,7 @@ class DumpUtil(object):
         global DumpCount
         if DumpUtil.dump_switch_mode == Const.DUMP_SCOPE.get("ALL"):
             return True
-        elif DumpUtil.dump_switch_mode == Const.DUMP_SCOPE.get("LIST"):
+        elif DumpUtil.dump_switch_mode in [Const.DUMP_SCOPE.get("LIST"), Const.DUMP_SCOPE.get("ACL")]:
             for item in DumpUtil.dump_switch_scope:
                 if name_prefix.startswith(item):
                     DumpCount = DumpCount + 1
@@ -144,7 +144,7 @@ def set_dump_path(fpath=None):
 def set_dump_switch(switch, mode=1, scope=[]):
     global DumpCount
     assert switch in ["ON", "OFF"], "Please set dump switch with 'ON' or 'OFF'."
-    if mode ==2 and switch == "ON":
+    if mode == 2 and switch == "ON":
         DumpCount = 0
     if mode == 2 and switch == "OFF":
         print_info_log("The number of matched dump is {}".format(DumpCount))
@@ -156,6 +156,7 @@ def set_dump_switch(switch, mode=1, scope=[]):
         assert len(scope) <= 2, "set_dump_switch, scope param set invalid, it's must be [start, end] or []."
     DumpUtil.set_dump_switch(switch, mode=mode, scope=scope)
 
+
 def dump_tensor(x, prefix, dump_step):
     if isinstance(x, (tuple, list)) and x:
         for i, item in enumerate(x):
@@ -164,9 +165,10 @@ def dump_tensor(x, prefix, dump_step):
         if x.numel() == 0 or len(x.shape) == 0 or not x.is_floating_point():
             return
 
-        with os.fdopen(os.open(DumpUtil.get_dump_path(), os.O_RDWR|os.O_CREAT, stat.S_IWUSR|stat.S_IRUSR), "a") as f:
+        with os.fdopen(os.open(DumpUtil.get_dump_path(), os.O_RDWR | os.O_CREAT, stat.S_IWUSR | stat.S_IRUSR),
+                       "a") as f:
             summery_data = []
-        
+
             tensor_max = torch._C._VariableFunctionsClass.max(x).cpu().detach().float().numpy().tolist()
             tensor_min = torch._C._VariableFunctionsClass.min(x).cpu().detach().float().numpy().tolist()
             tensor_mean = torch._C._VariableFunctionsClass.mean(x).cpu().detach().float().numpy().tolist()
@@ -218,7 +220,7 @@ def make_dump_data_dir(dump_file_name):
     return output_dir
 
 
-def dump_acc_cmp(name, in_feat, out_feat, dump_step):
+def dump_acc_cmp(name, in_feat, out_feat, dump_step, moudle):
     dump_file = DumpUtil.get_dump_path()
     if DumpUtil.get_dump_switch():
         if DumpUtil.dump_init_enable:
@@ -239,8 +241,31 @@ def dump_acc_cmp(name, in_feat, out_feat, dump_step):
                 stack_line = [path, str(line), func, code[0].strip()]
                 stack_str.append(stack_line)
             _dump_tensor_completely(stack_str, name_template.format("stack_info"), dump_file)
-            if DumpUtil.dump_switch_mode != Const.DUMP_SCOPE.get("STACK"):
+            if DumpUtil.dump_switch_mode == Const.DUMP_SCOPE.get("ACL"):
+                acl_dump(moudle, name)
+            elif DumpUtil.dump_switch_mode != Const.DUMP_SCOPE.get("STACK"):
                 dump_api_tensor(dump_step, in_feat, name_template, out_feat)
+
+
+def acl_dump(module, module_name):
+    if "forward" in module_name:
+        forward_acl_dump(module, module_name)
+
+
+def forward_acl_dump(module, module_name):
+    global init_status
+    if not init_status:
+        torch_npu.npu.init_dump()
+        torch_npu.npu.set_dump(DumpUtil.dump_config)
+        torch_npu.npu.synchronize()
+        module.forward(*module.input_args, **module.input_kwargs)
+        torch_npu.npu.synchronize()
+        torch_npu.npu.finalize_dump()
+        init_status = True
+    del module.input_args
+    del module.input_kwargs
+    init_status = False
+    print_info_log("Dump %s op file." % module_name)
 
 
 def dump_api_tensor(dump_step, in_feat, name_template, out_feat):
@@ -255,12 +280,13 @@ def dump_api_tensor(dump_step, in_feat, name_template, out_feat):
 def acc_cmp_dump(name, **kwargs):
     dump_step = kwargs.get('dump_step', 1)
     pid = kwargs.get('pid')
+    DumpUtil.dump_config = kwargs.get('dump_config')
     if not pid:
         return RuntimeError("Not get the specified process pid.")
 
     def acc_cmp_hook(module, in_feat, out_feat):
         if pid == os.getpid():
-            dump_acc_cmp(name, in_feat, out_feat, dump_step)
+            dump_acc_cmp(name, in_feat, out_feat, dump_step, module)
         if hasattr(module, "input_args"):
             del module.input_args
         if hasattr(module, "input_kwargs"):
@@ -281,6 +307,7 @@ def overflow_check(name, **kwargs):
     overflow_nums = kwargs.get('overflow_nums', 1)
     pid = kwargs.get('pid')
     dump_mode = kwargs.get('dump_mode', "api")
+    DumpUtil.dump_config = kwargs.get('dump_config')
     dump_config = kwargs.get('dump_config')
     if dump_mode == "acl":
         backward_obj = Backward()
@@ -336,20 +363,5 @@ def overflow_check(name, **kwargs):
         torch_npu.npu.finalize_dump()
         print_info_log("Dump backward op file.")
         raise ValueError("[Acl backward only support one time, will stop when detecct backward overflow]")
-
-    def forward_acl_dump(module, module_name):
-        global init_status
-        if not init_status:
-            torch_npu.npu.init_dump()
-            torch_npu.npu.set_dump(dump_config)
-            torch_npu.npu.synchronize()
-            module.forward(*module.input_args, **module.input_kwargs)
-            torch_npu.npu.synchronize()
-            torch_npu.npu.finalize_dump()
-            init_status = True
-        del module.input_args
-        del module.input_kwargs
-        init_status = False
-        print_info_log("Dump %s op file." % module_name)
 
     return overflowcheck_hook
