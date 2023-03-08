@@ -296,7 +296,7 @@ def torch_device_guard(func):
         if kwargs and kwargs.get("device"):
             device_kwarg = kwargs.get("device")
             if isinstance(device_kwarg, torch_npu._C.device):
-                kwargs['device'] = str(kwargs['device']).replace("npu", torch_npu.npu.native_device)
+                kwargs['device'] = torch_npu.new_device(type=torch_npu.npu.native_device, index=device_kwarg.index)
             elif isinstance(device_kwarg, str) and "npu" in device_kwarg:
                 kwargs['device'] = device_kwarg.replace("npu", torch_npu.npu.native_device)
         return func(*args, **kwargs)
