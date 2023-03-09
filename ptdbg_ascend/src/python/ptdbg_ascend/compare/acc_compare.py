@@ -58,7 +58,7 @@ def cosine_similarity(n_value, b_value):
             message = 'Cannot compare by Cosine Similarity, the dump data has NaN.'
             result = Const.NAN
         else:
-            result = format_value(0.5 + 0.5 * cos)
+            result = format_value(cos)
     result = correct_data(result)
     return result, message
 
