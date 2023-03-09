@@ -28,7 +28,7 @@ if not torch.cuda.is_available():
     import torch_npu
 
 from ..common.utils import check_file_or_directory_path, print_error_log, \
-    print_warn_log, CompareException, Const, get_time, print_info_log
+    print_warn_log, CompareException, Const, get_time, print_info_log, Mode
 from .backward import Backward
 
 DumpCount = 0
@@ -39,10 +39,11 @@ class DumpUtil(object):
     dump_data_dir = None
     dump_path = None
     dump_switch = None
-    dump_switch_mode = Const.DUMP_SCOPE.get("ALL")
+    dump_switch_mode = Mode.ALL
     dump_switch_scope = []
     dump_init_enable = False
     real_overflow_dump_times = 0
+    dump_api_list = []
 
     @staticmethod
     def set_dump_path(save_path):
@@ -50,44 +51,53 @@ class DumpUtil(object):
         DumpUtil.dump_init_enable = True
 
     @staticmethod
-    def set_dump_switch(switch, mode, scope):
+    def set_dump_switch(switch, mode, scope, api_list):
         DumpUtil.dump_switch = switch
         DumpUtil.dump_switch_mode = mode
         DumpUtil.dump_init_enable = True
         DumpUtil.dump_switch_scope = scope
+        DumpUtil.dump_api_list = api_list
+
+    @classmethod
+    def check_list_or_acl_mode(cls, name_prefix):
+        global DumpCount
+        for item in DumpUtil.dump_switch_scope:
+            if name_prefix.startswith(item):
+                DumpCount = DumpCount + 1
+                return True
+
+    @classmethod
+    def check_range_mode(cls, name_prefix):
+        start = int(DumpUtil.dump_switch_scope[0].split('_', 1)[0])
+        end = int(DumpUtil.dump_switch_scope[1].split('_', 1)[0])
+        curr = int(name_prefix.split('_', 1)[0])
+        return start <= curr <= end
+
+    @classmethod
+    def check_stack_mode(cls, name_prefix):
+        if len(DumpUtil.dump_switch_scope) == 0:
+            return True
+        elif len(DumpUtil.dump_switch_scope) == 1:
+            return name_prefix.startswith(DumpUtil.dump_switch_scope[0])
+        elif len(DumpUtil.dump_switch_scope) == 2:
+            return DumpUtil.check_range_mode(name_prefix)
+        else:
+            print_error_log("dump scope is invalid, Please set the scope mode in"
+                            " set_dump_switch with [1, 2, 3, 4],1: ALL, 2: List, 3: ARRANGE, 4: STACK !")
+        return False
+
+    check_mapper = {
+        Mode.LIST: check_list_or_acl_mode,
+        Mode.ACL: check_list_or_acl_mode,
+        Mode.RANGE: check_range_mode,
+        Mode.STACK: check_stack_mode
+    }
 
     @staticmethod
     def check_switch_scope(name_prefix):
-        global DumpCount
-        if DumpUtil.dump_switch_mode == Const.DUMP_SCOPE.get("ALL"):
-            return True
-        elif DumpUtil.dump_switch_mode in [Const.DUMP_SCOPE.get("LIST"), Const.DUMP_SCOPE.get("ACL")]:
-            for item in DumpUtil.dump_switch_scope:
-                if name_prefix.startswith(item):
-                    DumpCount = DumpCount + 1
-                    return True
-        elif DumpUtil.dump_switch_mode == Const.DUMP_SCOPE.get("RANGE"):
-            start = int(DumpUtil.dump_switch_scope[0].split('_', 1)[0])
-            end = int(DumpUtil.dump_switch_scope[1].split('_', 1)[0])
-            curr = int(name_prefix.split('_', 1)[0])
-            if start <= curr <= end:
-                return True
-        elif DumpUtil.dump_switch_mode == Const.DUMP_SCOPE.get("STACK"):
-            if len(DumpUtil.dump_switch_scope) == 0:
-                return True
-            elif len(DumpUtil.dump_switch_scope) == 1:
-                if name_prefix.startswith(DumpUtil.dump_switch_scope[0]):
-                    return True
-            elif len(DumpUtil.dump_switch_scope) == 2:
-                start = int(DumpUtil.dump_switch_scope[0].split('_', 1)[0])
-                end = int(DumpUtil.dump_switch_scope[1].split('_', 1)[0])
-                curr = int(name_prefix.split('_', 1)[0])
-                if start <= curr <= end:
-                    return True
-            else:
-                print_error_log("dump scope is invalid, Please set the scope mode in"
-                                " set_dump_switch with [1, 2, 3, 4],1: ALL, 2: List, 3: ARRANGE, 4: STACK !")
-
+        if DumpUtil.dump_switch_mode in DumpUtil.check_mapper:
+            check_func = DumpUtil.check_mapper[DumpUtil.dump_switch_mode]
+            return check_func(name_prefix)
         return False
 
     @staticmethod
@@ -95,7 +105,7 @@ class DumpUtil(object):
         if DumpUtil.dump_path:
             return DumpUtil.dump_path
 
-        if DumpUtil.dump_switch_mode == Const.DUMP_SCOPE.get("ALL"):
+        if DumpUtil.dump_switch_mode == Mode.ALL:
             raise RuntimeError("get_dump_path: the file path is empty,"
                                " you must use set_dump_path to set a valid dump path!!!")
         else:
@@ -109,11 +119,7 @@ class DumpUtil(object):
     def get_dump_switch():
         if DumpUtil.dump_switch is None:
             return False
-
-        if DumpUtil.dump_switch == "ON":
-            return True
-        else:
-            return False
+        return DumpUtil.dump_switch == "ON"
 
     @staticmethod
     def inc_overflow_dump_times():
@@ -121,10 +127,7 @@ class DumpUtil(object):
 
     @staticmethod
     def check_overflow_dump_times(need_dump_times):
-        if DumpUtil.real_overflow_dump_times < need_dump_times:
-            return True
-        else:
-            return False
+        return DumpUtil.real_overflow_dump_times < need_dump_times
 
 
 def set_dump_path(fpath=None):
@@ -141,20 +144,20 @@ def set_dump_path(fpath=None):
     DumpUtil.set_dump_path(real_path)
 
 
-def set_dump_switch(switch, mode=1, scope=[]):
+def set_dump_switch(switch, mode=1, scope=[], api_list=[]):
     global DumpCount
     assert switch in ["ON", "OFF"], "Please set dump switch with 'ON' or 'OFF'."
-    if mode == 2 and switch == "ON":
+    if mode == Mode.LIST and switch == "ON":
         DumpCount = 0
-    if mode == 2 and switch == "OFF":
+    if mode == Mode.LIST and switch == "OFF":
         print_info_log("The number of matched dump is {}".format(DumpCount))
-    if mode == Const.DUMP_SCOPE.get("RANGE"):
+    if mode == Mode.RANGE:
         assert len(scope) == 2, "set_dump_switch, scope param set invalid, it's must be [start, end]."
-    if mode == Const.DUMP_SCOPE.get("LIST"):
+    if mode == Mode.LIST:
         assert len(scope) != 0, "set_dump_switch, scope param set invalid, it's should not be an empty list."
-    if mode == Const.DUMP_SCOPE.get("STACK"):
+    if mode == Mode.STACK:
         assert len(scope) <= 2, "set_dump_switch, scope param set invalid, it's must be [start, end] or []."
-    DumpUtil.set_dump_switch(switch, mode=mode, scope=scope)
+    DumpUtil.set_dump_switch(switch, mode=mode, scope=scope, api_list=api_list)
 
 
 def dump_tensor(x, prefix, dump_step):
@@ -220,8 +223,15 @@ def make_dump_data_dir(dump_file_name):
     return output_dir
 
 
+def _set_dump_switch4api_list(name):
+    if DumpUtil.dump_api_list:
+        api_name = name.split("_")[1]
+        DumpUtil.dump_switch_mode = "ON" if api_name in DumpUtil.dump_api_list else "OFF"
+
+
 def dump_acc_cmp(name, in_feat, out_feat, dump_step, moudle):
     dump_file = DumpUtil.get_dump_path()
+    _set_dump_switch4api_list(name)
     if DumpUtil.get_dump_switch():
         if DumpUtil.dump_init_enable:
             dump_acc_cmp.call_number = 0
@@ -231,7 +241,7 @@ def dump_acc_cmp(name, in_feat, out_feat, dump_step, moudle):
             dump_acc_cmp.call_number = dump_acc_cmp.call_number + 1
 
         name_prefix = f"{dump_acc_cmp.call_number}_{name}"
-        if DumpUtil.dump_switch_mode == Const.DUMP_SCOPE.get("ALL"):
+        if DumpUtil.dump_switch_mode == Mode.ALL:
             name_template = f"{name_prefix}" + "_{}"
             dump_api_tensor(dump_step, in_feat, name_template, out_feat)
         elif DumpUtil.check_switch_scope(name_prefix):
@@ -241,9 +251,9 @@ def dump_acc_cmp(name, in_feat, out_feat, dump_step, moudle):
                 stack_line = [path, str(line), func, code[0].strip()]
                 stack_str.append(stack_line)
             _dump_tensor_completely(stack_str, name_template.format("stack_info"), dump_file)
-            if DumpUtil.dump_switch_mode == Const.DUMP_SCOPE.get("ACL"):
+            if DumpUtil.dump_switch_mode == Mode.ACL:
                 acl_dump(moudle, name)
-            elif DumpUtil.dump_switch_mode != Const.DUMP_SCOPE.get("STACK"):
+            elif DumpUtil.dump_switch_mode != Mode.STACK:
                 dump_api_tensor(dump_step, in_feat, name_template, out_feat)
 
 
@@ -349,7 +359,7 @@ def overflow_check(name, **kwargs):
             torch_npu._C._clear_overflow_npu()
             if not DumpUtil.check_overflow_dump_times(overflow_nums):
                 print_error_log("[overflow {} times]: dump file is saved in '{}'."
-                                 .format(DumpUtil.real_overflow_dump_times, os.path.realpath(dump_file_name)))
+                                .format(DumpUtil.real_overflow_dump_times, os.path.realpath(dump_file_name)))
                 return
 
     def acl_dump(module, module_name):

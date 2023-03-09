@@ -20,6 +20,7 @@ import subprocess
 import sys
 import time
 from datetime import datetime, timezone
+from enum import Enum
 
 import numpy as np
 import torch
@@ -28,6 +29,18 @@ if not torch.cuda.is_available():
 
 
 device = collections.namedtuple('device', ['type', 'index'])
+
+
+class Mode(Enum):
+    """
+    dump range mode
+    """
+    ALL = "all"
+    LIST = "list"
+    RANGE = "range"
+    STACK = "stack"
+    ACL = "acl"
+    API_LIST = "api_list"
 
 
 class Const:
