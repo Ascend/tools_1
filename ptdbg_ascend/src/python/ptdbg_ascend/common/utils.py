@@ -281,6 +281,8 @@ def format_value(value):
 
 
 def torch_device_guard(func):
+    if torch.cuda.is_available():
+        return func
     # Parse args/kwargs matched torch.device objects
     def wrapper(*args, **kwargs):
         if args:
