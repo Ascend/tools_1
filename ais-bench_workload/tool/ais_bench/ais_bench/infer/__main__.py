@@ -89,7 +89,7 @@ def warmup(session, args, intensors_desc, infiles):
     session.set_loop_count(1)
     # warmup
     for i in range(args.warmup_count):
-        outputs = run_inference(session, infeeds, out_array=True)
+        outputs = run_inference(session, args, infeeds, out_array=True)
 
     session.set_loop_count(args.loop)
 
@@ -99,7 +99,7 @@ def warmup(session, args, intensors_desc, infiles):
     MemorySummary.reset()
     logger.info("warm up {} done".format(args.warmup_count))
 
-def run_inference(session, inputs, out_array=False):
+def run_inference(session, args, inputs, out_array=False):
     if args.auto_set_dymshape_mode == True:
         set_dymshape_shape(session, inputs)
     elif args.auto_set_dymdims_mode == True:
@@ -114,7 +114,7 @@ def infer_loop_tensor_run(session, args, intensors_desc, infileslist, output_pre
         for j, files in enumerate(infiles):
             tensor = get_tensor_from_files_list(files, session, intensors_desc[j].realsize, args.pure_data_type, args.no_combine_tensor_mode)
             intensors.append(tensor)
-        outputs = run_inference(session, intensors)
+        outputs = run_inference(session, args, intensors)
         session.convert_tensors_to_host(outputs)
         if output_prefix != None:
             save_tensors_to_file(outputs, output_prefix, infiles, args.outfmt, i, args.output_batchsize_axis)
@@ -127,7 +127,7 @@ def infer_loop_files_run(session, args, intensors_desc, infileslist, output_pref
             real_files = convert_real_files(files)
             tensor = session.create_tensor_from_fileslist(intensors_desc[j], real_files)
             intensors.append(tensor)
-        outputs = run_inference(session, intensors)
+        outputs = run_inference(session, args, intensors)
         session.convert_tensors_to_host(outputs)
         if output_prefix != None:
             save_tensors_to_file(outputs, output_prefix, infiles, args.outfmt, i, args.output_batchsize_axis)
@@ -139,7 +139,7 @@ def infer_fulltensors_run(session, args, intensors_desc, infileslist, output_pre
 
     #for inputs in intensorslist:
     for inputs in tqdm(intensorslist, file=sys.stdout, desc='Inference Processing full'):
-        outputs = run_inference(session, inputs)
+        outputs = run_inference(session, args, inputs)
         outtensors.append(outputs)
 
     for i, outputs in enumerate(outtensors):
@@ -154,7 +154,7 @@ def infer_loop_array_run(session, args, intensors_desc, infileslist, output_pref
         for j, files in enumerate(infiles):
             narray = get_narray_from_files_list(files, intensors_desc[j].realsize, args.pure_data_type)
             innarrays.append(narray)
-        outputs = run_inference(session, innarrays)
+        outputs = run_inference(session, args, innarrays)
         session.convert_tensors_to_host(outputs)
         if args.output != None:
             save_tensors_to_file(outputs, output_prefix, infiles, args.outfmt, i, args.output_batchsize_axis)
