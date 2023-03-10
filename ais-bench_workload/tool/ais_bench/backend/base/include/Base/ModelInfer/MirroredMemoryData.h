@@ -14,10 +14,11 @@ struct MirroredMemoryData {
 
     APP_ERROR AllocateInputMemory(std::vector<BaseTensor> &inputs_host, std::vector<BaseTensor> &inputs_device, int deviceId_) {
         for (auto &feed : inputs_host) {
+            Base::MemoryData src(feed.buf, feed.size, MemoryData::MemoryType::MEMORY_HOST, deviceId_);
             Base::MemoryData dst(feed.size, MemoryData::MemoryType::MEMORY_DEVICE, deviceId_);
             MemoryHelper::MxbsMalloc(dst);
             device_mem.push_back(dst);
-            host_mem.emplace_back(feed.buf, feed.size, MemoryData::MemoryType::MEMORY_HOST, deviceId_);
+            host_mem.push_back(src);
             inputs_device.emplace_back(dst.ptrData, dst.size);
         }
         return APP_ERR_OK;

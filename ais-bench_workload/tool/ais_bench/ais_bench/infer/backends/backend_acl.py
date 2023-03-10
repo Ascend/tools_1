@@ -2,14 +2,14 @@ from __future__ import annotations
 
 import logging
 import os
-from typing import Any, Optional
+from typing import Any, List, Optional, Iterable
 
 import aclruntime
 from aclruntime import PerfOption, perf
 import numpy as np
 
 from ais_bench.infer.backends import BACKEND_REGISTRY, backend
-from ais_bench.infer.backends.backend import PerformanceResult
+from ais_bench.infer.backends.backend import AccuracyResult, PerformanceResult
 
 logger = logging.getLogger(__name__)
 
@@ -38,6 +38,7 @@ class BackendAcl(backend.Backend):
     def parse_config(self, config: Any = None) -> None:
         if config is None:
             return
+        self.options.skip_transfer = True
         if config.loop is not None:
             self.loop = config.loop
             self.options.loop = config.loop
