@@ -67,7 +67,7 @@ def register_hook(model, hook, **kwargs):
     pid = os.getpid()
     hook_name = hook.__name__
 
-    if "overflow_check" in hook_name:
+    if "overflow_check" in hook_name and not torch.cuda.is_available():
         if hasattr(torch_npu._C, "_enable_overflow_npu"):
             torch_npu._C._enable_overflow_npu()
             print_info_log("Enable overflow function success.")
