@@ -140,25 +140,25 @@ def check_file_or_directory_path(path, isdir=False):
     """
     if isdir:
         if not os.path.exists(path):
-            print_error_log('The path {} is not exist. Please check the path'.format(path))
+            print_error_log('The path {} is not exist.'.format(path))
             raise CompareException(CompareException.INVALID_PATH_ERROR)
 
         if not os.path.isdir(path):
-            print_error_log('The path {} is not a directory. Please check the path'.format(path))
+            print_error_log('The path {} is not a directory.'.format(path))
             raise CompareException(CompareException.INVALID_PATH_ERROR)
 
         if not os.access(path, os.W_OK):
             print_error_log(
-                'The path{} does not have permission to write. Please check the path permission'.format(path))
+                'The path {} does not have permission to write. Please check the path permission'.format(path))
             raise CompareException(CompareException.INVALID_PATH_ERROR)
     else:
         if not os.path.isfile(path):
-            print_error_log('The path {} is not a file. Please check the path'.format(path))
+            print_error_log('{} is an invalid file or non-exist.'.format(path))
             raise CompareException(CompareException.INVALID_PATH_ERROR)
 
     if not os.access(path, os.R_OK):
         print_error_log(
-            'The path{} does not have permission to read. Please check the path permission'.format(path))
+            'The path {} does not have permission to read. Please check the path permission'.format(path))
         raise CompareException(CompareException.INVALID_PATH_ERROR)
 
 

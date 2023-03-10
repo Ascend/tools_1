@@ -15,7 +15,6 @@
 # limitations under the License.
 """
 
-
 import argparse
 import json
 import multiprocessing
@@ -25,7 +24,7 @@ import sys
 import numpy as np
 import pandas as pd
 
-from ..common.utils import check_file_or_directory_path, add_time_as_suffix,\
+from ..common.utils import check_file_or_directory_path, add_time_as_suffix, \
     print_error_log, CompareException, Const, format_value
 
 
@@ -35,6 +34,7 @@ def correct_data(result):
     if float(result) > 0.99999:
         return '1.0'
     return result
+
 
 def cosine_similarity(n_value, b_value):
     np.seterr(divide='ignore', invalid='ignore')
@@ -154,13 +154,13 @@ def read_op(ops_queue, pkl_file_handle):
 
 def match_op(npu_queue, bench_queue, shape_flag):
     if check_op(npu_queue[-1], bench_queue[-1], shape_flag):
-        return len(npu_queue)-1, len(bench_queue)-1
+        return len(npu_queue) - 1, len(bench_queue) - 1
     for b_index, b_op in enumerate(bench_queue[0: -1]):
         if check_op(npu_queue[-1], b_op, shape_flag):
-            return len(npu_queue)-1, b_index
+            return len(npu_queue) - 1, b_index
     for n_index, n_op in enumerate(npu_queue[0: -1]):
         if check_op(n_op, bench_queue[-1], shape_flag):
-            return n_index, len(bench_queue)-1
+            return n_index, len(bench_queue) - 1
     return -1, -1
 
 
@@ -229,6 +229,7 @@ def _handle_multi_process(func, input_parma, result_path, lock):
         op_names[i % process_num].append(op_name)
     all_tasks = []
     pool = multiprocessing.Pool(process_num)
+
     def err_call(args):
         try:
             pool.terminate()
@@ -237,6 +238,7 @@ def _handle_multi_process(func, input_parma, result_path, lock):
             sys.exit(args)
         except SystemExit as error:
             print('multiprocess compare failed! season:{}'.format(args))
+
     for process_idx, fusion_op_names in enumerate(op_names):
         idx = [process_num, process_idx]
         task = pool.apply_async(func,
@@ -285,6 +287,7 @@ def _save_cmp_result(idx, cos_result, max_err_result, err_msg, result_path, lock
     finally:
         lock.release()
 
+
 def compare_by_op(op_name, op_name_mapping_dict, input_parma):
     npu_bench_name_list = op_name_mapping_dict[op_name]
     try:
@@ -302,28 +305,35 @@ def compare_by_op(op_name, op_name_mapping_dict, input_parma):
 
 
 def compare(input_parma, output_path, shape_flag=True):
-    check_file_or_directory_path(output_path, True)
-    npu_pkl = open(input_parma.get("npu_pkl_path"), "r")
-    bench_pkl = open(input_parma.get("bench_pkl_path"), "r")
-    npu_summary = _get_summery_mode(npu_pkl, input_parma.get("npu_pkl_path"))
-    bench_summary = _get_summery_mode(bench_pkl, input_parma.get("bench_pkl_path"))
-    result = compare_process(npu_pkl, bench_pkl, [npu_summary, bench_summary], shape_flag)
-    npu_pkl.close()
-    bench_pkl.close()
+    try:
+        check_file_or_directory_path(input_parma.get("npu_pkl_path"), False)
+        check_file_or_directory_path(input_parma.get("bench_pkl_path"), False)
+        check_file_or_directory_path(input_parma.get("npu_dump_data_dir"), True)
+        check_file_or_directory_path(input_parma.get("bench_dump_data_dir"), True)
+        check_file_or_directory_path(output_path, True)
+        npu_pkl = open(input_parma.get("npu_pkl_path"), "r")
+        bench_pkl = open(input_parma.get("bench_pkl_path"), "r")
+        npu_summary = _get_summery_mode(npu_pkl, input_parma.get("npu_pkl_path"))
+        bench_summary = _get_summery_mode(bench_pkl, input_parma.get("bench_pkl_path"))
+        result = compare_process(npu_pkl, bench_pkl, [npu_summary, bench_summary], shape_flag)
+        npu_pkl.close()
+        bench_pkl.close()
 
-    columns = ["NPU Name", "Bench Name", "NPU Tensor Dtype", "Bench Tensor Dtype",
-               "NPU Tensor Shape", "Bench Tensor Shape", "Cosine", "MaxAbsErr"]
-    if npu_summary:
-        columns.extend(["NPU max", "NPU min", "NPU mean"])
-    if bench_summary:
-        columns.extend(["Bench max", "Bench min", "Bench mean"])
-    columns.extend(["Err_message"])
-    result_df = pd.DataFrame(result, columns=columns)
+        columns = ["NPU Name", "Bench Name", "NPU Tensor Dtype", "Bench Tensor Dtype",
+                   "NPU Tensor Shape", "Bench Tensor Shape", "Cosine", "MaxAbsErr"]
+        if npu_summary:
+            columns.extend(["NPU max", "NPU min", "NPU mean"])
+        if bench_summary:
+            columns.extend(["Bench max", "Bench min", "Bench mean"])
+        columns.extend(["Err_message"])
+        result_df = pd.DataFrame(result, columns=columns)
 
-    file_name = add_time_as_suffix("compare_result")
-    file_path = os.path.join(os.path.realpath(output_path), file_name)
-    result_df.to_csv(file_path, index=False)
-
+        file_name = add_time_as_suffix("compare_result")
+        file_path = os.path.join(os.path.realpath(output_path), file_name)
+        result_df.to_csv(file_path, index=False)
+    except CompareException as error:
+        print_error_log('Compare failed, Please check it and do it again!')
+        sys.exit(error.code)
     _do_multi_process(input_parma, file_path)
 
 
@@ -351,7 +361,7 @@ def parse(pkl_file, module_name_prefix):
                 print("    {}".format(item[3]))
             continue
         if len(msg) > 5:
-            summery_info = "  [{}][dtype: {}][shape: {}][max: {}][min: {}][mean: {}]"\
+            summery_info = "  [{}][dtype: {}][shape: {}][max: {}][min: {}][mean: {}]" \
                 .format(msg[0], msg[3], msg[4], msg[5][0], msg[5][1], msg[5][2])
             if not title_printed:
                 print("\nStatistic Info:")
@@ -392,10 +402,12 @@ def _get_summery_mode(pkl_file_handle, file_name):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--npu_pkl', type=str, required=True)
-    parser.add_argument('--bench_pkl', type=str, required=True)
+    parser.add_argument('--npu_pkl_path', type=str, required=True)
+    parser.add_argument('--bench_pkl_path', type=str, required=True)
+    parser.add_argument('--npu_dump_data_dir', type=str, required=True)
+    parser.add_argument('--bench_dump_data_dir', type=str, required=True)
     parser.add_argument('--out_path', type=str, required=True)
     parser.add_argument('--shape', action='store_true', default=False,
-                    help='Enforce tensor.shape is same when op matches')
+                        help='Enforce tensor.shape is same when op matches')
     args = parser.parse_args()
-    compare(args.npu_pkl, args.bench_pkl, args.out_path, args.shape)
+    compare(args, args.out_path, args.shape)

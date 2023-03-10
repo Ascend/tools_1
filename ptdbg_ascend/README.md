@@ -313,7 +313,7 @@ dump_result_param={
 "npu_pkl_path": "./npu_dump.pkl",
 "bench_pkl_path": "./gpu_dump.pkl",
 "npu_dump_data_dir": "./npu_dump_20230104_13434",
-"bench_dump_data_dir": "./gpu_dump_20230104_132544"
+"bench_dump_data_dir": "./gpu_dump_20230104_132544",
 "is_print_compare_log": True
 }
 compare(dump_result_param, "./output", True)
