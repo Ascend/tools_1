@@ -19,6 +19,10 @@
 
 #include <memory>
 #include <vector>
+
+#include "acl/acl.h"
+
+#include "MirroredMemoryData.h"
 #include "Base/ErrorCode/ErrorCode.h"
 #include "Base/Tensor/TensorBase/TensorBase.h"
 
@@ -35,27 +39,6 @@ if (ret != expect_value) { \
 }
 
 namespace Base {
-
-struct BaseTensor {
-    void* buf;
-    std::vector<int64_t> shape;
-    size_t size;
-    size_t len;
-
-    BaseTensor() = default;
-
-    BaseTensor(int64_t buf, int64_t size)
-    {
-        this->buf = (void*)buf;
-        this->size = (size_t)size;
-    }
-
-    BaseTensor(void* buf, size_t size)
-    {
-        this->buf = buf;
-        this->size = size;
-    }
-};
 
 struct TensorDesc
 {
@@ -139,12 +122,6 @@ struct InferSumaryInfo {
     std::vector<float> execTimeList;
 };
 
-struct BindingData{
-    void *inputDataSet;
-    void *outputDataSet;
-    std::vector<MemoryData> outputsMemDataQue;
-};
-
 class ModelInferenceProcessor {
 public:
     /**
@@ -192,6 +169,15 @@ public:
     APP_ERROR SetDynamicDims(std::string dymdimsStr);
     APP_ERROR SetDynamicShape(std::string dymshapeStr);
     APP_ERROR SetCustomOutTensorsSize(std::vector<size_t> customOutSize);
+
+    APP_ERROR InferenceAsync(void *inputDataSet, void *outputDataSet, aclrtStream stream);
+    APP_ERROR CreateInputDataSet(void * &inputDataSet, const std::vector<BaseTensor>& feeds);
+    APP_ERROR CreateOutputDataSet(void * &outputDataSet, const std::vector<BaseTensor>& feeds);
+    APP_ERROR DestroyDataSet(void *dataSet);
+
+    std::vector<size_t> CustomOutputsSize() const;
+    std::vector<std::pair<std::string, size_t>> OutputsNameAndSize() const;
+
 private:
 
     APP_ERROR SetDynamicInfo(void *inputDataSet);
@@ -208,16 +194,13 @@ private:
     // APP_ERROR DestroyInferCacheData();
 
     APP_ERROR SetInOutData(std::vector<BaseTensor> &inputs, void *inputDataSet, void *outputDataSet, std::vector<MemoryData> &outputsMemDataQue);
+    APP_ERROR SetInData(void *inputDataSet, std::vector<BaseTensor> &inputs);
     APP_ERROR Execute(void* inputDataSet, void* outputDataSet);
     APP_ERROR GetOutputs(void* outputDataSet, std::vector<std::string> outputNames, std::vector<TensorBase> &outputTensors, std::vector<MemoryData> &outputsMemDataQue);
 
     APP_ERROR CheckInVectorAndFillBaseTensor(const std::vector<BaseTensor>& feeds, std::vector<BaseTensor> &inputs);
     APP_ERROR CheckInVectorAndFillBaseTensor(const std::vector<TensorBase>& feeds, std::vector<BaseTensor> &inputs);
     APP_ERROR CheckInMapAndFillBaseTensor(const std::map<std::string, TensorBase>& feeds, std::vector<BaseTensor> &inputs);
-
-    APP_ERROR InferenceAsync(BindingData &bindData, void *stream);
-    APP_ERROR CreateBindingData(const std::vector<BaseTensor>& feeds, BindingData &bindData);
-    APP_ERROR DestroyBindingData(BindingData &bindData);
 
 private:
     ModelDesc modelDesc_;

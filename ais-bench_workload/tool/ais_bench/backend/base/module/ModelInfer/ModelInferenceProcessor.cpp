@@ -15,9 +15,12 @@
  */
 
 #include "Base/ModelInfer/ModelInferenceProcessor.h"
+#include "Base/ErrorCode/ErrorCode.h"
 #include "acl/acl.h"
 #include "Base/Log/Log.h"
 
+#include <cstddef>
+#include <string>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/syscall.h>
@@ -221,8 +224,26 @@ APP_ERROR ModelInferenceProcessor::Inference(const std::vector<BaseTensor>& feed
     return ret;
 }
 
-APP_ERROR ModelInferenceProcessor::CreateBindingData(const std::vector<BaseTensor>& feeds, BindingData &bindData)
-{
+APP_ERROR ModelInferenceProcessor::CreateOutputDataSet(void * &outputDataSet, const std::vector<BaseTensor>& outputs) {
+    Result result = processModel->CreateDataSet(outputDataSet);
+    if (result != SUCCESS){
+        ERROR_LOG("create outputDataset failed ret:%d", result);
+        return APP_ERR_FAILURE;
+    }
+
+    for (const auto& tensor : outputs) {
+        auto result = processModel->AddBufToDataset(outputDataSet, tensor.buf, tensor.size);
+        if (result != SUCCESS) {
+            ERROR_LOG("create outputdataset failed:%d", result);
+            processModel->DestroyDataSet(outputDataSet, false);
+            return APP_ERR_FAILURE;
+        }
+    }
+
+    return APP_ERR_OK;
+}
+
+APP_ERROR ModelInferenceProcessor::CreateInputDataSet(void * &inputDataSet, const std::vector<BaseTensor>& feeds) {
     std::vector<BaseTensor> inputs;
     auto ret = CheckInVectorAndFillBaseTensor(feeds, inputs);
     if (ret != APP_ERR_OK){
@@ -230,51 +251,34 @@ APP_ERROR ModelInferenceProcessor::CreateBindingData(const std::vector<BaseTenso
         return ret;
     }
 
-    Result result = processModel->CreateDataSet(bindData.inputDataSet);
+    Result result = processModel->CreateDataSet(inputDataSet);
     if (result != SUCCESS){
         ERROR_LOG("create inputDataSet failed ret:%d", ret);
-        ret = APP_ERR_FAILURE;
-        goto Failed;
+        processModel->DestroyDataSet(inputDataSet, false);
+        return APP_ERR_FAILURE;
     }
-    result = processModel->CreateDataSet(bindData.outputDataSet);
-    if (result != SUCCESS){
-        ERROR_LOG("create outputDataset failed ret:%d", ret);
-        ret = APP_ERR_FAILURE;
-        goto Failed;
-    }
+    return SetInData(inputDataSet, inputs);
+}
 
-    // create output memdata
-    ret = CreateOutMemoryData(bindData.outputsMemDataQue);
-    if (ret != APP_ERR_OK) {
-        ERROR_LOG("create outmemory data failed:%d", ret);
-        goto Failed;
-    }
+APP_ERROR ModelInferenceProcessor::InferenceAsync(void *inputDataSet, void *outputDataSet, aclrtStream stream)
+{
+    return processModel->ExecuteAsync(inputDataSet, outputDataSet, stream);
+}
 
-    ret = SetInOutData(inputs, bindData.inputDataSet, bindData.outputDataSet, bindData.outputsMemDataQue);
-    if (ret != APP_ERR_OK){
-        ERROR_LOG("Set InputsData failed ret:%d", ret);
-        goto Failed;
-    }
-    return APP_ERR_OK;
+APP_ERROR ModelInferenceProcessor::DestroyDataSet(void *dataSet) {
+    return processModel->DestroyDataSet(dataSet, false);
+}
 
-Failed:
-    processModel->DestroyDataSet(bindData.inputDataSet, false);
-    processModel->DestroyDataSet(bindData.outputDataSet, false);
-    DestroyOutMemoryData(bindData.outputsMemDataQue);
+std::vector<size_t> ModelInferenceProcessor::CustomOutputsSize() const {
+    return customOutTensorSize_;
+}
+
+std::vector<std::pair<std::string, size_t>> ModelInferenceProcessor::OutputsNameAndSize() const {
+    std::vector<std::pair<std::string, size_t>> ret;
+    for (auto &tensor_desc : modelDesc_.outTensorsDesc) {
+        ret.emplace_back(tensor_desc.name, tensor_desc.size);
+    }
     return ret;
-}
-
-APP_ERROR ModelInferenceProcessor::InferenceAsync(BindingData &bindData, void *stream)
-{
-    return processModel->ExecuteAsync(bindData.inputDataSet, bindData.outputDataSet, stream);
-}
-
-APP_ERROR ModelInferenceProcessor::DestroyBindingData(BindingData &bindData)
-{
-    processModel->DestroyDataSet(bindData.inputDataSet, false);
-    processModel->DestroyDataSet(bindData.outputDataSet, false);
-    DestroyOutMemoryData(bindData.outputsMemDataQue);
-    return APP_ERR_OK;
 }
 
 APP_ERROR ModelInferenceProcessor::CheckInMapAndFillBaseTensor(const std::map<std::string, TensorBase>& feeds, std::vector<BaseTensor> &inputs)
@@ -351,6 +355,44 @@ APP_ERROR ModelInferenceProcessor::Inference(const std::vector<TensorBase>& feed
     return ret;
 }
 
+APP_ERROR ModelInferenceProcessor::SetInData(void *inputDataSet, std::vector<BaseTensor> &inputs) {
+    APP_ERROR ret;
+
+    if (inputs.size() != modelDesc_.inTensorsDesc.size()){
+        WARN_LOG("intensors in:%zu need:%zu not match", inputs.size(), modelDesc_.inTensorsDesc.size());
+        return APP_ERR_ACL_FAILURE;
+    }
+
+    if (dynamicInfo_.dynamicType != DYNAMIC_DIMS && dym_gear_count_ > 0){
+        WARN_LOG("check failed dym gearcount:%zu but dymtype:%d not set", dym_gear_count_, dynamicInfo_.dynamicType);
+        return APP_ERR_ACL_FAILURE;
+    }
+
+    // add dynamic index tensor
+    if (dynamicIndex_ != size_t(-1)) {
+        Base::BaseTensor dyIndexTensor = {};
+        dyIndexTensor.buf = dynamicIndexMemory_.ptrData;
+        dyIndexTensor.size = dynamicIndexMemory_.size;
+        inputs.insert(inputs.begin() + dynamicIndex_, dyIndexTensor);
+    }
+
+    // add data to input dataset
+    for (const auto& tensor : inputs) {
+        auto result = processModel->AddBufToDataset(inputDataSet, tensor.buf, tensor.size);
+        if (result != SUCCESS) {
+            ERROR_LOG("create inputdataset failed:%d", result);
+            return APP_ERR_ACL_FAILURE;
+        }
+    }
+
+    ret = SetDynamicInfo(inputDataSet);
+    if (ret != APP_ERR_OK){
+        ERROR_LOG("set dynamic info failed:%d", ret);
+        return ret;
+    }
+
+    return APP_ERR_OK;
+}
 
 APP_ERROR ModelInferenceProcessor::SetInOutData(std::vector<BaseTensor> &inputs, void *inputDataSet,
             void *outputDataSet, std::vector<MemoryData> &outputsMemDataQue)

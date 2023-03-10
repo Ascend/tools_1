@@ -16,8 +16,11 @@
 #ifndef TENSOR_SHAPE_H
 #define TENSOR_SHAPE_H
 
-namespace Base {
+#include <cstddef>
+#include <cstdint>
+#include <vector>
 
+namespace Base {
 class TensorShape
 {
 public:

@@ -238,6 +238,7 @@ def get_args():
     parser.add_argument("--dymShape_range", type=str, default=None, help="dynamic shape range, such as --dymShape_range \"data:1,600~700;img_info:1,600-700\"")
     parser.add_argument("--backend", type=str, default=None, help="backend trtexec")
     parser.add_argument("--perf", type=str2bool, default=False, help="perf switch")
+    parser.add_argument("--jobs", type=check_positive_integer, default=1, help="number of jobs run in parallels")
 
     args = parser.parse_args()
 
@@ -312,7 +313,7 @@ def main(args, index=0, msgq=None):
         msgq.put(index)
         time_sec = 0
         while True:
-            if msgq.qsize() >= args.subprocess_count:
+            if msgq.qsize() >= args.jobs:
                 break
             time_sec = time_sec + 1
             if time_sec > 10:
@@ -358,7 +359,7 @@ def multidevice_run(args):
     p = Pool(len(device_list))
     msgq = Manager().Queue()
 
-    args.subprocess_count = len(device_list)
+    args.jobs = len(device_list)
     for i in range(len(device_list)):
         args.device = int(device_list[i])
         p.apply_async(main, args=(args, i, msgq), error_callback=print_subproces_run_error)

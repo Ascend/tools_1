@@ -18,6 +18,7 @@
 #define MEMORY_HELPER_H
 #include <vector>
 #include "Base/ErrorCode/ErrorCode.h"
+#include "acl/acl.h"
 
 namespace Base {
 struct MemoryData {
@@ -44,6 +45,27 @@ struct MemoryData {
     APP_ERROR (*free)(void*) = nullptr;
 };
 
+struct BaseTensor {
+    void* buf;
+    std::vector<int64_t> shape;
+    size_t size;
+    size_t len;
+
+    BaseTensor() = default;
+
+    BaseTensor(int64_t buf, int64_t size)
+    {
+        this->buf = (void*)buf;
+        this->size = (size_t)size;
+    }
+
+    BaseTensor(void* buf, size_t size)
+    {
+        this->buf = buf;
+        this->size = size;
+    }
+};
+
 class MemoryHelper {
 public:
     // malloc memory
@@ -51,12 +73,16 @@ public:
     static APP_ERROR Free(MemoryData& data);
     static APP_ERROR Memset(MemoryData& data, int32_t value, size_t count);
     static APP_ERROR Memcpy(MemoryData& dest, const MemoryData& src, size_t count);
+    static APP_ERROR MemsetAsync(MemoryData& data, int32_t value, size_t count, aclrtStream stream);
+    static APP_ERROR MemcpyAsync(MemoryData& dest, const MemoryData& src, size_t count, aclrtStream stream);
 
     static APP_ERROR MxbsMalloc(MemoryData& data);
     static APP_ERROR MxbsFree(MemoryData& data);
     static APP_ERROR MxbsMemset(MemoryData& data, int32_t value, size_t count);
     static APP_ERROR MxbsMemcpy(MemoryData& dest, const MemoryData& src, size_t count);
     static APP_ERROR MxbsMallocAndCopy(MemoryData& dest, const MemoryData& src);
+    static APP_ERROR MxbsMemsetAsync(MemoryData& data, int32_t value, size_t count, aclrtStream stream);
+    static APP_ERROR MxbsMemcpyAsync(MemoryData& dest, const MemoryData& src, size_t count, aclrtStream stream);
 
 private:
     static bool IsDeviceToHost(const MemoryData& dest, const MemoryData& src);

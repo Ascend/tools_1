@@ -13,17 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "PyInferenceSession/PyInferenceSession.h"
 
+#include <algorithm>
+#include <chrono>
 #include <exception>
+#include <memory>
+#include <mutex>
+#include <stdexcept>
 #include <thread>
+#include <utility>
 
 #include "Base/DeviceManager/DeviceManager.h"
+#include "Base/MemoryHelper/MemoryHelper.h"
 #include "Base/Tensor/TensorBuffer/TensorBuffer.h"
 #include "Base/Tensor/TensorShape/TensorShape.h"
 #include "Base/Tensor/TensorContext/TensorContext.h"
 #include "Base/ErrorCode/ErrorCode.h"
 #include "Base/Log/Log.h"
+#include "ModelInferenceProcessor.h"
+
+#include "PyInferenceSession/PyInferenceSession.h"
+#include "SessionOptions.h"
 
 namespace Base {
 PyInferenceSession::PyInferenceSession(const std::string &modelPath, const uint32_t &deviceId, std::shared_ptr<SessionOptions> options) : deviceId_(deviceId)
@@ -86,10 +96,6 @@ void PyInferenceSession::Init(const std::string &modelPath, std::shared_ptr<Sess
     if (ret != APP_ERR_OK) {
         throw std::runtime_error(GetError(ret));
     }
-
-    // 确定是否加
-    void *stream = nullptr;
-    DeviceManager::GetInstance()->CreateStream(stream);
 
     ret = modelInfer_.Init(modelPath, options, deviceId_);
     if (ret != APP_ERR_OK) {
@@ -254,6 +260,41 @@ int PyInferenceSession::SetCustomOutTensorsSize(std::vector<size_t> customOutSiz
     return APP_ERR_OK;
 }
 
+void PyInferenceSession::SessionPerf(std::vector<Base::BaseTensor>& feeds, int loop, bool skip_transfer)
+{
+    Base::AsyncExecutor executor;
+    void *input_data_set = nullptr;
+    void *output_data_set = nullptr;
+
+    std::vector<BaseTensor> inputs_device = {};
+    std::vector<BaseTensor> outputs_device = {};
+    Base::MirroredMemoryData input_mirrored_mem;
+    Base::MirroredMemoryData output_mirrored_mem;
+
+    input_mirrored_mem.AllocateInputMemory(feeds, inputs_device, deviceId_);
+    output_mirrored_mem.AllocateOutputMemory(outputs_device, modelInfer_.OutputsNameAndSize(), modelInfer_.CustomOutputsSize(), deviceId_);
+
+    modelInfer_.CreateInputDataSet(input_data_set, inputs_device);
+    modelInfer_.CreateOutputDataSet(output_data_set, outputs_device);
+
+    for (int i = 0; i < loop; i++) {
+        executor.Next();
+        executor.SyncAndOccupy();
+
+        executor.Host2Device(input_mirrored_mem, skip_transfer);
+        executor.Compute(modelInfer_, input_data_set, output_data_set);
+        executor.Device2Host(output_mirrored_mem, skip_transfer);
+    }
+
+    executor.SyncAll();
+
+    modelInfer_.DestroyDataSet(input_data_set);
+    modelInfer_.DestroyDataSet(output_data_set);
+
+    input_mirrored_mem.FreeInputMemory();
+    output_mirrored_mem.FreeOutputMemory();
+}
+
 std::vector<TensorBase> PyInferenceSession::InferBaseTensorVector(std::vector<std::string>& output_names, std::vector<Base::BaseTensor>& feeds)
 {
     DEBUG_LOG("start to ModelInference base_tensor");
@@ -315,15 +356,12 @@ APP_ERROR PyInferenceSession::InferThreadFunc(std::vector<std::string> output_na
     if (ret != APP_ERR_OK) {
         throw std::runtime_error(GetError(ret));
     }
-    void *stream = nullptr;
-    DeviceManager::GetInstance()->CreateStream(stream);
 
     for (int i = 0; i < 1000; i++){
         auto outputs = InferBaseTensorVector(output_names, feeds);
     }
 
     INFO_LOG("InferThreadFunc end");
-    // DeviceManager::GetInstance()->DestroyStream(stream);
 }
 
 APP_ERROR PyInferenceSession::ThreadRunTest(int threadNum, std::vector<std::string>& output_names, std::vector<Base::BaseTensor>& feeds)
@@ -345,6 +383,74 @@ APP_ERROR PyInferenceSession::ThreadRunTest(int threadNum, std::vector<std::stri
 std::shared_ptr<Base::PyInferenceSession> CreateModelInstance(const std::string &modelPath, const uint32_t &deviceId, std::shared_ptr<Base::SessionOptions> options)
 {
     return std::make_shared<Base::PyInferenceSession>(modelPath, deviceId, options);
+}
+
+using TimePointPair = std::pair<std::chrono::steady_clock::time_point, std::chrono::steady_clock::time_point>;
+
+void PerfSingleThread(const string modelPath, std::vector<Base::BaseTensor> feeds, std::shared_ptr<Base::SessionOptions> sess_option, Base::PerfOption perf_option, TimePointPair &start_end_time) {
+    Base::PyInferenceSession sess = Base::PyInferenceSession(modelPath, perf_option.device_id, sess_option);
+    switch (perf_option.dynamic_type) {
+        case Base::DynamicType::DYNAMIC_BATCH:
+            sess.SetDynamicBatchsize(perf_option.batchsize);
+            break;
+        case Base::DynamicType::DYNAMIC_HW:
+            sess.SetDynamicHW(perf_option.width, perf_option.height);
+            break;
+        case Base::DynamicType::DYNAMIC_DIMS:
+            sess.SetDynamicDims(perf_option.dyn_dims);
+            break;
+        case Base::DynamicType::DYNAMIC_SHAPE:
+            sess.SetDynamicShape(perf_option.dyn_shapes);
+            break;
+        default:
+            break;
+    }
+    if (!perf_option.custom_output_size.empty()) {
+        sess.SetCustomOutTensorsSize(perf_option.custom_output_size);
+    }
+    start_end_time.first = std::chrono::steady_clock::now();
+    sess.SessionPerf(feeds, sess_option->loop, perf_option.skip_transfer);
+    start_end_time.second = std::chrono::steady_clock::now();
+}
+
+int64_t Perf(const string modelPath, std::vector<Base::BaseTensor> feeds, Base::PerfOption options) {
+    if (options.threads <= 0 || options.threads > 4) {
+        INFO_LOG("threads(%d) not in valid range [1, 4], fallback to 1.", options.threads);
+        options.threads = 1;
+    }
+    auto sess_option = std::make_shared<Base::SessionOptions>();
+    sess_option->loop = options.loop;
+    sess_option->log_level = options.log_level;
+    sess_option->aclJsonPath = options.acl_json_path;
+    if (options.threads <= 1) {
+        TimePointPair start_end_time{};
+        PerfSingleThread(modelPath, feeds, sess_option, options, start_end_time);
+        return std::chrono::duration_cast<std::chrono::nanoseconds>(start_end_time.second - start_end_time.first).count();
+    }
+    sess_option->loop = options.loop / options.threads;
+    std::vector<std::thread> threads_;
+    std::vector<TimePointPair> exec_time_vec(options.threads);
+    for (int i = 0; i < options.threads; i++) {
+        threads_.emplace_back(PerfSingleThread, modelPath, feeds, sess_option, options, std::ref(exec_time_vec[i]));
+    }
+    for (auto &thread : threads_) {
+        thread.join();
+    }
+
+    auto start_time = std::min_element(
+        exec_time_vec.begin(),
+        exec_time_vec.end(),
+        [](TimePointPair &t0, TimePointPair &t1) {
+            return t0.first < t1.first;
+        });
+    auto end_time = std::max_element(
+        exec_time_vec.begin(),
+        exec_time_vec.end(),
+        [](TimePointPair &t0, TimePointPair &t1) {
+            return t0.second < t1.second;
+        });
+
+    return std::chrono::duration_cast<std::chrono::nanoseconds>(end_time->second - start_time->first).count();
 }
 
 #ifdef COMPILE_PYTHON_MODULE
@@ -402,6 +508,24 @@ void RegistInferenceSession(py::module &m)
 
     model.def("create_tensor_from_fileslist", &Base::PyInferenceSession::CreateTensorFromFilesList);
     model.def("finalize", &Base::PyInferenceSession::Finalize);
+
+    py::class_<Base::PerfOption>(m, "PerfOption")
+        .def(pybind11::init<>())
+        .def_readwrite("threads", &Base::PerfOption::threads)
+        .def_readwrite("device_id", &Base::PerfOption::device_id)
+        .def_readwrite("skip_transfer", &Base::PerfOption::skip_transfer)
+        .def_readwrite("loop", &Base::PerfOption::loop)
+        .def_readwrite("log_level", &Base::PerfOption::log_level)
+        .def_readwrite("acl_json_path", &Base::PerfOption::acl_json_path)
+        .def_readwrite("dynamic_type", &Base::PerfOption::dynamic_type)
+        .def_readwrite("batchsize", &Base::PerfOption::batchsize)
+        .def_readwrite("width", &Base::PerfOption::width)
+        .def_readwrite("height", &Base::PerfOption::height)
+        .def_readwrite("dyn_shapes", &Base::PerfOption::dyn_shapes)
+        .def_readwrite("dyn_dims", &Base::PerfOption::dyn_dims)
+        .def_readwrite("custom_output_size", &Base::PerfOption::custom_output_size);
+
+    m.def("perf", &Perf, "modelPath"_a, "feeds"_a, py::kw_only(), "options"_a);
 
     m.def("model", &CreateModelInstance, "modelPath"_a, "deviceId"_a = 0, "options"_a=py::none());
 }
