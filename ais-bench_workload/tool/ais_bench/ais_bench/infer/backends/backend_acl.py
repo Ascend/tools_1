@@ -26,6 +26,7 @@ class BackendAcl(backend.Backend):
         self.device_id = 0
         self.options = PerfOption()
         self.parse_config(config)
+        self.nparr = []
 
     @property
     def name(self) -> str:
@@ -107,9 +108,11 @@ class BackendAcl(backend.Backend):
             session = aclruntime.InferenceSession(
                 self.model_path, self.device_id, options
             )
+            self.nparr = []
 
             def new_tensor(_input_desc):
                 ndata = np.frombuffer(bytearray(_input_desc.realsize))
+                self.nparr.append(ndata)
                 return aclruntime.BaseTensor(
                     ndata.__array_interface__["data"][0], ndata.nbytes
                 )
