@@ -31,18 +31,6 @@ if not torch.cuda.is_available():
 device = collections.namedtuple('device', ['type', 'index'])
 
 
-class Mode(Enum):
-    """
-    dump range mode
-    """
-    ALL = "all"
-    LIST = "list"
-    RANGE = "range"
-    STACK = "stack"
-    ACL = "acl"
-    API_LIST = "api_list"
-
-
 class Const:
     """
     Class for const
@@ -55,11 +43,19 @@ class Const:
     COMMA = ","
     DOT = "."
     DUMP_RATIO_MAX = 100
-    DUMP_SCOPE = {"ALL": 1, "LIST": 2, "RANGE": 3, "STACK": 4, "ACL": 5}
     SUMMERY_DATA_NUMS = 256
     FLOAT_EPSILON = np.finfo(float).eps
     NAN = 'NaN'
     SUPPORT_DUMP_MODE = ['api', 'acl']
+
+    # dump mode
+    DUMP_SCOPE = {"ALL": 1, "LIST": 2, "RANGE": 3, "STACK": 4, "ACL": 5}
+    ALL = "all"
+    LIST = "list"
+    RANGE = "range"
+    STACK = "stack"
+    ACL = "acl"
+    API_LIST = "api_list"
 
 
 class VersionCheck:

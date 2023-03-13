@@ -28,7 +28,7 @@ if not torch.cuda.is_available():
     import torch_npu
 
 from ..common.utils import check_file_or_directory_path, print_error_log, \
-    print_warn_log, CompareException, Const, get_time, print_info_log, Mode
+    print_warn_log, CompareException, Const, get_time, print_info_log
 from .backward import Backward
 
 DumpCount = 0
@@ -39,7 +39,7 @@ class DumpUtil(object):
     dump_data_dir = None
     dump_path = None
     dump_switch = None
-    dump_switch_mode = Mode.ALL
+    dump_switch_mode = Const.ALL
     dump_switch_scope = []
     dump_init_enable = False
     real_overflow_dump_times = 0
@@ -87,10 +87,10 @@ class DumpUtil(object):
         return False
 
     check_mapper = {
-        Mode.LIST: check_list_or_acl_mode,
-        Mode.ACL: check_list_or_acl_mode,
-        Mode.RANGE: check_range_mode,
-        Mode.STACK: check_stack_mode
+        Const.LIST: check_list_or_acl_mode,
+        Const.ACL: check_list_or_acl_mode,
+        Const.RANGE: check_range_mode,
+        Const.STACK: check_stack_mode
     }
 
     @staticmethod
@@ -105,7 +105,7 @@ class DumpUtil(object):
         if DumpUtil.dump_path:
             return DumpUtil.dump_path
 
-        if DumpUtil.dump_switch_mode == Mode.ALL:
+        if DumpUtil.dump_switch_mode == Const.ALL:
             raise RuntimeError("get_dump_path: the file path is empty,"
                                " you must use set_dump_path to set a valid dump path!!!")
         else:
@@ -147,15 +147,15 @@ def set_dump_path(fpath=None):
 def set_dump_switch(switch, mode=1, scope=[], api_list=[]):
     global DumpCount
     assert switch in ["ON", "OFF"], "Please set dump switch with 'ON' or 'OFF'."
-    if mode == Mode.LIST and switch == "ON":
+    if mode == Const.LIST and switch == "ON":
         DumpCount = 0
-    if mode == Mode.LIST and switch == "OFF":
+    if mode == Const.LIST and switch == "OFF":
         print_info_log("The number of matched dump is {}".format(DumpCount))
-    if mode == Mode.RANGE:
+    if mode == Const.RANGE:
         assert len(scope) == 2, "set_dump_switch, scope param set invalid, it's must be [start, end]."
-    if mode == Mode.LIST:
+    if mode == Const.LIST:
         assert len(scope) != 0, "set_dump_switch, scope param set invalid, it's should not be an empty list."
-    if mode == Mode.STACK:
+    if mode == Const.STACK:
         assert len(scope) <= 2, "set_dump_switch, scope param set invalid, it's must be [start, end] or []."
     DumpUtil.set_dump_switch(switch, mode=mode, scope=scope, api_list=api_list)
 
@@ -226,7 +226,7 @@ def make_dump_data_dir(dump_file_name):
 def _set_dump_switch4api_list(name):
     if DumpUtil.dump_api_list:
         api_name = name.split("_")[1]
-        DumpUtil.dump_switch_mode = "ON" if api_name in DumpUtil.dump_api_list else "OFF"
+        DumpUtil.dump_switch = "ON" if api_name in DumpUtil.dump_api_list else "OFF"
 
 
 def dump_acc_cmp(name, in_feat, out_feat, dump_step, moudle):
@@ -241,7 +241,7 @@ def dump_acc_cmp(name, in_feat, out_feat, dump_step, moudle):
             dump_acc_cmp.call_number = dump_acc_cmp.call_number + 1
 
         name_prefix = f"{dump_acc_cmp.call_number}_{name}"
-        if DumpUtil.dump_switch_mode == Mode.ALL:
+        if DumpUtil.dump_switch_mode == Const.ALL:
             name_template = f"{name_prefix}" + "_{}"
             dump_api_tensor(dump_step, in_feat, name_template, out_feat)
         elif DumpUtil.check_switch_scope(name_prefix):
@@ -251,9 +251,9 @@ def dump_acc_cmp(name, in_feat, out_feat, dump_step, moudle):
                 stack_line = [path, str(line), func, code[0].strip()]
                 stack_str.append(stack_line)
             _dump_tensor_completely(stack_str, name_template.format("stack_info"), dump_file)
-            if DumpUtil.dump_switch_mode == Mode.ACL:
+            if DumpUtil.dump_switch_mode == Const.ACL:
                 acl_dump(moudle, name)
-            elif DumpUtil.dump_switch_mode != Mode.STACK:
+            elif DumpUtil.dump_switch_mode != Const.STACK:
                 dump_api_tensor(dump_step, in_feat, name_template, out_feat)
 
 
