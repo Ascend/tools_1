@@ -403,7 +403,7 @@ def multiprocess_run(args):
     tlist = []
     while q.qsize() != 0:
         ret = q.get()
-        if type(ret) == list:
+        if  isinstance(ret, list):
             print("subprocess_{} throughput:{} start_time:{} end_time:{}".format(ret[0], ret[1], ret[2], ret[3]))
             tlist.append(ret[1])
     logger.info('summary throughput:{}'.format(np.sum(tlist)))
