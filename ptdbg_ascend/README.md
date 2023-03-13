@@ -249,6 +249,9 @@ set_dump_switch("ON", mode=4, scope=["1000_Tensor_abs", "1484_Tensor_transpose_f
 
 # 示例4： dump指定api/api列表的ACL级别的输入输出数据
 set_dump_switch("ON", mode=5, scope=["1000_Tensor_abs", "1484_Tensor_transpose_forward"])
+
+# 示例5： dump指定某一类api的api级别输入输出数据
+set_dump_switch("ON", mode="api_list", scope=["relu"])
 ```
 4) dump数据存盘说明：<br/>
 
