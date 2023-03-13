@@ -1,6 +1,7 @@
 import argparse
 import logging
 import os
+import numpy as np
 import sys
 import time
 import shutil
@@ -359,6 +360,7 @@ def multidevice_run(args):
     p = Pool(len(device_list))
     msgq = Manager().Queue()
 
+
     args.jobs = len(device_list)
     for i in range(len(device_list)):
         args.device = int(device_list[i])
@@ -384,6 +386,28 @@ def backend_run(args):
     perf = backend.get_perf()
     print("perf info:{}".format(perf))
 
+def multiprocess_run(args):
+    """device number is 1
+    """
+    logger.info("multiprocess run begin")
+    p = Pool(args.jobs)
+    q = Manager().Queue()
+
+    for i in range(args.jobs):
+        p.apply_async(main, args=(args, i, q), error_callback=print_subproces_run_error)
+
+    logger.info("multiprocess run apply async done")
+    p.close()
+    p.join()
+    print("multiprocess run end qsize:{}".format(q.qsize()))
+    tlist = []
+    while q.qsize() != 0:
+        ret = q.get()
+        if type(ret) == list:
+            print("subprocess_{} throughput:{} start_time:{} end_time:{}".format(ret[0], ret[1], ret[2], ret[3]))
+            tlist.append(ret[1])
+    logger.info('summary throughput:{}'.format(np.sum(tlist)))
+
 if __name__ == "__main__":
     args = get_args()
 
@@ -406,10 +430,18 @@ if __name__ == "__main__":
         # dymshape range run,according range to run each shape infer get best shape
         dymshape_range_run(args)
         exit(0)
-    
+
     if type(args.device) == list:
-        # args has multiple device, run single process for each device
+        # number of args.jobs is 1
+        if args.jobs > 1:
+            logger.error("bad input parameters. not support --jobs: {} --device: {}".format(args.jobs, args.device))
+            exit(0)
         multidevice_run(args)
+        exit(0)
+
+    if args.jobs >= 1:
+        # number of args.device is 1
+        multiprocess_run(args)
         exit(0)
 
     main(args)
