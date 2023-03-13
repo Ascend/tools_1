@@ -436,6 +436,7 @@ if __name__ == "__main__":
         if args.jobs > 1:
             logger.error("bad input parameters. not support --jobs: {} --device: {}".format(args.jobs, args.device))
             exit(0)
+        # args has multiple device, run single process for each device
         multidevice_run(args)
         exit(0)
 
