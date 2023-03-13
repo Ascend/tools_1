@@ -241,7 +241,7 @@ def dump_acc_cmp(name, in_feat, out_feat, dump_step, moudle):
             dump_acc_cmp.call_number = dump_acc_cmp.call_number + 1
 
         name_prefix = f"{dump_acc_cmp.call_number}_{name}"
-        if DumpUtil.dump_switch_mode == Const.ALL:
+        if DumpUtil.dump_switch_mode in [Const.ALL, Const.API_LIST]:
             name_template = f"{name_prefix}" + "_{}"
             dump_api_tensor(dump_step, in_feat, name_template, out_feat)
         elif DumpUtil.check_switch_scope(name_prefix):
