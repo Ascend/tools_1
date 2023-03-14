@@ -256,13 +256,13 @@ def acl_dump(module, module_name):
 def forward_acl_dump(module, module_name):
     global init_status
     if not init_status:
+        init_status = True
         torch_npu.npu.init_dump()
         torch_npu.npu.set_dump(DumpUtil.dump_config)
         torch_npu.npu.synchronize()
         module.forward(*module.input_args, **module.input_kwargs)
         torch_npu.npu.synchronize()
         torch_npu.npu.finalize_dump()
-        init_status = True
     del module.input_args
     del module.input_kwargs
     init_status = False
