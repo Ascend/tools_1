@@ -58,23 +58,20 @@ class DumpUtil(object):
         DumpUtil.dump_switch_scope = scope
         DumpUtil.dump_api_list = [api.lower() for api in api_list]
 
-    @classmethod
-    def check_list_or_acl_mode(cls, name_prefix):
+    def check_list_or_acl_mode(name_prefix):
         global DumpCount
         for item in DumpUtil.dump_switch_scope:
             if name_prefix.startswith(item):
                 DumpCount = DumpCount + 1
                 return True
 
-    @classmethod
-    def check_range_mode(cls, name_prefix):
+    def check_range_mode(name_prefix):
         start = int(DumpUtil.dump_switch_scope[0].split('_', 1)[0])
         end = int(DumpUtil.dump_switch_scope[1].split('_', 1)[0])
         curr = int(name_prefix.split('_', 1)[0])
         return start <= curr <= end
 
-    @classmethod
-    def check_stack_mode(cls, name_prefix):
+    def check_stack_mode(name_prefix):
         if len(DumpUtil.dump_switch_scope) == 0:
             return True
         elif len(DumpUtil.dump_switch_scope) == 1:
