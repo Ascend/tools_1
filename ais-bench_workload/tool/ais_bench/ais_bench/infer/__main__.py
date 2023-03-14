@@ -264,7 +264,7 @@ def get_args():
         logger.error("parameter --output_dirname cann't be used alone. Please use it together with the parameter --output!\n")
         raise RuntimeError('error bad parameters --output_dirname')
 
-    if args.jobs > 1 and len(args.device) > 1:
+    if args.jobs > 1 and isinstance(args.device, list) and len(list(args.device)) > 1:
         logger.error("When --jobs parameter value is greater than 1, it cannot be used with --device parameter with multiple values!\n")
         raise RuntimeError('error bad parameters --jobs --device')
 
@@ -436,7 +436,7 @@ if __name__ == "__main__":
         dymshape_range_run(args)
         exit(0)
 
-    if type(args.device) == list:
+    if isinstance(args.device, list):
         # args has multiple device, run single process for each device
         multidevice_run(args)
         exit(0)
