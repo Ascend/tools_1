@@ -129,7 +129,7 @@ class OverFlowUtil(object):
     @staticmethod
     def get_overflow_check_switch():
         if OverFlowUtil.overflow_check_switch is None:
-            return False
+            return True
         return OverFlowUtil.overflow_check_switch == "ON"
 
     @staticmethod
