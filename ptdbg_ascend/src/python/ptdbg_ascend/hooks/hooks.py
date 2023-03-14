@@ -56,7 +56,7 @@ class DumpUtil(object):
         DumpUtil.dump_switch_mode = mode
         DumpUtil.dump_init_enable = True
         DumpUtil.dump_switch_scope = scope
-        DumpUtil.dump_api_list = api_list
+        DumpUtil.dump_api_list = [api.lower() for api in api_list]
 
     @classmethod
     def check_list_or_acl_mode(cls, name_prefix):
@@ -83,7 +83,7 @@ class DumpUtil(object):
             return DumpUtil.check_range_mode(name_prefix)
         else:
             print_error_log("dump scope is invalid, Please set the scope mode in"
-                            " set_dump_switch with [1, 2, 3, 4],1: ALL, 2: List, 3: ARRANGE, 4: STACK !")
+                            " set_dump_switch with 'all', 'list', 'range', 'stack', 'acl', 'api_list'!")
         return False
 
     check_mapper = {
@@ -225,8 +225,9 @@ def make_dump_data_dir(dump_file_name):
 
 def _set_dump_switch4api_list(name):
     if DumpUtil.dump_api_list:
-        api_name = name.split("_")[1]
-        DumpUtil.dump_switch = "ON" if api_name in DumpUtil.dump_api_list else "OFF"
+        api_name = name.split("_")[1].lower()
+        if api_name in DumpUtil.dump_api_list and DumpUtil.dump_switch == "ON":
+            DumpUtil.dump_switch = "OFF"
 
 
 def dump_acc_cmp(name, in_feat, out_feat, dump_step, moudle):

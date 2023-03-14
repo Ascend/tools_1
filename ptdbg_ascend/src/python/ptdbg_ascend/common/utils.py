@@ -48,7 +48,6 @@ class Const:
     SUPPORT_DUMP_MODE = ['api', 'acl']
 
     # dump mode
-    DUMP_SCOPE = {"ALL": 1, "LIST": 2, "RANGE": 3, "STACK": 4, "ACL": 5}
     ALL = "all"
     LIST = "list"
     RANGE = "range"
