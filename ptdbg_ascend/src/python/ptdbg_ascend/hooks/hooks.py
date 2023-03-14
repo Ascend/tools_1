@@ -237,8 +237,8 @@ def dump_acc_cmp(name, in_feat, out_feat, dump_step, moudle):
         if DumpUtil.dump_init_enable:
             dump_acc_cmp.call_number = 0
             DumpUtil.dump_init_enable = False
-            if DumpUtil.dump_switch_mode != Const.DUMP_SCOPE.get("STACK"):
-                DumpUtil.dump_data_dir = make_dump_data_dir(dump_file)
+            DumpUtil.dump_data_dir = make_dump_data_dir(dump_file) \
+                if DumpUtil.dump_switch_mode != Const.STACK else ""
         else:
             dump_acc_cmp.call_number = dump_acc_cmp.call_number + 1
 
