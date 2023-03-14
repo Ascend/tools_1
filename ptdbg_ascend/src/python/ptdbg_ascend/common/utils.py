@@ -20,7 +20,6 @@ import subprocess
 import sys
 import time
 from datetime import datetime, timezone
-from enum import Enum
 
 import numpy as np
 import torch
