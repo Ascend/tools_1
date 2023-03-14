@@ -58,23 +58,20 @@ class DumpUtil(object):
         DumpUtil.dump_switch_scope = scope
         DumpUtil.dump_api_list = [api.lower() for api in api_list]
 
-    @classmethod
-    def check_list_or_acl_mode(cls, name_prefix):
+    def check_list_or_acl_mode(name_prefix):
         global DumpCount
         for item in DumpUtil.dump_switch_scope:
             if name_prefix.startswith(item):
                 DumpCount = DumpCount + 1
                 return True
 
-    @classmethod
-    def check_range_mode(cls, name_prefix):
+    def check_range_mode(name_prefix):
         start = int(DumpUtil.dump_switch_scope[0].split('_', 1)[0])
         end = int(DumpUtil.dump_switch_scope[1].split('_', 1)[0])
         curr = int(name_prefix.split('_', 1)[0])
         return start <= curr <= end
 
-    @classmethod
-    def check_stack_mode(cls, name_prefix):
+    def check_stack_mode(name_prefix):
         if len(DumpUtil.dump_switch_scope) == 0:
             return True
         elif len(DumpUtil.dump_switch_scope) == 1:
@@ -144,7 +141,7 @@ def set_dump_path(fpath=None):
     DumpUtil.set_dump_path(real_path)
 
 
-def set_dump_switch(switch, mode=1, scope=[], api_list=[]):
+def set_dump_switch(switch, mode=Const.ALL, scope=[], api_list=[]):
     global DumpCount
     assert switch in ["ON", "OFF"], "Please set dump switch with 'ON' or 'OFF'."
     if mode == Const.LIST and switch == "ON":
@@ -237,8 +234,8 @@ def dump_acc_cmp(name, in_feat, out_feat, dump_step, moudle):
         if DumpUtil.dump_init_enable:
             dump_acc_cmp.call_number = 0
             DumpUtil.dump_init_enable = False
-            if DumpUtil.dump_switch_mode != Const.DUMP_SCOPE.get("STACK"):
-                DumpUtil.dump_data_dir = make_dump_data_dir(dump_file)
+            DumpUtil.dump_data_dir = make_dump_data_dir(dump_file) \
+                if DumpUtil.dump_switch_mode != Const.STACK else ""
         else:
             dump_acc_cmp.call_number = dump_acc_cmp.call_number + 1
 
