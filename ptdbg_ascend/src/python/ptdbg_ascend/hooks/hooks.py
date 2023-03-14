@@ -144,7 +144,7 @@ def set_dump_path(fpath=None):
     DumpUtil.set_dump_path(real_path)
 
 
-def set_dump_switch(switch, mode=1, scope=[], api_list=[]):
+def set_dump_switch(switch, mode=Const.ALL, scope=[], api_list=[]):
     global DumpCount
     assert switch in ["ON", "OFF"], "Please set dump switch with 'ON' or 'OFF'."
     if mode == Const.LIST and switch == "ON":
