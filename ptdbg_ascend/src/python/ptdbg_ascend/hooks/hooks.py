@@ -42,7 +42,6 @@ class DumpUtil(object):
     dump_switch_mode = Const.ALL
     dump_switch_scope = []
     dump_init_enable = False
-    real_overflow_dump_times = 0
     dump_api_list = []
 
     @staticmethod
@@ -118,13 +117,28 @@ class DumpUtil(object):
             return False
         return DumpUtil.dump_switch == "ON"
 
+
+class OverFlowUtil(object):
+    overflow_check_switch = None
+    real_overflow_dump_times = 0
+
+    @staticmethod
+    def set_overflow_check_switch(switch):
+        OverFlowUtil.overflow_check_switch = switch
+
+    @staticmethod
+    def get_overflow_check_switch():
+        if OverFlowUtil.overflow_check_switch is None:
+            return False
+        return OverFlowUtil.overflow_check_switch == "ON"
+
     @staticmethod
     def inc_overflow_dump_times():
-        DumpUtil.real_overflow_dump_times += 1
+        OverFlowUtil.real_overflow_dump_times += 1
 
     @staticmethod
     def check_overflow_dump_times(need_dump_times):
-        return DumpUtil.real_overflow_dump_times < need_dump_times
+        return OverFlowUtil.real_overflow_dump_times < need_dump_times
 
 
 def set_dump_path(fpath=None):
@@ -155,6 +169,11 @@ def set_dump_switch(switch, mode=Const.ALL, scope=[], api_list=[]):
     if mode == Const.STACK:
         assert len(scope) <= 2, "set_dump_switch, scope param set invalid, it's must be [start, end] or []."
     DumpUtil.set_dump_switch(switch, mode=mode, scope=scope, api_list=api_list)
+
+
+def set_overflow_check_switch(switch):
+    assert switch in ["ON", "OFF"], "Please set overflow switch with 'ON' or 'OFF'."
+    OverFlowUtil.set_overflow_check_switch(switch)
 
 
 def dump_tensor(x, prefix, dump_step):
@@ -325,6 +344,8 @@ def overflow_check(name, **kwargs):
         return RuntimeError("Not get the specified process pid.")
 
     def overflowcheck_hook(module, in_feat, out_feat):
+        if not OverFlowUtil.get_overflow_check_switch():
+            return
         if pid != os.getpid():
             return
         if torch.cuda.is_available():
@@ -337,9 +358,9 @@ def overflow_check(name, **kwargs):
                 del module.input_args
             if hasattr(module, 'input_kwargs'):
                 del module.input_kwargs
-        if module.has_overflow and DumpUtil.check_overflow_dump_times(overflow_nums):
-            DumpUtil.inc_overflow_dump_times()
-            dump_file_name = "Overflow_info_{}_{}.pkl".format(get_time(), DumpUtil.real_overflow_dump_times)
+        if module.has_overflow and OverFlowUtil.check_overflow_dump_times(overflow_nums):
+            OverFlowUtil.inc_overflow_dump_times()
+            dump_file_name = "Overflow_info_{}_{}.pkl".format(get_time(), OverFlowUtil.real_overflow_dump_times)
             stack_str = []
             for (_, path, line, func, code, _) in inspect.stack()[3:]:
                 stack_line = [path, str(line), func, code[0].strip()]
@@ -353,12 +374,12 @@ def overflow_check(name, **kwargs):
                     print_error_log(str(error))
                     return
             print_warn_log("[overflow {} times]: module name :'{}' is overflow and dump file is saved in '{}'."
-                           .format(DumpUtil.real_overflow_dump_times, module_name, os.path.realpath(dump_file_name)))
+                           .format(OverFlowUtil.real_overflow_dump_times, module_name, os.path.realpath(dump_file_name)))
             # clear overflow flag for the next check
             torch_npu._C._clear_overflow_npu()
-            if not DumpUtil.check_overflow_dump_times(overflow_nums):
+            if not OverFlowUtil.check_overflow_dump_times(overflow_nums):
                 print_error_log("[overflow {} times]: dump file is saved in '{}'."
-                                .format(DumpUtil.real_overflow_dump_times, os.path.realpath(dump_file_name)))
+                                .format(OverFlowUtil.real_overflow_dump_times, os.path.realpath(dump_file_name)))
                 return
 
     def acl_dump(module, module_name):

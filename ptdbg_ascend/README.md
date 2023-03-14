@@ -396,6 +396,18 @@ seed_all()
 register_hook(model, overflow_check, dump_mode='acl', dump_config='/home/xxx/dump.json')
 
 ...
+
+# 默认全量进行溢出检测
+# 如果只在特定的step 溢出检测，则在期望溢出检测的迭代开始前打开溢出检测开关，step结束后关掉。
+set_overflow_check_switch("ON")
+
+...
+
+# 在期望溢出检测的step结束后关闭溢出检测开关
+set_overflow_check_switch("OFF")
+
+...
+
 ```
 ##### dump.json配置示例
 ```
