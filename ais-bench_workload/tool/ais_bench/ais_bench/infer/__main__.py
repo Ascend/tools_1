@@ -263,6 +263,11 @@ def get_args():
     if args.output is None and args.output_dirname is not None:
         logger.error("parameter --output_dirname cann't be used alone. Please use it together with the parameter --output!\n")
         raise RuntimeError('error bad parameters --output_dirname')
+
+    if args.jobs > 1 and len(args.device) > 1:
+        logger.error("When --jobs parameter value is greater than 1, it cannot be used with --device parameter with multiple values!\n")
+        raise RuntimeError('error bad parameters --jobs --device')
+
     return args
 
 def msprof_run_profiling(args):
@@ -373,7 +378,7 @@ def multidevice_run(args):
     while msgq.qsize() != 0:
         ret = msgq.get()
         if type(ret) == list:
-            print("i:{} device_{} throughput:{} start_time:{} end_time:{}".format(
+            logger.info("i:{} device_{} throughput:{} start_time:{} end_time:{}".format(
                 ret[0], device_list[ret[0]], ret[1], ret[2], ret[3]))
             tlist.append(ret[1])
     logger.info('summary throughput:{}'.format(sum(tlist)))
@@ -387,7 +392,7 @@ def backend_run(args):
     print("perf info:{}".format(perf))
 
 def multiprocess_run(args):
-    """device number is 1
+    """multi-process inferencing for single device
     """
     logger.info("multiprocess run begin")
     p = Pool(args.jobs)
@@ -399,12 +404,12 @@ def multiprocess_run(args):
     logger.info("multiprocess run apply async done")
     p.close()
     p.join()
-    print("multiprocess run end qsize:{}".format(q.qsize()))
+    logger.info("multiprocess run end qsize:{}".format(q.qsize()))
     tlist = []
     while q.qsize() != 0:
         ret = q.get()
         if  isinstance(ret, list):
-            print("subprocess_{} throughput:{} start_time:{} end_time:{}".format(ret[0], ret[1], ret[2], ret[3]))
+            logger.info("subprocess_{} throughput:{} start_time:{} end_time:{}".format(ret[0], ret[1], ret[2], ret[3]))
             tlist.append(ret[1])
     logger.info('summary throughput:{}'.format(np.sum(tlist)))
 
@@ -432,16 +437,11 @@ if __name__ == "__main__":
         exit(0)
 
     if type(args.device) == list:
-        # number of args.jobs is 1
-        if args.jobs > 1:
-            logger.error("bad input parameters. not support --jobs: {} --device: {}".format(args.jobs, args.device))
-            exit(0)
         # args has multiple device, run single process for each device
         multidevice_run(args)
         exit(0)
 
     if args.jobs >= 1:
-        # number of args.device is 1
         multiprocess_run(args)
         exit(0)
 
