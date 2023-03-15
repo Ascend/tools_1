@@ -1161,5 +1161,22 @@ class TestClass():
         os.remove(tensor_infer_result1_path)
         os.remove(tensor_infer_result2_path)
 
+    def test_pure_inference_jobs(self):
+        batch_size = 1
+        jobs_num = 2
+        model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
+        cmd = "python3 -m ais_bench --model={} --device='0,1' --jobs={} ".format(model_path, jobs_num)
+        print("run cmd:{}".format(cmd))
+        ret = os.system(cmd)
+        assert ret != 0
+        batch_sizes = [1, 8]
+        for batch_size in batch_sizes:
+            model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
+            cmd = "python3 -m ais_bench --model={}  --jobs={} ".format(model_path, jobs_num)
+            print("run cmd:{}".format(cmd))
+            ret = os.system(cmd)
+            assert ret == 0
+
+
 if __name__ == '__main__':
     pytest.main(['test_infer_resnet50.py', '-vs'])

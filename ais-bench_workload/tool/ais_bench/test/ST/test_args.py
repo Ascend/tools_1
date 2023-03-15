@@ -27,8 +27,8 @@ class TestClass:
         for i, device_id in enumerate(invalid_device_ids):
             cmd = "{} --model {} --device {}".format(TestCommonClass.cmd_prefix, model_path, device_id)
             print("run cmd:{}".format(cmd))
-        ret = os.system(cmd)
-        assert ret != 0
+            ret = os.system(cmd)
+            assert ret != 0
 
     def test_args_invalid_model_path(self):
         model_path = "xxx_invalid.om"
