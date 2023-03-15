@@ -90,7 +90,7 @@ def warmup(session, args, intensors_desc, infiles):
     session.set_loop_count(1)
     # warmup
     for i in range(args.warmup_count):
-        outputs = run_inference(session, infeeds, out_array=True)
+        outputs = run_inference(session, args, infeeds, out_array=True)
 
     session.set_loop_count(args.loop)
 
@@ -100,7 +100,7 @@ def warmup(session, args, intensors_desc, infiles):
     MemorySummary.reset()
     logger.info("warm up {} done".format(args.warmup_count))
 
-def run_inference(session, inputs, out_array=False):
+def run_inference(session, args, inputs, out_array=False):
     if args.auto_set_dymshape_mode == True:
         set_dymshape_shape(session, inputs)
     elif args.auto_set_dymdims_mode == True:
@@ -115,7 +115,7 @@ def infer_loop_tensor_run(session, args, intensors_desc, infileslist, output_pre
         for j, files in enumerate(infiles):
             tensor = get_tensor_from_files_list(files, session, intensors_desc[j].realsize, args.pure_data_type, args.no_combine_tensor_mode)
             intensors.append(tensor)
-        outputs = run_inference(session, intensors)
+        outputs = run_inference(session, args, intensors)
         session.convert_tensors_to_host(outputs)
         if output_prefix != None:
             save_tensors_to_file(outputs, output_prefix, infiles, args.outfmt, i, args.output_batchsize_axis)
@@ -128,7 +128,7 @@ def infer_loop_files_run(session, args, intensors_desc, infileslist, output_pref
             real_files = convert_real_files(files)
             tensor = session.create_tensor_from_fileslist(intensors_desc[j], real_files)
             intensors.append(tensor)
-        outputs = run_inference(session, intensors)
+        outputs = run_inference(session, args, intensors)
         session.convert_tensors_to_host(outputs)
         if output_prefix != None:
             save_tensors_to_file(outputs, output_prefix, infiles, args.outfmt, i, args.output_batchsize_axis)
@@ -140,7 +140,7 @@ def infer_fulltensors_run(session, args, intensors_desc, infileslist, output_pre
 
     #for inputs in intensorslist:
     for inputs in tqdm(intensorslist, file=sys.stdout, desc='Inference Processing full'):
-        outputs = run_inference(session, inputs)
+        outputs = run_inference(session, args, inputs)
         outtensors.append(outputs)
 
     for i, outputs in enumerate(outtensors):
@@ -155,7 +155,7 @@ def infer_loop_array_run(session, args, intensors_desc, infileslist, output_pref
         for j, files in enumerate(infiles):
             narray = get_narray_from_files_list(files, intensors_desc[j].realsize, args.pure_data_type)
             innarrays.append(narray)
-        outputs = run_inference(session, innarrays)
+        outputs = run_inference(session, args, innarrays)
         session.convert_tensors_to_host(outputs)
         if args.output != None:
             save_tensors_to_file(outputs, output_prefix, infiles, args.outfmt, i, args.output_batchsize_axis)
@@ -365,7 +365,6 @@ def multidevice_run(args):
     p = Pool(len(device_list))
     msgq = Manager().Queue()
 
-
     args.jobs = len(device_list)
     for i in range(len(device_list)):
         args.device = int(device_list[i])
@@ -373,15 +372,17 @@ def multidevice_run(args):
 
     p.close()
     p.join()
-    logger.info("multidevice run end qsize:{}".format(msgq.qsize()))
+    result  = 0 if 2 * len(device_list) == msgq.qsize() else 1
+    logger.info("multidevice run end qsize:{} result:{}".format(msgq.qsize(), result))
     tlist = []
     while msgq.qsize() != 0:
         ret = msgq.get()
         if type(ret) == list:
-            logger.info("i:{} device_{} throughput:{} start_time:{} end_time:{}".format(
+            logger.debug("i:{} device_{} throughput:{} start_time:{} end_time:{}".format(
                 ret[0], device_list[ret[0]], ret[1], ret[2], ret[3]))
             tlist.append(ret[1])
     logger.info('summary throughput:{}'.format(sum(tlist)))
+    return result
 
 def backend_run(args):
     backend_class = BackendFactory.create_backend(args.backend)
@@ -404,14 +405,16 @@ def multiprocess_run(args):
     logger.info("multiprocess run apply async done")
     p.close()
     p.join()
+    result  = 0 if 2 * args.jobs == q.qsize() else 1
     logger.info("multiprocess run end qsize:{}".format(q.qsize()))
     tlist = []
     while q.qsize() != 0:
         ret = q.get()
         if  isinstance(ret, list):
-            logger.info("subprocess_{} throughput:{} start_time:{} end_time:{}".format(ret[0], ret[1], ret[2], ret[3]))
+            logger.debug("subprocess_{} throughput:{} start_time:{} end_time:{}".format(ret[0], ret[1], ret[2], ret[3]))
             tlist.append(ret[1])
     logger.info('summary throughput:{}'.format(np.sum(tlist)))
+    return result
 
 if __name__ == "__main__":
     args = get_args()
@@ -438,11 +441,11 @@ if __name__ == "__main__":
 
     if isinstance(args.device, list):
         # args has multiple device, run single process for each device
-        multidevice_run(args)
-        exit(0)
+        ret = multidevice_run(args)
+        exit(ret)
 
     if args.jobs >= 1:
-        multiprocess_run(args)
-        exit(0)
+        ret = multiprocess_run(args)
+        exit(ret)
 
     main(args)
