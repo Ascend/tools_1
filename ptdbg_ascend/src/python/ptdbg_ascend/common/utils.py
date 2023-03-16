@@ -24,7 +24,7 @@ from datetime import datetime, timezone
 import numpy as np
 import torch
 if not torch.cuda.is_available():
-    import torch_npu
+    from torch_npu.utils.device_guard import torch_device_guard as torch_npu_device_guard
 
 
 device = collections.namedtuple('device', ['type', 'index'])
@@ -285,3 +285,14 @@ def get_time():
 
 def format_value(value):
     return '{:.6f}'.format(value)
+
+
+def torch_device_guard(func):
+    if torch.cuda.is_available():
+        return func
+    # Parse args/kwargs matched torch.device objects
+
+    @torch_npu_device_guard
+    def wrapper(*args, **kwargs):
+        return func(*args, **kwargs)
+    return wrapper

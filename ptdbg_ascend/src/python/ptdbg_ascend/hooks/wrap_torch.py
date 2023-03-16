@@ -21,8 +21,7 @@ import torch
 import yaml
 
 from .module import HOOKModule
-if not torch.cuda.is_available():
-    from torch_npu.utils.device_guard import torch_device_guard
+from ..common.utils import torch_device_guard
 
 cur_path = os.path.dirname(os.path.realpath(__file__))
 yaml_path = os.path.join(cur_path, "support_wrap_ops.yaml")
@@ -55,19 +54,12 @@ class TorchOPTemplate(HOOKModule):
                 return True
         return False
 
-    if torch.cuda.is_available():
-        def forward(self, *args, **kwargs):
-            if self.input_param_need_adapt():
-                return getattr(torch._C._VariableFunctionsClass, str(self.op_name_))(args, **kwargs)
-            else:
-                return getattr(torch._C._VariableFunctionsClass, str(self.op_name_))(*args, **kwargs)
-    else:
-        @torch_device_guard
-        def forward(self, *args, **kwargs):
-            if self.input_param_need_adapt():
-                return getattr(torch._C._VariableFunctionsClass, str(self.op_name_))(args, **kwargs)
-            else:
-                return getattr(torch._C._VariableFunctionsClass, str(self.op_name_))(*args, **kwargs)
+    @torch_device_guard
+    def forward(self, *args, **kwargs):
+        if self.input_param_need_adapt():
+            return getattr(torch._C._VariableFunctionsClass, str(self.op_name_))(args, **kwargs)
+        else:
+            return getattr(torch._C._VariableFunctionsClass, str(self.op_name_))(*args, **kwargs)
 
 
 def wrap_torch_op(op_name, hook):
