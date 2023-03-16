@@ -41,7 +41,7 @@ def get_acl_json_path(args):
             os.makedirs(out_profiler_path, 0o755)
         output_json_dict["profiler"]["output"] = out_profiler_path
     elif args.dump:
-        output_json_dict = {"dump": {"dump_path": "", "dump_mode": "output", "dump_list": [{"model_name": ""}]}}
+        output_json_dict = {"dump": {"dump_path": "", "dump_mode": "all", "dump_list": [{"model_name": ""}]}}
         out_dump_path = os.path.join(args.output, "dump")
 
         if not os.path.exists(out_dump_path):
