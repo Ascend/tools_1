@@ -21,7 +21,8 @@ import torch_npu
 import yaml
 
 from .module import HOOKModule
-from ..common.utils import torch_device_guard
+if not torch.cuda.is_available():
+    from torch_npu.utils.device_guard import torch_device_guard
 
 cur_path = os.path.dirname(os.path.realpath(__file__))
 yaml_path = os.path.join(cur_path, "support_wrap_ops.yaml")
@@ -40,9 +41,13 @@ class NpuOPTemplate(HOOKModule):
         self.prefix_op_name_ = "NPU_" + str(op_name) + "_"
         super().__init__(hook)
 
-    @torch_device_guard
-    def forward(self, *args, **kwargs):
-        return getattr(torch_npu._C._VariableFunctionsClass, str(self.op_name_))(*args, **kwargs)
+    if torch.cuda.is_available():
+        def forward(self, *args, **kwargs):
+            return getattr(torch_npu._C._VariableFunctionsClass, str(self.op_name_))(*args, **kwargs)
+    else:
+        @torch_device_guard
+        def forward(self, *args, **kwargs):
+            return getattr(torch_npu._C._VariableFunctionsClass, str(self.op_name_))(*args, **kwargs)
 
 
 def wrap_npu_op(op_name, hook):
