@@ -456,8 +456,14 @@ set_overflow_check_switch("OFF")
 * 针对前向溢出api，可以通过以上原理，重新精准执行到溢出前向api，因此可以得到前向溢出api的全部acl数据。
 * 部分api存在调用嵌套关系，比如functional.batch_norm实际调用torch.batch_norm, 该场景会影响acl init初始化多次，导致功能异常。针对此场景，后续会针对性做适配，当前版本可能存在此问题
 * 针对反向场景，通过以上原理，由于torch反向自动化机制，只能重新执行loss.backward（即反向入口），因此得到的是反向全流程的acl数据。
-* 针对前向溢出api，可以通过overflow_nums，配置允许的溢出次数，并将每次溢出api的全部acl数据dump下来，到达指定溢出次数后停止。
-* 针对反向溢出场景的特殊性，overflow_nums不生效，反向检测到一次溢出后，就会停止，并将反向全流程acl数据dump。
+* 针对前向溢出api，可以通过overflow_nums，配置允许的溢出次数，并将每次溢出api的全部acl数据dump下来，到达指定溢出次数后停止，停止后会看到堆栈打印包含如下字段。
+  ValueError: [overflow xxx times]: dump file is saved in 'xxxxx.pkl'.
+  其中xxx times为用户设置的次数，xxxxx.pkl为文件生成路径
+* dump_mode="acl"，针对反向溢出场景的特殊性，overflow_nums不生效，反向检测到一次溢出后，就会停止，并将反向全流程acl数据dump。运行结束会看到堆栈打印包含如下字段。
+  raise ValueError("[Acl backward only support one time, will stop when detecct backward overflow]")
+  ValueError: [Acl backward only support one time, will stop when detecct backward overflow]
+
+
 
 ## 贡献
 
