@@ -24,7 +24,7 @@ from datetime import datetime, timezone
 import numpy as np
 import torch
 if not torch.cuda.is_available():
-    import torch_npu
+    from torch_npu.utils.device_guard import torch_device_guard as torch_npu_device_guard
 
 
 device = collections.namedtuple('device', ['type', 'index'])
@@ -291,22 +291,8 @@ def torch_device_guard(func):
     if torch.cuda.is_available():
         return func
     # Parse args/kwargs matched torch.device objects
+
+    @torch_npu_device_guard
     def wrapper(*args, **kwargs):
-        if args:
-            args_list = list(args)
-            for index, arg in enumerate(args_list):
-                if isinstance(arg, torch_npu._C.device):
-                    args_list[index] = str(arg).replace("npu", torch_npu.npu.native_device)
-                    break
-                elif isinstance(arg, str) and "npu" in arg:
-                    args_list[index] = arg.replace("npu", torch_npu.npu.native_device)
-                    break
-            args = tuple(args_list)
-        if kwargs and kwargs.get("device"):
-            device_kwarg = kwargs.get("device")
-            if isinstance(device_kwarg, torch_npu._C.device):
-                kwargs['device'] = torch_npu.new_device(type=torch_npu.npu.native_device, index=device_kwarg.index)
-            elif isinstance(device_kwarg, str) and "npu" in device_kwarg:
-                kwargs['device'] = device_kwarg.replace("npu", torch_npu.npu.native_device)
         return func(*args, **kwargs)
     return wrapper
