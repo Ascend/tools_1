@@ -328,7 +328,7 @@ dump_result_param={
 }
 compare(dump_result_param, "./output", True)
 ```
-"api_stack" 模式下比对dump数据<br/>
+Dump数据时使用"api_stack" 模式时进行比对dump数据<br/>
 ```
 from ptdbg_ascend import *
 
@@ -346,6 +346,7 @@ dump_result_param={
 "is_print_compare_log": True
 }
 compare(dump_result_param, "./output", True，stack_mode=True)
+# 比对结果中将展示堆栈信息
 ```
 
 
