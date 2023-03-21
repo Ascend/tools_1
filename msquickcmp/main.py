@@ -120,8 +120,9 @@ def main():
         net_compare = NetCompare(npu_dump_data_path, golden_dump_data_path, output_json_path, args)
         net_compare.accuracy_network_compare()
         # Check and correct the mapping of net output node name.
-        _check_output_node_name_mapping(expect_net_output_node, golden_net_output_info)
-        net_compare.net_output_compare(npu_net_output_data_path, golden_net_output_info)
+        if len(expect_net_output_node) == 1:
+            _check_output_node_name_mapping(expect_net_output_node, golden_net_output_info)
+            net_compare.net_output_compare(npu_net_output_data_path, golden_net_output_info)
         # print the name of the first operator whose cosine similarity is less than 0.9
         csv_object_item = net_compare.get_csv_object_by_cosine()
         if csv_object_item is not None:
