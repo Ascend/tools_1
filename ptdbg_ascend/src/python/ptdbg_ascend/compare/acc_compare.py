@@ -397,6 +397,7 @@ def _get_summery_mode(pkl_file_handle, file_name):
         print_error_log("dump file {} have empty line!".format(file_name))
         raise CompareException(CompareException.INVALID_DUMP_FILE)
     tensor_data = json.loads(tensor_line)
+    pkl_file_handle.seek(0, 0)
     return isinstance(tensor_data[1], int) and tensor_data[1] <= Const.DUMP_RATIO_MAX
 
 
