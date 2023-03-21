@@ -252,6 +252,9 @@ set_dump_switch("ON", mode="acl", scope=["1000_Tensor_abs", "1484_Tensor_transpo
 
 # 示例5： dump指定某一类api的api级别输入输出数据
 set_dump_switch("ON", mode="api_list", scope=["relu"])
+
+# 示例6： dump全部api级别输入输出数据以及相应堆栈信息
+set_dump_switch("ON", mode="api_stack")
 ```
 4) dump数据存盘说明：<br/>
 
@@ -259,6 +262,10 @@ set_dump_switch("ON", mode="api_list", scope=["relu"])
 假设配置的dump文件名为npu_dump.pkl，此时dump的结果为两部分：
 * 文件npu_dump.pkl 中包含dump数据的api名称、dtype、 shape、统计信息：max, min, mean.<br/>
 * 文件夹npu_dump_timestamp，文件夹下为numpy格式的dump数据.<br/>
+
+当dump模式配置为 "api_stack"时 假设配置的dump文件名为npu_dump.pkl，文件名会被添加api_stack前缀，此时dump的结果为两部分：
+* 文件api_stack_npu_dump.pkl 中包含dump数据的api名称、dtype、 shape、统计信息：max, min, mean，以及堆栈信息。<br/>
+* 文件夹api_stack_npu_dump_timestamp，文件夹下为numpy格式的dump数据.<br/>
 
 整网dump和指定范围dump结果的区别：
 * 指定范围dump时，npu_dump.pkl 中还包含stack信息<br/>
@@ -321,6 +328,28 @@ dump_result_param={
 }
 compare(dump_result_param, "./output", True)
 ```
+Dump数据时使用"api_stack" 模式时进行比对dump数据<br/>
+```
+from ptdbg_ascend import *
+
+...
+
+# 数据dump完成后,比对dump的NPU vs GPU/CPU数据, compare第二个参数中的目录必须是已存在的目录, stack_mode参数需要配置为True, 默认为False
+# 请注意：stack_mode为True时，需配置使用"api_stack"模式下的dump数据，其他模式均不需要设置stack_mode
+# api_stack为"api_stack"模式下自动生成的前缀（参考4.dump数据存盘数据说明）
+比对示例：
+dump_result_param={
+"npu_pkl_path": "./api_stack_npu_dump.pkl",
+"bench_pkl_path": "./api_stack_gpu_dump.pkl",
+"npu_dump_data_dir": "./api_stack_npu_dump_20230104_13434",
+"bench_dump_data_dir": "./api_stack_gpu_dump_20230104_132544",
+"is_print_compare_log": True
+}
+compare(dump_result_param, "./output", True，stack_mode=True)
+# 比对结果中将展示堆栈信息
+```
+
+
 第二步：缩小范围分析<br/>
       指定api范围做完整数据的dump，此时也可以做精度比对。<br/>
       指定范围dump时，还会dump出stack信息，便于找到api调用点。<br/>
