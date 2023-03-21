@@ -273,7 +273,7 @@ def dump_acc_cmp(name, in_feat, out_feat, dump_step, moudle):
         name_template = f"{name_prefix}" + "_{}"
         if DumpUtil.dump_switch_mode in [Const.ALL, Const.API_LIST]:
             dump_api_tensor(dump_step, in_feat, name_template, out_feat, dump_file)
-        if DumpUtil.dump_switch_mode == Const.API_STACK:
+        elif DumpUtil.dump_switch_mode == Const.API_STACK:
             dump_api_tensor(dump_step, in_feat, name_template, out_feat, dump_file)
             dump_stack_info(name_template, dump_file)
         elif DumpUtil.check_switch_scope(name_prefix):
