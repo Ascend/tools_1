@@ -1,3 +1,12 @@
+#Release 0.1.10
+## Update
+* 兼容新的opdebug dump格式
+
+
+#Release 0.1.9
+## Update
+* 兼容新的summary dump的csv格式
+
 #Release 0.1.8
 ## Update
 * 兼容新的fusion_result格式
