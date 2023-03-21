@@ -54,6 +54,7 @@ class Const:
     STACK = "stack"
     ACL = "acl"
     API_LIST = "api_list"
+    API_STACK = "api_stack"
 
 
 class VersionCheck:
@@ -189,6 +190,12 @@ def get_dump_data_path(dump_dir):
             break
         dump_data_path = dir_path
     return dump_data_path, file_is_exist
+
+
+def modify_dump_path(dump_path):
+    file_name = os.path.split(dump_path)
+    stack_file_name = "api_stack_" + file_name[-1]
+    return os.path.join(file_name[0], stack_file_name)
 
 
 def create_directory(dir_path):

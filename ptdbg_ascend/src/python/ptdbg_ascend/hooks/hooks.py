@@ -28,7 +28,7 @@ if not torch.cuda.is_available():
     import torch_npu
 
 from ..common.utils import check_file_or_directory_path, print_error_log, \
-    print_warn_log, CompareException, Const, get_time, print_info_log
+    print_warn_log, CompareException, Const, get_time, print_info_log, modify_dump_path
 from .backward import Backward
 
 DumpCount = 0
@@ -176,15 +176,15 @@ def set_overflow_check_switch(switch):
     OverFlowUtil.set_overflow_check_switch(switch)
 
 
-def dump_tensor(x, prefix, dump_step):
+def dump_tensor(x, prefix, dump_step, dump_file_name):
     if isinstance(x, (tuple, list)) and x:
         for i, item in enumerate(x):
-            dump_tensor(item, "{}.{}".format(prefix, i), dump_step)
+            dump_tensor(item, "{}.{}".format(prefix, i), dump_step, dump_file_name)
     elif isinstance(x, torch.Tensor):
         if x.numel() == 0 or len(x.shape) == 0 or not x.is_floating_point():
             return
 
-        with os.fdopen(os.open(DumpUtil.get_dump_path(), os.O_RDWR | os.O_CREAT, stat.S_IWUSR | stat.S_IRUSR),
+        with os.fdopen(os.open(dump_file_name, os.O_RDWR | os.O_CREAT, stat.S_IWUSR | stat.S_IRUSR),
                        "a") as f:
             summery_data = []
 
@@ -246,9 +246,20 @@ def _set_dump_switch4api_list(name):
             DumpUtil.dump_switch = "OFF"
 
 
+def dump_stack_info(name_template, dump_file):
+    stack_str = []
+    for (_, path, line, func, code, _) in inspect.stack()[3:]:
+        stack_line = [path, str(line), func, code[0].strip()]
+        stack_str.append(stack_line)
+    _dump_tensor_completely(stack_str, name_template.format("stack_info"), dump_file)
+
+
 def dump_acc_cmp(name, in_feat, out_feat, dump_step, moudle):
     dump_file = DumpUtil.get_dump_path()
     _set_dump_switch4api_list(name)
+    if DumpUtil.dump_switch_mode == Const.API_STACK:
+        dump_file = modify_dump_path(dump_file)
+
     if DumpUtil.get_dump_switch():
         if DumpUtil.dump_init_enable:
             dump_acc_cmp.call_number = 0
@@ -259,20 +270,18 @@ def dump_acc_cmp(name, in_feat, out_feat, dump_step, moudle):
             dump_acc_cmp.call_number = dump_acc_cmp.call_number + 1
 
         name_prefix = f"{dump_acc_cmp.call_number}_{name}"
+        name_template = f"{name_prefix}" + "_{}"
         if DumpUtil.dump_switch_mode in [Const.ALL, Const.API_LIST]:
-            name_template = f"{name_prefix}" + "_{}"
-            dump_api_tensor(dump_step, in_feat, name_template, out_feat)
+            dump_api_tensor(dump_step, in_feat, name_template, out_feat, dump_file)
+        elif DumpUtil.dump_switch_mode == Const.API_STACK:
+            dump_api_tensor(dump_step, in_feat, name_template, out_feat, dump_file)
+            dump_stack_info(name_template, dump_file)
         elif DumpUtil.check_switch_scope(name_prefix):
-            name_template = f"{name_prefix}" + "_{}"
-            stack_str = []
-            for (_, path, line, func, code, _) in inspect.stack()[3:]:
-                stack_line = [path, str(line), func, code[0].strip()]
-                stack_str.append(stack_line)
-            _dump_tensor_completely(stack_str, name_template.format("stack_info"), dump_file)
+            dump_stack_info(name_template, dump_file)
             if DumpUtil.dump_switch_mode == Const.ACL:
                 acl_dump(moudle, name)
             elif DumpUtil.dump_switch_mode != Const.STACK:
-                dump_api_tensor(dump_step, in_feat, name_template, out_feat)
+                dump_api_tensor(dump_step, in_feat, name_template, out_feat, dump_file)
 
 
 def acl_dump(module, module_name):
@@ -296,13 +305,13 @@ def forward_acl_dump(module, module_name):
     print_info_log("Dump %s op file." % module_name)
 
 
-def dump_api_tensor(dump_step, in_feat, name_template, out_feat):
+def dump_api_tensor(dump_step, in_feat, name_template, out_feat, dump_file):
     if "backward" in name_template:
-        dump_tensor(out_feat, name_template.format("input"), dump_step)
-        dump_tensor(in_feat, name_template.format("output"), dump_step)
+        dump_tensor(out_feat, name_template.format("input"), dump_step, dump_file)
+        dump_tensor(in_feat, name_template.format("output"), dump_step, dump_file)
     else:
-        dump_tensor(in_feat, name_template.format("input"), dump_step)
-        dump_tensor(out_feat, name_template.format("output"), dump_step)
+        dump_tensor(in_feat, name_template.format("input"), dump_step, dump_file)
+        dump_tensor(out_feat, name_template.format("output"), dump_step, dump_file)
 
 
 def acc_cmp_dump(name, **kwargs):

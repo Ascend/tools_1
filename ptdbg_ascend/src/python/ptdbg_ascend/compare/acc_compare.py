@@ -108,10 +108,11 @@ def merge_tensor(tensor_list):
     op_dict["input_struct"] = []
     op_dict["output_struct"] = []
     op_dict["summery"] = []
+    op_dict["stack_info"] = []
 
     for tensor in tensor_list:
         if tensor[0].find("stack_info") != -1:
-            continue
+            op_dict["stack_info"].append(tensor[1])
         op_dict["op_name"].append(tensor[0])
         if tensor[0].find("input") != -1:
             op_dict["input_struct"].append((tensor[3], tensor[4]))
@@ -124,10 +125,12 @@ def merge_tensor(tensor_list):
     return op_dict
 
 
-def read_op(ops_queue, pkl_file_handle):
+def read_op(ops_queue, pkl_file_handle, stack_mode):
     tensor_list = []
     read_err = False
     read_output_flag = {"last_line": False, "curr_line": False}
+    end_flag = "stack_info" if stack_mode is True else "output"
+
     while True:
         curr_pos = pkl_file_handle.tell()
         tensor_line = pkl_file_handle.readline()
@@ -139,7 +142,7 @@ def read_op(ops_queue, pkl_file_handle):
         if len(tensor_line) != 0:
             tensor_data = json.loads(tensor_line)
             read_output_flag["last_line"] = read_output_flag.get("curr_line")
-            read_output_flag["curr_line"] = True if tensor_data[0].find("output") != -1 else False
+            read_output_flag["curr_line"] = True if tensor_data[0].find(end_flag) != -1 else False
 
         if (read_output_flag.get("last_line") and not read_output_flag.get("curr_line")) \
                 or (len(tensor_line) == 0 and read_output_flag.get("curr_line")):  # end of file scenario
@@ -166,6 +169,9 @@ def match_op(npu_queue, bench_queue, shape_flag):
 
 def get_accuracy(result, n_dict, b_dict, summery_flag):
     index_out = 0
+    npu_stack_info = n_dict.get("stack_info", None)
+    bench_stack_info = b_dict.get("stack_info", None)
+
     for index, n_name in enumerate(n_dict["op_name"]):
         b_name = b_dict["op_name"][index]
         if n_name.find("input") != -1:
@@ -185,6 +191,9 @@ def get_accuracy(result, n_dict, b_dict, summery_flag):
             summery_data = b_dict.get("summery")[index]
             result_item.extend(summery_data)
         result_item.append(err_msg)
+        if npu_stack_info and bench_stack_info and index == 0:
+            result_item.extend(npu_stack_info)
+
         result.append(result_item)
 
 
@@ -304,7 +313,18 @@ def compare_by_op(op_name, op_name_mapping_dict, input_parma):
     return cos_sim, max_abs_err, err_msg
 
 
-def compare(input_parma, output_path, shape_flag=True):
+def check_file_mode(npu_pkl, bench_pkl, stack_mode):
+    npu_pkl_name = os.path.split(npu_pkl)[-1]
+    bench_pkl_name = os.path.split(bench_pkl)[-1]
+    if stack_mode:
+        if not (npu_pkl_name.startswith("api_stack") and bench_pkl_name.startswith("api_stack")):
+            raise Exception("The current file does not contain stack information, please turn off the stack_mode")
+    else:
+        if npu_pkl_name.startswith("api_stack") or bench_pkl_name.startswith("api_stack"):
+            raise Exception("The current file contains stack information, please turn on the stack_mode")
+
+
+def compare(input_parma, output_path, shape_flag=True, stack_mode=False):
     try:
         check_file_or_directory_path(input_parma.get("npu_pkl_path"), False)
         check_file_or_directory_path(input_parma.get("bench_pkl_path"), False)
@@ -313,9 +333,10 @@ def compare(input_parma, output_path, shape_flag=True):
         check_file_or_directory_path(output_path, True)
         npu_pkl = open(input_parma.get("npu_pkl_path"), "r")
         bench_pkl = open(input_parma.get("bench_pkl_path"), "r")
+        check_file_mode(npu_pkl.name, bench_pkl.name, stack_mode)
         npu_summary = _get_summery_mode(npu_pkl, input_parma.get("npu_pkl_path"))
         bench_summary = _get_summery_mode(bench_pkl, input_parma.get("bench_pkl_path"))
-        result = compare_process(npu_pkl, bench_pkl, [npu_summary, bench_summary], shape_flag)
+        result = compare_process(npu_pkl, bench_pkl, [npu_summary, bench_summary], shape_flag, stack_mode)
         npu_pkl.close()
         bench_pkl.close()
 
@@ -326,6 +347,8 @@ def compare(input_parma, output_path, shape_flag=True):
         if bench_summary:
             columns.extend(["Bench max", "Bench min", "Bench mean"])
         columns.extend(["Err_message"])
+        if stack_mode:
+            columns.extend(["NPU_Stack_Info"])
         result_df = pd.DataFrame(result, columns=columns)
 
         file_name = add_time_as_suffix("compare_result")
@@ -370,13 +393,13 @@ def parse(pkl_file, module_name_prefix):
     pkl_handle.close()
 
 
-def compare_process(npu_pkl_handle, bench_pkl_handle, summary_flag, shape_flag):
+def compare_process(npu_pkl_handle, bench_pkl_handle, summary_flag, shape_flag, stack_mode):
     npu_ops_queue = []
     bench_ops_queue = []
     result = []
     while True:
-        npu_file_flag = read_op(npu_ops_queue, npu_pkl_handle)
-        bench_file_flag = read_op(bench_ops_queue, bench_pkl_handle)
+        npu_file_flag = read_op(npu_ops_queue, npu_pkl_handle, stack_mode)
+        bench_file_flag = read_op(bench_ops_queue, bench_pkl_handle, stack_mode)
         if (not npu_file_flag and not bench_file_flag) \
                 or (len(npu_ops_queue) == 0 or len(bench_ops_queue) == 0):
             break
