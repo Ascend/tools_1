@@ -113,6 +113,7 @@ def merge_tensor(tensor_list):
     for tensor in tensor_list:
         if tensor[0].find("stack_info") != -1:
             op_dict["stack_info"].append(tensor[1])
+            break
         op_dict["op_name"].append(tensor[0])
         if tensor[0].find("input") != -1:
             op_dict["input_struct"].append((tensor[3], tensor[4]))
