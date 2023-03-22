@@ -324,8 +324,44 @@ def check_file_mode(npu_pkl, bench_pkl, stack_mode):
         if npu_pkl_name.startswith("api_stack") or bench_pkl_name.startswith("api_stack"):
             raise Exception("The current file contains stack information, please turn on the stack_mode")
 
+def compare_distributed(npu_dump_dir, bench_dump_dir):
+    def extract_pkl_and_data_dir(dirname):
+        pids = os.listdir(dirname)
+        if not len(pids) == 1:
+            msg = ("Multiple pids are detected in one rank"
+            "This case is not supported by compare_distributed() because"
+            "We do not know the matching of the pids."
+            "You may manually match the pids and use copmare() to compare them")
+            raise NotImplementedError(msg)
+        pid = pids[0] 
+        dirname = os.path.join(dirname, pid)
+        for fname in os.listdir(dirname):
+            full_path = os.path.join(dirname, fname)
+            if os.path.isdir(full_path):
+                dump_data_dir = full_path 
+            else:
+                pkl_path = full_path 
+        return pkl_path, dump_data_dir 
 
-def compare(input_parma, output_path, shape_flag=True, stack_mode=False):
+    npu_ranks = os.listdir(npu_dump_dir)
+    bench_ranks = os.listdir(bench_dump_dir)
+    npu_ranks.sort()
+    bench_ranks.sort() 
+    for nr, br in zip(npu_ranks, bench_ranks):
+        n_dir = os.path.join(npu_dump_dir, nr)
+        b_dir = os.path.join(bench_dump_dir, br)
+        npu_pkl_path, npu_dump_data_dir = extract_pkl_and_data_dir(n_dir)
+        bench_pkl_path, bench_dump_data_dir = extract_pkl_and_data_dir(b_dir)
+        dump_result_param = {
+            'npu_pkl_path': npu_pkl_path,
+            'bench_pkl_path': bench_pkl_path,
+            'npu_dump_data_dir': npu_dump_data_dir,
+            'bench_dump_data_dir': bench_dump_data_dir,
+            'is_print_compare_log':True
+        }
+        compare(dump_result_param, './output', True, suffix=f'_rank{nr}-{br}')
+
+def compare(input_parma, output_path, shape_flag=True, stack_mode=False, suffix=''):
     try:
         check_file_or_directory_path(input_parma.get("npu_pkl_path"), False)
         check_file_or_directory_path(input_parma.get("bench_pkl_path"), False)
@@ -352,7 +388,7 @@ def compare(input_parma, output_path, shape_flag=True, stack_mode=False):
             columns.extend(["NPU_Stack_Info"])
         result_df = pd.DataFrame(result, columns=columns)
 
-        file_name = add_time_as_suffix("compare_result")
+        file_name = add_time_as_suffix("compare_result" + suffix)
         file_path = os.path.join(os.path.realpath(output_path), file_name)
         result_df.to_csv(file_path, index=False)
     except CompareException as error:
