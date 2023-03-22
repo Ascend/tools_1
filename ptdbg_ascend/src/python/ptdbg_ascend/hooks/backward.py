@@ -1,7 +1,8 @@
 import torch
 from ..common.utils import print_warn_log
 
-
+init_status=False
+backward_tensor=None
 class Backward:
     def __init__(self):
         self.tensors = None
@@ -50,11 +51,16 @@ class Backward:
                                 type(grad).__name__)
         return tuple(new_grads)
 
-    def backward(self, tensors, grad_tensors=None, retain_graph=None, create_graph=False,
+    def backward(self, tensors, grad_tensors=None, retain_graph=True, create_graph=False,
                  grad_variables=None, inputs=None):
         from torch.autograd import Variable
+        global init_status
+        global backward_tensor
+        if init_status == False:
+            init_status = True
+            backward_tensor = tensors
         if tensors == None:
-            return
+            tensors = backward_tensor
         self.tensors = tensors
         self.gradient = grad_tensors
         self.retain_graph = retain_graph
