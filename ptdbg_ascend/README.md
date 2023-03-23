@@ -439,7 +439,10 @@ register_hook(model, overflow_check, overflow_nums=2)
 
 ...
 ```
+注：单机多卡使用时各卡单独计算溢出次数。
+
 ##### 2. api溢出检测，溢出api，acl级数据dump
+
 ```
 from ptdbg_ascend import *
 

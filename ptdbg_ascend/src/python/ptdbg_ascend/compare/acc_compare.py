@@ -325,7 +325,7 @@ def check_file_mode(npu_pkl, bench_pkl, stack_mode):
         if npu_pkl_name.startswith("api_stack") or bench_pkl_name.startswith("api_stack"):
             raise Exception("The current file contains stack information, please turn on the stack_mode")
 
-def compare_distributed(npu_dump_dir, bench_dump_dir):
+def compare_distributed(npu_dump_dir, bench_dump_dir, **kwargs):
     def check_and_return_dir_contents(dump_dir, prefix):
         contents = os.listdir(dump_dir)
         pattern = re.compile(f'^{prefix}[0-9]+$')
@@ -344,7 +344,7 @@ def compare_distributed(npu_dump_dir, bench_dump_dir):
             msg = ("Multiple pids are detected in one rank. "
             "This case is not supported by compare_distributed() because "
             "we do not know the matching of the pids. "
-            "You may manually match the pids and use copmare() to compare them. ")
+            "You may manually match the pids and use compare() to compare them. ")
             raise NotImplementedError(msg)
         pid = pids[0] 
         dirname = os.path.join(dirname, pid)
@@ -372,7 +372,6 @@ def compare_distributed(npu_dump_dir, bench_dump_dir):
                 f'Please check the names and remove irrelevant files in {dirname}. ')
             raise CompareException(CompareException.INVALID_FILE_ERROR)
         return pkl_path, dump_data_dir 
-        return pkl_path, dump_data_dir 
 
 
     # get the ranks and match by order
@@ -395,7 +394,7 @@ def compare_distributed(npu_dump_dir, bench_dump_dir):
             'bench_dump_data_dir': bench_dump_data_dir,
             'is_print_compare_log':True
         }
-        compare(dump_result_param, './output', True, suffix=f'_{nr}-{br}')
+        compare(dump_result_param, './output', True, suffix=f'_{nr}-{br}', **kwargs)
 
 def compare(input_parma, output_path, shape_flag=True, stack_mode=False, suffix=''):
     try:

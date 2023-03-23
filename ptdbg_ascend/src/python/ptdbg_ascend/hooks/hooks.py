@@ -255,12 +255,12 @@ def make_dump_dirs(rank, pid):
     time_dir = os.path.join(dump_root_dir, dump_file_name_body + '_' + str(time))
     if rank == 0 and not os.path.exists(time_dir): # add rank==0 to prevent repeated mkdir
         os.mkdir(time_dir)
-    while not os.path.exists(time_dir):
+    while not os.path.exists(time_dir): # wait for rank 0 process to create timedir
         pass 
-    rank_dir = os.path.join(time_dir, 'rank'+str(rank))
+    rank_dir = os.path.join(time_dir, 'rank' + str(rank))
     if not os.path.exists(rank_dir):
         os.mkdir(rank_dir)
-    pid_dir = os.path.join(rank_dir, 'pid'+str(pid))
+    pid_dir = os.path.join(rank_dir, 'pid' + str(pid))
     if not os.path.exists(pid_dir):
         os.mkdir(pid_dir)
     DumpUtil.dump_dir = pid_dir 
