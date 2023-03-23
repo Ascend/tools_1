@@ -32,7 +32,8 @@ from ..common.utils import check_file_or_directory_path, print_error_log, \
 from .backward import Backward
 
 DumpCount = 0
-init_status = False
+forward_init_status = False
+backward_init_status = False
 
 
 class DumpUtil(object):
@@ -290,9 +291,10 @@ def acl_dump(module, module_name):
 
 
 def forward_acl_dump(module, module_name):
-    global init_status
-    if not init_status:
-        init_status = True
+    global forward_init_status
+    global backward_init_status
+    if not forward_init_status and not backward_init_status:
+        forward_init_status = True
         torch_npu.npu.init_dump()
         torch_npu.npu.set_dump(DumpUtil.dump_config)
         torch_npu.npu.synchronize()
@@ -301,7 +303,7 @@ def forward_acl_dump(module, module_name):
         torch_npu.npu.finalize_dump()
     del module.input_args
     del module.input_kwargs
-    init_status = False
+    forward_init_status = False
     print_info_log("Dump %s op file." % module_name)
 
 
@@ -360,8 +362,12 @@ def overflow_check(name, **kwargs):
         if torch.cuda.is_available():
             print_warn_log("Overflow detection is not supported in the GPU environment.")
             return
+        global backward_init_status
+        if backward_init_status or forward_init_status:
+            return
         module_name = name
         module.has_overflow = torch_npu._C._check_overflow_npu()
+
         if not module.has_overflow:
             if hasattr(module, 'input_args'):
                 del module.input_args
@@ -396,14 +402,18 @@ def overflow_check(name, **kwargs):
             backward_acl_dump()
 
     def backward_acl_dump():
-        torch_npu.npu.init_dump()
-        torch_npu.npu.set_dump(dump_config)
-        torch_npu.npu.synchronize()
-        torch.autograd.backward(backward_obj.tensors, backward_obj.gradient, backward_obj.retain_graph,
-                                backward_obj.create_graph, inputs=backward_obj.inputs)
-        torch_npu.npu.synchronize()
-        torch_npu.npu.finalize_dump()
-        print_info_log("Dump backward op file.")
-        raise ValueError("[Acl backward only support one time, will stop when detecct backward overflow]")
+        global forward_init_status
+        global backward_init_status
+        if not forward_init_status and not backward_init_status:
+            backward_init_status = True
+            torch_npu.npu.init_dump()
+            torch_npu.npu.set_dump(dump_config)
+            torch_npu.npu.synchronize()
+            torch.autograd.backward(backward_obj.tensors, backward_obj.gradient, backward_obj.retain_graph,
+                                    backward_obj.create_graph, inputs=backward_obj.inputs)
+            torch_npu.npu.synchronize()
+            torch_npu.npu.finalize_dump()
+            print_info_log("Dump backward op file.")
+            raise ValueError("[Acl backward only support one time, will stop when detecct backward overflow]")
 
     return overflowcheck_hook
