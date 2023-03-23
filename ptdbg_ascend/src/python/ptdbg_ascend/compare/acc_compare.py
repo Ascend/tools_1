@@ -20,6 +20,7 @@ import json
 import multiprocessing
 import os.path
 import sys
+import re 
 
 import numpy as np
 import pandas as pd
@@ -339,7 +340,7 @@ def compare_distributed(npu_dump_dir, bench_dump_dir):
 
     def extract_pkl_and_data_dir(dirname):
         pids = check_and_return_dir_contents(dirname, 'pid')
-        if len(pids) ！= 1:
+        if len(pids) != 1:
             msg = ("Multiple pids are detected in one rank. "
             "This case is not supported by compare_distributed() because "
             "we do not know the matching of the pids. "
@@ -359,10 +360,10 @@ def compare_distributed(npu_dump_dir, bench_dump_dir):
         # Provide robustness on invalid directory inputs
         if pkl_path == '':
             print_error_log(f'No file is found in dump dir {dirname}. ')
-            raise CompareException(CopmareException.NO_DUMP_FILE_ERROR)
+            raise CompareException(CompareException.NO_DUMP_FILE_ERROR)
         if dump_data_dir == '':
             print_error_log(f'No directory is found in dump dir {dirname}. ')
-            raise CompareException(CopmareException.NO_DUMP_FILE_ERROR)
+            raise CompareException(CompareException.NO_DUMP_FILE_ERROR)
         name_body, ext = os.path.splitext(pkl_name)
         pattern = re.compile(f'{name_body}[_0-9]+$')
         match = pattern.match(dump_data_dirname)
@@ -389,7 +390,7 @@ def compare_distributed(npu_dump_dir, bench_dump_dir):
             'bench_dump_data_dir': bench_dump_data_dir,
             'is_print_compare_log':True
         }
-        compare(dump_result_param, './output', True, suffix=f'_rank{nr}-{br}')
+        compare(dump_result_param, './output', True, suffix=f'_{nr}-{br}')
 
 def compare(input_parma, output_path, shape_flag=True, stack_mode=False, suffix=''):
     try:
