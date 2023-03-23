@@ -233,26 +233,27 @@ def get_process_rank(model):
     print("Rank id is not provided. Trying to get the rank id of the model.")
     try:
         device = next(model.parameters()).device 
-        if device.type=='cpu':
-            print("Warning: the debugger is unable to get the rank id. "
-                "This may cause the dumpped data to be corrupted in the"
-                "case of DDP. Transfer the model to npu or gpu before"
-                "register_hook() to avoid this warning.")
-            return 0
-        else:
-            return device.index
     except StopIteration:
         print('There is no parameter in the model. Fail to get rank id.')
         return 0
+    if device.type == 'cpu':
+        print("Warning: the debugger is unable to get the rank id. "
+            "This may cause the dumpped data to be corrupted in the "
+            "case of DDP. Transfer the model to npu or gpu before "
+            "register_hook() to avoid this warning.")
+        return 0
+    else:
+        return device.index
 
 def make_dump_dirs(rank, pid):
     if DumpUtil.dump_path is not None:
         dump_root_dir, dump_file_name = os.path.split(DumpUtil.dump_path)
+        dump_file_name_body, _ = os.path.splitext(dump_file_name)
     else:
-        dump_root_dir, dump_file_name = './'. 'dummy.pkl'
+        dump_root_dir, dump_file_name, dump_file_name_body = './', 'dummy.pkl', ''
     time = get_time()
-    time_dir = os.path.join(dump_root_dir, str(time))
-    if rank==0 and not os.path.exists(time_dir): # add rank==0 to prevent repeated mkdir
+    time_dir = os.path.join(dump_root_dir, dump_file_name_body + '_' + str(time))
+    if rank == 0 and not os.path.exists(time_dir): # add rank==0 to prevent repeated mkdir
         os.mkdir(time_dir)
     while not os.path.exists(time_dir):
         pass 
@@ -376,10 +377,10 @@ def dump_overflow(module_name, stack_str, in_feat, out_feat, dump_file):
 
 
 def overflow_check(name, **kwargs):
-    if DumpUtil.dump_path is None:
-        DumpUtil.dump_dir = './'
-    else:
+    if DumpUtil.dump_path:
         DumpUtil.dump_dir = os.path.dirname(DumpUtil.dump_path)
+    else:
+        DumpUtil.dump_dir = './'
     overflow_nums = kwargs.get('overflow_nums', 1)
     pid = kwargs.get('pid')
     dump_mode = kwargs.get('dump_mode', "api")
@@ -412,7 +413,7 @@ def overflow_check(name, **kwargs):
                 "Overflow_info_{}_{}.pkl".format(get_time(), OverFlowUtil.real_overflow_dump_times))
             stack_str = []
             for (_, path, line, func, code, _) in inspect.stack()[3:]:
-                if code is not None:
+                if code:
                     stack_line = [path, str(line), func, code[0].strip()]
                 else:
                     stack_line = [path, str(line), func, code]
