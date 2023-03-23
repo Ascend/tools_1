@@ -20,6 +20,7 @@ import json
 import multiprocessing
 import os.path
 import sys
+import re 
 
 import numpy as np
 import pandas as pd
@@ -324,8 +325,78 @@ def check_file_mode(npu_pkl, bench_pkl, stack_mode):
         if npu_pkl_name.startswith("api_stack") or bench_pkl_name.startswith("api_stack"):
             raise Exception("The current file contains stack information, please turn on the stack_mode")
 
+def compare_distributed(npu_dump_dir, bench_dump_dir, **kwargs):
+    def check_and_return_dir_contents(dump_dir, prefix):
+        contents = os.listdir(dump_dir)
+        pattern = re.compile(f'^{prefix}[0-9]+$')
+        for name in contents:
+            match = pattern.match(name)
+            if match is None:
+                msg = (f"dump_dir contains '{name}'. Expected '{prefix}'. This name is not in the format of dump output. "
+                        f"Please check and delete irrelevant files in {dump_dir} and try again.")
+                print_error_log(msg)
+                raise CompareException(CompareException.INVALID_PATH_ERROR)
+        return contents 
 
-def compare(input_parma, output_path, shape_flag=True, stack_mode=False):
+    def extract_pkl_and_data_dir(dirname):
+        pids = check_and_return_dir_contents(dirname, 'pid')
+        if len(pids) != 1:
+            msg = ("Multiple pids are detected in one rank. "
+            "This case is not supported by compare_distributed() because "
+            "we do not know the matching of the pids. "
+            "You may manually match the pids and use compare() to compare them. ")
+            raise NotImplementedError(msg)
+        pid = pids[0] 
+        dirname = os.path.join(dirname, pid)
+        pkl_path, dump_data_dir, pkl_name, dump_data_dirname = '', '', '', ''
+        for fname in os.listdir(dirname):
+            full_path = os.path.join(dirname, fname)
+            if os.path.isdir(full_path):
+                dump_data_dir = full_path 
+                dump_data_dirname = fname
+            else:
+                pkl_path = full_path 
+                pkl_name = fname 
+        # Provide robustness on invalid directory inputs
+        if pkl_path == '':
+            print_error_log(f'No file is found in dump dir {dirname}. ')
+            raise CompareException(CompareException.NO_DUMP_FILE_ERROR)
+        if dump_data_dir == '':
+            print_error_log(f'No directory is found in dump dir {dirname}. ')
+            raise CompareException(CompareException.NO_DUMP_FILE_ERROR)
+        name_body, ext = os.path.splitext(pkl_name)
+        pattern = re.compile(f'{name_body}[_0-9]+$')
+        match = pattern.match(dump_data_dirname)
+        if match is None:
+            print_error_log('The names of pkl and directory do not match! '
+                f'Please check the names and remove irrelevant files in {dirname}. ')
+            raise CompareException(CompareException.INVALID_FILE_ERROR)
+        return pkl_path, dump_data_dir 
+
+
+    # get the ranks and match by order
+    npu_ranks = sorted(check_and_return_dir_contents(npu_dump_dir, 'rank'))
+    bench_ranks = sorted(check_and_return_dir_contents(bench_dump_dir, 'rank'))
+    if len(npu_ranks) != len(bench_ranks):
+        print_error_log('The number of ranks in the two runs are different. '
+            'Unable to match the ranks. Please use another folder to compare '
+            'or use compare() api and manually match the ranks.')
+        raise CompareException(CompareException.INVALID_PATH_ERROR)
+    for nr, br in zip(npu_ranks, bench_ranks):  
+        n_dir = os.path.join(npu_dump_dir, nr)
+        b_dir = os.path.join(bench_dump_dir, br)
+        npu_pkl_path, npu_dump_data_dir = extract_pkl_and_data_dir(n_dir)
+        bench_pkl_path, bench_dump_data_dir = extract_pkl_and_data_dir(b_dir)
+        dump_result_param = {
+            'npu_pkl_path': npu_pkl_path,
+            'bench_pkl_path': bench_pkl_path,
+            'npu_dump_data_dir': npu_dump_data_dir,
+            'bench_dump_data_dir': bench_dump_data_dir,
+            'is_print_compare_log':True
+        }
+        compare(dump_result_param, './output', True, suffix=f'_{nr}-{br}', **kwargs)
+
+def compare(input_parma, output_path, shape_flag=True, stack_mode=False, suffix=''):
     try:
         check_file_or_directory_path(input_parma.get("npu_pkl_path"), False)
         check_file_or_directory_path(input_parma.get("bench_pkl_path"), False)
@@ -352,7 +423,7 @@ def compare(input_parma, output_path, shape_flag=True, stack_mode=False):
             columns.extend(["NPU_Stack_Info"])
         result_df = pd.DataFrame(result, columns=columns)
 
-        file_name = add_time_as_suffix("compare_result")
+        file_name = add_time_as_suffix("compare_result" + suffix)
         file_path = os.path.join(os.path.realpath(output_path), file_name)
         result_df.to_csv(file_path, index=False)
     except CompareException as error:

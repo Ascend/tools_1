@@ -24,6 +24,7 @@ from . import wrap_tensor, wrap_torch, wrap_functional, wrap_vf
 from .module import HOOKModule
 from ..common.utils import check_file_or_directory_path, add_time_as_suffix, \
     print_error_log, CompareException, Const, format_value, print_info_log, print_warn_log
+from .hooks import make_dump_dirs, get_process_rank 
 
 if not torch.cuda.is_available():
     import torch_npu
@@ -65,6 +66,10 @@ def register_hook(model, hook, **kwargs):
     dump_mode, dump_config_file = init_dump_config(kwargs)
 
     pid = os.getpid()
+    rank = kwargs.get('rank')
+    if rank is None:
+        rank = get_process_rank(model)
+    make_dump_dirs(rank, pid)
     hook_name = hook.__name__
 
     if "overflow_check" in hook_name and not torch.cuda.is_available():

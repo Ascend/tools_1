@@ -218,14 +218,15 @@ pip3 install ./ptdbg_ascend/dist/ptdbg_ascend-0.1-py3-none-any.whl --upgrade --f
 
 接口函数用于dump过程的配置，如下：
 
-| 函数              | 描述                                                                                                |
-|-----------------|---------------------------------------------------------------------------------------------------|
-| set_dump_path   | 用于设置dump文件的路径(包含文件名)，参数示例：“/var/log/dump/npu_dump.pkl”                                            |
-| set_dump_switch | 设置dump范围，不设置则默认处于关闭状态。第一个参数为：“ON” 或者 "OFF",若需要控制dump的算子范围，则需要第二、三个参数，默认不配置                        |
-| seed_all        | 固定随机数，参数为随机数种子，默认种子为：1234.                                                                        |
-| register_hook   | 用于注册dump回调函数，例如：注册精度比对hook：register_hook(model, acc_cmp_dump).                                    |
-| compare         | 比对接口，将GPU/CPU/NPU的dump文件进行比对，第三个参数为存放比对结果的目录；<br/>文件名称基于时间戳自动生成，格式为：compare_result_timestamp.csv. |
-| parse           | (若pkl文件中有)打印特定api接口的堆栈信息、统计数据信息，第一个参数为pkl文件名，第二个参数为要抽取的api接口前缀，例如"21_Torch_norm".                 |
+| 函数                | 描述                                                         |
+| ------------------- | ------------------------------------------------------------ |
+| set_dump_path       | 用于设置dump文件的路径(包含文件名)，参数示例：“/var/log/dump/npu_dump.pkl” |
+| set_dump_switch     | 设置dump范围，不设置则默认处于关闭状态。第一个参数为：“ON” 或者 "OFF",若需要控制dump的算子范围，则需要第二、三个参数，默认不配置 |
+| seed_all            | 固定随机数，参数为随机数种子，默认种子为：1234.              |
+| register_hook       | 用于注册dump回调函数，例如：注册精度比对hook：register_hook(model, acc_cmp_dump). |
+| compare             | 比对接口，将GPU/CPU/NPU的dump文件进行比对，第三个参数为存放比对结果的目录；<br/>文件名称基于时间戳自动生成，格式为：compare_result_timestamp.csv. |
+| parse               | (若pkl文件中有)打印特定api接口的堆栈信息、统计数据信息，第一个参数为pkl文件名，第二个参数为要抽取的api接口前缀，例如"21_Torch_norm". |
+| compare_distributed | 单机多卡场景下的比对，自动检索和匹配对应卡和进程所dump的数据文件，再调用compare做比对。也支持单机单卡使用。 |
 
 #### 使用说明
 1) seed_all和set_dump_path在训练主函数main一开始就调用，避免随机数固定不全；
@@ -258,8 +259,9 @@ set_dump_switch("ON", mode="api_stack")
 ```
 4) dump数据存盘说明：<br/>
 
-精度比对dump场景 <br/>
-假设配置的dump文件名为npu_dump.pkl，此时dump的结果为两部分：
+- 精度比对dump场景 <br/>
+  假设配置的dump文件名为npu_dump.pkl，此时dump的结果为两部分：
+
 * 文件npu_dump.pkl 中包含dump数据的api名称、dtype、 shape、统计信息：max, min, mean.<br/>
 * 文件夹npu_dump_timestamp，文件夹下为numpy格式的dump数据.<br/>
 
@@ -272,9 +274,40 @@ set_dump_switch("ON", mode="api_stack")
 
 溢出检测dump场景<br/>
 测试不需要配置dump文件名，会在当前目录自动生成：
+
 * 溢出检测的pkl文件名格式为Overflow_info_{timestamp}.pkl，每次溢出时时间戳不同<br/>
   pkl文件中包含dump数据的api名称、dtype、 shape(不包含统计信息max, min, mean)。
 * 对应的dump数据存放目录为Overflow_info_{timestamp}，dump数据为完整Tensor数据，存放格式为numpy。
+* 单机多卡比对功能已上线，dump数据文件夹组织统一改为模仿ACL溢出检测dump文件夹格式。假设set_dump_path设置为`./dump_path/myDump.pkl`，则dump数据会dump在：`./dump_path/myDump_{time}/rank{rankid}/pid{pid}/`路径下。比如：
+
+  ```
+  ├── dump_path
+  │   └── myDump_20230323_083936
+  │       ├── rank0
+  │       │   └── pid38378
+  │       │   	├── myDump_20230323_083955
+  |       |       |   ├── 0_Functional_conv2d_forward_output.npy
+  |       |       |   ...
+  |       |       |   └── 119_Fcuntion_linear_backward_output.npy
+  │       │  		└── myDump.pkl
+  │       ├── rank1
+  │       │   └── pid38379
+  |       |       ├── myDump_20230323_083955
+  |       |       |   └── ...
+  |       |       └── myDump.pkl 
+  │       ├── rank2
+  │       │   └── pid38380
+  |       |       ├── myDump_20230323_083955
+  |       |       |   └── ...
+  |       |       └── myDump.pkl 
+  │       ├── ...
+  │       |
+  |       └── rank7
+  ```
+
+具体生成方式和单机多卡的精度工具使用教程见下文场景4。
+
+**注意：单机单卡使用工具也会形成上述文件夹格式，仅在卡数量上有区别。**
 
 #### 场景化示例
 #### 场景1：训练场景的精度问题分析
@@ -406,7 +439,10 @@ register_hook(model, overflow_check, overflow_nums=2)
 
 ...
 ```
+注：单机多卡使用时各卡单独计算溢出次数。
+
 ##### 2. api溢出检测，溢出api，acl级数据dump
+
 ```
 from ptdbg_ascend import *
 
@@ -490,10 +526,55 @@ set_overflow_check_switch("OFF")
   ValueError: [overflow xxx times]: dump file is saved in 'xxxxx.pkl'.
   其中xxx times为用户设置的次数，xxxxx.pkl为文件生成路径
 * dump_mode="acl"，针对反向溢出场景的特殊性，overflow_nums不生效，反向检测到一次溢出后，就会停止，并将反向全流程acl数据dump。运行结束会看到堆栈打印包含如下字段。
-  raise ValueError("[Acl backward only support one time, will stop when detecct backward overflow]")
-  ValueError: [Acl backward only support one time, will stop when detecct backward overflow]
+  raise ValueError("[Acl backward only support one time, will stop when detect backward overflow]")
+  ValueError: [Acl backward only support one time, will stop when detect backward overflow]
 
+#### 场景四 单机多卡场景使用精度比对工具
 
+**文件夹格式改动**
+
+为了支持单机多卡场景，我们模仿ACL溢出检测dump的文件夹，区分了不同rank和不同pid所dump的数据文件。假设dump路径设置为`set_dump_path('./dump_path/dump_name.pkl')`，则dump数据会dump在：`./dump_path/dump_name_{time}/rank{rankid}/pid{pid}/`路径下。比如：
+
+```
+├── dump_path
+│   └── dump_name_20230323_083936
+│       ├── rank0
+│       │   └── pid38378
+│       │   	├── myDump_20230323_083955
+|       |       |   ├── 0_Functional_conv2d_forward_output.npy
+|       |       |   ...
+|       |       |   └── 119_Fcuntion_linear_backward_output.npy
+│       │  		└── myDump.pkl
+│       ├── rank1
+│       │   └── pid38379
+|       |       ├── myDump_20230323_083955
+|       |       |   └── ...
+|       |       └── myDump.pkl 
+│       ├── rank2
+│       │   └── pid38380
+|       |       ├── myDump_20230323_083955
+|       |       |   └── ...
+|       |       └── myDump.pkl 
+│       ├── ...
+│       |
+|       └── rank7
+```
+
+具体地说，dump_path下首先产生一个`{dump_name}_{time}`文件夹，其中`dump_name`是所设置dump路径文件名**不包括**扩展名的部分，可以用来提高文件夹辨识度。这个文件夹中会根据实际使用卡的数量产生若干`rank`文件夹。每个`rank`文件夹下会包含以其运行的进程的pid命名的文件夹。
+
+1. 为了方便区分不同卡上的进程，调用register_hook时建议传入各自进程所对应的`rank`，比如
+
+```
+register_hook(model, acc_cmp_dump, rank=0)
+```
+
+`rank`将决定该进程所dump数据被存入哪个`rank`文件夹。如果不显式传入，工具将隐式从传入模型的参数读取`device.index`信息作为`rank`。
+
+2. dump数据之后的比对建议使用`compare_distributed`接口。调用该接口需要传入两个参数，分别代表需要比对的两次运行数据所在的总文件夹路径，即上文所说的`{dump_path}/{dump_name}_{time}` 。比如在上面的例子中，我们可以传入 `dump_path/dump_name_20230323_083936` 作为其中一个参数。
+
+   假设我们又运行了一次模型，产生了`dump_path/dump_name_20230323_084050`文件夹，要比对以上两次运行所产生的数据差异，就可以把这两个路径分别作为两个参数传入。
+
+**注意：两次运行须用相同数量的卡，传入的两个文件夹下须有相同个数的rank文件夹，否则将无法比对。**
 
 ## 贡献
 
