@@ -44,6 +44,7 @@ class DumpUtil(object):
     dump_switch_scope = []
     dump_init_enable = False
     dump_api_list = []
+    backward_input = []
 
     @staticmethod
     def set_dump_path(save_path):
@@ -57,6 +58,8 @@ class DumpUtil(object):
         DumpUtil.dump_init_enable = True
         DumpUtil.dump_switch_scope = scope
         DumpUtil.dump_api_list = [api.lower() for api in api_list]
+        if mode == Const.ACL:
+            DumpUtil.dump_switch_scope = [api_name.replace("backward", "forward") for api_name in scope]
 
     def check_list_or_acl_mode(name_prefix):
         global DumpCount
@@ -170,6 +173,11 @@ def set_dump_switch(switch, mode=Const.ALL, scope=[], api_list=[]):
     if mode == Const.STACK:
         assert len(scope) <= 2, "set_dump_switch, scope param set invalid, it's must be [start, end] or []."
     DumpUtil.set_dump_switch(switch, mode=mode, scope=scope, api_list=api_list)
+
+
+def set_backward_input(backward_input):
+    for index, api_name in enumerate(DumpUtil.dump_switch_scope):
+        DumpUtil.backward_input[api_name] = backward_input[index]
 
 
 def set_overflow_check_switch(switch):
@@ -299,14 +307,11 @@ def dump_acc_cmp(name, in_feat, out_feat, dump_step, moudle):
 
     if DumpUtil.get_dump_switch():
         if DumpUtil.dump_init_enable:
-            dump_acc_cmp.call_number = 0
             DumpUtil.dump_init_enable = False
             DumpUtil.dump_data_dir = make_dump_data_dir(dump_file) \
-                if DumpUtil.dump_switch_mode != Const.STACK else ""
-        else:
-            dump_acc_cmp.call_number = dump_acc_cmp.call_number + 1
+                if DumpUtil.dump_switch_mode not in [Const.STACK, Const.ACL] else ""
 
-        name_prefix = f"{dump_acc_cmp.call_number}_{name}"
+        name_prefix = name
         name_template = f"{name_prefix}" + "_{}"
         if DumpUtil.dump_switch_mode in [Const.ALL, Const.API_LIST]:
             dump_api_tensor(dump_step, in_feat, name_template, out_feat, dump_file)
@@ -316,13 +321,15 @@ def dump_acc_cmp(name, in_feat, out_feat, dump_step, moudle):
         elif DumpUtil.check_switch_scope(name_prefix):
             dump_stack_info(name_template, dump_file)
             if DumpUtil.dump_switch_mode == Const.ACL:
-                acl_dump(moudle, name)
+                acl_dump(moudle, name, name_prefix)
             elif DumpUtil.dump_switch_mode != Const.STACK:
                 dump_api_tensor(dump_step, in_feat, name_template, out_feat, dump_file)
 
 
-def acl_dump(module, module_name):
-    if "forward" in module_name:
+def acl_dump(module, module_name, name_prefix):
+    if name_prefix in DumpUtil.backward_input:
+        backward_acl_dump(module, module_name, DumpUtil.backward_input.get(name_prefix))
+    else:
         forward_acl_dump(module, module_name)
 
 
@@ -335,6 +342,25 @@ def forward_acl_dump(module, module_name):
         torch_npu.npu.set_dump(DumpUtil.dump_config)
         torch_npu.npu.synchronize()
         module.forward(*module.input_args, **module.input_kwargs)
+        torch_npu.npu.synchronize()
+        torch_npu.npu.finalize_dump()
+    del module.input_args
+    del module.input_kwargs
+    forward_init_status = False
+    print_info_log("Dump %s op file." % module_name)
+
+
+def backward_acl_dump(module, module_name, grad_path):
+    global forward_init_status
+    global backward_init_status
+    if not forward_init_status and not backward_init_status:
+        forward_init_status = True
+        output = module.forward(*module.input_args, **module.input_kwargs)
+        grad = torch.tensor(np.load(grad_path)).to("npu").requires_grad_()
+        torch_npu.npu.init_dump()
+        torch_npu.npu.set_dump(DumpUtil.dump_config)
+        torch_npu.npu.synchronize()
+        output.backward(grad, retain_graph=True)
         torch_npu.npu.synchronize()
         torch_npu.npu.finalize_dump()
     del module.input_args
