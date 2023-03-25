@@ -296,9 +296,9 @@ def make_dump_data_dir(dump_file_name):
 
 def _set_dump_switch4api_list(name):
     if DumpUtil.dump_api_list:
-        api_name = name.split("_")[1].lower()
-        if api_name in DumpUtil.dump_api_list and DumpUtil.dump_switch == "ON":
-            DumpUtil.dump_switch = "OFF"
+        api_name = name.rsplit("_", 3)[0].split("_", 1)[1].lower()
+        if api_name in DumpUtil.dump_api_list and DumpUtil.dump_switch == "OFF":
+            DumpUtil.dump_switch = "ON"
 
 
 def dump_stack_info(name_template, dump_file):
