@@ -172,6 +172,8 @@ def set_dump_switch(switch, mode=Const.ALL, scope=[], api_list=[]):
         assert len(scope) != 0, "set_dump_switch, scope param set invalid, it's should not be an empty list."
     if mode == Const.STACK:
         assert len(scope) <= 2, "set_dump_switch, scope param set invalid, it's must be [start, end] or []."
+    if mode == Const.ACL:
+        assert len(scope) == 1, "set_dump_switch, scope param set invalid, only one api name is supported in acl mode."
     DumpUtil.set_dump_switch(switch, mode=mode, scope=scope, api_list=api_list)
 
 
@@ -328,7 +330,7 @@ def dump_acc_cmp(name, in_feat, out_feat, dump_step, moudle):
 
 def acl_dump(module, module_name, name_prefix):
     if name_prefix in DumpUtil.backward_input:
-        backward_acl_dump(module, module_name, DumpUtil.backward_input.get(name_prefix))
+        dump_mode_backward_acl_dump(module, module_name, DumpUtil.backward_input.get(name_prefix))
     else:
         forward_acl_dump(module, module_name)
 
@@ -350,7 +352,7 @@ def forward_acl_dump(module, module_name):
     print_info_log("Dump %s op file." % module_name)
 
 
-def backward_acl_dump(module, module_name, grad_path):
+def dump_mode_backward_acl_dump(module, module_name, grad_path):
     global forward_init_status
     global backward_init_status
     if not forward_init_status and not backward_init_status:

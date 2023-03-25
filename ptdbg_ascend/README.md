@@ -218,15 +218,16 @@ pip3 install ./ptdbg_ascend/dist/ptdbg_ascend-0.1-py3-none-any.whl --upgrade --f
 
 接口函数用于dump过程的配置，如下：
 
-| 函数                | 描述                                                         |
-| ------------------- | ------------------------------------------------------------ |
-| set_dump_path       | 用于设置dump文件的路径(包含文件名)，参数示例：“/var/log/dump/npu_dump.pkl” |
-| set_dump_switch     | 设置dump范围，不设置则默认处于关闭状态。第一个参数为：“ON” 或者 "OFF",若需要控制dump的算子范围，则需要第二、三个参数，默认不配置 |
-| seed_all            | 固定随机数，参数为随机数种子，默认种子为：1234.              |
-| register_hook       | 用于注册dump回调函数，例如：注册精度比对hook：register_hook(model, acc_cmp_dump). |
+| 函数                | 描述                                                                                                |
+| ------------------- |---------------------------------------------------------------------------------------------------|
+| set_dump_path       | 用于设置dump文件的路径(包含文件名)，参数示例：“/var/log/dump/npu_dump.pkl”                                            |
+| set_dump_switch     | 设置dump范围，不设置则默认处于关闭状态。第一个参数为：“ON” 或者 "OFF",若需要控制dump的算子范围，则需要第二、三个参数，默认不配置                        |
+| seed_all            | 固定随机数，参数为随机数种子，默认种子为：1234.                                                                        |
+ | set_backward_input | 设置反向ACL级别dump时需要的反向输入的路径,参数示例："acl_dump_xxx/Functional_conv2d_1_backward_input.0.npy"             
+| register_hook       | 用于注册dump回调函数，例如：注册精度比对hook：register_hook(model, acc_cmp_dump).                                    |
 | compare             | 比对接口，将GPU/CPU/NPU的dump文件进行比对，第三个参数为存放比对结果的目录；<br/>文件名称基于时间戳自动生成，格式为：compare_result_timestamp.csv. |
-| parse               | (若pkl文件中有)打印特定api接口的堆栈信息、统计数据信息，第一个参数为pkl文件名，第二个参数为要抽取的api接口前缀，例如"21_Torch_norm". |
-| compare_distributed | 单机多卡场景下的比对，自动检索和匹配对应卡和进程所dump的数据文件，再调用compare做比对。也支持单机单卡使用。 |
+| parse               | (若pkl文件中有)打印特定api接口的堆栈信息、统计数据信息，第一个参数为pkl文件名，第二个参数为要抽取的api接口前缀，例如"Torch_norm_1_forward".          |
+| compare_distributed | 单机多卡场景下的比对，自动检索和匹配对应卡和进程所dump的数据文件，再调用compare做比对。也支持单机单卡使用。                                       |
 
 #### 使用说明
 1) seed_all和set_dump_path在训练主函数main一开始就调用，避免随机数固定不全；
@@ -240,16 +241,16 @@ pip3 install ./ptdbg_ascend/dist/ptdbg_ascend-0.1-py3-none-any.whl --upgrade --f
 # 实现方式：通过set_dump_switch的第二、第三个参数控制dump的范围
 
 # 示例1： dump指定api/api列表.
-set_dump_switch("ON", mode="list", scope=["1478_Tensor_permute", "1484_Tensor_transpose", "1792_Torch_relue"])
+set_dump_switch("ON", mode="list", scope=["Tensor_permute_1_forward", "Tensor_transpose_2_forward", "Torch_relue_3_backward"])
 
-# 示例2： dump指定范围. 会dump 1000_Tensor_abs 到 1484_Tensor_transpose_forward之间的所有api
-set_dump_switch("ON", mode="range", scope=["1000_Tensor_abs", "1484_Tensor_transpose_forward"])
+# 示例2： dump指定范围. 会dump Tensor_abs_1_forward 到 Tensor_transpose_3_forward之间的所有api
+set_dump_switch("ON", mode="range", scope=["Tensor_abs_1_forward", "Tensor_transpose_3_forward之间的所有api"])
 
-# 示例3： STACK模式，只dump堆栈信息， 示例中dump "1000_Tensor_abs" 到 "1484_Tensor_transpose_forward" 之间所有api的STACK信息
-set_dump_switch("ON", mode="stack", scope=["1000_Tensor_abs", "1484_Tensor_transpose_forward"])
+# 示例3： STACK模式，只dump堆栈信息， 示例中dump "Tensor_abs_1_forward" 到 "Tensor_transpose_3_forward" 之间所有api的STACK信息
+set_dump_switch("ON", mode="stack", scope=["Tensor_abs_1_forward", "Tensor_transpose_3_forward"])
 
 # 示例4： dump指定api/api列表的ACL级别的输入输出数据
-set_dump_switch("ON", mode="acl", scope=["1000_Tensor_abs", "1484_Tensor_transpose_forward"])
+set_dump_switch("ON", mode="acl", scope=["Tensor_abs_1_forward"])
 
 # 示例5： dump指定某一类api的api级别输入输出数据
 set_dump_switch("ON", mode="api_list", scope=["relu"])
@@ -400,12 +401,16 @@ register_hook(model, acc_cmp_dump, dump_step=1)
 
 # 通过set_dump_switch控制dump的范围
 # 示例1： dump指定api/api列表.
-set_dump_switch("ON", mode="list", scope=["1478_Tensor_permute", "1484_Tensor_transpose", "1792_Torch_relue"])
-# 示例2： dump指定范围. 会dump 1000_Tensor_abs 到 1484_Tensor_transpose_forward之间的所有api
-set_dump_switch("ON", mode="range", scope=["1000_Tensor_abs", "1484_Tensor_transpose_forward"])
-# 示例3： dump指定api/api列表的ACL级别数据.
+set_dump_switch("ON", mode="list", scope=["Tensor_permute_1_forward", "Tensor_transpose_2_forward", "Torch_relue_3_forward"])
+# 示例2： dump指定范围. 会dump Tensor_abs_1_forward 到 Tensor_transpose_2_forward之间的所有api
+set_dump_switch("ON", mode="range", scope=["Tensor_abs_1_forward", "Tensor_transpose_2_forward之间的所有api"])
+# 示例3： dump指定前向api的ACL级别数据.
 register_hook(model, acc_cmp_dump, dump_mode='acl', dump_config='dump.json')
-set_dump_switch("ON", mode="acl", scope=["1478_Tensor_permute", "1484_Tensor_transpose", "1792_Torch_relue"])
+set_dump_switch("ON", mode="acl", scope=["Tensor_permute_1_forward"])
+# 示例4： dump指定反向api的ACL级别数据.
+register_hook(model, acc_cmp_dump, dump_mode='acl', dump_config='dump.json')
+set_dump_switch("ON", mode="acl", scope=["Functional_conv2d_1_backward"])
+set_backward_input(["xxx/Functional_conv2d_1_backward_input.0.npy"])
 ...
 ```
 按范围dump后的分析<br/>
@@ -417,7 +422,7 @@ set_dump_switch("ON", mode="acl", scope=["1478_Tensor_permute", "1484_Tensor_tra
 from ptdbg_ascend import *
 
 # 提取dump信息中第21次调用的API：Torch_batch_normal的堆栈信息及数据统计信息
-parse("./npu_dump.pkl", "21_Torch_batch_normal")
+parse("./npu_dump.pkl", "Torch_batch_normal_1_forward")
 ```
 
 #### 场景3：溢出检测分析（NPU场景,GPU和CPU不支持）
