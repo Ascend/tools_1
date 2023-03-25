@@ -94,8 +94,8 @@ def get_max_relative_err(n_value, b_value):
 
 
 def check_op(npu_dict, bench_dict, shape_flag):
-    a_op_name = [_.split('_', 1)[1] for _ in npu_dict["op_name"]]
-    b_op_name = [_.split('_', 1)[1] for _ in bench_dict["op_name"]]
+    a_op_name = npu_dict["op_name"]
+    b_op_name = bench_dict["op_name"]
     if shape_flag:
         return a_op_name == b_op_name and npu_dict["input_struct"] == bench_dict["input_struct"] \
             and npu_dict["output_struct"] == bench_dict["output_struct"]
