@@ -44,7 +44,7 @@ class DumpUtil(object):
     dump_switch_scope = []
     dump_init_enable = False
     dump_api_list = []
-    backward_input = []
+    backward_input = {}
 
     @staticmethod
     def set_dump_path(save_path):
