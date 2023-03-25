@@ -34,6 +34,7 @@ from .backward import Backward
 DumpCount = 0
 forward_init_status = False
 backward_init_status = False
+range_begin_flag, range_end_flag = False, False
 
 
 class DumpUtil(object):
@@ -73,6 +74,19 @@ class DumpUtil(object):
         end = int(DumpUtil.dump_switch_scope[1].split('_', 1)[0])
         curr = int(name_prefix.split('_', 1)[0])
         return start <= curr <= end
+
+    def check_range_mode(name_prefix):
+        global range_begin_flag
+        global range_end_flag
+        if name_prefix.startswith(DumpUtil.dump_switch_scope[0]):
+            range_begin_flag = True
+            return True
+        if name_prefix.startswith(DumpUtil.dump_switch_scope[1]):
+            range_end_flag = True
+            return True
+        if range_begin_flag and not range_end_flag:
+            return True
+        return False
 
     def check_stack_mode(name_prefix):
         if len(DumpUtil.dump_switch_scope) == 0:
