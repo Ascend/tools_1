@@ -70,12 +70,6 @@ class DumpUtil(object):
                 return True
 
     def check_range_mode(name_prefix):
-        start = int(DumpUtil.dump_switch_scope[0].split('_', 1)[0])
-        end = int(DumpUtil.dump_switch_scope[1].split('_', 1)[0])
-        curr = int(name_prefix.split('_', 1)[0])
-        return start <= curr <= end
-
-    def check_range_mode(name_prefix):
         global range_begin_flag
         global range_end_flag
         if name_prefix.startswith(DumpUtil.dump_switch_scope[0]):
