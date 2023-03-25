@@ -241,7 +241,7 @@ pip3 install ./ptdbg_ascend/dist/ptdbg_ascend-0.1-py3-none-any.whl --upgrade --f
 # 实现方式：通过set_dump_switch的第二、第三个参数控制dump的范围
 
 # 示例1： dump指定api/api列表.
-set_dump_switch("ON", mode="list", scope=["Tensor_permute_1_forward", "Tensor_transpose_2_forward", "Torch_relue_3_backward"])
+set_dump_switch("ON", mode="list", scope=["Tensor_permute_1_forward", "Tensor_transpose_2_forward", "Torch_relu_3_backward"])
 
 # 示例2： dump指定范围. 会dump Tensor_abs_1_forward 到 Tensor_transpose_3_forward之间的所有api
 set_dump_switch("ON", mode="range", scope=["Tensor_abs_1_forward", "Tensor_transpose_3_forward之间的所有api"])
@@ -401,7 +401,7 @@ register_hook(model, acc_cmp_dump, dump_step=1)
 
 # 通过set_dump_switch控制dump的范围
 # 示例1： dump指定api/api列表.
-set_dump_switch("ON", mode="list", scope=["Tensor_permute_1_forward", "Tensor_transpose_2_forward", "Torch_relue_3_forward"])
+set_dump_switch("ON", mode="list", scope=["Tensor_permute_1_forward", "Tensor_transpose_2_forward", "Torch_relu_3_forward"])
 # 示例2： dump指定范围. 会dump Tensor_abs_1_forward 到 Tensor_transpose_2_forward之间的所有api
 set_dump_switch("ON", mode="range", scope=["Tensor_abs_1_forward", "Tensor_transpose_2_forward之间的所有api"])
 # 示例3： dump指定前向api的ACL级别数据.
