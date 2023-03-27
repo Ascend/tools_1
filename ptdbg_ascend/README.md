@@ -252,7 +252,7 @@ set_dump_switch("ON", mode="stack", scope=["Tensor_abs_1_forward", "Tensor_trans
 set_dump_switch("ON", mode="acl", scope=["Tensor_abs_1_forward"])
 
 # 示例5： dump指定某一类api的api级别输入输出数据
-set_dump_switch("ON", mode="api_list", scope=["relu"])
+set_dump_switch("ON", mode="api_list", api_list=["relu"])
 
 # 示例6： dump全部api级别输入输出数据以及相应堆栈信息
 set_dump_switch("ON", mode="api_stack")
